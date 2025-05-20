@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>L-Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;500&display=swap" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --lshop-orange-primary: #f37020;
+            --lshop-orange-secondary: #f8981c;
+            --lshop-orange-dark: #d8580c;
+            --lshop-text-on-orange: #ffffff;
+            --lshop-text-on-white: #333333;
+            --lshop-bg-main: #f0f2f5;
+            --lshop-bg-header: #ffffff;
+            --lshop-border-color: #e0e0e0;
+            --lshop-card-bg: #ffffff;
+            --lshop-modal-bg: #2a2a2a;
+            --lshop-modal-text: #f0f0f0;
+            --lshop-modal-border: #444;
+            --lshop-modal-input-bg: #3f3f3f;
+            --lshop-modal-input-border: #555;
+            --lshop-modal-item-divider: #4a4a4a;
+        }
+
+        body {
+            background-color: var(--lshop-bg-main);
+            color: var(--lshop-text-on-white);
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .lshop-hidden {
+            display: none !important;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+
+        #user-selection-screen {
+            position: fixed;
+            inset: 0;
+            background-color: var(--lshop-orange-primary);
+            z-index: 500 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        #user-selection-screen.hidden,
+        #user-selection-screen.lshop-hidden {
+            display: none !important;
+        }
+
+        .user-bubble {
+            background-color: var(--lshop-bg-header);
+            color: var(--lshop-text-on-white);
+            border: 3px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .user-bubble:hover {
+            transform: translateY(-5px) scale(1.05);
+            border-color: var(--lshop-orange-dark);
+        }
+
+        .user-bubble.add-user-bubble {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 3px dashed var(--lshop-text-on-orange);
+        }
+
+        .user-bubble.add-user-bubble .fa-plus {
+            color: var(--lshop-text-on-orange);
+        }
+
+        .user-bubble.add-user-bubble span {
+            color: var(--lshop-orange-dark);
+            font-weight: 500;
+        }
+
+        #lshop-main-container {
+            display: flex;
+            flex-grow: 1;
+        }
+
+        #lshop-sidebar {
+            width: 260px;
+            background-color: var(--lshop-orange-primary);
+            padding: 1.5rem 0;
+            flex-shrink: 0;
+            color: var(--lshop-text-on-orange);
+        }
+
+        #lshop-sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1.5rem;
+            margin-bottom: 0.1rem;
+            font-weight: 500;
+            transition: background-color 0.2s, border-left-color 0.2s;
+            border-left: 4px solid transparent;
+            color: var(--lshop-text-on-orange);
+        }
+
+        #lshop-sidebar nav a:hover {
+            background-color: var(--lshop-orange-secondary);
+        }
+
+        #lshop-sidebar nav a.active {
+            background-color: var(--lshop-orange-secondary);
+            border-left-color: var(--lshop-text-on-orange);
+            font-weight: 700;
+        }
+
+        #lshop-sidebar nav a i {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        #admin-menu-items h3 {
+            padding: 0.5rem 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        #lshop-content-area {
+            flex-grow: 1;
+            padding: 1.5rem;
+            background-color: var(--lshop-bg-main);
+            overflow-y: auto;
+        }
+
+        header.lshop-header {
+            background-color: var(--lshop-bg-header);
+            color: var(--lshop-text-on-white);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--lshop-border-color);
+        }
+
+        .lshop-header-user-icon {
+            width: 36px;
+            height: 36px;
+            background-color: var(--lshop-orange-primary);
+            color: var(--lshop-text-on-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        #lshop-username-display,
+        #user-balance-display {
+            color: var(--lshop-text-on-white);
+        }
+
+        .lshop-header .relative button .fa-shopping-cart,
+        .lshop-header .relative button .fa-users {
+            color: var(--lshop-text-on-white);
+        }
+
+        .lshop-header .relative button #cart-count {
+            background-color: var(--lshop-orange-primary);
+            color: white;
+        }
+
+
+        .product {
+            background-color: var(--lshop-card-bg);
+            border-radius: 0.375rem;
+            overflow: hidden;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            color: var(--lshop-text-on-white);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--lshop-border-color);
+        }
+
+        .product:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .product img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            cursor: pointer;
+            background-color: #e0e0e0;
+        }
+
+        .product .p-3 strong {
+            font-weight: 500;
+        }
+
+        .product .text-price-custom {
+            color: var(--lshop-orange-primary) !important;
+        }
+
+        .product .btn-primary-custom {
+            background-color: var(--lshop-orange-primary) !important;
+        }
+
+        .product .btn-primary-custom:hover {
+            background-color: var(--lshop-orange-secondary) !important;
+        }
+
+        .product .btn-success-custom {
+            background-color: #28a745 !important;
+        }
+
+        .product .btn-success-custom:hover {
+            background-color: #218838 !important;
+        }
+
+
+        .modal-fixed-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-fixed-overlay.hidden,
+        .modal-fixed-overlay.lshop-hidden {
+            display: none !important;
+        }
+
+        .modal-container-custom {
+            background-color: var(--lshop-modal-bg) !important;
+            color: var(--lshop-modal-text) !important;
+            border: 1px solid var(--lshop-modal-border) !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+        }
+
+        .modal-container-custom h2 {
+            color: var(--lshop-modal-text);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            padding-top: 0.5rem;
+        }
+
+        .modal-content-area {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 0.5rem 1rem;
+        }
+
+        .modal-footer-custom {
+            position: sticky;
+            bottom: 0;
+            background-color: var(--lshop-modal-bg);
+            padding: 0.75rem 1rem;
+            z-index: 10;
+            border-top: 1px solid var(--lshop-modal-border);
+            margin-top: auto;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal-footer-custom.justify-end {
+            justify-content: flex-end;
+        }
+
+        .modal-content-item {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--lshop-modal-item-divider);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-content-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal-container-custom input[type="text"],
+        .modal-container-custom input[type="number"],
+        .modal-container-custom input[type="password"],
+        .modal-container-custom select,
+        .modal-container-custom textarea {
+            background-color: var(--lshop-modal-input-bg);
+            border: 1px solid var(--lshop-modal-input-border);
+            color: var(--lshop-modal-text);
+            border-radius: 0.25rem;
+            padding: 0.6rem 0.75rem;
+            width: 100%;
+        }
+
+        .modal-container-custom input::placeholder {
+            color: #aaa;
+        }
+
+        .modal-container-custom label {
+            margin-bottom: 0.25rem;
+            display: block;
+            font-size: 0.875rem;
+        }
+
+        .modal-btn {
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .modal-btn-primary {
+            background-color: var(--lshop-orange-primary);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background-color: var(--lshop-orange-secondary);
+        }
+
+        .modal-btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .modal-btn-success:hover {
+            background-color: #218838;
+        }
+
+        .modal-btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .modal-btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .modal-btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .modal-btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        #product-detail-modal #detail-price {
+            color: var(--lshop-orange-secondary);
+        }
+
+        #product-detail-modal #detail-image {
+            border: 1px solid var(--lshop-modal-input-border);
+            border-radius: 0.25rem;
+        }
+
+        .cart-item-controls input[type="number"] {
+            width: 3.5rem;
+            padding: 0.4rem;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .cart-item-controls button {
+            background-color: var(--lshop-modal-input-border) !important;
+            color: var(--lshop-modal-text) !important;
+            padding: 0.4rem 0.6rem !important;
+            border-radius: 0.25rem !important;
+            line-height: 1;
+        }
+
+        .cart-item-controls button:hover {
+            background-color: #666 !important;
+        }
+
+        .cart-item-controls .remove-item-btn i {
+            font-size: 1.1rem;
+            opacity: 0.7;
+            color: var(--lshop-modal-text);
+        }
+
+        .cart-item-controls .remove-item-btn:hover i {
+            opacity: 1;
+            color: var(--lshop-orange-primary);
+        }
+
+        .order-history-item,
+        .inventory-item-custom {
+            background-color: var(--lshop-modal-input-bg);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--lshop-modal-input-border);
+        }
+
+        .order-history-item ul {
+            margin-left: 1.5rem;
+        }
+
+        .inventory-item-custom img {
+            border: 1px solid var(--lshop-modal-input-border);
+        }
+
+        /* Z-Indizes */
+        #cart-modal {
+            z-index: 600 !important;
+        }
+
+        #add-product-modal {
+            z-index: 610 !important;
+        }
+
+        #account-modal {
+            z-index: 620 !important;
+        }
+
+        #product-detail-modal {
+            z-index: 700 !important;
+        }
+
+        #checkout-modal {
+            z-index: 710 !important;
+        }
+
+        #order-history-modal {
+            z-index: 800 !important;
+        }
+
+        #inventory-modal {
+            z-index: 810 !important;
+        }
+
+        #sell-product-modal {
+            z-index: 820 !important;
+        }
+
+        #auth-modal {
+            z-index: 900 !important;
+        }
+
+        #thank-you-modal {
+            z-index: 910 !important;
+        }
+
+        body.user-selection-active #lshop-main-container,
+        body.user-selection-active .lshop-header,
+        body.user-selection-active footer {
+            display: none !important;
+        }
+
+        #cart-items,
+        #inventory-content,
+        #order-history-content,
+        #checkout-items {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .stock-status {
+            font-size: 0.9em;
+        }
+
+        .stock-available {
+            color: #28a745;
+        }
+
+        .stock-low {
+            color: #ffc107;
+        }
+
+        .stock-soldout {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .cart-qty-input-exceeds {
+            border-color: #dc3545 !important;
+            color: #dc3545 !important;
+        }
+
+        #loading-status.spinning::before,
+        .button-spinner {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(243, 112, 32, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--lshop-orange-primary);
+            animation: spin 1s linear infinite;
+            vertical-align: -4px;
+        }
+
+        .button-spinner {
+            border-width: 2px;
+            border-color: rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            height: 16px;
+            width: 16px;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #333;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: translateY(20px);
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #search {
+            background-color: var(--lshop-bg-header);
+            border: 1px solid var(--lshop-border-color);
+            color: var(--lshop-text-on-white);
+        }
+
+        #search::placeholder {
+            color: #999;
+        }
+
+        #pagination-controls button {
+            background-color: var(--lshop-orange-primary);
+            color: white;
+        }
+
+        #pagination-controls button:hover {
+            background-color: var(--lshop-orange-secondary);
+        }
+
+        #pagination-controls button:disabled {
+            background-color: #fabba0;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body class="user-selection-active">
+
+    <div id="user-selection-screen" class="lshop-hidden"> <!-- Startet versteckt, JS zeigt es an -->
+        <h1 class="text-4xl font-bold mb-12 text-white">Wer spielt?</h1>
+        <div id="user-bubbles-container" class="flex flex-wrap justify-center gap-8"></div>
+        <p class="mt-12 text-gray-200 text-sm">Wähle ein Profil oder füge ein neues hinzu.</p>
+    </div>
+
+    <header class="lshop-header flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="text-3xl font-bold" style="color: var(--lshop-orange-primary);">L-Shop</div>
+        <div class="flex items-center space-x-4">
+            <div id="lshop-user-info" class="flex items-center space-x-2">
+                <div id="lshop-user-icon" class="lshop-user-icon">?</div>
+                <span id="lshop-username-display" class="font-semibold">Gast</span>
+            </div>
+            <span id="user-balance-display" class="ml-2 hidden">(<i class="fas fa-coins text-yellow-400"></i> $<span
+                    id="user-balance">0.00</span>)</span>
+            <button class="relative" onclick="openModal('cart-modal', viewCart)">
+                <i class="fas fa-shopping-cart text-xl"></i>
+                <span id="cart-count"
+                    class="absolute -top-2 -right-2 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">0</span>
+            </button>
+            <button title="Profil wechseln" onclick="showUserSelectionScreen(true)" class="text-xl">
+                <i class="fas fa-users"></i>
+            </button>
+        </div>
+    </header>
+
+    <div id="lshop-main-container">
+        <aside id="lshop-sidebar">
+            <nav class="flex flex-col h-full">
+                <div>
+                    <a href="#" onclick="navigateTo('home'); return false;" class="active"><i
+                            class="fas fa-home"></i>Startseite</a>
+                    <a href="#" onclick="openModal('order-history-modal', showOrderHistoryLogic)"><i
+                            class="fas fa-receipt"></i>Bestellungen</a>
+                    <a href="#" onclick="openModal('inventory-modal', showMyInventoryLogic)"><i
+                            class="fas fa-archive"></i>Inventar</a>
+                    <a href="#" onclick="openModal('account-modal', openAccountModalLogic)"><i
+                            class="fas fa-user-cog"></i>Konto</a>
+                    <div id="admin-menu-items" class="mt-4 pt-4 border-t border-orange-400 hidden">
+                        <h3 class="text-xs uppercase mb-2 font-semibold">Admin</h3>
+                        <a href="#" onclick="openModal('add-product-modal', openAddProductModalLogic)"><i
+                                class="fas fa-plus-circle"></i>Produkt Hinzuf.</a>
+                        <a href="#" onclick="resetProductStock(false)"><i class="fas fa-boxes"></i>Lager Reset</a>
+                        <a href="#" onclick="resetProductStock(true)"><i class="fas fa-trash-alt"></i>Lager Nullen</a>
+                    </div>
+                </div>
+                <a href="#" onclick="logoutLShopUser()" class="mt-auto"
+                    style="background-color: var(--lshop-orange-dark);"><i class="fas fa-sign-out-alt"></i>Abmelden</a>
+            </nav>
+        </aside>
+        <main id="lshop-content-area">
+            <div id="lshop-home-view">
+                <div class="w-full max-w-lg mb-8 mx-auto">
+                    <input id="search" type="text" placeholder="Spiele suchen..."
+                        class="border rounded-full p-3 px-6 w-full shadow-sm focus:ring-2 focus:ring-orange-400 outline-none">
+                </div>
+                <div id="loading-status" class="text-center py-10 hidden">
+                    <p id="loading-status-message" class="text-lg font-semibold"
+                        style="color: var(--lshop-orange-primary);"></p>
+                </div>
+                <div id="product-list"
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5"></div>
+                <div id="pagination-controls" class="w-full flex justify-center mt-8">
+                    <button id="prev" class="px-4 py-2 rounded-l-md mr-px">« Zurück</button>
+                    <span id="page-info"
+                        class="px-4 py-2 bg-white border-t border-b border-gray-300 text-gray-700"></span>
+                    <button id="next" class="px-4 py-2 rounded-r-md ml-px">Weiter »</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="cart-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-full max-w-lg md:max-w-xl">
+            <h2>Warenkorb</h2>
+            <div id="cart-items" class="modal-content-area mb-4"></div>
+            <div class="text-right font-bold text-lg mb-4 px-1">Total: $<span id="cart-total">0.00</span></div>
+            <div class="modal-footer-custom"> <button class="modal-btn modal-btn-secondary"
+                    onclick="closeModal('cart-modal')">Weiter einkaufen</button> <button id="cart-checkout-button"
+                    class="modal-btn modal-btn-success disabled:opacity-50" onclick="checkout()">Zur Kasse</button>
+            </div>
+        </div>
+    </div>
+    <div id="checkout-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-full max-w-md">
+            <h2>Checkout</h2>
+            <div id="checkout-items" class="modal-content-area mb-4"></div>
+            <div class="modal-footer-custom">
+                <div class="text-right font-bold text-lg self-center">Total: $<span id="checkout-total">0.00</span>
+                </div>
+                <div> <button class="modal-btn modal-btn-secondary mr-2"
+                        onclick="closeModal('checkout-modal')">Abbrechen</button> <button id="confirm-purchase-button"
+                        class="modal-btn modal-btn-success flex items-center justify-center disabled:opacity-50"
+                        onclick="confirmPurchase()"> <span class="button-text">Kauf bestätigen</span><span
+                            class="button-spinner hidden"></span> </button> </div>
+            </div>
+        </div>
+    </div>
+    <div id="thank-you-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-full max-w-md p-6">
+            <h2 class="mt-2">Danke für deinen Einkauf!</h2>
+            <p class="text-center mb-6 opacity-90">Deine Bestellung wurde erfolgreich bestätigt.</p>
+            <div class="flex justify-center space-x-4"> <button class="modal-btn modal-btn-primary"
+                    onclick="generateInvoice()">Rechnung (PDF)</button> <button class="modal-btn modal-btn-secondary"
+                    onclick="closeModal('thank-you-modal')">Schließen</button> </div>
+        </div>
+    </div>
+    <div id="add-product-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-full max-w-md p-6">
+            <h2>Neues Produkt hinzufügen</h2>
+            <div class="modal-content-area space-y-4">
+                <div><label for="product-name">Produktname</label><input id="product-name" type="text"
+                        placeholder="Produktname"></div>
+                <div><label for="product-image">Bild-URL</label><input id="product-image" type="text"
+                        placeholder="Bild-URL"></div>
+                <div><label for="product-price">Preis</label><input id="product-price" type="text"
+                        placeholder="Preis (z.B. $12.99)"></div>
+                <div><label for="product-stock">Anfangsbestand</label><input id="product-stock" type="number"
+                        placeholder="Anfangsbestand" value="20" min="0"></div>
+            </div>
+            <div class="modal-footer-custom mt-6"> <button class="modal-btn modal-btn-secondary"
+                    onclick="closeModal('add-product-modal')">Abbrechen</button> <button id="submit-product-button"
+                    class="modal-btn modal-btn-primary flex items-center justify-center disabled:opacity-50"
+                    onclick="submitProduct(event)"> <span class="button-text">Produkt hinzufügen</span><span
+                        class="button-spinner hidden"></span> </button> </div>
+        </div>
+    </div>
+    <div id="product-detail-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-3/4 md:w-2/3 lg:w-1/2 p-4 relative"> <button
+                class="absolute top-3 right-4 text-gray-300 hover:text-red-500 text-2xl leading-none z-10"
+                onclick="closeModal('product-detail-modal')">×</button>
+            <div class="modal-content-area p-2">
+                <h2 id="detail-name" class="text-2xl font-bold mb-4 text-center">Produkt Detail</h2>
+                <div class="md:flex md:space-x-6">
+                    <div class="md:w-1/2 mb-4 md:mb-0 flex justify-center items-center"> <img id="detail-image"
+                            src="https://via.placeholder.com/400x300.png?text=Produktbild" alt="Produktbild"
+                            class="w-full h-auto object-contain rounded max-h-96"> </div>
+                    <div class="md:w-1/2 flex flex-col">
+                        <p class="text-sm opacity-70 mb-2">ID: <span id="detail-id">N/A</span></p>
+                        <p id="detail-price" class="text-3xl font-bold mb-4">$?.??</p>
+                        <div class="text-sm mb-4">
+                            <p class="font-semibold">Verfügbarkeit:</p>
+                            <p id="detail-stock-available" class="opacity-90">?</p>
+                            <p id="detail-stock-cart" class="text-xs text-orange-400">(0 bereits in Ihrem Warenkorb)</p>
+                        </div>
+                        <div class="mt-auto">
+                            <div class="flex items-center space-x-2 mb-4"> <label for="detail-qty"
+                                    class="text-sm font-medium">Menge:</label> <input id="detail-qty" type="number"
+                                    min="1" value="1" class="w-20"> </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom detail-footer mt-4"> <button id="detail-add-to-cart"
+                    class="modal-btn modal-btn-primary flex-1 disabled:opacity-50">In Korb</button> <button
+                    id="detail-buy-now" class="modal-btn modal-btn-success flex-1 disabled:opacity-50">Direkt
+                    Kaufen</button> </div>
+        </div>
+    </div>
+    <div id="order-history-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-3/4 md:w-2/3 lg:w-3/4 p-4 relative"> <button
+                class="absolute top-3 right-4 text-gray-300 hover:text-red-500 text-2xl leading-none z-10"
+                onclick="closeModal('order-history-modal')">×</button>
+            <h2>Meine Bestellungen</h2>
+            <div id="order-history-content" class="modal-content-area" style="max-height: calc(80vh - 150px);">
+                <p class="text-center opacity-70 py-4">Noch keine Bestellungen vorhanden.</p>
+            </div>
+            <div class="modal-footer-custom justify-end mt-4"> <button class="modal-btn modal-btn-danger mr-2"
+                    onclick="clearOrderHistory()">Verlauf löschen</button> <button class="modal-btn modal-btn-secondary"
+                    onclick="closeModal('order-history-modal')">Schließen</button> </div>
+        </div>
+    </div>
+    <div id="account-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-full max-w-md p-6 relative"> <button
+                class="absolute top-3 right-4 text-gray-300 hover:text-red-500 text-2xl leading-none z-10"
+                onclick="closeModal('account-modal')">×</button>
+            <h2>Kontoeinstellungen</h2>
+            <div class="modal-content-area space-y-3">
+                <p><strong>Backend-Benutzername:</strong> <span id="account-username"></span></p>
+                <p><strong>Guthaben:</strong> $<span id="account-balance"></span></p>
+                <div class="mt-4 border-t border-gray-600 pt-4"> <label id="infinity-money-label"
+                        class="flex items-center space-x-3 cursor-pointer"> <input type="checkbox"
+                            id="account-infinity-money" onchange="updateAccountSettings()"
+                            class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-400"> <span
+                            class="opacity-90">"Infinity Money"-Modus</span> </label>
+                    <p id="infinity-money-unlock-info" class="text-xs opacity-70 mt-1 hidden">Kaufe das teuerste Produkt
+                        im Shop, um dies freizuschalten!</p>
+                </div>
+                <p id="account-message" class="text-green-400 text-sm mt-3 hidden"></p>
+            </div>
+            <div class="modal-footer-custom justify-end mt-6"> <button class="modal-btn modal-btn-secondary"
+                    onclick="closeModal('account-modal')">Schließen</button> </div>
+        </div>
+    </div>
+    <div id="auth-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-full max-w-sm p-6 relative"> <button
+                class="absolute top-3 right-4 text-gray-300 hover:text-red-500 text-2xl leading-none z-10"
+                onclick="closeModal('auth-modal')">×</button>
+            <h2 id="auth-modal-title">Login (Backend)</h2>
+            <div id="auth-modal-lshop-username-info" class="text-center text-sm mb-4 text-orange-300 hidden"></div>
+            <div class="modal-content-area">
+                <form id="auth-form" onsubmit="handleAuthFormSubmit(event)" class="space-y-4">
+                    <div> <label for="auth-username">Backend-Benutzername (min 3)</label> <input type="text"
+                            id="auth-username" name="username" required minlength="3"
+                            class="focus:ring-orange-500 focus:border-orange-500"> </div>
+                    <div> <label for="auth-password">Backend-Passwort (min 6)</label> <input type="password"
+                            id="auth-password" name="password" required minlength="6"
+                            class="focus:ring-orange-500 focus:border-orange-500"> </div>
+                    <div> <label class="flex items-center"><input type="checkbox" id="auth-remember-me"
+                                name="rememberMe"
+                                class="form-checkbox h-4 w-4 text-orange-500 rounded focus:ring-orange-400"><span
+                                class="ml-2 text-sm opacity-90">Zugangsdaten für dieses L-Shop Profil
+                                merken</span></label> </div>
+                    <p id="auth-error-message" class="text-red-400 text-sm hidden"></p> <button id="auth-submit-button"
+                        type="submit"
+                        class="modal-btn modal-btn-primary w-full flex items-center justify-center disabled:opacity-50">
+                        <span class="button-text">Login</span><span class="button-spinner hidden"></span> </button>
+                </form>
+                <p class="text-sm text-center mt-4 opacity-80"> <span id="auth-switch-text">Neuer
+                        Backend-Account?</span> <button id="auth-switch-button" type="button"
+                        class="font-medium text-orange-400 hover:text-orange-300 hover:underline"
+                        onclick="switchAuthMode()">Jetzt registrieren</button> </p>
+            </div>
+        </div>
+    </div>
+    <div id="inventory-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-3/4 md:w-2/3 lg:w-3/4 p-4 relative"> <button
+                class="absolute top-3 right-4 text-gray-300 hover:text-red-500 text-2xl leading-none z-10"
+                onclick="closeModal('inventory-modal')">×</button>
+            <h2>Mein Inventar</h2>
+            <div id="inventory-content" class="modal-content-area" style="max-height: calc(80vh - 120px);">
+                <p class="text-center opacity-70 py-4">Dein Inventar ist leer.</p>
+            </div>
+            <div class="modal-footer-custom justify-end mt-4"> <button class="modal-btn modal-btn-secondary"
+                    onclick="closeModal('inventory-modal')">Schließen</button> </div>
+        </div>
+    </div>
+    <div id="sell-product-modal" class="modal-fixed-overlay hidden">
+        <div class="modal-container-custom w-full max-w-md p-6 relative"> <button
+                class="absolute top-3 right-4 text-gray-300 hover:text-red-500 text-2xl leading-none z-10"
+                onclick="closeModal('sell-product-modal')">×</button>
+            <h2>Produkt Verkaufen</h2>
+            <div class="modal-content-area space-y-3">
+                <div>
+                    <p>Produkt: <strong id="sell-product-name"></strong></p>
+                    <p class="text-sm opacity-80">Aktueller Shop-Preis: <span id="sell-product-original-price"></span>
+                    </p>
+                    <p class="text-sm opacity-80">Dein Bestand: <span id="sell-product-user-stock">0</span> Stk.</p>
+                </div>
+                <div> <label for="sell-quantity">Menge zu verkaufen:</label> <input type="number" id="sell-quantity"
+                        value="1" min="1"> </div>
+                <div> <label for="sell-price">Dein Verkaufspreis pro Stück ($):</label> <input type="number"
+                        id="sell-price" step="0.01" min="0.01"> </div>
+                <div class="text-sm text-center opacity-90">Geschätzte Verkaufschance: <span id="sell-probability"
+                        class="font-semibold">?%</span></div>
+                <p id="sell-error-message" class="text-red-400 text-sm hidden"></p>
+                <p id="sell-cooldown-message" class="text-orange-400 text-sm hidden"></p>
+            </div>
+            <div class="modal-footer-custom mt-6"> <button class="modal-btn modal-btn-secondary"
+                    onclick="closeModal('sell-product-modal')">Abbrechen</button> <button id="confirm-sell-button"
+                    class="modal-btn modal-btn-success flex items-center justify-center disabled:opacity-50"> <span
+                        class="button-text">Verkaufen</span><span class="button-spinner hidden"></span> </button> </div>
+        </div>
+    </div>
+
+    <footer class="bg-white p-3 mt-auto text-gray-600 text-center text-xs border-t border-gray-200">
+        © 2025 Limazon Project. Based on Limazon, L-Shop Theme. All rights reserved.
+    </footer>
+
+    <script>
+        let lshopUsers = [];
+        let activeLShopUser = null;
+        let isAddingNewLShopUser = false;
+        let newLShopUserName = '';
+        let isHandlingNewUser = false;
+
+        let products = [];
+        let filteredProducts = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let cart = [];
+        let lastPurchasedCart = [];
+        let previousSearchTerm = "";
+        let isInitialLoad = true;
+        let isServerStarting = false;
+        let serverStartTimeoutId = null;
+        let serverRetryCount = 0;
+        const MAX_SERVER_RETRIES = 12;
+        const SERVER_RETRY_DELAY = 5000;
+        let pollingTimer = null;
+        const pollingInterval = 10000;
+        let detailModalProductId = null;
+        let loggedInUser = null;
+        let currentSellProductId = null;
+        let sellCooldownIntervalId = null;
+        const SELL_COOLDOWN_SECONDS = 60;
+        const debouncedApplySearchFilter = debounce(() => { applySearchFilter(); }, 350);
+
+        const getApiUrl = () => 'https://nodejs-ykji.onrender.com/api';
+
+        // --- Hilfsfunktionen für Modals ---
+        function openModal(modalId, callbackBeforeOpen = null) {
+            console.log(`openModal: Versuche Modal ${modalId} zu öffnen.`);
+            const modal = document.getElementById(modalId);
+            if (!modal) {
+                console.error(`Modal mit ID ${modalId} nicht gefunden!`);
+                return;
+            }
+
+            if (modalId !== 'auth-modal' && modalId !== 'user-selection-screen') {
+                if (!activeLShopUser || !loggedInUser) {
+                    showToast("Bitte zuerst ein L-Shop Profil auswählen und anmelden.", 4000);
+                    if (!activeLShopUser) showUserSelectionScreen();
+                    console.log(`openModal: Aktion für ${modalId} erfordert Login, wird nicht geöffnet.`);
+                    return;
+                }
+            }
+
+            let canOpenModal = true;
+            if (callbackBeforeOpen && typeof callbackBeforeOpen === 'function') {
+                console.log(`openModal: Führe Callback für ${modalId} aus.`);
+                canOpenModal = callbackBeforeOpen();
+                if (canOpenModal === false) {
+                    console.log(`openModal: Callback für ${modalId} hat das Öffnen verhindert.`);
+                    return;
+                }
+            }
+
+            console.log(`openModal: ${modalId} - Vor classList.remove('hidden'). Klassen: ${modal.className}`);
+            modal.classList.remove('hidden', 'lshop-hidden');
+            console.log(`openModal: ${modalId} - Nach classList.remove('hidden'). Klassen: ${modal.className}`);
+            console.log(`openModal: ${modalId} - Computed display: ${window.getComputedStyle(modal).display}`);
+        }
+
+        function closeModal(modalId) {
+            console.log(`closeModal: Versuche Modal ${modalId} zu schließen.`);
+            const modal = document.getElementById(modalId);
+            if (!modal) { console.error(`Modal mit ID ${modalId} nicht gefunden beim Schließen!`); return; }
+            modal.classList.add('hidden');
+            console.log(`closeModal: ${modalId} geschlossen. Klassen: ${modal.className}`);
+
+            if (modalId === 'auth-modal') {
+                if (!loggedInUser) {
+                    if (isAddingNewLShopUser || (activeLShopUser && !activeLShopUser.backendCredentials && !loggedInUser)) {
+                        showUserSelectionScreen();
+                    }
+                }
+                if (isHandlingNewUser) isHandlingNewUser = false;
+            }
+            if (modalId === 'product-detail-modal') detailModalProductId = null;
+            if (modalId === 'sell-product-modal') {
+                currentSellProductId = null;
+                if (sellCooldownIntervalId) clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null;
+            }
+        }
+
+        function loadLShopUsers() { const storedUsers = localStorage.getItem('lshop_users'); if (storedUsers) { try { lshopUsers = JSON.parse(storedUsers); if (!Array.isArray(lshopUsers)) lshopUsers = []; } catch (e) { lshopUsers = []; console.error("Fehler Parsen lshop_users:", e); } } else { lshopUsers = []; } }
+        function saveLShopUsers() { localStorage.setItem('lshop_users', JSON.stringify(lshopUsers)); if (activeLShopUser) localStorage.setItem('lshop_last_active_user_id', activeLShopUser.id); }
+        function generateLShopUserId() { return `lshop_user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`; }
+        function renderUserSelectionScreen() { const container = document.getElementById('user-bubbles-container'); container.innerHTML = ''; lshopUsers.forEach(user => { const bubble = document.createElement('div'); bubble.className = 'user-bubble w-32 h-32 md:w-36 md:h-36 rounded-full flex flex-col items-center justify-center text-center p-3 cursor-pointer'; bubble.innerHTML = `<div class="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-2xl md:text-3xl font-bold mb-2 text-white" style="background-color: ${getUserColor(user.id)};">${user.name.substring(0, 1).toUpperCase()}</div><span class="font-semibold text-sm md:text-base">${user.name}</span>`; bubble.onclick = () => selectLShopUser(user.id); container.appendChild(bubble); }); const addUserBubble = document.createElement('div'); addUserBubble.className = 'user-bubble add-user-bubble w-32 h-32 md:w-36 md:h-36 rounded-full flex flex-col items-center justify-center text-center p-3 cursor-pointer'; addUserBubble.innerHTML = `<div class="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-2xl md:text-3xl font-bold mb-2"><i class="fas fa-plus text-3xl"></i></div><span class="font-semibold text-sm md:text-base">Neues Profil</span>`; addUserBubble.onclick = function (event) { if (event) { event.stopPropagation(); event.preventDefault(); } handleAddNewLShopUser(); }; container.appendChild(addUserBubble); }
+        function getUserColor(userId) { let hash = 0; for (let i = 0; i < userId.length; i++) hash = userId.charCodeAt(i) + ((hash << 5) - hash); const c = (hash & 0x00FFFFFF).toString(16).toUpperCase(); return "#" + "00000".substring(0, 6 - c.length) + c; }
+        function showUserSelectionScreen(triggeredByUserSwitch = false) { console.log("%cshowUserSelectionScreen: Gestartet. TriggeredByUserSwitch:", "color: red; font-weight: bold;", triggeredByUserSwitch, "Aufrufstapel:", new Error().stack); document.body.classList.add('user-selection-active'); const userScreen = document.getElementById('user-selection-screen'); if (userScreen) { userScreen.classList.remove('hidden', 'lshop-hidden'); console.log("showUserSelectionScreen: User Screen sichtbar. Klassen:", userScreen.className); } else { console.error("User Selection Screen Element nicht gefunden!"); } if (triggeredByUserSwitch && loggedInUser) logoutBackendOnly(); loggedInUser = null; activeLShopUser = null; updateLoginStatusUI(); renderUserSelectionScreen(); }
+        function hideUserSelectionScreen() { console.log("hideUserSelectionScreen: Wird aufgerufen."); document.body.classList.remove('user-selection-active'); const userScreen = document.getElementById('user-selection-screen'); if (userScreen) { userScreen.classList.add('hidden'); console.log("hideUserSelectionScreen: User Screen versteckt. Klassen:", userScreen.className); } else { console.error("User Selection Screen Element nicht gefunden beim Verstecken!"); } }
+        async function selectLShopUser(lshopUserId) { console.log("selectLShopUser called with ID:", lshopUserId); const user = lshopUsers.find(u => u.id === lshopUserId); if (!user) { showToast("L-Shop Profil nicht gefunden.", 4000); return; } activeLShopUser = user; saveLShopUsers(); updateLShopHeaderUI(); console.log("Active L-Shop user set:", activeLShopUser); if (user.backendCredentials && user.backendCredentials.username && user.backendCredentials.password) { showLoadingStatus("Lade Profil...", true, true); try { console.log("Attempting backend login for:", user.backendCredentials.username); const response = await fetch(`${getApiUrl()}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: user.backendCredentials.username, password: user.backendCredentials.password, rememberMe: true }), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || `Backend Login fehlgeschlagen (${response.status})`); console.log("Backend login successful, user data:", result.user); await updateUserInfo(result.user); loadCartFromCookies(); showToast(`Willkommen zurück, ${activeLShopUser.name}!`, 3000); hideUserSelectionScreen(); navigateTo('home'); await loadProducts('initial'); startPolling(); } catch (error) { console.error("Backend-Login error for L-Shop user:", error); showToast(`Backend-Login für ${activeLShopUser.name} fehlgeschlagen: ${error.message}. Bitte Credentials prüfen.`, 5000); isAddingNewLShopUser = false; newLShopUserName = activeLShopUser.name; openModal('auth-modal', () => openAuthModalLogic('login')); } finally { showLoadingStatus(null); } } else { console.log("No backend credentials for L-Shop user, opening auth modal."); showToast(`Bitte Backend-Account für ${activeLShopUser.name} einrichten.`, 3000); isAddingNewLShopUser = false; newLShopUserName = activeLShopUser.name; openModal('auth-modal', () => openAuthModalLogic('login')); } }
+        function handleAddNewLShopUser() { if (isHandlingNewUser) { console.log("handleAddNewLShopUser: Bereits in Bearbeitung."); return; } isHandlingNewUser = true; console.log("handleAddNewLShopUser: Gestartet (Lock gesetzt)."); newLShopUserName = prompt("Gib einen Namen für das neue L-Shop Profil ein:"); if (newLShopUserName && newLShopUserName.trim() !== "") { newLShopUserName = newLShopUserName.trim(); if (lshopUsers.find(u => u.name.toLowerCase() === newLShopUserName.toLowerCase())) { showToast("Ein L-Shop Profil mit diesem Namen existiert bereits.", 4000); isHandlingNewUser = false; return; } isAddingNewLShopUser = true; openModal('auth-modal', () => openAuthModalLogic('register')); } else if (newLShopUserName === null) { console.log("Prompt abgebrochen"); isHandlingNewUser = false; isAddingNewLShopUser = false; } else { showToast("Profilname darf nicht leer sein.", 3000); isHandlingNewUser = false; isAddingNewLShopUser = false; } }
+        function updateLShopHeaderUI() { const userIcon = document.getElementById('lshop-user-icon'); const usernameDisplay = document.getElementById('lshop-username-display'); if (activeLShopUser) { userIcon.textContent = activeLShopUser.name.substring(0, 1).toUpperCase(); userIcon.style.backgroundColor = getUserColor(activeLShopUser.id); usernameDisplay.textContent = activeLShopUser.name; } else { userIcon.textContent = '?'; userIcon.style.backgroundColor = 'var(--lshop-orange-primary)'; usernameDisplay.textContent = 'Profil wählen'; } }
+        const filterValidProducts = (productList) => productList.filter(p => p && typeof p.id === 'number' && Number.isInteger(p.id) && p.id >= 100000);
+        function showLoadingStatus(message, showSpinner = false, hideProductList = true) { const statusDiv = document.getElementById('loading-status'); const messageEl = document.getElementById('loading-status-message'); const productListDiv = document.getElementById('product-list'); const paginationDiv = document.getElementById('pagination-controls'); if (!statusDiv || !messageEl || !productListDiv || !paginationDiv) { console.error("Ladezustand UI-Elemente nicht gefunden!"); return; } if (message) { messageEl.textContent = message; statusDiv.classList.remove('hidden', 'lshop-hidden'); if (hideProductList) { productListDiv.classList.add('hidden', 'lshop-hidden'); paginationDiv.classList.add('hidden', 'lshop-hidden'); } if (showSpinner) statusDiv.classList.add('spinning'); else statusDiv.classList.remove('spinning'); } else { statusDiv.classList.add('hidden', 'lshop-hidden'); statusDiv.classList.remove('spinning'); productListDiv.classList.remove('hidden', 'lshop-hidden'); paginationDiv.classList.remove('hidden', 'lshop-hidden'); messageEl.textContent = ''; } }
+        function debounce(func, wait) { let timeout; return function executedFunction(...args) { const later = () => { clearTimeout(timeout); func(...args); }; clearTimeout(timeout); timeout = setTimeout(later, wait); }; }
+        function showToast(message, duration = 3000) { const existingToast = document.querySelector('.toast-notification'); if (existingToast) existingToast.remove(); const toast = document.createElement('div'); toast.className = 'toast-notification'; toast.textContent = message; document.body.appendChild(toast); requestAnimationFrame(() => { requestAnimationFrame(() => { toast.classList.add('show'); }); }); setTimeout(() => { toast.classList.remove('show'); toast.addEventListener('transitionend', () => toast.remove()); }, duration); }
+        function getStockDisplayInfo(serverStock, quantityInCart) { const virtualPersonalStockAvailableToAdd = Math.max(0, serverStock - quantityInCart); const canAddMore = virtualPersonalStockAvailableToAdd > 0; let displayText = ""; let cssClass = "stock-soldout"; if (serverStock === 0) displayText = "Ausverkauft"; else if (quantityInCart > 0) { displayText = `Noch <span class="${canAddMore ? 'text-green-500' : 'text-yellow-500 font-bold'}">${virtualPersonalStockAvailableToAdd}</span> Stk. hinzufügbar (von ${serverStock} gesamt)`; if (canAddMore) cssClass = "stock-available"; else cssClass = "stock-low"; } else { displayText = `Verfügbar: <span class="text-green-500">${serverStock}</span> Stk.`; cssClass = "stock-available"; } return { text: displayText, cssClass: cssClass, canAddMore: canAddMore, availableToAdd: virtualPersonalStockAvailableToAdd }; }
+        async function loadProducts(triggeredBy = 'initial') { if (!activeLShopUser || !loggedInUser) { console.log("loadProducts: Kein aktiver L-Shop User oder Backend-Login. Breche ab."); return; } if (triggeredBy !== 'retry' && serverStartTimeoutId) { console.log(`loadProducts (${triggeredBy}): Ignoriert.`); return; } if (triggeredBy === 'polling' && isServerStarting) { console.log(`loadProducts (${triggeredBy}): Ignoriert.`); return; } console.log(`loadProducts triggered by: ${triggeredBy} for L-Shop user ${activeLShopUser.name}`); if (triggeredBy === 'initial' || triggeredBy === 'retry') { showLoadingStatus("Lade Spiele...", true, true); if (triggeredBy === 'initial') isServerStarting = true; } else { console.log("Polling: Lade Produkte im Hintergrund..."); } if (triggeredBy !== 'retry') serverRetryCount = 0; try { const res = await fetch(`${getApiUrl()}/products`, { credentials: 'include' }); const contentType = res.headers.get("content-type"); if (!res.ok || !contentType || !contentType.includes("application/json")) { console.warn(`loadProducts: Antwort nicht OK (${res.status}) oder kein JSON.`); isServerStarting = true; serverRetryCount++; if (serverRetryCount > MAX_SERVER_RETRIES) { console.error(`loadProducts: Serverstart-Timeout.`); showLoadingStatus(`Server antwortet nicht korrekt. (Timeout)`, false, true); isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; return; } const waitTime = SERVER_RETRY_DELAY / 1000; showLoadingStatus(`Server startet... (Versuch ${serverRetryCount}/${MAX_SERVER_RETRIES}, nächster in ${waitTime}s)`, true, true); if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = setTimeout(() => { serverStartTimeoutId = null; loadProducts('retry'); }, SERVER_RETRY_DELAY); return; } const wasStarting = isServerStarting; isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; if (wasStarting) console.log("loadProducts: Server erfolgreich gestartet."); if (triggeredBy === 'initial' || triggeredBy === 'retry' || wasStarting) showLoadingStatus(null); const { products: data } = await res.json(); products = Array.isArray(data) ? filterValidProducts(data).sort((a, b) => a.id - b.id) : []; applySearchFilter(); if (triggeredBy === 'initial') isInitialLoad = false; } catch (error) { console.error(`Fehler beim Laden (${triggeredBy}):`, error); if (!isServerStarting || triggeredBy === 'initial') { showLoadingStatus(`Fehler beim Laden: ${error.message}.`, false, true); } else { console.warn("Fehler während Retry:", error.message) } const pageInfoEl = document.getElementById('page-info'); if (pageInfoEl) pageInfoEl.textContent = 'Fehler'; const prevBtn = document.getElementById('prev'); if (prevBtn) prevBtn.disabled = true; const nextBtn = document.getElementById('next'); if (nextBtn) nextBtn.disabled = true; const pDiv = document.getElementById('pagination-controls'); if (pDiv) pDiv.classList.add('hidden', 'lshop-hidden'); } }
+        function applySearchFilter() { const term = document.getElementById('search').value.toLowerCase(); filteredProducts = products.filter(p => p && ((p.name && p.name.toLowerCase().includes(term)) || (p.id && String(p.id).includes(term)))); currentPage = 1; renderProducts(); }
+        function renderProducts() { if (!activeLShopUser || !loggedInUser) return; if (isServerStarting && isInitialLoad) { console.log("renderProducts: Übersprungen."); return; } const list = document.getElementById('product-list'); if (!list) { console.error("Produktliste nicht gefunden"); return; } list.innerHTML = ''; let totalPgs = Math.ceil(filteredProducts.length / itemsPerPage) || 1; if (currentPage > totalPgs) currentPage = totalPgs; if (currentPage < 1) currentPage = 1; const start = (currentPage - 1) * itemsPerPage; const end = start + itemsPerPage; const prodsToShow = filteredProducts.slice(start, end); if (prodsToShow.length === 0) { let msg = '<p class="text-center text-gray-500 col-span-full py-4"><i class="fas fa-ghost fa-2x mb-2 text-gray-400"></i><br>'; if (filteredProducts.length === 0 && document.getElementById('search').value.trim() !== '') { msg += 'Keine Spiele für diesen Suchbegriff gefunden.'; } else if (products.length === 0 && !isServerStarting) { msg += 'Keine Spiele im L-Shop verfügbar.'; } else if (filteredProducts.length > 0) { msg += 'Keine weiteren Spiele auf dieser Seite.'; } else if (!isServerStarting) { msg += 'Nichts anzuzeigen.'; } else { msg = ''; } msg += '</p>'; list.innerHTML = msg; } prodsToShow.forEach(p => { const sStock = p.stock || 0; const iCart = cart.find(item => item.id === p.id); const qCart = iCart ? iCart.quantity : 0; const sInfo = getStockDisplayInfo(sStock, qCart); const div = document.createElement('div'); div.className = 'product'; div.innerHTML = `<img src="${p.image_url || `https://via.placeholder.com/300x160.png?text=${encodeURIComponent(p.name || 'Spiel')}`}" alt="${p.name || '?'}" onclick="openModal('product-detail-modal', () => showProductDetailsLogic(${p.id}))"/><div class="p-3 flex flex-col flex-grow"><strong class="text-sm mb-1 truncate" title="${p.name || '?'}">${p.name || '?'}</strong><span class="text-xs text-gray-500 mb-1">ID: ${p.id || 'N/A'}</span><span class="text-md font-bold text-price-custom mb-2">${p.price || '$?.??'}</span><div class="text-xs mb-2"><span class="stock-status ${sInfo.cssClass}">${sInfo.text}</span>${qCart > 0 ? `<br><span class="text-xs text-orange-500">(${qCart} im Korb)</span>` : ''}</div><div class="flex items-center mt-auto space-x-1"><input id="qty-${p.id}" type="number" min="1" value="1" class="border rounded p-1 w-12 text-center bg-gray-100 text-black border-gray-300"${!sInfo.canAddMore ? ' disabled' : ''} max="${sInfo.availableToAdd > 0 ? sInfo.availableToAdd : (sStock > 0 ? sStock : 1)}"/><button class="btn-primary-custom text-white px-2 py-1 rounded text-xs flex-1 disabled:opacity-50 disabled:cursor-not-allowed"${!sInfo.canAddMore ? ' disabled' : ''} onclick="addToCart(${p.id}, document.getElementById('qty-${p.id}').value)"><i class="fas fa-cart-plus"></i></button><button class="btn-success-custom text-white px-2 py-1 rounded text-xs flex-1 disabled:opacity-50 disabled:cursor-not-allowed"${!sInfo.canAddMore ? ' disabled' : ''} onclick="buyNow(${p.id}, document.getElementById('qty-${p.id}').value)"><i class="fas fa-bolt"></i></button></div></div>`; list.appendChild(div); }); document.getElementById('page-info').textContent = `Seite ${currentPage} von ${totalPgs}`; document.getElementById('prev').disabled = currentPage === 1; document.getElementById('next').disabled = currentPage >= totalPgs; }
+        function getCartCookieName() { if (!activeLShopUser) return 'lshop_cart_guest'; return `lshop_cart_${activeLShopUser.id}`; }
+        function saveCartToCookies() { if (!activeLShopUser) return; try { document.cookie = `${getCartCookieName()}=${encodeURIComponent(JSON.stringify(cart))}; path=/; SameSite=Lax; Secure; max-age=${60 * 60 * 24 * 30}`; } catch (e) { console.error("Cookie Error(save):", e); } }
+        function loadCartFromCookies() { if (!activeLShopUser) { cart = []; updateCartCount(); return; } const cookieName = getCartCookieName(); const c = document.cookie.split(';').find(r => r.trim().startsWith(`${cookieName}=`)); if (c) { try { const p = JSON.parse(decodeURIComponent(c.split('=')[1])); if (Array.isArray(p)) { cart = p.filter(i => i && typeof i.id === 'number' && i.id >= 100000 && typeof i.quantity === 'number' && i.quantity > 0 && typeof i.price === 'number' && i.price >= 0 && typeof i.name === 'string' && i.name.trim() !== ''); } else { cart = []; } } catch (e) { cart = []; } } else { cart = []; } updateCartCount(); }
+        function addToCart(id, qtyInput) { if (!activeLShopUser || !loggedInUser) { showToast("Bitte zuerst ein L-Shop Profil auswählen und anmelden.", 4000); showUserSelectionScreen(); return; } if (typeof id !== 'number' || id < 100000) { showToast("Fehler: Produkt-ID ungültig."); return; } const qty = parseInt(qtyInput, 10); if (isNaN(qty) || qty < 1) { showToast('Fehler: Ungültige Menge.'); return; } const p = products.find(pr => pr.id === id); if (!p) { showToast('Fehler: Produkt nicht gefunden.'); return; } const sStock = p.stock || 0; const item = cart.find(i => i.id === id); const qCart = item ? item.quantity : 0; const canAdd = Math.max(0, sStock - qCart); if (qty > canAdd) { showToast(`Maximal noch ${canAdd} Stk. von "${p.name}" hinzufügbar.`); const field = document.getElementById(`qty-${id}`) || document.getElementById(`detail-qty`); if (field) field.value = canAdd > 0 ? canAdd : (sStock > 0 ? sStock : 1); return; } if (item) { item.quantity += qty; } else { const price = parseFloat((p.price || "").replace(/[^0-9.]/g, '')) || 0; cart.push({ id: p.id, name: p.name, price: price, quantity: qty }); } updateCartCount(); saveCartToCookies(); renderProducts(); if (!document.getElementById('cart-modal').classList.contains('hidden')) openModal('cart-modal', viewCart); if (detailModalProductId === id) openModal('product-detail-modal', () => showProductDetailsLogic(id)); if (!document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); showToast(`${qty} x ${p.name} zum Warenkorb hinzugefügt.`); }
+        function buyNow(id, qty) { addToCart(id, qty); if (cart.find(i => i.id === id) && cart.length > 0) openModal('cart-modal', viewCart); }
+        function viewCart() { if (!activeLShopUser || !loggedInUser) { console.log("viewCart: Login check failed."); return false; } console.log("viewCart: Inhalt wird generiert."); cart = cart.filter(i => i && i.id && i.quantity > 0 && typeof i.price === 'number' && i.name); saveCartToCookies(); const itemsEl = document.getElementById('cart-items'); const totalEl = document.getElementById('cart-total'); const checkoutBtn = document.getElementById('cart-checkout-button'); if (cart.length === 0) { itemsEl.innerHTML = `<div class="text-center opacity-70 py-4"><i class="fas fa-shopping-cart fa-2x mb-2"></i><br>Warenkorb ist leer.</div>`; totalEl.textContent = '0.00'; if (checkoutBtn) checkoutBtn.disabled = true; return true; } itemsEl.innerHTML = ''; let total = 0; const pMap = new Map(products.map(p => [p.id, p])); cart.forEach((it, i) => { const pInfo = pMap.get(it.id); const sStock = pInfo ? (pInfo.stock || 0) : 0; const maxQ = sStock > 0 ? sStock : it.quantity; const plusD = it.quantity >= sStock && sStock > 0; const exc = it.quantity > sStock && sStock > 0; const line = document.createElement('div'); line.className = `modal-content-item ${exc ? 'border-red-500' : ''}`; total += it.price * it.quantity; line.innerHTML = `<div class="flex-grow pr-3"><span class="font-semibold block">${it.name}</span><span class="text-xs block opacity-80">${exc ? `<span class="text-red-400 font-bold">(Nur ${sStock} auf Lager!)</span>` : `$${it.price.toFixed(2)} / Stück`}</span></div><div class="cart-item-controls flex items-center space-x-2 ml-auto"><button onclick="changeQty(${i},-1)">-</button><input type="number" value="${it.quantity}" onchange="updateQty(${i},this.value)" min="1" max="${maxQ}" class="${exc ? 'cart-qty-input-exceeds' : ''}"/><button onclick="changeQty(${i},1)" ${plusD ? 'disabled' : ''}>+</button><button class="ml-1 remove-item-btn" onclick="removeFromCart(${i})"><i class="fas fa-times-circle"></i></button></div><span class="ml-3 w-20 text-right font-semibold">$${(it.price * it.quantity).toFixed(2)}</span>`; itemsEl.appendChild(line); }); totalEl.textContent = total.toFixed(2); const hasIssues = cart.some(item => { const p = pMap.get(item.id); return item.quantity > (p ? (p.stock || 0) : 0) && (p ? (p.stock || 0) : 0) > 0; }); checkoutBtn.disabled = hasIssues; let warnEl = document.getElementById('cart-stock-warning'); if (hasIssues) { if (!warnEl) { warnEl = document.createElement('p'); warnEl.id = 'cart-stock-warning'; warnEl.className = 'text-red-400 text-center mt-2 text-sm px-1'; if (itemsEl.parentNode) itemsEl.parentNode.insertBefore(warnEl, itemsEl.nextSibling.nextSibling); } warnEl.textContent = 'Einige Mengen im Warenkorb überschreiten den Lagerbestand.'; } else if (warnEl) warnEl.remove(); return true; }
+        function updateCartCount() { document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + i.quantity, 0); }
+        function changeQty(i, d) { const item = cart[i]; if (!item) return; const p = products.find(pr => pr.id === item.id); if (!p) { loadProducts(); return; } let nQ = item.quantity + d; const s = p.stock || 0; if (nQ < 1) { if (confirm(`"${item.name}" aus dem Warenkorb entfernen?`)) removeFromCart(i); else viewCart(); return; } if (nQ > s && s > 0) { showToast(`Maximal ${s} Stk. von ${item.name} verfügbar.`); nQ = s; } if (nQ === item.quantity && d > 0 && nQ >= s && s > 0) { viewCart(); return; } item.quantity = nQ; saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); if (detailModalProductId === item.id) openModal('product-detail-modal', () => showProductDetailsLogic(item.id)); if (!document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); }
+        function updateQty(i, v) { const item = cart[i]; if (!item) return; const p = products.find(pr => pr.id === item.id); if (!p) { loadProducts(); return; } let nQ = parseInt(v, 10); const s = p.stock || 0; if (isNaN(nQ) || nQ < 0) { showToast("Ungültige Menge eingegeben."); viewCart(); return; } if (nQ === 0) { if (confirm(`"${item.name}" aus dem Warenkorb entfernen?`)) removeFromCart(i); else viewCart(); return; } if (nQ === item.quantity) { viewCart(); return; } if (nQ > s && s > 0) { showToast(`Maximal ${s} Stk. von ${item.name} verfügbar.`); nQ = s; } item.quantity = nQ; saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); if (detailModalProductId === item.id) openModal('product-detail-modal', () => showProductDetailsLogic(item.id)); if (!document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); }
+        function removeFromCart(i) { if (i < 0 || i >= cart.length) return; const item = cart[i]; const name = item.name; const id = item.id; cart.splice(i, 1); saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); if (detailModalProductId === id) openModal('product-detail-modal', () => showProductDetailsLogic(id)); if (!document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); showToast(`${name} aus Warenkorb entfernt.`); }
+        function checkout() { openModal('checkout-modal', prepareCheckoutModal); }
+        function prepareCheckoutModal() { if (!loggedInUser || !activeLShopUser) { console.log("prepareCheckoutModal: Login check failed."); return false; } closeModal('cart-modal'); cart = cart.filter(i => i && i.id && i.quantity > 0 && typeof i.price === 'number' && i.name); if (cart.length === 0) { showToast('Warenkorb ist leer.'); return false; } const itemsEl = document.getElementById('checkout-items'); const totalEl = document.getElementById('checkout-total'); itemsEl.innerHTML = ''; let checkoutTotal = 0; cart.forEach(it => { const div = document.createElement('div'); div.className = 'modal-content-item text-sm'; div.innerHTML = `<span>${it.name} (x${it.quantity})</span><span class="font-semibold">$${(it.price * it.quantity).toFixed(2)}</span>`; itemsEl.appendChild(div); checkoutTotal += it.price * it.quantity; }); totalEl.textContent = checkoutTotal.toFixed(2); const confirmBtn = document.getElementById('confirm-purchase-button'); if (confirmBtn) { const btnTxt = confirmBtn.querySelector('.button-text'); const spinner = confirmBtn.querySelector('.button-spinner'); confirmBtn.disabled = false; if (btnTxt) btnTxt.textContent = 'Kauf bestätigen'; if (spinner) spinner.classList.add('hidden'); } return true; }
+        async function confirmPurchase() { if (!loggedInUser || !activeLShopUser) { showToast("Sitzung abgelaufen? Bitte L-Shop Profil neu auswählen.", 5000); showUserSelectionScreen(); return; } const confirmButton = document.getElementById('confirm-purchase-button'); const btnTxt = confirmButton.querySelector('.button-text'); const spinner = confirmButton.querySelector('.button-spinner'); confirmButton.disabled = true; if (btnTxt) btnTxt.textContent = 'Verarbeite...'; if (spinner) spinner.classList.remove('hidden'); cart = cart.filter(i => i && i.id && i.quantity > 0 && typeof i.price === 'number' && i.name); saveCartToCookies(); if (cart.length === 0) { showToast("Warenkorb ist leer."); closeModal('checkout-modal'); confirmButton.disabled = false; if (btnTxt) btnTxt.textContent = 'Kauf bestätigen'; if (spinner) spinner.classList.add('hidden'); return; } const pMap = new Map(products.map(p => [p.id, p])); let hasIssues = false; cart.forEach(item => { const pInfo = pMap.get(item.id); if (item.quantity > (pInfo ? (pInfo.stock || 0) : 0) && (pInfo ? (pInfo.stock || 0) : 0) > 0) hasIssues = true; }); if (hasIssues) { showToast("Bestandsprobleme! Kauf abgebrochen.", 5000); confirmButton.disabled = false; if (btnTxt) btnTxt.textContent = 'Kauf bestätigen'; if (spinner) spinner.classList.add('hidden'); closeModal('checkout-modal'); openModal('cart-modal', viewCart); loadProducts(); return; } console.log('Sende Kaufanfrage:', JSON.stringify(cart)); const api = getApiUrl(); let success = false; let errorResult = { message: 'Unbekannter Fehler.' }; try { const response = await fetch(`${api}/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cart: cart }), credentials: 'include' }); let result; try { result = await response.json(); } catch (e) { const txt = await response.text().catch(() => response.statusText); result = { error: `Server ${response.status}. Kein JSON.`, details: txt.substring(0, 200) }; } if (!response.ok) { console.error('Backend Kauf fehlgeschlagen:', response.status, result); errorResult = result; showToast(`Kauf fehlgeschlagen: ${errorResult.error || errorResult.message || 'Serverfehler.'}`, 5000); } else { console.log('Backend Kauf erfolgreich:', result); lastPurchasedCart = JSON.parse(JSON.stringify(cart)); try { let history = JSON.parse(localStorage.getItem(getOrderHistoryKey()) || '[]'); const totalAmount = cart.reduce((s, i) => s + (i.price * i.quantity), 0); const order = { orderId: `LSHOP-${Date.now()}`, date: new Date().toISOString(), items: JSON.parse(JSON.stringify(cart)), total: totalAmount }; history.unshift(order); if (history.length > 50) history = history.slice(0, 50); localStorage.setItem(getOrderHistoryKey(), JSON.stringify(history)); } catch (storageError) { console.error("Fehler Speicher Historie:", storageError); } openModal('thank-you-modal'); cart = []; saveCartToCookies(); updateCartCount(); loadProducts('initial'); success = true; if (result.user) await updateUserInfo(result.user); else await updateUserInfo(); } } catch (error) { console.error('Netzwerk-/JS-Fehler:', error); errorResult.message = 'Fehler beim Senden der Kaufanfrage.'; showToast(errorResult.message, 5000); } finally { if (!success) { confirmButton.disabled = false; if (btnTxt) btnTxt.textContent = 'Kauf bestätigen'; if (spinner) spinner.classList.add('hidden'); closeModal('checkout-modal'); } else { closeModal('checkout-modal'); } } }
+        function showProductDetailsLogic(productId) { console.log("showProductDetailsLogic für ID:", productId); if (productId === null) return false; detailModalProductId = productId; const product = products.find(p => p.id === productId); if (!product) { console.error("Detail: Produkt nicht gefunden:", productId); detailModalProductId = null; return false; } const itemInCart = cart.find(item => item.id === productId); const quantityInCart = itemInCart ? itemInCart.quantity : 0; const serverStock = product.stock || 0; const stockInfo = getStockDisplayInfo(serverStock, quantityInCart); document.getElementById('detail-name').textContent = product.name || 'Unbekannt'; document.getElementById('detail-image').src = product.image_url || `https://via.placeholder.com/400x300.png?text=${encodeURIComponent(product.name || 'Bild')}`; document.getElementById('detail-image').alt = product.name || 'Bild'; document.getElementById('detail-id').textContent = product.id; document.getElementById('detail-price').textContent = product.price || '$?.??'; document.getElementById('detail-stock-available').innerHTML = stockInfo.text; document.getElementById('detail-stock-cart').textContent = `(${quantityInCart} bereits in Ihrem Warenkorb)`; const qtyInput = document.getElementById('detail-qty'); qtyInput.value = 1; qtyInput.max = stockInfo.availableToAdd > 0 ? stockInfo.availableToAdd : (serverStock > 0 ? serverStock : 1); qtyInput.disabled = !stockInfo.canAddMore && serverStock === 0; const addButton = document.getElementById('detail-add-to-cart'); const buyButton = document.getElementById('detail-buy-now'); addButton.disabled = !stockInfo.canAddMore && serverStock === 0; buyButton.disabled = !stockInfo.canAddMore && serverStock === 0; addButton.onclick = () => addToCart(productId, document.getElementById('detail-qty').value); buyButton.onclick = () => buyNow(productId, document.getElementById('detail-qty').value); return true; }
+        async function showMyInventoryLogic() { if (!loggedInUser || !activeLShopUser) { return false; } const contentDiv = document.getElementById('inventory-content'); contentDiv.innerHTML = '<p class="text-center opacity-70 py-4">Lade Inventar...</p>'; try { const response = await fetch(`${getApiUrl()}/inventory`, { credentials: 'include' }); if (!response.ok) { const errData = await response.json().catch(() => ({ error: "Unbekannter Fehler" })); throw new Error(errData.error || `Fehler ${response.status}`); } const { inventory } = await response.json(); if (!inventory || inventory.length === 0) { contentDiv.innerHTML = '<p class="text-center opacity-70 py-4">Dein Inventar ist leer.</p>'; return true; } contentDiv.innerHTML = ''; inventory.forEach(item => { const productDetails = item.productDetails || {}; const inventoryDiv = document.createElement('div'); inventoryDiv.className = 'inventory-item-custom flex items-center justify-between'; inventoryDiv.innerHTML = `<div class="flex items-center"><img src="${productDetails.image_url || `https://via.placeholder.com/60x60.png?text=${encodeURIComponent(productDetails.name ? productDetails.name.substring(0, 1) : 'P')}`}" alt="${productDetails.name || 'Produkt'}" class="w-16 h-16 object-cover rounded mr-4"><div><p class="font-semibold text-base">${productDetails.name || `Produkt ID: ${item.productId}`}</p><p class="text-sm opacity-80">Menge: ${item.quantityOwned}</p></div></div><button class="modal-btn modal-btn-success text-sm ${item.quantityOwned <= 0 ? "opacity-50 cursor-not-allowed" : ""}" onclick="openSellProductModalFromInventory(${item.productId}, ${item.quantityOwned})" ${item.quantityOwned <= 0 ? "disabled" : ""}>Verkaufen</button>`; contentDiv.appendChild(inventoryDiv); }); } catch (error) { console.error("Fehler Laden Inventar:", error); contentDiv.innerHTML = `<p class="text-center text-red-400 py-4">Fehler Laden Inventar: ${error.message}</p>`; } return true; }
+        function openSellProductModalFromInventory(productId, quantityUserOwns) { openModal('sell-product-modal', () => prepareSellProductModal(productId, quantityUserOwns)); }
+        function prepareSellProductModal(productId, quantityUserOwns) { if (!loggedInUser || !activeLShopUser) return false; const product = products.find(p => p.id === productId); if (!product) { showToast("Produkt nicht im Katalog gefunden."); return false; } if (quantityUserOwns <= 0) { showToast("Du besitzt dieses Produkt nicht (mehr) zum Verkaufen."); if (!document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); return false; } currentSellProductId = productId; document.getElementById('sell-product-name').textContent = product.name; document.getElementById('sell-product-original-price').textContent = product.price; document.getElementById('sell-product-user-stock').textContent = `${quantityUserOwns} Stk.`; const sellQtyInput = document.getElementById('sell-quantity'); sellQtyInput.value = 1; sellQtyInput.max = quantityUserOwns; const sellPriceInput = document.getElementById('sell-price'); const originalPriceNumeric = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; sellPriceInput.value = originalPriceNumeric.toFixed(2); document.getElementById('sell-error-message').classList.add('hidden'); document.getElementById('sell-cooldown-message').classList.add('hidden'); updateSellProbability(); const confirmSellButton = document.getElementById('confirm-sell-button'); confirmSellButton.onclick = () => handleSellProduct(); confirmSellButton.disabled = false; confirmSellButton.querySelector('.button-text').textContent = 'Verkaufen'; confirmSellButton.querySelector('.button-spinner').classList.add('hidden'); checkSellCooldown(productId); return true; }
+        function updateSellProbability() { if (!currentSellProductId) return; const product = products.find(p => p.id === currentSellProductId); if (!product) return; const sellPriceInput = document.getElementById('sell-price'); const probabilityEl = document.getElementById('sell-probability'); if (!sellPriceInput || !probabilityEl) return; const sellPrice = parseFloat(sellPriceInput.value); const originalPriceNumeric = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; let probability = 1.0; if (isNaN(sellPrice) || sellPrice <= 0) { probabilityEl.textContent = "?%"; return; } if (sellPrice > originalPriceNumeric) { probability = originalPriceNumeric / sellPrice; probability = Math.max(0.05, Math.min(1.0, probability)); } else if (sellPrice < originalPriceNumeric * 0.5) { probability = 1.0; } const serverStock = product.stock || 0; const defaultStockVal = product.default_stock || 20; if (serverStock > defaultStockVal * 2.5) probability *= 0.2; else if (serverStock > defaultStockVal * 1.8) probability *= 0.5; else if (serverStock > defaultStockVal * 1.2) probability *= 0.8; probability = Math.max(0.01, Math.min(1.0, probability)); probabilityEl.textContent = `${(probability * 100).toFixed(0)}%`; }
+        function checkSellCooldown(productId) { const confirmSellButton = document.getElementById('confirm-sell-button'); const cooldownMsgEl = document.getElementById('sell-cooldown-message'); if (!confirmSellButton || !cooldownMsgEl) return; cooldownMsgEl.classList.add('hidden'); if (sellCooldownIntervalId) clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; confirmSellButton.disabled = false; if (loggedInUser && loggedInUser.productSellCooldowns && loggedInUser.productSellCooldowns[productId.toString()]) { const cooldownEndTimeISO = loggedInUser.productSellCooldowns[productId.toString()]; const cooldownEndTime = new Date(cooldownEndTimeISO).getTime(); const updateTimer = () => { const now = Date.now(); const timeLeftSeconds = Math.ceil((cooldownEndTime - now) / 1000); if (timeLeftSeconds > 0) { confirmSellButton.disabled = true; cooldownMsgEl.textContent = `Cooldown: ${timeLeftSeconds}s`; cooldownMsgEl.classList.remove('hidden'); } else { confirmSellButton.disabled = false; cooldownMsgEl.classList.add('hidden'); clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; if (loggedInUser.productSellCooldowns) delete loggedInUser.productSellCooldowns[productId.toString()]; } }; if (Date.now() < cooldownEndTime) { updateTimer(); sellCooldownIntervalId = setInterval(updateTimer, 1000); } else { if (loggedInUser.productSellCooldowns) delete loggedInUser.productSellCooldowns[productId.toString()]; } } }
+        async function handleSellProduct() { if (!currentSellProductId || !loggedInUser || !activeLShopUser) return; const quantityInput = document.getElementById('sell-quantity'); const priceInput = document.getElementById('sell-price'); const errorMsgEl = document.getElementById('sell-error-message'); const confirmSellButton = document.getElementById('confirm-sell-button'); const buttonText = confirmSellButton.querySelector('.button-text'); const buttonSpinner = confirmSellButton.querySelector('.button-spinner'); const quantity = parseInt(quantityInput.value, 10); const sellPrice = parseFloat(priceInput.value); errorMsgEl.classList.add('hidden'); errorMsgEl.textContent = ''; if (isNaN(quantity) || quantity <= 0 || quantity > parseInt(quantityInput.max, 10)) { errorMsgEl.textContent = `Ungültige Menge (1 bis ${quantityInput.max}).`; errorMsgEl.classList.remove('hidden'); return; } if (isNaN(sellPrice) || sellPrice <= 0) { errorMsgEl.textContent = "Ungültiger Verkaufspreis."; errorMsgEl.classList.remove('hidden'); return; } confirmSellButton.disabled = true; buttonText.textContent = 'Verkaufe...'; buttonSpinner.classList.remove('hidden'); try { const response = await fetch(`${getApiUrl()}/products/sell`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId: currentSellProductId, sellPrice, quantity }), credentials: 'include' }); const result = await response.json(); if (!response.ok) { errorMsgEl.textContent = result.error || `Fehler (${response.status}).`; errorMsgEl.classList.remove('hidden'); if (result.productSellCooldowns && loggedInUser) loggedInUser.productSellCooldowns = result.productSellCooldowns; else if (result.cooldownActiveForProduct && result.cooldownEndsAt && loggedInUser) { if (!loggedInUser.productSellCooldowns) loggedInUser.productSellCooldowns = {}; loggedInUser.productSellCooldowns[result.cooldownActiveForProduct.toString()] = result.cooldownEndsAt; } checkSellCooldown(currentSellProductId); } else { showToast(result.message || "Verkauf erfolgreich!"); if (result.user) await updateUserInfo(result.user); else await updateUserInfo(); await loadProducts('initial'); if (!document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); closeModal('sell-product-modal'); } } catch (error) { console.error("Fehler handleSellProduct:", error); errorMsgEl.textContent = "Netzwerkfehler beim Verkaufen."; errorMsgEl.classList.remove('hidden'); } finally { if (!document.getElementById('sell-product-modal').classList.contains('hidden')) { confirmSellButton.disabled = false; buttonText.textContent = 'Verkaufen'; buttonSpinner.classList.add('hidden'); checkSellCooldown(currentSellProductId); } } }
+        function getOrderHistoryKey() { if (!activeLShopUser) return 'lshop_orderHistory_guest'; return `lshop_orderHistory_${activeLShopUser.id}`; }
+        function showOrderHistoryLogic() { if (!loggedInUser || !activeLShopUser) { return false; } const contentDiv = document.getElementById('order-history-content'); contentDiv.innerHTML = ''; try { const history = JSON.parse(localStorage.getItem(getOrderHistoryKey()) || '[]'); if (history.length === 0) { contentDiv.innerHTML = '<p class="text-center opacity-70 py-4">Noch keine Bestellungen vorhanden.</p>'; } else { history.forEach(order => { const orderDiv = document.createElement('div'); orderDiv.className = 'order-history-item'; const orderDate = new Date(order.date); const formattedDate = orderDate.toLocaleDateString('de-DE', { year: 'numeric', month: '2-digit', day: '2-digit' }); const formattedTime = orderDate.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); let itemsHtml = '<ul class="list-disc list-inside text-sm mb-2 space-y-1 opacity-90">'; (order.items || []).forEach(item => { itemsHtml += `<li>${item.quantity} x <span class="font-semibold">${item.name}</span> (@ $${(item.price || 0).toFixed(2)})</li>`; }); itemsHtml += '</ul>'; orderDiv.innerHTML = `<div class="flex justify-between items-center mb-2"><p class="font-semibold text-base">Bestellung vom ${formattedDate}, ${formattedTime} Uhr</p>${order.orderId ? `<p class="text-xs opacity-70">ID: ${order.orderId}</p>` : ''}</div>${itemsHtml}<p class="text-right font-bold text-lg mt-3 pt-3 border-t border-gray-600">Gesamt: $${(order.total || 0).toFixed(2)}</p>`; contentDiv.appendChild(orderDiv); }); } } catch (e) { contentDiv.innerHTML = '<p class="text-center text-red-400 py-4">Fehler beim Laden der Bestellhistorie.</p>'; } return true; }
+        function clearOrderHistory() { if (!activeLShopUser) return; if (confirm(`Lokale Bestellhistorie für ${activeLShopUser.name} löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) { try { localStorage.removeItem(getOrderHistoryKey()); const contentDiv = document.getElementById('order-history-content'); if (contentDiv) contentDiv.innerHTML = '<p class="text-center opacity-70 py-4">Bestellhistorie gelöscht.</p>'; showToast("Bestellhistorie gelöscht."); } catch (e) { showToast("Fehler beim Löschen der Historie.", 4000); } } }
+        function generateInvoice() { if (!activeLShopUser || !loggedInUser) return; const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFontSize(18); doc.text('L-Shop Rechnung', 105, 20, null, null, 'center'); doc.setFontSize(12); doc.text(`L-Shop Profil: ${activeLShopUser.name}`, 20, 30); doc.text(`Backend Account: ${loggedInUser.username}`, 20, 40); doc.text(`Datum: ${new Date().toLocaleDateString('de-DE')}`, 20, 50); doc.text(`Uhrzeit: ${new Date().toLocaleTimeString('de-DE')}`, 20, 60); const validItems = lastPurchasedCart.filter(it => it && it.id && it.quantity && typeof it.price === 'number' && it.name); if (validItems.length === 0) { doc.text('Keine Artikel in dieser Bestellung.', 20, 80); } else { doc.autoTable({ startY: 70, head: [['Artikel', 'Menge', 'Preis', 'Gesamt']], body: validItems.map(i => [i.name, i.quantity, `$${i.price.toFixed(2)}`, `$${(i.price * i.quantity).toFixed(2)}`]), theme: 'grid' }); } const total = validItems.reduce((s, i) => s + i.price * i.quantity, 0); const finalY = doc.lastAutoTable ? (doc.lastAutoTable.finalY || 70) : 70; if (validItems.length > 0) { const txt = `Gesamt: $${total.toFixed(2)}`, tw = doc.getTextWidth(txt); doc.setFontSize(14).text(txt, doc.internal.pageSize.width - tw - 20, finalY + 10); } doc.save(`rechnung_lshop_${activeLShopUser.name}_${Date.now()}.pdf`); closeModal('thank-you-modal'); }
+        function checkAdminFeatures() { const adminMenu = document.getElementById('admin-menu-items'); const isAdmin = loggedInUser && loggedInUser.isAdmin; if (adminMenu) adminMenu.classList.toggle('hidden', !isAdmin); adminMenu.classList.toggle('lshop-hidden', !isAdmin); }
+        async function resetProductStock(setToZero = false) { if (!loggedInUser || !loggedInUser.isAdmin) { showToast("Diese Aktion ist nur für Administratoren."); return; } const action = setToZero ? "auf 0 setzen" : "auf Standard zurücksetzen"; const endpoint = setToZero ? '/admin/zero-stock' : '/products/reset'; if (!confirm(`Möchtest du den Lagerbestand aller Produkte wirklich ${action}?`)) return; showLoadingStatus("Aktion wird ausgeführt...", true); try { const response = await fetch(`${getApiUrl()}${endpoint}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include' }); let result = { message: response.statusText }; try { result = await response.json(); } catch (e) { } if (!response.ok) throw new Error(`Fehler ${response.status}: ${result.message || result.error || response.statusText}`); showToast(result.message || "Aktion erfolgreich ausgeführt!"); await loadProducts('initial'); if (!document.getElementById('cart-modal').classList.contains('hidden')) openModal('cart-modal', viewCart); if (!document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); } catch (error) { console.error("Fehler Admin Reset:", error); showToast(`Fehler bei Admin-Aktion: ${error.message}`, 5000); } finally { showLoadingStatus(null); } }
+        function openAddProductModalLogic() { if (!loggedInUser || !loggedInUser.isAdmin) { showToast("Nur Administratoren können Produkte hinzufügen."); return false; } document.getElementById('product-name').value = ''; document.getElementById('product-image').value = ''; document.getElementById('product-price').value = ''; document.getElementById('product-stock').value = '20'; const btn = document.getElementById('submit-product-button'); if (btn) { const btnTxt = btn.querySelector('.button-text'); const spinner = btn.querySelector('.button-spinner'); btn.disabled = false; if (btnTxt) btnTxt.textContent = 'Produkt hinzufügen'; if (spinner) spinner.classList.add('hidden'); } return true; }
+        async function submitProduct(event) { if (!loggedInUser || !loggedInUser.isAdmin) { showToast("Nur Administratoren können Produkte hinzufügen."); return; } event.preventDefault(); const name = document.getElementById('product-name').value.trim(); const url = document.getElementById('product-image').value.trim(); let priceStr = document.getElementById('product-price').value.trim(); const stock = parseInt(document.getElementById('product-stock').value.trim(), 10); if (!name || !url || !priceStr || isNaN(stock) || stock < 0) { showToast('Fehler: Bitte alle Felder korrekt ausfüllen!', 4000); return; } if (!priceStr.startsWith('$')) priceStr = `$${priceStr}`; if (isNaN(parseFloat(priceStr.replace(/[^0-9.]/g, '')))) { showToast('Fehler: Ungültiges Preisformat!', 4000); return; } const btn = document.getElementById('submit-product-button'); const btnTxt = btn.querySelector('.button-text'); const spinner = btn.querySelector('.button-spinner'); btn.disabled = true; if (btnTxt) btnTxt.textContent = 'Sende...'; if (spinner) spinner.classList.remove('hidden'); try { const res = await fetch(`${getApiUrl()}/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, image_url: url, price: priceStr, stock }), credentials: 'include' }); const result = await res.json(); if (!res.ok) showToast(`Fehler beim Hinzufügen: ${result.error || 'Serverfehler'}`, 5000); else { showToast(result.message || "Produkt erfolgreich hinzugefügt."); closeModal('add-product-modal'); loadProducts('initial'); } } catch (e) { console.error('Fehler submitProduct:', e); showToast('Fehler beim Senden der Produktdaten.', 5000); } finally { btn.disabled = false; if (btnTxt) btnTxt.textContent = 'Produkt hinzufügen'; if (spinner) spinner.classList.add('hidden'); } }
+        let currentAuthMode = 'login';
+        function openAuthModalLogic(mode = 'login') { console.log("openAuthModalLogic: Gestartet. Mode:", mode); currentAuthMode = mode; hideUserSelectionScreen(); const title = document.getElementById('auth-modal-title'); const submitBtn = document.getElementById('auth-submit-button'); const submitBtnTxt = submitBtn.querySelector('.button-text'); const switchTxt = document.getElementById('auth-switch-text'); const switchBtn = document.getElementById('auth-switch-button'); const errorMsg = document.getElementById('auth-error-message'); const lshopUsernameInfo = document.getElementById('auth-modal-lshop-username-info'); document.getElementById('auth-username').value = ''; document.getElementById('auth-password').value = ''; document.getElementById('auth-remember-me').checked = true; errorMsg.classList.add('hidden'); errorMsg.textContent = ''; submitBtn.disabled = false; if (submitBtn.querySelector('.button-spinner')) submitBtn.querySelector('.button-spinner').classList.add('hidden'); let lshopInfoText = ''; if (isAddingNewLShopUser && newLShopUserName) lshopInfoText = `Backend-Account für neues L-Shop Profil "${newLShopUserName}"`; else if (activeLShopUser && !isAddingNewLShopUser) lshopInfoText = `Backend-Account für L-Shop Profil "${activeLShopUser.name}"`; if (lshopInfoText) { lshopUsernameInfo.textContent = lshopInfoText; lshopUsernameInfo.classList.remove('hidden', 'lshop-hidden'); } else { lshopUsernameInfo.classList.add('hidden', 'lshop-hidden'); } if (mode === 'login') { title.textContent = 'Backend Login'; submitBtnTxt.textContent = 'Login'; switchTxt.textContent = 'Neuer Backend-Account? '; switchBtn.textContent = 'Jetzt registrieren'; } else { title.textContent = 'Backend Registrierung'; submitBtnTxt.textContent = 'Registrieren'; switchTxt.textContent = 'Vorhandener Backend-Account? '; switchBtn.textContent = 'Jetzt einloggen'; } return true; }
+        function switchAuthMode() { openAuthModalLogic(currentAuthMode === 'login' ? 'register' : 'login'); }
+        async function handleAuthFormSubmit(event) { event.preventDefault(); console.log("handleAuthFormSubmit called. Mode:", currentAuthMode, "isAddingNewLShopUser:", isAddingNewLShopUser, "newLShopUserName:", newLShopUserName); const form = event.target; const backendUsername = form.username.value; const backendPassword = form.password.value; const rememberMe = form.rememberMe.checked; const endpoint = currentAuthMode === 'login' ? 'login' : 'register'; const submitBtn = document.getElementById('auth-submit-button'); const btnTxt = submitBtn.querySelector('.button-text'); const spinner = submitBtn.querySelector('.button-spinner'); const errorMsg = document.getElementById('auth-error-message'); submitBtn.disabled = true; btnTxt.textContent = 'Sende...'; spinner.classList.remove('hidden'); errorMsg.classList.add('hidden'); try { const response = await fetch(`${getApiUrl()}/auth/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: backendUsername, password: backendPassword, rememberMe: true }), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || `Fehler (${response.status})`); console.log("Backend auth successful. Result:", result); await updateUserInfo(result.user); if (isAddingNewLShopUser && newLShopUserName) { const newLShopProfile = { id: generateLShopUserId(), name: newLShopUserName, backendUsername: backendUsername, backendCredentials: rememberMe ? { username: backendUsername, password: backendPassword } : null }; lshopUsers.push(newLShopProfile); activeLShopUser = newLShopProfile; console.log("New L-Shop profile created and set active:", activeLShopUser); showToast(`L-Shop Profil "${newLShopUserName}" erstellt & mit Backend verbunden.`, 3000); } else if (activeLShopUser) { activeLShopUser.backendUsername = backendUsername; activeLShopUser.backendCredentials = rememberMe ? { username: backendUsername, password: backendPassword } : null; console.log("Existing L-Shop profile updated:", activeLShopUser); showToast(`L-Shop Profil "${activeLShopUser.name}" mit Backend verbunden.`, 3000); } else { console.error("Auth success, but no L-Shop user context."); showUserSelectionScreen(); return; } saveLShopUsers(); updateLShopHeaderUI(); loadCartFromCookies(); closeModal('auth-modal'); hideUserSelectionScreen(); navigateTo('home'); await loadProducts('initial'); startPolling(); } catch (error) { console.error("Error in handleAuthFormSubmit:", error); errorMsg.textContent = error.message || 'Unbekannter Fehler bei Backend-Authentifizierung.'; errorMsg.classList.remove('hidden'); } finally { submitBtn.disabled = false; btnTxt.textContent = currentAuthMode === 'login' ? 'Login' : 'Registrieren'; spinner.classList.add('hidden'); if (isHandlingNewUser) { console.log("handleAuthFormSubmit (finally): isHandlingNewUser Lock wird freigegeben."); isHandlingNewUser = false; } if (isAddingNewLShopUser) { console.log("handleAuthFormSubmit (finally): isAddingNewLShopUser Flag wird zurückgesetzt."); isAddingNewLShopUser = false; newLShopUserName = ''; } console.log("handleAuthFormSubmit (finally): Abgeschlossen."); } }
+        function updateLoginStatusUI() { const balDisp = document.getElementById('user-balance-display'); const balSpan = document.getElementById('user-balance'); updateLShopHeaderUI(); if (loggedInUser && activeLShopUser) { balSpan.textContent = (loggedInUser.balance || 0).toFixed(2); balDisp.classList.remove('hidden', 'lshop-hidden'); } else { balDisp.classList.add('hidden', 'lshop-hidden'); } checkAdminFeatures(); }
+        async function checkLoginStatus() { console.log("checkLoginStatus: Nur zur Info, steuert nicht mehr den initialen Login-Flow."); }
+        async function updateUserInfo(backendUserData = null) { if (backendUserData) { loggedInUser = backendUserData; console.log("updateUserInfo: loggedInUser updated with provided data:", loggedInUser); } else { if (!activeLShopUser || document.body.classList.contains('user-selection-active')) { loggedInUser = null; updateLoginStatusUI(); return; } try { const response = await fetch(`${getApiUrl()}/auth/me`, { credentials: 'include' }); if (response.ok) { loggedInUser = await response.json(); console.log("updateUserInfo: loggedInUser fetched from /auth/me:", loggedInUser); } else { console.warn("updateUserInfo: /auth/me nicht ok", response.status); loggedInUser = null; if (activeLShopUser) { showToast(`Backend-Sitzung für ${activeLShopUser.name} ist abgelaufen oder ungültig. Bitte erneut anmelden.`, 4000); isAddingNewLShopUser = false; openModal('auth-modal', () => openAuthModalLogic('login')); } else { showUserSelectionScreen(); } } } catch (e) { console.error("updateUserInfo: fetch error for /auth/me", e); loggedInUser = null; showUserSelectionScreen(); } } updateLoginStatusUI(); if (loggedInUser && !document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); }
+        async function logoutBackendOnly() { console.log("logoutBackendOnly: Logging out from backend..."); if (!loggedInUser) { console.log("logoutBackendOnly: No backend user was logged in."); return; } try { const response = await fetch(`${getApiUrl()}/auth/logout`, { method: 'POST', credentials: 'include' }); const result = await response.json().catch(() => ({ message: "Logout initiiert, keine JSON Antwort." })); if (!response.ok) console.warn(`Backend Logout fehlgeschlagen: ${result.error || result.message || 'Serverfehler'}`); else console.log("Backend Logout erfolgreich oder initiiert."); } catch (error) { console.warn("Netzwerkfehler Backend Logout.", error); } finally { loggedInUser = null; updateLoginStatusUI(); } }
+        async function logoutLShopUser() { showToast(`L-Shop Profil ${activeLShopUser ? activeLShopUser.name : ''} wird abgemeldet...`, 2000); await logoutBackendOnly(); activeLShopUser = null; localStorage.removeItem('lshop_last_active_user_id'); cart = []; updateCartCount(); const modals = document.querySelectorAll('.modal-fixed-overlay'); modals.forEach(m => m.classList.add('hidden')); showUserSelectionScreen(); }
+        function openAccountModalLogic() { if (!loggedInUser || !activeLShopUser) return false; document.getElementById('account-username').textContent = loggedInUser.username; document.getElementById('account-balance').textContent = (loggedInUser.balance || 0).toFixed(2); const infinityCheckbox = document.getElementById('account-infinity-money'); const infinityLabel = infinityCheckbox.parentElement; const unlockInfo = document.getElementById('infinity-money-unlock-info'); if (loggedInUser.isAdmin) { infinityCheckbox.checked = true; infinityCheckbox.disabled = true; infinityLabel.title = "Admins haben immer unbegrenztes Guthaben."; infinityLabel.classList.add('opacity-75', 'cursor-not-allowed'); unlockInfo.classList.add('hidden', 'lshop-hidden'); } else if (loggedInUser.unlockedInfinityMoney) { infinityCheckbox.checked = loggedInUser.infinityMoney; infinityCheckbox.disabled = false; infinityLabel.title = ""; infinityLabel.classList.remove('opacity-75', 'cursor-not-allowed'); unlockInfo.classList.add('hidden', 'lshop-hidden'); } else { infinityCheckbox.checked = false; infinityCheckbox.disabled = true; infinityLabel.title = ""; infinityLabel.classList.add('opacity-75', 'cursor-not-allowed'); unlockInfo.classList.remove('hidden', 'lshop-hidden'); } document.getElementById('account-message').classList.add('hidden', 'lshop-hidden'); return true; }
+        async function updateAccountSettings() { if (!loggedInUser || loggedInUser.isAdmin) return; const infinityMoneyCheckbox = document.getElementById('account-infinity-money'); if (infinityMoneyCheckbox.disabled) return; const newSettings = { infinityMoney: infinityMoneyCheckbox.checked }; const messageEl = document.getElementById('account-message'); messageEl.classList.add('hidden'); try { const response = await fetch(`${getApiUrl()}/account/settings`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newSettings), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Fehler."); if (result.user) loggedInUser = { ...loggedInUser, ...result.user }; else loggedInUser.infinityMoney = newSettings.infinityMoney; messageEl.textContent = result.message || "Gespeichert!"; messageEl.classList.replace('text-red-400', 'text-green-400'); messageEl.classList.remove('hidden'); updateLoginStatusUI(); showToast("Kontoeinstellungen gespeichert."); } catch (error) { messageEl.textContent = `Fehler: ${error.message}`; messageEl.classList.replace('text-green-400', 'text-red-400'); messageEl.classList.remove('hidden'); infinityMoneyCheckbox.checked = loggedInUser.infinityMoney; showToast("Fehler beim Speichern der Einstellungen.", 4000); } }
+        function startPolling() { if (pollingTimer) clearInterval(pollingTimer); if (!activeLShopUser || !loggedInUser) { console.log("startPolling: Kein aktiver User."); return; } console.log(`startPolling: Timer für ${activeLShopUser.name} (Intervall: ${pollingInterval / 1000}s).`); pollingTimer = setInterval(async () => { if (!activeLShopUser || !loggedInUser) { console.log('Polling: Kein aktiver User mehr, stoppe.'); clearInterval(pollingTimer); pollingTimer = null; return; } console.log('Polling: Intervall.'); if (!isServerStarting && !serverStartTimeoutId) { console.log("Polling: Prüfe Änderungen..."); const previousStocks = products.reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {}); const previousCount = products.length; await loadProducts('polling'); if (!isServerStarting && products.length >= 0) { let changed = false; if (products.length !== previousCount) changed = true; else { for (const curP of products) { if (previousStocks[curP.id] === undefined || previousStocks[curP.id] !== curP.stock) { changed = true; break; } } } if (changed) { console.log('Polling: Änderungen erkannt.'); renderProducts(); if (!document.getElementById('cart-modal').classList.contains('hidden')) openModal('cart-modal', viewCart); const coModal = document.getElementById('checkout-modal'); const tyModal = document.getElementById('thank-you-modal'); if (!coModal.classList.contains('hidden') && tyModal.classList.contains('hidden')) openModal('checkout-modal', prepareCheckoutModal); if (detailModalProductId !== null) openModal('product-detail-modal', () => showProductDetailsLogic(detailModalProductId)); if (!document.getElementById('inventory-modal').classList.contains('hidden')) openModal('inventory-modal', showMyInventoryLogic); } else { console.log('Polling: Keine relevanten Änderungen.'); } } } else { console.log("Polling: Übersprungen."); } }, pollingInterval); }
+        function navigateTo(viewName) { console.log("Navigate to:", viewName); document.querySelectorAll('#lshop-content-area > div[id^="lshop-"]').forEach(view => view.classList.add('hidden', 'lshop-hidden')); document.querySelectorAll('#lshop-sidebar nav a').forEach(link => link.classList.remove('active')); const targetView = document.getElementById(`lshop-${viewName}-view`); const targetLink = document.querySelector(`#lshop-sidebar nav a[onclick*="'${viewName}'"]`); if (targetView) targetView.classList.remove('hidden', 'lshop-hidden'); else console.warn("Target view not found:", `lshop-${viewName}-view`); if (targetLink) targetLink.classList.add('active'); else console.warn("Target link not found for view:", viewName); if (viewName === 'home') { document.getElementById('search').value = previousSearchTerm; applySearchFilter(); } }
+        window.onload = async () => { loadLShopUsers(); showUserSelectionScreen(); updateLShopHeaderUI(); const sellPriceInput = document.getElementById('sell-price'); if (sellPriceInput) sellPriceInput.addEventListener('input', updateSellProbability); const prevBtn = document.getElementById('prev'); if (prevBtn) prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderProducts(); } }); const nextBtn = document.getElementById('next'); if (nextBtn) nextBtn.addEventListener('click', () => { const totalPgs = Math.ceil(filteredProducts.length / itemsPerPage) || 1; if (currentPage < totalPgs) { currentPage++; renderProducts(); } }); const searchInput = document.getElementById('search'); if (searchInput) searchInput.addEventListener('input', debouncedApplySearchFilter); };
+        window.onbeforeunload = () => { if (pollingTimer) clearInterval(pollingTimer); if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); console.log("Polling/Retry gestoppt."); };
+
+    </script>
+</body>
+
+</html>
