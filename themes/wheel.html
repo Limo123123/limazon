@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Glücksräder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basis-Styling (kann von limazon.html übernommen oder angepasst werden) */
+        .hidden {
+            display: none !important;
+        }
+
+        .button-spinner {
+            content: "";
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #2d3748;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: translateY(20px);
+        }
+
+        .wheel-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .wheel-segment-editor input[type="color"] {
+            width: 50px;
+            height: 30px;
+            border: 1px solid #ccc;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        /* Glücksrad-Visualisierung (sehr einfaches Beispiel, später verfeinern) */
+        .wheel-visualization {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 5px solid #333;
+            margin: 20px auto;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            /* Für Dreh-Animation */
+        }
+
+        .wheel-segment-display {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            text-align: center;
+            padding-left: 20px;
+            /* Damit Text nicht ganz am Rand ist */
+            box-sizing: border-box;
+            border-left: 1px solid rgba(0, 0, 0, 0.1);
+            /* Trennlinien */
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            /* Zeigt etwas über das Rad hinaus */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 20px solid rgb(0, 255, 0);
+            /* Farbe des Zeigers */
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-200 font-roboto">
+
+    <!-- Header mit Login/User-Info -->
+    <header class="bg-purple-600 p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <a href="index.html" class="text-white text-xl font-bold hover:text-yellow-300">Zurück zu Limazon</a>
+        <div class="text-white text-2xl font-bold">Glücksrad Paradies</div>
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <div id="wheel-user-info" class="text-white text-sm md:text-base">
+                Hallo, <span id="wheel-customer-name" class="font-semibold">Gast</span>
+                <span id="wheel-user-tokens-display" class="ml-2 hidden">
+                    (<i class="fas fa-coins text-yellow-300"></i> <span id="wheel-user-tokens">0</span> Tokens)
+                </span>
+            </div>
+            <div id="wheel-auth-buttons">
+                <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                    onclick="openAuthModal('login')">Login</button>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                    onclick="openAuthModal('register')">Registrieren</button>
+            </div>
+            <div id="wheel-user-actions" class="hidden">
+                <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                    onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hauptinhalt -->
+    <main class="p-4">
+        <div id="main-content-wheels" class="hidden"> <!-- Wird nach Login angezeigt -->
+            <div class="mb-6 flex justify-center space-x-4">
+                <button id="tab-public-wheels"
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    onclick="showView('public')">Öffentliche Räder</button>
+                <button id="tab-my-wheels"
+                    class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    onclick="showView('my')">Meine Räder</button>
+                <button id="tab-create-wheel"
+                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                    onclick="showView('create')">Neues Rad erstellen</button>
+            </div>
+
+            <div class="mb-4 flex justify-center">
+                <input type="text" id="share-code-input" placeholder="Share-Code eingeben..."
+                    class="p-2 border rounded-l">
+                <button onclick="loadSharedWheel()"
+                    class="bg-yellow-500 text-black p-2 rounded-r hover:bg-yellow-600">Rad per Code öffnen</button>
+            </div>
+
+            <!-- Bereich für Öffentliche Glücksräder -->
+            <div id="view-public-wheels" class="view-container">
+                <h2 class="text-xl font-bold mb-3">Öffentliche Glücksräder</h2>
+                <div id="public-wheels-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Glücksrad-Karten werden hier per JS eingefügt -->
+                </div>
+            </div>
+
+            <!-- Bereich für Meine Glücksräder -->
+            <div id="view-my-wheels" class="view-container hidden">
+                <h2 class="text-xl font-bold mb-3">Meine Glücksräder</h2>
+                <div id="my-wheels-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Eigene Glücksrad-Karten werden hier per JS eingefügt -->
+                </div>
+            </div>
+
+            <!-- Bereich zum Erstellen/Bearbeiten eines Glücksrads -->
+            <div id="view-create-wheels"
+                class="view-container hidden bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
+                <h2 id="wheel-form-title" class="text-xl font-bold mb-4">Neues Glücksrad erstellen</h2>
+                <input type="hidden" id="wheel-edit-id">
+                <div class="mb-3">
+                    <label for="wheel-name" class="block text-sm font-medium text-gray-700">Name des Glücksrads (3-50
+                        Z.):</label>
+                    <input type="text" id="wheel-name" class="mt-1 block w-full ..." maxlength="50" required>
+                </div>
+                <div class="mb-3">
+                    <label for="wheel-description" class="block text-sm font-medium text-gray-700">Beschreibung
+                        (optional):</label>
+                    <textarea id="wheel-description" rows="2" class="mt-1 block w-full ..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="wheel-spin-cost" class="block text-sm font-medium text-gray-700">Kosten pro Dreh
+                        (Tokens, 0 für kostenlos):</label>
+                    <input type="number" id="wheel-spin-cost" value="1" min="0" class="mt-1 block w-full ...">
+                </div>
+                <div class="mb-3">
+                    <label for="wheel-creation-cost" class="block text-sm font-medium text-gray-700">Erstellungskosten
+                        (Tokens, 0 wenn kostenlos):</label>
+                    <input type="number" id="wheel-creation-cost" value="0" min="0" class="mt-1 block w-full ...">
+                </div>
+                <div class="mb-3">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="wheel-is-public" class="form-checkbox ...">
+                        <span class="ml-2 text-sm text-gray-700">Öffentliches Glücksrad</span>
+                    </label>
+                </div>
+                <h3 class="text-md font-semibold mb-2 mt-4">Segmente (min. 2, max. 12)</h3>
+                <div id="wheel-segments-editor" class="space-y-3">
+                    <!-- Segment-Eingabefelder -->
+                </div>
+                <button type="button" onclick="addWheelSegmentField()" class="mt-3 text-sm bg-blue-500 ...">Segment
+                    hinzufügen</button>
+
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="cancelWheelEdit()" class="px-4 py-2 border ...">Abbrechen</button>
+                    <button type="button" id="save-wheel-button" onclick="saveWheel()"
+                        class="px-4 py-2 border ...">Glücksrad speichern</button>
+                </div>
+                <p id="wheel-form-message" class="text-sm mt-3"></p>
+            </div> <!-- Ende von view-create-wheels -->
+        </div>
+
+        <div id="login-prompt-wheels" class="text-center mt-10">
+            <p class="text-lg text-gray-700">Bitte melde dich an, um die Glücksräder zu nutzen oder zu erstellen.</p>
+        </div>
+    </main>
+
+    <!-- Auth Modal (kann von limazon.html übernommen oder angepasst werden) -->
+    <div id="auth-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm relative">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeAuthModal()">×</button>
+            <h2 id="auth-modal-title" class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <div class="modal-content">
+                <form id="auth-form" onsubmit="handleAuthFormSubmit(event)">
+                    <div class="mb-4"><label for="auth-username"
+                            class="block text-sm font-medium text-gray-700 mb-1">Benutzername</label><input type="text"
+                            id="auth-username" name="username" required
+                            class="w-full px-3 py-2 border rounded-md shadow-sm"></div>
+                    <div class="mb-6"><label for="auth-password"
+                            class="block text-sm font-medium text-gray-700 mb-1">Passwort</label><input type="password"
+                            id="auth-password" name="password" required
+                            class="w-full px-3 py-2 border rounded-md shadow-sm"></div>
+                    <div class="mb-4"><label class="flex items-center"><input type="checkbox" id="auth-remember-me"
+                                name="rememberMe" class="form-checkbox"><span
+                                class="ml-2 text-sm text-gray-600">Angemeldet bleiben</span></label></div>
+                    <p id="auth-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
+                    <button id="auth-submit-button" type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center"><span
+                            class="button-text">Login</span><span class="button-spinner hidden"></span></button>
+                </form>
+                <p class="text-sm text-center mt-4"><span id="auth-switch-text">Noch kein Konto?</span> <button
+                        id="auth-switch-button" type="button" class="font-medium text-blue-600 hover:text-blue-500"
+                        onclick="switchAuthMode()">Jetzt registrieren</button></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Glücksrad Dreh-Modal -->
+    <div id="wheel-spin-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[100]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative text-center">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeWheelSpinModal()">×</button>
+            <h2 id="wheel-spin-modal-title" class="text-2xl font-bold mb-4">...</h2>
+            <div class="wheel-pointer"></div>
+            <div id="wheel-visualization-container" class="wheel-visualization">
+                <!-- Segmente werden hier dynamisch per JS eingefügt -->
+            </div>
+            <p class="mt-4 text-sm">Kosten pro Dreh: <span id="wheel-spin-modal-cost">?</span> Tokens</p>
+            <button id="wheel-spin-button" onclick="spinTheWheel()"
+                class="mt-6 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full text-lg disabled:opacity-50">
+                <i class="fas fa-sync-alt mr-2"></i>DREHEN!
+            </button>
+            <p id="wheel-spin-result-message" class="text-lg font-semibold mt-6"></p>
+        </div>
+    </div>
+
+    <!-- Share Code Modal -->
+    <div id="share-code-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[100]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md text-center">
+            <h2 class="text-xl font-bold mb-4">Glücksrad teilen</h2>
+            <p class="mb-2">Teile diesen Code, um dein Glücksrad (auch private) mit anderen zu teilen:</p>
+            <input type="text" id="share-code-display" readonly
+                class="w-full p-2 border rounded bg-gray-100 text-center font-mono mb-3">
+            <button onclick="copyShareCode()"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mb-4">Code kopieren</button>
+            <br>
+            <button onclick="document.getElementById('share-code-modal').classList.add('hidden')"
+                class="text-sm text-gray-600 hover:text-gray-800">Schließen</button>
+        </div>
+    </div>
+
+
+    <div id="toast-container" class="fixed bottom-0 right-0 p-4 space-y-2 z-[200]">
+        <!-- Toasts werden hier per JS eingefügt -->
+    </div>
+
+    <script>
+        const WHEELS_LOG_PREFIX = "[Wheels FE]";
+        const WHEELS_API_URL = 'https://nodejs-ykji.onrender.com/api'; // ANPASSEN, FALLS NÖTIG!
+
+        let wheelLoggedInUser = null;
+        let currentAuthModeWheels = 'login';
+        let currentOpenWheelData = null;
+        let currentEditWheelId = null;
+        let isSpinning = false;
+        // Kein 'theWheel' Objekt mehr für Winwheel
+
+        // --- Authentifizierungsfunktionen ---
+        function updateWheelLoginStatusUI() {
+            const customerNameSpan = document.getElementById('wheel-customer-name');
+            const userTokensDisplaySpan = document.getElementById('wheel-user-tokens-display');
+            const userTokensSpan = document.getElementById('wheel-user-tokens');
+            const authButtonsDiv = document.getElementById('wheel-auth-buttons');
+            const userActionsDiv = document.getElementById('wheel-user-actions');
+            const mainContentWheels = document.getElementById('main-content-wheels');
+            const loginPromptWheels = document.getElementById('login-prompt-wheels');
+
+            if (wheelLoggedInUser) {
+                if (customerNameSpan) customerNameSpan.textContent = wheelLoggedInUser.username;
+                if (userTokensSpan) userTokensSpan.textContent = wheelLoggedInUser.tokens || 0;
+                if (userTokensDisplaySpan) userTokensDisplaySpan.classList.remove('hidden');
+                if (authButtonsDiv) authButtonsDiv.classList.add('hidden');
+                if (userActionsDiv) userActionsDiv.classList.remove('hidden');
+                if (mainContentWheels) mainContentWheels.classList.remove('hidden');
+                if (loginPromptWheels) loginPromptWheels.classList.add('hidden');
+            } else {
+                if (customerNameSpan) customerNameSpan.textContent = 'Gast';
+                if (userTokensDisplaySpan) userTokensDisplaySpan.classList.add('hidden');
+                if (authButtonsDiv) authButtonsDiv.classList.remove('hidden');
+                if (userActionsDiv) userActionsDiv.classList.add('hidden');
+                if (mainContentWheels) mainContentWheels.classList.add('hidden');
+                if (loginPromptWheels) loginPromptWheels.classList.remove('hidden');
+            }
+        }
+
+        async function checkWheelLoginStatus() {
+            try {
+                const response = await fetch(`${WHEELS_API_URL}/auth/me`, { credentials: 'include' });
+                if (response.ok) wheelLoggedInUser = await response.json();
+                else wheelLoggedInUser = null;
+            } catch (error) { console.error(`${WHEELS_LOG_PREFIX} Fehler checkWheelLoginStatus:`, error); wheelLoggedInUser = null; }
+            updateWheelLoginStatusUI();
+        }
+
+        function openAuthModal(mode = 'login') {
+            currentAuthModeWheels = mode; const modal = document.getElementById('auth-modal'); const title = document.getElementById('auth-modal-title'); const submitBtn = document.getElementById('auth-submit-button'); const btnTxt = submitBtn.querySelector('.button-text'); const spinner = submitBtn.querySelector('.button-spinner'); const switchTxt = document.getElementById('auth-switch-text'); const switchBtn = document.getElementById('auth-switch-button'); const errEl = document.getElementById('auth-error-message');
+            if (!modal || !title || !submitBtn || !btnTxt || !spinner || !switchTxt || !switchBtn || !errEl) { console.error(`${WHEELS_LOG_PREFIX} Auth Modal Elemente fehlen!`); return; }
+            document.getElementById('auth-username').value = ''; document.getElementById('auth-password').value = ''; document.getElementById('auth-remember-me').checked = false;
+            errEl.classList.add('hidden'); errEl.textContent = ''; submitBtn.disabled = false; spinner.classList.add('hidden');
+            if (mode === 'login') { title.textContent = 'Login'; btnTxt.textContent = 'Login'; switchTxt.textContent = 'Noch kein Konto? '; switchBtn.textContent = 'Jetzt registrieren'; }
+            else { title.textContent = 'Registrieren'; btnTxt.textContent = 'Registrieren'; switchTxt.textContent = 'Bereits ein Konto? '; switchBtn.textContent = 'Jetzt einloggen'; }
+            modal.classList.remove('hidden');
+        }
+        function closeAuthModal() { const modal = document.getElementById('auth-modal'); if (modal) modal.classList.add('hidden'); }
+        function switchAuthMode() { openAuthModal(currentAuthModeWheels === 'login' ? 'register' : 'login'); }
+        async function handleAuthFormSubmit(event) {
+            event.preventDefault(); const form = event.target; const username = form.username.value; const password = form.password.value; const rememberMe = form.rememberMe.checked;
+            const endpoint = currentAuthModeWheels === 'login' ? 'login' : 'register'; const submitBtn = document.getElementById('auth-submit-button'); const btnTxt = submitBtn.querySelector('.button-text'); const spinner = submitBtn.querySelector('.button-spinner'); const errorMsg = document.getElementById('auth-error-message');
+            btnTxt.textContent = 'Sende...'; spinner.classList.remove('hidden'); submitBtn.disabled = true; errorMsg.classList.add('hidden');
+            try {
+                const response = await fetch(`${WHEELS_API_URL}/auth/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, rememberMe }), credentials: 'include' });
+                const result = await response.json(); if (!response.ok) throw new Error(result.error || `Fehler (${response.status})`);
+                showWheelsToast(result.message || `${currentAuthModeWheels === 'login' ? 'Login' : 'Registrierung'} ok!`); closeAuthModal();
+                if (currentAuthModeWheels === 'login' && result.user) { wheelLoggedInUser = result.user; updateWheelLoginStatusUI(); showView('public'); }
+                else if (currentAuthModeWheels === 'register') { openAuthModal('login'); }
+            } catch (error) { errorMsg.textContent = error.message || 'Fehler.'; errorMsg.classList.remove('hidden'); }
+            finally { btnTxt.textContent = currentAuthModeWheels === 'login' ? 'Login' : 'Registrieren'; spinner.classList.add('hidden'); submitBtn.disabled = false; }
+        }
+        async function logout() { try { await fetch(`${WHEELS_API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }); showWheelsToast("Ausgeloggt."); } catch (error) { showWheelsToast("Fehler Logout.", true); } finally { wheelLoggedInUser = null; updateWheelLoginStatusUI(); showView('public'); } }
+
+        // --- Toast-Benachrichtigungen ---
+        function showWheelsToast(message, isError = false, duration = 3000) { const container = document.getElementById('toast-container'); if (!container) return; const toast = document.createElement('div'); toast.className = `p-3 rounded shadow-md text-white ${isError ? 'bg-red-500' : 'bg-green-500'}`; toast.textContent = message; container.appendChild(toast); toast.style.opacity = '0'; requestAnimationFrame(() => { toast.style.transition = 'opacity 0.5s'; toast.style.opacity = '1'; }); setTimeout(() => { toast.style.opacity = '0'; toast.addEventListener('transitionend', () => toast.remove()); }, duration); }
+
+        // --- Navigation und Ansichten-Management ---
+        function showView(viewName, editWheelId = null) {
+            console.log(`${WHEELS_LOG_PREFIX} Wechsle Ansicht zu: ${viewName}${editWheelId ? ` (Bearbeiten ID: ${editWheelId})` : ''}`);
+            document.querySelectorAll('.view-container').forEach(vc => vc.classList.add('hidden'));
+            document.querySelectorAll('#main-content-wheels > div:not(#toast-container) > button[id^="tab-"]').forEach(tab => { tab.classList.remove('bg-blue-700', 'text-white', 'font-semibold'); tab.classList.add('bg-gray-500', 'text-gray-300'); });
+            const containerIdToFind = `view-${viewName}-wheels`;
+            const activeViewContainer = document.getElementById(containerIdToFind);
+            if (activeViewContainer) { activeViewContainer.classList.remove('hidden'); }
+            else { console.error(`${WHEELS_LOG_PREFIX} showView: Container '${containerIdToFind}' NICHT gefunden! Fallback zu 'public'.`); const pubView = document.getElementById('view-public-wheels'); if (pubView) pubView.classList.remove('hidden'); const pubTab = document.getElementById('tab-public-wheels'); if (pubTab) { pubTab.classList.remove('bg-gray-500', 'text-gray-300'); pubTab.classList.add('bg-blue-700', 'text-white', 'font-semibold'); } loadPublicWheels(); return; }
+            const activeTabButton = document.getElementById(`tab-${viewName}-wheels`);
+            if (activeTabButton) { activeTabButton.classList.remove('bg-gray-500', 'text-gray-300'); activeTabButton.classList.add('bg-blue-700', 'text-white', 'font-semibold'); }
+
+            if (viewName === 'public') { loadPublicWheels(); }
+            else if (viewName === 'my') { if (!wheelLoggedInUser) { openAuthModal('login'); showWheelsToast("Einloggen für 'Meine Räder'.", true); showView('public'); return; } loadMyWheels(); }
+            else if (viewName === 'create') { if (!wheelLoggedInUser) { openAuthModal('login'); showWheelsToast("Einloggen zum Erstellen.", true); showView('public'); return; } if (editWheelId) loadWheelForEditing(editWheelId); else resetAndShowWheelForm(); }
+        }
+
+        // --- Glücksrad Laden und Anzeigen ---
+        async function loadPublicWheels() { const listDiv = document.getElementById('public-wheels-list'); if (!listDiv) return; listDiv.innerHTML = '<p class="text-gray-500">Lade öffentliche Räder...</p>'; try { const response = await fetch(`${WHEELS_API_URL}/wheels/public`); if (!response.ok) throw new Error(`Fehler (${response.status})`); const { wheels } = await response.json(); renderWheelList(wheels, listDiv, false); } catch (error) { listDiv.innerHTML = `<p class="text-red-500">Fehler Laden: ${error.message}</p>`; } }
+        async function loadMyWheels() { if (!wheelLoggedInUser) { showView('public'); return; } const listDiv = document.getElementById('my-wheels-list'); if (!listDiv) return; listDiv.innerHTML = '<p class="text-gray-500">Lade deine Räder...</p>'; try { const response = await fetch(`${WHEELS_API_URL}/wheels/my`, { credentials: 'include' }); if (!response.ok) throw new Error(`Fehler (${response.status})`); const { wheels } = await response.json(); renderWheelList(wheels, listDiv, true); } catch (error) { listDiv.innerHTML = `<p class="text-red-500">Fehler Laden: ${error.message}</p>`; } }
+        async function loadSharedWheel() { const shareCodeInput = document.getElementById('share-code-input'); const shareCode = shareCodeInput.value.trim(); if (!shareCode) { showWheelsToast("Share-Code eingeben.", true); return; } try { console.log(`${WHEELS_LOG_PREFIX} Lade Rad per Code: ${shareCode}`); const response = await fetch(`${WHEELS_API_URL}/wheels/shared/${shareCode}`); if (!response.ok) { const err = await response.json().catch(() => ({ error: "Unbek. Fehler" })); throw new Error(err.error || `Code nicht gefunden (${response.status})`); } const { wheel } = await response.json(); if (wheel) { openWheelSpinModal(wheel); shareCodeInput.value = ''; } else throw new Error("Rad nicht gefunden."); } catch (error) { showWheelsToast(`Fehler Laden geteiltes Rad: ${error.message}`, true, 4000); console.error(`${WHEELS_LOG_PREFIX} Fehler Laden geteiltes Rad:`, error); } }
+        function renderWheelList(wheels, containerElement, isMyWheelsView) { containerElement.innerHTML = ''; if (!wheels || wheels.length === 0) { containerElement.innerHTML = `<p class="text-gray-500 col-span-full">${isMyWheelsView ? 'Du hast keine Räder erstellt.' : 'Keine öffentl. Räder.'}</p>`; return; } wheels.forEach(wheel => { const card = document.createElement('div'); card.className = 'wheel-card flex flex-col justify-between'; card.innerHTML = `<div><h3 class="text-lg font-semibold mb-1">${wheel.name}</h3>${!isMyWheelsView && wheel.creatorUsername ? `<p class="text-xs text-gray-500 mb-1">Von: ${wheel.creatorUsername}</p>` : ''} <p class="text-sm text-gray-600 mb-2">${wheel.description || 'Keine Beschreibung.'}</p><p class="text-sm font-medium">Kosten: ${wheel.spinCost} <i class="fas fa-coins text-yellow-500"></i></p></div><div class="mt-3 flex ${isMyWheelsView ? 'justify-between' : 'justify-end'} items-center">${isMyWheelsView ? `<div class="space-x-1"><button class="text-xs bg-yellow-500 hover:bg-yellow-600 text-black px-2 py-1 rounded" onclick="showView('create', '${wheel._id}')">Bearbeiten</button><button class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded" onclick="deleteWheel('${wheel._id}','${wheel.name}')">Löschen</button><button class="text-xs bg-blue-400 hover:bg-blue-500 text-white px-2 py-1 rounded" onclick="showShareCodeModal('${wheel.shareCode}')">Teilen</button></div>` : ''} <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded" onclick="openWheelSpinModalById('${wheel._id}')">Drehen!</button></div>`; containerElement.appendChild(card); }); }
+        function showShareCodeModal(shareCode) { const modal = document.getElementById('share-code-modal'); const display = document.getElementById('share-code-display'); if (modal && display) { display.value = shareCode; modal.classList.remove('hidden'); } }
+        function copyShareCode() { const display = document.getElementById('share-code-display'); if (display) copyToClipboard(display.value); }
+        function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => { showWheelsToast(`Code "${text.substring(0, 10)}..." kopiert!`, false, 2000); }).catch(err => { showWheelsToast('Fehler beim Kopieren.', true); }); }
+
+
+        // --- Glücksrad Erstellen/Bearbeiten ---
+        const MAX_SEGMENTS = 12; const MIN_SEGMENTS = 2;
+        function resetAndShowWheelForm(wheelData = null) {
+            console.log(`${WHEELS_LOG_PREFIX} resetAndShowWheelForm für ${wheelData ? 'Bearbeiten ID: ' + wheelData._id : 'NEUES Rad'}`);
+            currentEditWheelId = wheelData ? wheelData._id : null;
+            document.getElementById('wheel-form-title').textContent = wheelData ? 'Glücksrad bearbeiten' : 'Neues Glücksrad erstellen';
+            document.getElementById('wheel-edit-id').value = currentEditWheelId || '';
+            document.getElementById('wheel-name').value = wheelData ? wheelData.name : '';
+            document.getElementById('wheel-description').value = wheelData ? wheelData.description : '';
+            document.getElementById('wheel-spin-cost').value = wheelData ? wheelData.spinCost : '1';
+            document.getElementById('wheel-creation-cost').value = wheelData ? (typeof wheelData.creationCostPaid !== 'undefined' ? wheelData.creationCostPaid : '0') : '0';
+            document.getElementById('wheel-is-public').checked = wheelData ? wheelData.isPublic : true;
+            const segmentsEditor = document.getElementById('wheel-segments-editor'); segmentsEditor.innerHTML = '';
+            const segmentsToRender = wheelData && wheelData.segments && wheelData.segments.length >= MIN_SEGMENTS ? wheelData.segments : [{ text: 'Preis A', color: '#FFD700' }, { text: 'Preis B', color: '#C0C0C0' }];
+            segmentsToRender.forEach(seg => addWheelSegmentField(seg.text, seg.color));
+            document.getElementById('wheel-form-message').textContent = '';
+        }
+        async function loadWheelForEditing(wheelId) {
+            if (!wheelLoggedInUser) { showWheelsToast("Einloggen zum Bearbeiten.", true); showView('public'); return; }
+            console.log(`${WHEELS_LOG_PREFIX} Lade Rad ID ${wheelId} zum Bearbeiten.`);
+            try {
+                const response = await fetch(`${WHEELS_API_URL}/wheels/${wheelId}`, { credentials: 'include' });
+                if (!response.ok) { const err = await response.json().catch(() => ({ error: "Rad nicht gefunden" })); throw new Error(err.error); }
+                const { wheel } = await response.json();
+                if (wheel.creatorId !== wheelLoggedInUser.userId && !wheelLoggedInUser.isAdmin) { showWheelsToast("Nur eigene Räder bearbeitbar.", true); showView('my'); return; }
+                resetAndShowWheelForm(wheel);
+                document.getElementById('wheel-form-title').textContent = 'Glücksrad bearbeiten';
+            } catch (error) { showWheelsToast(`Fehler Laden des Rads: ${error.message}`, true); console.error(`${WHEELS_LOG_PREFIX} Fehler Laden Rad ${wheelId}:`, error); showView('my'); }
+        }
+        function addWheelSegmentField(text = '', color = '#EEEEEE') { const editor = document.getElementById('wheel-segments-editor'); if (editor.children.length >= MAX_SEGMENTS) { showWheelsToast(`Max ${MAX_SEGMENTS} Segmente.`, true); return; } const segmentDiv = document.createElement('div'); segmentDiv.className = 'wheel-segment-editor flex items-center space-x-2 border p-2 rounded'; segmentDiv.innerHTML = `<input type="text" placeholder="Segment Text (max 30 Z.)" value="${text}" class="flex-grow p-1 border rounded" maxlength="30"><input type="color" value="${color}" class="p-0 h-8 w-10 border-0 cursor-pointer"><button type="button" onclick="if(this.parentElement.parentElement.children.length > MIN_SEGMENTS) this.parentElement.remove(); else showWheelsToast('Mind. ${MIN_SEGMENTS} Segmente.', true);" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>`; editor.appendChild(segmentDiv); }
+        function cancelWheelEdit() { currentEditWheelId = null; document.getElementById('wheel-edit-id').value = ''; showView('my'); }
+        async function saveWheel() {
+            if (!wheelLoggedInUser) { showWheelsToast("Einloggen.", true); return; }
+            const name = document.getElementById('wheel-name').value.trim(); const description = document.getElementById('wheel-description').value.trim();
+            const spinCost = parseInt(document.getElementById('wheel-spin-cost').value, 10); const creationCost = parseInt(document.getElementById('wheel-creation-cost').value, 10);
+            const isPublic = document.getElementById('wheel-is-public').checked; const msgEl = document.getElementById('wheel-form-message');
+            const segments = []; document.querySelectorAll('#wheel-segments-editor .wheel-segment-editor').forEach(div => { const txtIn = div.querySelector('input[type="text"]'); const colIn = div.querySelector('input[type="color"]'); if (txtIn.value.trim()) segments.push({ text: txtIn.value.trim(), color: colIn.value }); });
+            if (!name || name.length < 3) { msgEl.textContent = "Name mind. 3 Z."; msgEl.className = 'text-sm mt-3 text-red-500'; return; }
+            if (isNaN(spinCost) || spinCost < 0) { msgEl.textContent = "Drehkosten ungültig."; msgEl.className = 'text-sm mt-3 text-red-500'; return; }
+            if (isNaN(creationCost) || creationCost < 0) { msgEl.textContent = "Erstellungskosten ungültig."; msgEl.className = 'text-sm mt-3 text-red-500'; return; }
+            if (segments.length < MIN_SEGMENTS) { msgEl.textContent = `Mind. ${MIN_SEGMENTS} Segmente.`; msgEl.className = 'text-sm mt-3 text-red-500'; return; }
+            const wheelDataPayload = { name, description, isPublic, segments, spinCost, creationCost };
+            let url = `${WHEELS_API_URL}/wheels`; let method = 'POST';
+            const editId = document.getElementById('wheel-edit-id').value;
+            if (editId) { showWheelsToast("Bearbeiten-Speichern noch nicht implementiert.", true); console.warn("Versuch zu speichern (edit), aber PUT fehlt."); msgEl.textContent = "Fehler: Bearbeiten nicht implementiert."; msgEl.className = 'text-sm mt-3 text-red-500'; return; }
+            msgEl.textContent = "Speichere..."; msgEl.className = 'text-sm mt-3 text-blue-500';
+            try {
+                const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(wheelDataPayload), credentials: 'include' });
+                const result = await response.json(); if (!response.ok) throw new Error(result.error || "Fehler Speichern.");
+                showWheelsToast(result.message || "Rad gespeichert!", false);
+                if (result.user && typeof result.user.tokens !== 'undefined') { wheelLoggedInUser.tokens = result.user.tokens; updateWheelLoginStatusUI(); }
+                currentEditWheelId = null; document.getElementById('wheel-edit-id').value = ''; showView('my');
+            } catch (error) { msgEl.textContent = `Fehler: ${error.message}`; msgEl.className = 'text-sm mt-3 text-red-500'; console.error(`${WHEELS_LOG_PREFIX} Fehler Speichern Rad:`, error); }
+        }
+        async function deleteWheel(wheelId, wheelName) { if (!wheelLoggedInUser) { showWheelsToast("Einloggen.", true); return; } if (!confirm(`Rad "${wheelName}" löschen?`)) return; try { const response = await fetch(`${WHEELS_API_URL}/wheels/${wheelId}`, { method: 'DELETE', credentials: 'include' }); if (!response.ok) { const err = await response.json().catch(() => ({ error: "Unbek. Fehler" })); throw new Error(err.error || "Fehler Löschen."); } showWheelsToast(`Rad "${wheelName}" gelöscht.`, false); loadMyWheels(); } catch (error) { showWheelsToast(`Fehler: ${error.message}`, true); console.error(`${WHEELS_LOG_PREFIX} Fehler Löschen Rad ${wheelId}:`, error); } }
+
+        // --- Glücksrad Drehen Logik (CSS Basiert) ---
+        async function openWheelSpinModalById(wheelId) {
+            if (!wheelLoggedInUser) { openAuthModal('login'); showWheelsToast("Einloggen zum Drehen.", true); return; }
+            console.log(`${WHEELS_LOG_PREFIX} openWheelSpinModalById: Lade Rad-Daten für ID ${wheelId}`);
+            try {
+                const response = await fetch(`${WHEELS_API_URL}/wheels/${wheelId}`, { credentials: 'include' });
+                console.log(`${WHEELS_LOG_PREFIX} API-Antwort für /wheels/${wheelId}: Status ${response.status}`);
+                if (!response.ok) { const errorData = await response.json().catch(() => ({ error: `Rad nicht geladen (Status ${response.status})` })); throw new Error(errorData.error || "Rad nicht gefunden/Zugriff verweigert."); }
+                const { wheel } = await response.json(); if (wheel) openWheelSpinModal(wheel); else throw new Error("Raddaten nicht in Antwort.");
+            } catch (error) { showWheelsToast(`Fehler Öffnen Rad: ${error.message}`, true); console.error(`${WHEELS_LOG_PREFIX} Fehler openWheelSpinModalById:`, error); }
+        }
+        function openWheelSpinModal(wheelData) {
+            if (!wheelLoggedInUser) { openAuthModal('login'); showWheelsToast("Einloggen zum Drehen.", true); return; }
+            if (isSpinning) return; currentOpenWheelData = { ...wheelData };
+            const modal = document.getElementById('wheel-spin-modal'); const titleEl = document.getElementById('wheel-spin-modal-title'); const costEl = document.getElementById('wheel-spin-modal-cost'); const spinButton = document.getElementById('wheel-spin-button'); const resultMsgEl = document.getElementById('wheel-spin-result-message'); const vizContainer = document.getElementById('wheel-visualization-container');
+            if (!modal || !titleEl || !costEl || !spinButton || !resultMsgEl || !vizContainer) { console.error(`${WHEELS_LOG_PREFIX} Dreh-Modal Elemente fehlen!`); return; }
+            titleEl.textContent = currentOpenWheelData.name; costEl.textContent = currentOpenWheelData.spinCost;
+            resultMsgEl.textContent = ''; resultMsgEl.className = 'text-lg font-semibold mt-6'; spinButton.disabled = false;
+            vizContainer.style.transition = 'transform 0s'; vizContainer.style.transform = 'rotate(0deg)';
+            renderWheelVisualization(currentOpenWheelData.segments, vizContainer);
+            modal.classList.remove('hidden');
+        }
+        function renderWheelVisualization(segments, container) {
+            container.innerHTML = ''; // Alte Segmente löschen
+            const numSegments = segments.length;
+            if (numSegments === 0) {
+                console.warn(`${WHEELS_LOG_PREFIX} renderWheelVisualization: Keine Segmente zum Rendern.`);
+                return;
+            }
+            const anglePerSegment = 360 / numSegments;
+
+            segments.forEach((segment, index) => {
+                const segmentEl = document.createElement('div');
+                segmentEl.className = 'wheel-segment-display'; // Dieses Element wird zum Keil transformiert
+                segmentEl.style.backgroundColor = segment.color;
+
+                // Textfarbe basierend auf Hintergrundhelligkeit
+                const hex = segment.color.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                segmentEl.style.color = brightness > 128 ? 'black' : 'white'; // Helligkeitsschwelle ggf. anpassen
+
+                // Transformation für den Keil (Segment)
+                segmentEl.style.transform = `rotate(${index * anglePerSegment}deg) skewY(${90 - anglePerSegment}deg)`;
+
+                // Span für den Text innerhalb des Segments
+                const textSpan = document.createElement('span');
+                textSpan.style.display = 'inline-block'; // Wichtig für Transformationen und korrekte Breitenmessung (falls verwendet)
+                textSpan.style.whiteSpace = 'nowrap';    // Verhindert Umbruch bei längeren Texten
+                textSpan.style.overflow = 'hidden';      // Schneidet überstehenden Text ab
+                textSpan.style.textOverflow = 'ellipsis';// Fügt "..." hinzu, wenn Text abgeschnitten wird
+                textSpan.style.maxWidth = '85%';         // Begrenzt die Breite des Textes relativ zum Segment-Keil
+                textSpan.style.padding = '2px 5px';      // Kleiner Innenabstand für den Text
+                textSpan.style.textAlign = 'center';     // Versucht, den Text innerhalb des Spans zu zentrieren
+                textSpan.style.boxSizing = 'border-box';
+
+                // Gegentransformationen und Positionierung für den Text
+                // Dies ist der komplexeste und experimentellste Teil
+                textSpan.style.transformOrigin = 'center center'; // Drehpunkt für den Text
+
+                let translateYValue = '-10px'; // Standard-Vertikalverschiebung
+                let translateXValue = '0px';   // Standard-Horizontalverschiebung
+                let textFontSize = '0.7em';    // Standard-Schriftgröße
+
+                // Dynamische Anpassungen basierend auf der Segmentanzahl
+                // Diese Werte müssen experimentell optimiert werden!
+                if (numSegments <= 3) {
+                    textFontSize = '0.55em';
+                    translateYValue = '-5px';
+                    translateXValue = '15px'; // Bei sehr breiten Segmenten Text weiter nach außen schieben
+                } else if (numSegments <= 5) {
+                    textFontSize = '0.6em';
+                    translateYValue = '-8px';
+                    translateXValue = '10px';
+                } else if (numSegments <= 8) { // Standardrad
+                    textFontSize = '0.65em';
+                    translateYValue = '-10px';
+                    translateXValue = '5px';
+                } else { // Viele Segmente
+                    textFontSize = '0.6em';
+                    translateYValue = '-12px'; // Eventuell weiter nach oben
+                    translateXValue = '2px';
+                }
+
+                textSpan.style.fontSize = textFontSize;
+                // Die Reihenfolge: Zuerst "geradebiegen" (skewY), dann entlang der Mittellinie des Segments rotieren,
+                // dann feinpositionieren (translateY/X).
+                textSpan.style.transform = `skewY(-${90 - anglePerSegment}deg) rotate(${anglePerSegment / 2}deg) translateY(${translateYValue}) translateX(${translateXValue})`;
+
+                textSpan.textContent = segment.text || `S ${index + 1}`; // Fallback-Text
+                if (!segment.text) {
+                    console.warn(`${WHEELS_LOG_PREFIX} Segment ${index} (Farbe: ${segment.color}) hat keinen Text und verwendet Fallback "${textSpan.textContent}".`);
+                }
+
+                segmentEl.appendChild(textSpan);
+                container.appendChild(segmentEl);
+            });
+        }
+        function closeWheelSpinModal() { if (isSpinning) return; const modal = document.getElementById('wheel-spin-modal'); if (modal) modal.classList.add('hidden'); currentOpenWheelData = null; }
+        async function spinTheWheel() {
+            if (!wheelLoggedInUser || !currentOpenWheelData || isSpinning) return;
+            if (wheelLoggedInUser.tokens < currentOpenWheelData.spinCost) { showWheelsToast(`Nicht genug Tokens! Benötigt: ${currentOpenWheelData.spinCost}`, true); return; }
+            isSpinning = true; const spinButton = document.getElementById('wheel-spin-button'); const resultMsgEl = document.getElementById('wheel-spin-result-message'); const vizContainer = document.getElementById('wheel-visualization-container');
+            if (spinButton) spinButton.disabled = true; if (resultMsgEl) { resultMsgEl.textContent = "Drehe..."; resultMsgEl.className = 'text-lg font-semibold mt-6 text-blue-500'; }
+            try {
+                const response = await fetch(`${WHEELS_API_URL}/wheels/${currentOpenWheelData._id}/spin`, { method: 'POST', credentials: 'include' });
+                const result = await response.json(); console.log(`${WHEELS_LOG_PREFIX} Backend Spin Antwort:`, JSON.stringify(result, null, 2));
+                if (!response.ok) throw new Error(result.error || "Fehler vom Server.");
+                if (result.user) { wheelLoggedInUser.tokens = result.user.tokens; updateWheelLoginStatusUI(); }
+                currentOpenWheelData.backendWinningSegmentIndex = result.winningSegmentIndex; currentOpenWheelData.backendWinningSegment = result.winningSegment; currentOpenWheelData.backendResultMessage = result.message;
+                const numSegments = currentOpenWheelData.segments.length; const anglePerSegment = 360 / numSegments;
+                console.log(`${WHEELS_LOG_PREFIX} Backend sagt: Gewinner Index=${result.winningSegmentIndex}, Text="${result.winningSegment ? result.winningSegment.text : 'FEHLT'}"`);
+                let rotationForWinningSegmentMiddle = (result.winningSegmentIndex * anglePerSegment) + (anglePerSegment / 2);
+                rotationForWinningSegmentMiddle -= anglePerSegment; // KORREKTUR: Zeiger zeigt auf Segment RECHTS vom Gewinner -> Rad weniger drehen
+                const randomExtraSpins = 3 + Math.floor(Math.random() * 3); const targetRotation = (randomExtraSpins * 360) - rotationForWinningSegmentMiddle;
+                console.log(`${WHEELS_LOG_PREFIX} Rotation Details: numSeg=${numSegments}, anglePerSeg=${anglePerSegment.toFixed(2)}, winIdx=${result.winningSegmentIndex}, KORR. rotForWinMid=${rotationForWinningSegmentMiddle.toFixed(2)}, targetRot=${targetRotation.toFixed(2)}`);
+                if (vizContainer) {
+                    vizContainer.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)'; // Animation aktivieren
+                    vizContainer.style.transform = `rotate(${targetRotation}deg)`;
+                }
+                setTimeout(() => {
+                    if (resultMsgEl) { let finalMessage = ""; let messageClass = 'text-lg font-semibold mt-6 '; const winningText = currentOpenWheelData.backendWinningSegment.text ? currentOpenWheelData.backendWinningSegment.text.toLowerCase() : ""; if (currentOpenWheelData.backendWinningSegment.valueType === 'free_spin') { messageClass += 'text-yellow-500 animate-pulse'; finalMessage = currentOpenWheelData.backendResultMessage; } else if (winningText.includes("niete") || winningText.includes("schade") || winningText.includes("versuch")) { messageClass += 'text-red-500'; finalMessage = `Leider: ${currentOpenWheelData.backendWinningSegment.text}`; } else { messageClass += 'text-green-500'; finalMessage = `Bekommen: ${currentOpenWheelData.backendWinningSegment.text}!`; } resultMsgEl.textContent = finalMessage; resultMsgEl.className = messageClass; }
+                    if (spinButton) spinButton.disabled = false; isSpinning = false; console.log(`${WHEELS_LOG_PREFIX} Drehung beendet. Angezeigt: ${resultMsgEl ? resultMsgEl.textContent : 'Fehler'}`);
+                }, 4100);
+            } catch (error) { showWheelsToast(`Fehler: ${error.message}`, true); if (resultMsgEl) { resultMsgEl.textContent = `Fehler: ${error.message}`; resultMsgEl.className = 'text-lg font-semibold mt-6 text-red-500'; } if (spinButton) spinButton.disabled = false; isSpinning = false; console.error(`${WHEELS_LOG_PREFIX} Fehler beim Drehen:`, error); }
+        }
+
+        // --- Initialisierung ---
+        window.onload = async () => {
+            console.log(`${WHEELS_LOG_PREFIX} window.onload: Initialisiere Glücksrad-Seite.`);
+            await checkWheelLoginStatus();
+            showView('public');
+        };
+    </script>
+</body>
+
+</html>
