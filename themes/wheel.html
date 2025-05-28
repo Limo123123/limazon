@@ -230,10 +230,143 @@
         function copyShareCode() { navigator.clipboard.writeText(document.getElementById('share-code-display').value).then(() => showWheelsToast("Kopiert!", false, 2000)).catch(() => showWheelsToast('Kopierfehler.', true)) }
         const MAX_SEGMENTS = 12, MIN_SEGMENTS = 2;
         function resetAndShowWheelForm(d = null) { currentEditWheelId = d?._id; document.getElementById('wheel-form-title').textContent = d ? 'Rad bearbeiten' : 'Neues Rad'; document.getElementById('wheel-edit-id').value = d?._id || ''; document.getElementById('wheel-name').value = d?.name || ''; document.getElementById('wheel-description').value = d?.description || ''; document.getElementById('wheel-spin-cost').value = d?.spinCost ?? 1; document.getElementById('wheel-creation-cost').value = d?.creationCostPaid ?? 0; document.getElementById('wheel-is-public').checked = d?.isPublic ?? true; const e = document.getElementById('wheel-segments-editor'); e.innerHTML = ''; (d?.segments?.length >= MIN_SEGMENTS ? d.segments : [{ text: 'Gewinn A', color: '#FFD700' }, { text: 'Niete', color: '#C0C0C0' }]).forEach(s => addWheelSegmentField(s.text, s.color)); document.getElementById('wheel-form-message').textContent = '' }
-        async function loadWheelForEditing(id) { if (!wheelLoggedInUser) return; try { const r = await fetch(`${WHEELS_API_URL}/wheels/${id}`, { credentials: 'include' }); if (!r.ok) throw Error((await r.json().catch(() => ({}))).error); const { wheel: w } = await r.json(); if (w.creatorId !== wheelLoggedInUser.userId && !wheelLoggedInUser.isAdmin) { showWheelsToast("Nur eigene Räder bearbeitbar.", true); showView('my'); return } resetAndShowWheelForm(w); showView('create') } catch (e) { showWheelsToast(`Fehler: ${e.message}`, true); showView('my') } }
+        async function loadWheelForEditing(wheelId) {
+            if (!wheelLoggedInUser) { showWheelsToast("Einloggen zum Bearbeiten.", true); showView('public'); return; }
+            console.log(`${WHEELS_LOG_PREFIX} Lade Rad ID ${wheelId} zum Bearbeiten.`);
+            try {
+                const response = await fetch(`${WHEELS_API_URL}/wheels/${wheelId}`, { credentials: 'include' });
+                if (!response.ok) { const err = await response.json().catch(() => ({ error: "Rad nicht gefunden" })); throw new Error(err.error); }
+                const { wheel } = await response.json();
+                if (wheel.creatorId !== wheelLoggedInUser.userId && !wheelLoggedInUser.isAdmin) { showWheelsToast("Nur eigene Räder bearbeitbar.", true); showView('my'); return; }
+                resetAndShowWheelForm(wheel);
+                document.getElementById('wheel-form-title').textContent = 'Glücksrad bearbeiten';
+            } catch (error) { showWheelsToast(`Fehler Laden des Rads: ${error.message}`, true); console.error(`${WHEELS_LOG_PREFIX} Fehler Laden Rad ${wheelId}:`, error); showView('my'); }
+        }
         function addWheelSegmentField(t = '', c = '#EEEEEE') { if (document.getElementById('wheel-segments-editor').children.length >= MAX_SEGMENTS) return showWheelsToast(`Max ${MAX_SEGMENTS} Segmente.`, true); const d = document.createElement('div'); d.className = 'wheel-segment-editor flex items-center space-x-2 border p-2 rounded'; d.innerHTML = `<input type=text placeholder="Segment Text (max 30 Z.)" value="${t}" class="flex-grow p-1 border rounded" maxlength=30><input type=color value="${c}" class="p-0 h-8 w-10 border-0 cursor-pointer"><button type=button onclick="if(this.parentElement.parentElement.children.length > MIN_SEGMENTS) this.parentElement.remove(); else showWheelsToast('Mind. ${MIN_SEGMENTS} Segmente.', true);" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>`; document.getElementById('wheel-segments-editor').appendChild(d) }
         function cancelWheelEdit() { currentEditWheelId = null; showView('my') }
-        async function saveWheel() { if (!wheelLoggedInUser) return; const mE = document.getElementById('wheel-form-message'), D = { name: document.getElementById('wheel-name').value.trim(), description: document.getElementById('wheel-description').value.trim(), spinCost: parseInt(document.getElementById('wheel-spin-cost').value, 10), creationCost: parseInt(document.getElementById('wheel-creation-cost').value, 10), isPublic: document.getElementById('wheel-is-public').checked, segments: Array.from(document.querySelectorAll('#wheel-segments-editor .wheel-segment-editor')).map(d => ({ text: d.querySelector('input[type="text"]').value.trim(), color: d.querySelector('input[type="color"]').value })).filter(s => s.text) }; if (!D.name || D.name.length < 3) { mE.textContent = "Name mind. 3 Z."; return } if (isNaN(D.spinCost) || D.spinCost < 0) { mE.textContent = "Drehkosten ungültig."; return } if (isNaN(D.creationCost) || D.creationCost < 0) { mE.textContent = "Erstellkosten ungültig."; return } if (D.segments.length < MIN_SEGMENTS) { mE.textContent = `Mind. ${MIN_SEGMENTS} Segmente.`; return } const url = currentEditWheelId ? `${WHEELS_API_URL}/wheels/${currentEditWheelId}` : `${WHEELS_API_URL}/wheels`, method = currentEditWheelId ? 'PUT' : 'POST'; mE.textContent = "Speichere..."; try { const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(D), credentials: 'include' }), res = await r.json(); if (!r.ok) throw Error(res.error); showWheelsToast(res.message || "Gespeichert!", false); if (res.user?.tokens !== undefined) { wheelLoggedInUser.tokens = res.user.tokens; updateWheelLoginStatusUI() } currentEditWheelId = null; showView('my') } catch (e) { mE.textContent = `Fehler: ${e.message}` } }
+        async function saveWheel() {
+            if (!wheelLoggedInUser) {
+                showWheelsToast("Bitte zuerst einloggen.", true);
+                openAuthModal('login');
+                return;
+            }
+
+            const msgEl = document.getElementById('wheel-form-message');
+            msgEl.textContent = "Speichere..."; // Früh setzen
+            msgEl.className = 'text-sm mt-3 text-blue-500'; // Standard-Info-Farbe
+
+            const name = document.getElementById('wheel-name').value.trim();
+            const description = document.getElementById('wheel-description').value.trim();
+            const spinCost = parseInt(document.getElementById('wheel-spin-cost').value, 10);
+            const isPublic = document.getElementById('wheel-is-public').checked;
+            const segments = [];
+            document.querySelectorAll('#wheel-segments-editor .wheel-segment-editor').forEach(div => {
+                const txtIn = div.querySelector('input[type="text"]');
+                const colIn = div.querySelector('input[type="color"]');
+                if (txtIn && colIn && txtIn.value.trim()) { // Sicherstellen, dass Elemente existieren
+                    segments.push({ text: txtIn.value.trim(), color: colIn.value });
+                }
+            });
+
+            if (!name || name.length < 3) {
+                msgEl.textContent = "Name mind. 3 Zeichen.";
+                msgEl.className = 'text-sm mt-3 text-red-500';
+                return;
+            }
+            if (isNaN(spinCost) || spinCost < 0) {
+                msgEl.textContent = "Drehkosten ungültig.";
+                msgEl.className = 'text-sm mt-3 text-red-500';
+                return;
+            }
+            if (segments.length < MIN_SEGMENTS) {
+                msgEl.textContent = `Mindestens ${MIN_SEGMENTS} Segmente erforderlich.`;
+                msgEl.className = 'text-sm mt-3 text-red-500';
+                return;
+            }
+
+            const wheelDataPayload = { name, description, isPublic, segments, spinCost };
+            let url;
+            let method;
+
+            const editId = document.getElementById('wheel-edit-id').value;
+
+            if (editId) {
+                // Bearbeitungsmodus
+                method = 'PUT';
+                url = `${WHEELS_API_URL}/wheels/${editId}`;
+                // creationCost wird beim Bearbeiten normalerweise nicht gesendet oder serverseitig ignoriert.
+                // Daher wird es hier nicht zum wheelDataPayload hinzugefügt.
+            } else {
+                // Erstellungsmodus
+                method = 'POST';
+                url = `${WHEELS_API_URL}/wheels`;
+                const creationCost = parseInt(document.getElementById('wheel-creation-cost').value, 10);
+                if (isNaN(creationCost) || creationCost < 0) {
+                    msgEl.textContent = "Erstellungskosten ungültig.";
+                    msgEl.className = 'text-sm mt-3 text-red-500';
+                    return;
+                }
+                wheelDataPayload.creationCost = creationCost;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(wheelDataPayload),
+                    credentials: 'include'
+                });
+
+                const responseText = await response.text(); // Immer zuerst den Text holen
+
+                if (!response.ok) {
+                    let errorMessage = `Fehler (${response.status} ${response.statusText})`;
+                    if (responseText) {
+                        try {
+                            const errorJson = JSON.parse(responseText);
+                            if (errorJson.error) {
+                                errorMessage = errorJson.error;
+                            } else { // Wenn kein .error Feld, aber valides JSON
+                                errorMessage = responseText.length > 100 ? responseText.substring(0, 97) + "..." : responseText;
+                            }
+                        } catch (e) { // Wenn Fehlertext kein JSON ist
+                            errorMessage = responseText.length > 100 ? responseText.substring(0, 97) + "..." : responseText;
+                        }
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                let result = {};
+                if (responseText) {
+                    try {
+                        result = JSON.parse(responseText);
+                    } catch (e) {
+                        console.warn(`${WHEELS_LOG_PREFIX} Erfolgreiche ${method}-Antwort war kein valides JSON:`, responseText);
+                        result = { message: (method === 'PUT' ? "Änderungen gespeichert" : "Rad erstellt") + " (Server-Antwort unklar)" };
+                    }
+                } else if (response.status === 204) { // No Content
+                    result = { message: (method === 'PUT' ? "Änderungen gespeichert" : "Rad erstellt") + " (Kein Inhalt vom Server)" };
+                }
+
+
+                showWheelsToast(result.message || (method === 'PUT' ? "Änderungen gespeichert!" : "Rad erstellt!"), false);
+
+                if (result.user && typeof result.user.tokens !== 'undefined') {
+                    wheelLoggedInUser.tokens = result.user.tokens;
+                    updateWheelLoginStatusUI();
+                }
+
+                // currentEditWheelId = null; // Globale Var, falls noch verwendet
+                document.getElementById('wheel-edit-id').value = ''; // Wichtig: ID im Formular löschen
+                resetAndShowWheelForm(); // Formular zurücksetzen (optional, je nach gewünschtem Verhalten)
+                showView('my');
+
+            } catch (error) {
+                msgEl.textContent = `Fehler: ${error.message}`;
+                msgEl.className = 'text-sm mt-3 text-red-500';
+                console.error(`${WHEELS_LOG_PREFIX} Fehler beim Speichern (${method}) des Rades:`, error);
+            }
+        }
         async function deleteWheel(id, name) { if (!wheelLoggedInUser || !confirm(`Rad "${name}" löschen?`)) return; try { const r = await fetch(`${WHEELS_API_URL}/wheels/${id}`, { method: 'DELETE', credentials: 'include' }); if (!r.ok) throw Error((await r.json().catch(() => ({}))).error); showWheelsToast(`"${name}" gelöscht.`, false); loadMyWheels() } catch (e) { showWheelsToast(`Löschfehler: ${e.message}`, true) } }
 
         async function openWheelSpinModalById(id) { if (!wheelLoggedInUser) { openAuthModal('login'); return } try { const r = await fetch(`${WHEELS_API_URL}/wheels/${id}`, { credentials: 'include' }); if (!r.ok) throw Error((await r.json().catch(() => ({}))).error); const { wheel } = await r.json(); if (wheel) openWheelSpinModal(wheel); else throw Error("Rad nicht da.") } catch (e) { showWheelsToast(`Fehler Öffnen: ${e.message}`, true) } }
