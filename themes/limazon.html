@@ -767,7 +767,87 @@
         function closeSellProductModal() { document.getElementById('sell-product-modal').classList.add('hidden'); currentSellProductId = null; if (sellCooldownIntervalId) { clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; } }
         function updateSellProbability() { if (!currentSellProductId) return; const product = products.find(p => p.id === currentSellProductId); if (!product) return; const sellPriceInput = document.getElementById('sell-price'); const probabilityEl = document.getElementById('sell-probability'); if (!sellPriceInput || !probabilityEl) return; const sellPrice = parseFloat(sellPriceInput.value); const originalPriceNumeric = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; let probability = 1.0; if (isNaN(sellPrice) || sellPrice <= 0) { probabilityEl.textContent = "?%"; return; } if (sellPrice > originalPriceNumeric) { probability = originalPriceNumeric / sellPrice; probability = Math.max(0.05, Math.min(1.0, probability)); } else if (sellPrice < originalPriceNumeric * 0.5) { probability = 1.0; } const serverStock = product.stock || 0; const defaultStockVal = product.default_stock || 20; if (serverStock > defaultStockVal * 2.5) probability *= 0.2; else if (serverStock > defaultStockVal * 1.8) probability *= 0.5; else if (serverStock > defaultStockVal * 1.2) probability *= 0.8; probability = Math.max(0.01, Math.min(1.0, probability)); probabilityEl.textContent = `${(probability * 100).toFixed(0)}%`; }
         function checkSellCooldown(productId) { const confirmSellButton = document.getElementById('confirm-sell-button'); const cooldownMsgEl = document.getElementById('sell-cooldown-message'); if (!confirmSellButton || !cooldownMsgEl) return; cooldownMsgEl.classList.add('hidden'); if (sellCooldownIntervalId) clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; confirmSellButton.disabled = false; if (loggedInUser && loggedInUser.productSellCooldowns && loggedInUser.productSellCooldowns[productId.toString()]) { const cooldownEndTimeISO = loggedInUser.productSellCooldowns[productId.toString()]; const cooldownEndTime = new Date(cooldownEndTimeISO).getTime(); const updateTimer = () => { const now = Date.now(); const timeLeftSeconds = Math.ceil((cooldownEndTime - now) / 1000); if (timeLeftSeconds > 0) { confirmSellButton.disabled = true; cooldownMsgEl.textContent = `Cooldown: ${timeLeftSeconds}s`; cooldownMsgEl.classList.remove('hidden'); } else { confirmSellButton.disabled = false; cooldownMsgEl.classList.add('hidden'); clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; if (loggedInUser.productSellCooldowns) delete loggedInUser.productSellCooldowns[productId.toString()]; } }; if (Date.now() < cooldownEndTime) { updateTimer(); sellCooldownIntervalId = setInterval(updateTimer, 1000); } else { if (loggedInUser.productSellCooldowns) delete loggedInUser.productSellCooldowns[productId.toString()]; } } }
-        async function handleSellProduct() { if (!currentSellProductId || !loggedInUser) return; const qtyInput = document.getElementById('sell-quantity'); const priceInput = document.getElementById('sell-price'); const errEl = document.getElementById('sell-error-message'); const confirmBtn = document.getElementById('confirm-sell-button'); const btnTxt = confirmBtn.querySelector('.button-text'); const spinner = confirmBtn.querySelector('.button-spinner'); const qty = parseInt(qtyInput.value, 10); const sellPrice = parseFloat(priceInput.value); errEl.classList.add('hidden'); errEl.textContent = ''; if (isNaN(qty) || qty <= 0 || qty > parseInt(qtyInput.max, 10)) { errEl.textContent = `Ungültige Menge (1-${qtyInput.max}).`; errEl.classList.remove('hidden'); return; } if (isNaN(sellPrice) || sellPrice <= 0) { errEl.textContent = "Ungültiger Preis."; errEl.classList.remove('hidden'); return; } confirmBtn.disabled = true; btnTxt.textContent = 'Verkaufe...'; spinner.classList.remove('hidden'); try { const response = await fetch(`${getApiUrl()}/products/sell`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId: currentSellProductId, sellPrice, quantity }), credentials: 'include' }); const result = await response.json(); if (!response.ok) { errEl.textContent = result.error || `Fehler (${response.status}).`; errEl.classList.remove('hidden'); if (result.productSellCooldowns && loggedInUser) loggedInUser.productSellCooldowns = result.productSellCooldowns; else if (result.cooldownActiveForProduct && result.cooldownEndsAt && loggedInUser) { if (!loggedInUser.productSellCooldowns) loggedInUser.productSellCooldowns = {}; loggedInUser.productSellCooldowns[result.cooldownActiveForProduct.toString()] = result.cooldownEndsAt; } checkSellCooldown(currentSellProductId); } else { showToast(result.message || "Verkauf ok!"); if (result.user) await updateUserInfo(result.user); else await updateUserInfo(); await loadProducts('initial'); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); closeSellProductModal(); } } catch (error) { console.error(`${LOG_PREFIX} Fehler handleSellProduct:`, error); errEl.textContent = "Netzwerkfehler."; errEl.classList.remove('hidden'); } finally { if (!document.getElementById('sell-product-modal').classList.contains('hidden')) { confirmBtn.disabled = false; btnTxt.textContent = 'Verkaufen'; spinner.classList.add('hidden'); checkSellCooldown(currentSellProductId); } } }
+        async function handleSellProduct() {
+            if (!currentSellProductId || !loggedInUser) return;
+            const qtyInput = document.getElementById('sell-quantity');
+            const priceInput = document.getElementById('sell-price');
+            const errEl = document.getElementById('sell-error-message');
+            const confirmBtn = document.getElementById('confirm-sell-button');
+            const btnTxt = confirmBtn.querySelector('.button-text');
+            const spinner = confirmBtn.querySelector('.button-spinner');
+
+            const qty = parseInt(qtyInput.value, 10); // Deine Variable für die Menge heißt 'qty'
+            const sellPrice = parseFloat(priceInput.value);
+
+            errEl.classList.add('hidden');
+            errEl.textContent = '';
+
+            if (isNaN(qty) || qty <= 0 || qty > parseInt(qtyInput.max, 10)) {
+                errEl.textContent = `Ungültige Menge (1-${qtyInput.max}).`;
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (isNaN(sellPrice) || sellPrice <= 0) {
+                errEl.textContent = "Ungültiger Preis.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            confirmBtn.disabled = true;
+            btnTxt.textContent = 'Verkaufe...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/products/sell`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    // KORRIGIERTE STELLE:
+                    // Das Backend erwartet ein Feld 'quantity',
+                    // der Wert dafür kommt aus deiner Variable 'qty'.
+                    body: JSON.stringify({
+                        productId: currentSellProductId,
+                        sellPrice, // Dies ist eine Kurzschreibweise für sellPrice: sellPrice
+                        quantity: qty // Hier wird das Feld 'quantity' mit dem Wert der Variable 'qty' befüllt
+                    }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    errEl.textContent = result.error || `Fehler (${response.status}).`;
+                    errEl.classList.remove('hidden');
+                    if (result.productSellCooldowns && loggedInUser) {
+                        loggedInUser.productSellCooldowns = result.productSellCooldowns;
+                    } else if (result.cooldownActiveForProduct && result.cooldownEndsAt && loggedInUser) {
+                        if (!loggedInUser.productSellCooldowns) loggedInUser.productSellCooldowns = {};
+                        loggedInUser.productSellCooldowns[result.cooldownActiveForProduct.toString()] = result.cooldownEndsAt;
+                    }
+                    checkSellCooldown(currentSellProductId);
+                } else {
+                    showToast(result.message || "Verkauf ok!");
+                    if (result.user) await updateUserInfo(result.user);
+                    else await updateUserInfo();
+                    await loadProducts('initial');
+                    if (!document.getElementById('inventory-modal').classList.contains('hidden')) {
+                        showMyInventory();
+                    }
+                    closeSellProductModal();
+                }
+            } catch (error) {
+                console.error(`${LOG_PREFIX} Fehler handleSellProduct:`, error); // Beachte, dass LOG_PREFIX hier definiert sein muss
+                errEl.textContent = "Netzwerkfehler.";
+                errEl.classList.remove('hidden');
+            } finally {
+                if (!document.getElementById('sell-product-modal').classList.contains('hidden')) {
+                    confirmBtn.disabled = false;
+                    btnTxt.textContent = 'Verkaufen';
+                    spinner.classList.add('hidden');
+                    checkSellCooldown(currentSellProductId);
+                }
+            }
+        }
 
         // --- Bestellhistorie (Anzeige) ---
         function showOrderHistory() { if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; } const modal = document.getElementById('order-history-modal'); const contentDiv = document.getElementById('order-history-content'); contentDiv.innerHTML = ''; try { const history = JSON.parse(localStorage.getItem('orderHistory') || '[]'); if (history.length === 0) { contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Keine Bestellungen.</p>'; } else { history.forEach(order => { const orderDiv = document.createElement('div'); orderDiv.className = 'mb-6 p-4 border rounded shadow-sm'; const orderDate = new Date(order.date); const fmtDate = orderDate.toLocaleDateString('de-DE', { year: 'numeric', month: '2-digit', day: '2-digit' }); const fmtTime = orderDate.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); let itemsHtml = '<ul class="list-disc list-inside text-sm mb-2">'; (order.items || []).forEach(item => { itemsHtml += `<li>${item.quantity} x ${item.name} (@ $${(item.price || 0).toFixed(2)})${item.isTokenCardPurchase ? ' <span class="text-xs text-purple-500">(Token-Code)</span>' : ''}</li>`; }); itemsHtml += '</ul>'; orderDiv.innerHTML = `<div class="flex justify-between items-center mb-2"><p class="font-semibold">Best. ${fmtDate}, ${fmtTime} Uhr</p>${order.orderId ? `<p class="text-xs text-gray-500">ID: ${order.orderId}</p>` : ''}</div>${itemsHtml}<p class="text-right font-bold mt-2 border-t pt-2">Gesamt: $${(order.total || 0).toFixed(2)}</p>`; contentDiv.appendChild(orderDiv); }); } } catch (e) { contentDiv.innerHTML = '<p class="text-center text-red-500 py-4">Fehler Laden Historie.</p>'; } modal.classList.remove('hidden'); }
