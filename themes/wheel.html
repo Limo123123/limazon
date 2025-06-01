@@ -198,8 +198,7 @@
         class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[100]">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md text-center">
             <h2 class="text-xl font-bold mb-4">Glücksrad teilen</h2>
-            <p class="mb-2">Teile diesen Code:</p><input type="text" id="share-code-display" readonly
-                class="w-full p-2 border rounded bg-gray-100 text-center font-mono mb-3"><button
+            <p class="mb-2">Teile diesen Code:</p><input type="text" id="share-code-display" readonly                class="w-full p-2 border rounded bg-gray-100 text-center font-mono mb-3"><button
                 onclick="copyShareCode()"
                 class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mb-4">Kopieren</button><br><button
                 onclick="document.getElementById('share-code-modal').classList.add('hidden')"
@@ -207,6 +206,10 @@
         </div>
     </div>
     <div id="toast-container" class="fixed bottom-0 right-0 p-4 space-y-2 z-[200]"></div>
+
+    <footer class="mt-12 text-center text-gray-500 text-sm">
+        © 2025 Limazon Universe
+    </footer>
 
     <script>
         const WHEELS_LOG_PREFIX = "[Wheels FE]";
