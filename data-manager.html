@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Admin - Datenmanipulation</title>
+    <style>
+        /* ... (CSS bleibt größtenteils gleich, ggf. kleine Anpassungen für neue Elemente) ... */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+        }
+
+        .form-section h3 {
+            margin-top: 0;
+            color: #34495e;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select,
+        textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 80px;
+            font-family: "Courier New", Courier, monospace;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: scroll;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #result-area {
+            margin-top: 20px;
+        }
+
+        #result-docs,
+        #result-raw {
+            margin-top: 10px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #ecf0f1;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: "Courier New", Courier, monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-success {
+            border-left: 5px solid #2ecc71;
+            background-color: #e8f8f5;
+        }
+
+        .result-error {
+            border-left: 5px solid #e74c3c;
+            background-color: #fdedec;
+            color: #c0392b;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .action-button-group button {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #3498db;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .doc-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+
+        .doc-item:last-child {
+            border-bottom: none;
+        }
+
+        .doc-item button {
+            font-size: 0.8rem;
+            padding: 5px 8px;
+            width: auto;
+            margin-left: 10px;
+            background-color: #e67e22;
+        }
+
+        .doc-item button:hover {
+            background-color: #d35400;
+        }
+
+        .edit-form textarea {
+            min-height: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Limazon Admin - Datenmanipulation</h1>
+
+        <!-- Authentifizierungssektionen bleiben gleich -->
+        <div class="form-section">
+            <h3>Stufe 1 & 2: Lokale Admin Authentifizierung</h3>
+            <div class="input-group"><label for="adminUsername">Lokaler Admin Benutzername:</label><input type="text"
+                    id="adminUsername" value="admin"></div>
+            <div class="input-group"><label for="adminPassword">Lokales Admin Passwort:</label><input type="password"
+                    id="adminPassword" placeholder="Passwort des lokalen Admins"></div>
+        </div>
+        <div class="form-section">
+            <h3>Stufe 3: OneDev Admin Authentifizierung</h3>
+            <div class="input-group"><label for="oneDevUrl">OneDev Server URL:</label><input type="text" id="oneDevUrl"
+                    value="http://cause-radio.gl.at.ply.gg:43894/"></div>
+            <div class="input-group"><label for="oneDevAdminUsername">OneDev Admin Benutzername:</label><input
+                    type="text" id="oneDevAdminUsername" value="admin"></div>
+            <div class="input-group"><label for="oneDevAdminPassword">OneDev Admin Passwort:</label><input
+                    type="password" id="oneDevAdminPassword" placeholder="Passwort des OneDev Admins"></div>
+        </div>
+
+        <div class="form-section">
+            <h3>Collection & Operation</h3>
+            <div class="input-group">
+                <label for="collectionName">Collection Name:</label>
+                <select id="collectionName">
+                    <option value="products">products</option>
+                    <option value="users">users</option>
+                    <option value="orders">orders</option>
+                    <option value="userInventories">userInventories</option>
+                    <option value="wheels">wheels</option>
+                    <option value="tokenCodes">tokenCodes</option>
+                    <option value="tokenTransactions">tokenTransactions</option>
+                    <option value="sessions">sessions</option>
+                </select>
+            </div>
+            <!-- Einfache Suche -->
+            <div class="input-group">
+                <label for="searchTerm">Einfache Textsuche (optional, für 'find'):</label>
+                <input type="text" id="searchTerm" placeholder="Sucht in Standardfeldern (z.B. name, username)">
+            </div>
+            <div class="action-button-group">
+                <button id="btnFindAll">Alle Dokumente anzeigen (find)</button>
+                <button id="btnSearch">Suche ausführen (find)</button>
+                <button id="btnAdvancedToggle">Erweiterte Operationen anzeigen/verstecken</button>
+            </div>
+        </div>
+
+        <div id="advancedOperationsSection" class="form-section hidden">
+            <h3>Erweiterte Datenbank Operation</h3>
+            <div class="input-group">
+                <label for="operation">Operation:</label>
+                <select id="operation">
+                    <option value="find">find (Liste)</option>
+                    <option value="findOne">findOne (Einzelnes Dokument)</option>
+                    <option value="insertOne">insertOne (Dokument einfügen)</option>
+                    <option value="insertMany">insertMany (Mehrere einfügen)</option>
+                    <option value="updateOne">updateOne (Dokument aktualisieren)</option>
+                    <option value="updateMany">updateMany (Mehrere aktualisieren)</option>
+                    <option value="deleteOne">deleteOne (Dokument löschen)</option>
+                    <option value="deleteMany">deleteMany (Mehrere löschen)</option>
+                    <option value="countDocuments">countDocuments (Anzahl)</option>
+                    <option value="aggregate">aggregate (Pipeline)</option>
+                </select>
+            </div>
+            <div id="queryGroup" class="input-group">
+                <label for="query">Query (MongoDB Filter - JSON):</label>
+                <textarea id="query" placeholder='{ "key": "value" }'></textarea>
+            </div>
+            <div id="documentGroup" class="input-group hidden">
+                <label for="document">Document (für insertOne - JSON):</label>
+                <textarea id="document" placeholder='{ "key1": "value1", "key2": "value2" }'></textarea>
+            </div>
+            <div id="documentsGroup" class="input-group hidden">
+                <label for="documents">Documents (Array für insertMany - JSON):</label>
+                <textarea id="documents" placeholder='[ { "key": "val" }, { "key2": "val2" } ]'></textarea>
+            </div>
+            <div id="updateGroup" class="input-group hidden">
+                <label for="update">Update (MongoDB Update Operatoren - JSON):</label>
+                <textarea id="update" placeholder='{ "$set": { "key": "newValue" } }'></textarea>
+            </div>
+            <div id="pipelineGroup" class="input-group hidden">
+                <label for="pipeline">Pipeline (Array für aggregate - JSON):</label>
+                <textarea id="pipeline"
+                    placeholder='[ { "$match": { "key": "value" } }, { "$group": { "_id": "$field" } } ]'></textarea>
+            </div>
+            <div id="optionsGroup" class="input-group">
+                <label for="options">Options (z.B. projection, sort, limit - JSON):</label>
+                <textarea id="options" placeholder='{ "sort": { "field": -1 }, "limit": 10 }'></textarea>
+            </div>
+            <button id="submitAdvancedBtn">Erweiterte Operation Ausführen</button>
+        </div>
+
+        <div id="loader" class="loader hidden"></div>
+        <div id="result-area">
+            <div id="result-docs" class="hidden"></div>
+            <div id="result-raw" class="hidden"></div>
+        </div>
+
+        <div id="editModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal()">×</span>
+                <h2>Dokument bearbeiten</h2>
+                <input type="hidden" id="editDocId">
+                <input type="hidden" id="editDocCollection">
+                <textarea id="editDocContent"></textarea>
+                <button id="saveEditBtn">Änderungen Speichern</button>
+            </div>
+        </div>
+
+    </div>
+    <style>
+        .modal {
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        #editDocContent {
+            width: calc(100% - 22px);
+            min-height: 300px;
+            font-family: "Courier New", Courier, monospace;
+        }
+    </style>
+
+    <script>
+        // WICHTIG: Passe diese URL an die Adresse deines auf Render.com gehosteten Backends an!
+        const API_URL = 'https://nodejs-ykji.onrender.com/api/admin/data-manipulation';
+
+        // DOM Elemente
+        const adminUsernameEl = document.getElementById('adminUsername');
+        const adminPasswordEl = document.getElementById('adminPassword');
+        const oneDevUrlEl = document.getElementById('oneDevUrl');
+        const oneDevAdminUsernameEl = document.getElementById('oneDevAdminUsername');
+        const oneDevAdminPasswordEl = document.getElementById('oneDevAdminPassword');
+        const collectionNameEl = document.getElementById('collectionName');
+        const searchTermEl = document.getElementById('searchTerm');
+        const btnFindAll = document.getElementById('btnFindAll');
+        const btnSearch = document.getElementById('btnSearch');
+        const btnAdvancedToggle = document.getElementById('btnAdvancedToggle');
+        const advancedOperationsSection = document.getElementById('advancedOperationsSection');
+        const operationEl = document.getElementById('operation');
+        const queryEl = document.getElementById('query');
+        const documentEl = document.getElementById('document');
+        const documentsEl = document.getElementById('documents');
+        const updateEl = document.getElementById('update');
+        const pipelineEl = document.getElementById('pipeline');
+        const optionsEl = document.getElementById('options');
+        const submitAdvancedBtn = document.getElementById('submitAdvancedBtn');
+        const queryGroup = document.getElementById('queryGroup');
+        const documentGroup = document.getElementById('documentGroup');
+        const documentsGroup = document.getElementById('documentsGroup');
+        const updateGroup = document.getElementById('updateGroup');
+        const pipelineGroup = document.getElementById('pipelineGroup');
+        const loaderEl = document.getElementById('loader');
+        const resultDocsEl = document.getElementById('result-docs');
+        const resultRawEl = document.getElementById('result-raw');
+
+        const editModal = document.getElementById('editModal');
+        const editDocIdEl = document.getElementById('editDocId');
+        const editDocCollectionEl = document.getElementById('editDocCollection');
+        const editDocContentEl = document.getElementById('editDocContent');
+        const saveEditBtn = document.getElementById('saveEditBtn');
+
+
+        function getAuthPayload() {
+            return {
+                adminUsername: adminUsernameEl.value,
+                adminPassword: adminPasswordEl.value,
+                oneDevUrl: oneDevUrlEl.value,
+                oneDevAdminUsername: oneDevAdminUsernameEl.value,
+                oneDevAdminPassword: oneDevAdminPasswordEl.value,
+            };
+        }
+
+        async function executeOperation(payload) {
+            resultDocsEl.innerHTML = '';
+            resultDocsEl.className = 'hidden';
+            resultRawEl.textContent = '';
+            resultRawEl.className = 'hidden';
+            loaderEl.classList.remove('hidden');
+            setButtonsDisabled(true);
+
+            try {
+                console.log("Sende Payload an Backend:", JSON.stringify(payload, null, 2)); // Zum Debuggen
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                const responseData = await response.json();
+                console.log("Antwort vom Backend:", responseData); // Zum Debuggen
+
+                if (response.ok) {
+                    if (payload.operation === 'find' && Array.isArray(responseData.result)) {
+                        displayDocuments(responseData.result, payload.collectionName);
+                    } else {
+                        resultRawEl.classList.remove('hidden');
+                        resultRawEl.textContent = JSON.stringify(responseData, null, 2);
+                        resultRawEl.classList.add('result-success');
+                        resultRawEl.classList.remove('result-error');
+                    }
+                } else {
+                    handleErrorResponse(response, responseData);
+                }
+            } catch (error) {
+                resultRawEl.classList.remove('hidden');
+                resultRawEl.textContent = `Client-seitiger Fehler: ${error.message}`;
+                resultRawEl.classList.add('result-error');
+                console.error('Fehler:', error);
+            } finally {
+                loaderEl.classList.add('hidden');
+                setButtonsDisabled(false);
+            }
+        }
+
+        function displayDocuments(docs, collection) {
+            resultDocsEl.classList.remove('hidden');
+            resultDocsEl.innerHTML = '';
+            if (docs.length === 0) {
+                resultDocsEl.textContent = "Keine Dokumente gefunden.";
+                return;
+            }
+            docs.forEach(doc => {
+                const docId = doc._id || doc.id;
+                const item = document.createElement('div');
+                item.className = 'doc-item';
+
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(doc, null, 2);
+                item.appendChild(pre);
+
+                if (docId !== undefined && docId !== null) { // Prüfe ob docId existiert
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Bearbeiten';
+                    editBtn.onclick = () => openEditModal(doc, collection, String(docId)); // ID immer als String übergeben
+                    item.appendChild(editBtn);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Löschen';
+                    deleteBtn.style.backgroundColor = '#c0392b';
+                    deleteBtn.onclick = () => confirmDelete(String(docId), collection); // ID immer als String übergeben
+                    item.appendChild(deleteBtn);
+                } else {
+                    console.warn("Dokument ohne identifizierbare ID (_id oder id):", doc);
+                }
+
+                resultDocsEl.appendChild(item);
+            });
+        }
+
+        function openEditModal(doc, collection, docIdString) {
+            editDocIdEl.value = docIdString;
+            editDocCollectionEl.value = collection;
+            const docToEdit = { ...doc };
+            if (docToEdit._id) { // MongoDB _id nicht im Edit-Feld zeigen/ändern
+                delete docToEdit._id;
+            }
+            // Wenn es ein numerisches 'id' Feld gibt (z.B. bei Produkten), bleibt es im Objekt.
+            editDocContentEl.value = JSON.stringify(docToEdit, null, 2);
+            editModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            editModal.classList.add('hidden');
+        }
+
+        saveEditBtn.onclick = async () => {
+            const docIdString = editDocIdEl.value;
+            const collection = editDocCollectionEl.value;
+            let updatedDocContent;
+            try {
+                updatedDocContent = JSON.parse(editDocContentEl.value);
+            } catch (e) {
+                alert("Ungültiges JSON im Bearbeitungsfeld: " + e.message);
+                return;
+            }
+
+            const payload = {
+                ...getAuthPayload(),
+                collectionName: collection,
+                operation: 'updateOne',
+                query: {},
+                update: { $set: updatedDocContent }
+            };
+
+            if (collection === 'products' && !isNaN(parseInt(docIdString))) {
+                payload.query = { id: parseInt(docIdString) };
+            } else {
+                payload.query = { _id: docIdString }; // Backend konvertiert zu ObjectId falls nötig
+            }
+
+            await executeOperation(payload);
+            closeModal();
+            if (resultRawEl.classList.contains('result-success') || (resultDocsEl.children.length > 0 && !resultDocsEl.textContent.includes("Keine Dokumente"))) {
+                // Einfache Prüfung, ob vorher Ergebnisse da waren oder eine Erfolgsmeldung im Raw-Bereich
+                alert("Dokument aktualisiert. Bitte 'Alle Dokumente anzeigen' oder 'Suche ausführen' erneut klicken, um die Änderungen zu sehen.");
+            }
+        };
+
+        async function confirmDelete(docIdString, collection) {
+            if (!confirm(`Möchten Sie das Dokument mit ID '${docIdString}' aus der Collection '${collection}' wirklich löschen?`)) {
+                return;
+            }
+
+            const payload = {
+                ...getAuthPayload(),
+                collectionName: collection,
+                operation: 'deleteOne',
+                query: {}
+            };
+
+            if (collection === 'products' && !isNaN(parseInt(docIdString))) {
+                payload.query = { id: parseInt(docIdString) };
+            } else {
+                payload.query = { _id: docIdString }; // Backend konvertiert zu ObjectId falls nötig
+            }
+
+            await executeOperation(payload);
+            if (resultRawEl.classList.contains('result-success') || (resultDocsEl.children.length > 0 && !resultDocsEl.textContent.includes("Keine Dokumente"))) {
+                alert("Dokument gelöscht. Bitte 'Alle Dokumente anzeigen' oder 'Suche ausführen' erneut klicken, um die Änderungen zu sehen.");
+            }
+        }
+
+        function handleErrorResponse(response, responseData) {
+            resultRawEl.classList.remove('hidden');
+            let errorMessage = `Fehler (Status ${response.status}):\n${JSON.stringify(responseData, null, 2)}`;
+            if (response.status === 401 && responseData.error && responseData.error.includes("Admin-Anmeldedaten")) {
+                errorMessage = `Fehler (Status ${response.status}) - Stufe 2 Authentifizierung fehlgeschlagen:\n${JSON.stringify(responseData, null, 2)}`;
+            } else if (response.status === 401) {
+                errorMessage = `Fehler (Status ${response.status}): Nicht eingeloggt oder Session abgelaufen. Bitte logge dich zuerst in die Hauptanwendung ein.\n${JSON.stringify(responseData, null, 2)}`;
+            } else if (responseData.stage === 3) {
+                errorMessage = `Fehler (Status ${response.status}) - Stufe 3 OneDev Authentifizierung fehlgeschlagen:\n${JSON.stringify(responseData, null, 2)}`;
+            }
+            resultRawEl.textContent = errorMessage;
+            resultRawEl.classList.add('result-error');
+            resultRawEl.classList.remove('result-success');
+        }
+
+        function setButtonsDisabled(disabled) {
+            btnFindAll.disabled = disabled;
+            btnSearch.disabled = disabled;
+            btnAdvancedToggle.disabled = disabled;
+            submitAdvancedBtn.disabled = disabled;
+            // saveEditBtn sollte nur deaktiviert werden, während die Save-Operation läuft,
+            // aber da executeOperation die globalen Buttons steuert, ist das hier abgedeckt.
+        }
+
+        function updateAdvancedInputVisibility() {
+            const selectedOperation = operationEl.value;
+            queryGroup.classList.add('hidden');
+            documentGroup.classList.add('hidden');
+            documentsGroup.classList.add('hidden');
+            updateGroup.classList.add('hidden');
+            pipelineGroup.classList.add('hidden');
+
+            switch (selectedOperation) {
+                case 'find': case 'findOne': case 'countDocuments': queryGroup.classList.remove('hidden'); break;
+                case 'insertOne': documentGroup.classList.remove('hidden'); break;
+                case 'insertMany': documentsGroup.classList.remove('hidden'); break;
+                case 'updateOne': case 'updateMany': queryGroup.classList.remove('hidden'); updateGroup.classList.remove('hidden'); break;
+                case 'deleteOne': case 'deleteMany': queryGroup.classList.remove('hidden'); break;
+                case 'aggregate': pipelineGroup.classList.remove('hidden'); break;
+            }
+        }
+
+        operationEl.addEventListener('change', updateAdvancedInputVisibility);
+        updateAdvancedInputVisibility(); // Initial call
+
+        btnAdvancedToggle.addEventListener('click', () => {
+            advancedOperationsSection.classList.toggle('hidden');
+        });
+
+        btnFindAll.addEventListener('click', () => {
+            const payload = {
+                ...getAuthPayload(),
+                collectionName: collectionNameEl.value,
+                operation: 'find',
+                query: parseJsonInput(queryEl, 'Query', true) || {}, // Erlaube leere Query für "find all"
+                options: parseJsonInput(optionsEl, 'Options', true) || {}
+            };
+            // Wenn queryEl leer ist, senden wir ein leeres Objekt oder was parseJsonInput zurückgibt
+            if (queryEl.value.trim() === "") {
+                payload.query = {};
+            }
+            executeOperation(payload);
+        });
+
+        btnSearch.addEventListener('click', () => {
+            const term = searchTermEl.value.trim();
+            // Wenn serverseitige Suche verwendet wird:
+            const payload = {
+                ...getAuthPayload(),
+                collectionName: collectionNameEl.value,
+                operation: 'find',
+                searchTerm: term,
+                query: {}, // Basis-Query leer, Backend nutzt searchTerm
+                options: parseJsonInput(optionsEl, 'Options', true) || {}
+            };
+            executeOperation(payload);
+        });
+
+        submitAdvancedBtn.addEventListener('click', () => {
+            const payload = {
+                ...getAuthPayload(),
+                collectionName: collectionNameEl.value,
+                operation: operationEl.value,
+            };
+            try {
+                const currentOperation = payload.operation;
+                if (['find', 'findOne', 'updateOne', 'updateMany', 'deleteOne', 'deleteMany', 'countDocuments'].includes(currentOperation)) {
+                    payload.query = parseJsonInput(queryEl, 'Query', true); // Query kann leer sein für find/count
+                }
+                if (currentOperation === 'insertOne') payload.document = parseJsonInput(documentEl, 'Document');
+                if (currentOperation === 'insertMany') payload.documents = parseJsonInput(documentsEl, 'Documents');
+                if (['updateOne', 'updateMany'].includes(currentOperation)) payload.update = parseJsonInput(updateEl, 'Update');
+                if (currentOperation === 'aggregate') payload.pipeline = parseJsonInput(pipelineEl, 'Pipeline');
+
+                const optionsParsed = parseJsonInput(optionsEl, 'Options', true);
+                if (optionsParsed && Object.keys(optionsParsed).length > 0) payload.options = optionsParsed;
+
+                executeOperation(payload);
+            } catch (error) {
+                resultRawEl.classList.remove('hidden');
+                resultRawEl.textContent = `Client-seitiger Fehler bei Parameter-Verarbeitung: ${error.message}`;
+                resultRawEl.classList.add('result-error');
+                console.error('Fehler:', error);
+            }
+        });
+
+        function parseJsonInput(element, fieldName, allowEmptyAsObject = false) {
+            const str = element.value.trim();
+            if (!str) {
+                if (allowEmptyAsObject) return {};
+                throw new Error(`JSON-Eingabe für '${fieldName}' darf nicht leer sein.`);
+            }
+            try { return JSON.parse(str); }
+            catch (e) { throw new Error(`Ungültiges JSON in Feld '${fieldName}': ${e.message}`); }
+        }
+    </script>
+</body>
+
+</html>
