@@ -213,7 +213,7 @@
 
     <script>
         const WHEELS_LOG_PREFIX = "[Wheels FE]";
-        const WHEELS_API_URL = 'https://app.limazon.v6.rocks/api';
+        const WHEELS_API_URL = 'https://api.limazon.v6.rocks/api';
         let wheelLoggedInUser = null, currentAuthModeWheels = 'login', currentOpenWheelData = null, currentEditWheelId = null, theWheel = null, wheelSpinning = false;
 
         function updateWheelLoginStatusUI() { /* unverändert */ const c = document.getElementById('wheel-customer-name'), tD = document.getElementById('wheel-user-tokens-display'), t = document.getElementById('wheel-user-tokens'), aB = document.getElementById('wheel-auth-buttons'), uA = document.getElementById('wheel-user-actions'), mC = document.getElementById('main-content-wheels'), lP = document.getElementById('login-prompt-wheels'); if (wheelLoggedInUser) { c && (c.textContent = wheelLoggedInUser.username); t && (t.textContent = wheelLoggedInUser.tokens || 0); tD && tD.classList.remove('hidden'); aB && aB.classList.add('hidden'); uA && uA.classList.remove('hidden'); mC && mC.classList.remove('hidden'); lP && lP.classList.add('hidden') } else { c && (c.textContent = 'Gast'); tD && tD.classList.add('hidden'); aB && aB.classList.remove('hidden'); uA && uA.classList.add('hidden'); mC && mC.classList.add('hidden'); lP && lP.classList.remove('hidden') } }
