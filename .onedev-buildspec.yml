@@ -31,8 +31,7 @@ jobs:
     name: Modify
     runInContainer: true
     image: node:18-alpine
-    interpreter: !ShellInterpreter
-      shell: bash
+    interpreter: !DefaultInterpreter
       commands: |
         echo "Installing dependencies..."
         npm install
