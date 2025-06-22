@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         createdAt: document.getElementById('createdat-display'),
         status: document.getElementById('status-display'),
 
-        // Sicherheitseinstellungen (NEU)
+        // Sicherheitseinstellungen
         newUsernameInput: document.getElementById('new-username'),
         changeUsernameBtn: document.getElementById('change-username-btn'),
         currentPasswordInput: document.getElementById('current-password'),
@@ -28,9 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModalBtn: document.getElementById('close-modal-btn'),
         modalUsernameConfirm: document.getElementById('modal-username-confirm'),
         deleteConfirmInput: document.getElementById('delete-confirm-input'),
+        deleteConfirmPassword: document.getElementById('delete-confirm-password'), // Diese Zeile braucht das passende HTML-Element
         finalDeleteBtn: document.getElementById('final-delete-btn'),
 
-        // Benachrichtigung
         notification: document.getElementById('notification'),
     };
 
@@ -38,12 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_BASE_URL = 'https://api.limazon.v6.rocks';
 
     // --- DATENABRUF UND ANZEIGE ---
-
     async function fetchUserData() {
         try {
             const response = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
             if (!response.ok) {
-                if (response.status === 401) window.location.href = 'login.html';
+                if (response.status === 401) window.location.href = './login.html';
                 throw new Error('Benutzerdaten konnten nicht geladen werden.');
             }
             const data = await response.json();
@@ -69,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.specialSettingsCard.style.display = 'block';
             elements.infinityMoneyToggle.checked = user.infinityMoney;
         }
-
         elements.modalUsernameConfirm.textContent = user.username;
     }
 
@@ -86,44 +84,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- EVENT LISTENERS ---
-
     function setupEventListeners() {
-        // NEU: Listener für Sicherheitseinstellungen
         elements.changeUsernameBtn.addEventListener('click', handleChangeUsername);
         elements.changePasswordBtn.addEventListener('click', handleChangePassword);
-
-        // Listener für Infinity Money
         elements.infinityMoneyToggle.addEventListener('change', handleInfinityMoneyToggle);
 
-        // Listener für Account-Löschung
         elements.deleteBtn.addEventListener('click', () => {
             elements.deleteModal.style.display = 'flex';
         });
         elements.closeModalBtn.addEventListener('click', () => {
             elements.deleteModal.style.display = 'none';
         });
-        elements.deleteConfirmInput.addEventListener('input', () => {
-            elements.finalDeleteBtn.disabled = elements.deleteConfirmInput.value !== currentUser.username;
+
+        // Event-Listener für die Eingabefelder im Lösch-Modal
+        const modalInputs = [elements.deleteConfirmInput, elements.deleteConfirmPassword];
+        modalInputs.forEach(input => {
+            // Sicherstellen, dass die Listener nur angehängt werden, wenn die Elemente existieren
+            if (input) {
+                input.addEventListener('input', () => {
+                    const isUsernameMatch = elements.deleteConfirmInput.value === currentUser.username;
+                    const isPasswordEntered = elements.deleteConfirmPassword.value.length > 0;
+                    elements.finalDeleteBtn.disabled = !(isUsernameMatch && isPasswordEntered);
+                });
+            }
         });
+
         elements.finalDeleteBtn.addEventListener('click', handleAccountDeletion);
     }
 
     // --- AKTIONEN ---
 
-    // NEU: Funktion zum Ändern des Benutzernamens
     async function handleChangeUsername() {
         const newUsername = elements.newUsernameInput.value.trim();
-        if (newUsername.length < 3) {
-            showNotification('Der neue Benutzername muss mindestens 3 Zeichen lang sein.', 'error');
-            return;
-        }
-
-        // Da kein Passwortfeld im HTML ist, fragen wir es per Prompt ab.
+        if (newUsername.length < 3) return showNotification('Der neue Benutzername muss mindestens 3 Zeichen lang sein.', 'error');
         const password = prompt('Bitte gib dein AKTUELLES Passwort ein, um die Änderung zu bestätigen:');
-        if (!password) {
-            showNotification('Aktion abgebrochen. Kein Passwort eingegeben.', 'info');
-            return; // Benutzer hat Abbrechen gedrückt
-        }
+        if (!password) return showNotification('Aktion abgebrochen. Kein Passwort eingegeben.', 'info');
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/account/username`, {
@@ -133,32 +128,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ newUsername, password })
             });
             const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.error || 'Unbekannter Fehler');
-            }
+            if (!response.ok) throw new Error(result.error || 'Unbekannter Fehler');
             showNotification('Benutzername erfolgreich geändert! Die Seite wird neu geladen.', 'success');
-            setTimeout(() => window.location.reload(), 2000); // Reload, um den neuen Namen überall anzuzeigen
+            setTimeout(() => window.location.reload(), 2000);
         } catch (error) {
             showNotification(error.message, 'error');
         }
     }
 
-    // NEU: Funktion zum Ändern des Passworts
     async function handleChangePassword() {
         const currentPassword = elements.currentPasswordInput.value;
         const newPassword = elements.newPasswordInput.value;
         const confirmPassword = elements.confirmPasswordInput.value;
-
-        // Client-seitige Validierung
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            return showNotification('Bitte alle Passwortfelder ausfüllen.', 'error');
-        }
-        if (newPassword.length < 6) {
-            return showNotification('Das neue Passwort muss mindestens 6 Zeichen haben.', 'error');
-        }
-        if (newPassword !== confirmPassword) {
-            return showNotification('Die neuen Passwörter stimmen nicht überein.', 'error');
-        }
+        if (!currentPassword || !newPassword || !confirmPassword) return showNotification('Bitte alle Passwortfelder ausfüllen.', 'error');
+        if (newPassword.length < 6) return showNotification('Das neue Passwort muss mindestens 6 Zeichen haben.', 'error');
+        if (newPassword !== confirmPassword) return showNotification('Die neuen Passwörter stimmen nicht überein.', 'error');
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/account/password`, {
@@ -168,11 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ currentPassword, newPassword })
             });
             const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.error || 'Unbekannter Fehler');
-            }
+            if (!response.ok) throw new Error(result.error || 'Unbekannter Fehler');
             showNotification('Passwort erfolgreich geändert!', 'success');
-            // Felder leeren für die Sicherheit
             elements.currentPasswordInput.value = '';
             elements.newPasswordInput.value = '';
             elements.confirmPasswordInput.value = '';
@@ -197,12 +178,11 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser.infinityMoney = isEnabled;
         } catch (error) {
             showNotification(error.message, 'error');
-            event.target.checked = !isEnabled; // Zurücksetzen
+            event.target.checked = !isEnabled;
         }
     }
 
     async function handleAccountDeletion() {
-        // NEU: Passwort aus dem Modal-Input holen
         const password = elements.deleteConfirmPassword.value;
 
         if (!password) {
@@ -213,10 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/account`, {
                 method: 'DELETE',
-                // NEU: Header und Body hinzufügen, um das Passwort zu senden
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({ password: password })
             });
@@ -224,7 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (!response.ok) {
-                // Bei falschem Passwort oder anderem Fehler
                 throw new Error(result.error || 'Account konnte nicht gelöscht werden.');
             }
 
@@ -235,19 +211,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 3000);
 
         } catch (error) {
-            // Zeigt die Fehlermeldung vom Server an (z.B. "Falsches Passwort.")
             showNotification(error.message, 'error');
-            // Das Modal bleibt offen, damit der User es erneut versuchen kann.
-            // Passwortfeld für die Sicherheit leeren.
             elements.deleteConfirmPassword.value = '';
-            // Button wieder deaktivieren, da das Passwortfeld jetzt leer ist.
             elements.finalDeleteBtn.disabled = true;
         }
     }
 
-
     // --- HILFSFUNKTIONEN ---
-
     let notificationTimeout;
     function showNotification(message, type = 'info') {
         clearTimeout(notificationTimeout);
