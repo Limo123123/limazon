@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
             if (!response.ok) {
-                if (response.status === 401) window.location.href = '/login.html';
+                if (response.status === 401) window.location.href = 'login.html';
                 throw new Error('Benutzerdaten konnten nicht geladen werden.');
             }
             const data = await response.json();
@@ -202,24 +202,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleAccountDeletion() {
+        // NEU: Passwort aus dem Modal-Input holen
+        const password = elements.deleteConfirmPassword.value;
+
+        if (!password) {
+            showNotification('Bitte gib dein Passwort zur Bestätigung ein.', 'error');
+            return;
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/account`, {
                 method: 'DELETE',
-                credentials: 'include'
+                // NEU: Header und Body hinzufügen, um das Passwort zu senden
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ password: password })
             });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Account konnte nicht gelöscht werden.');
 
-            showNotification('Account wurde gelöscht. Du wirst ausgeloggt.', 'success');
+            const result = await response.json();
+
+            if (!response.ok) {
+                // Bei falschem Passwort oder anderem Fehler
+                throw new Error(result.error || 'Account konnte nicht gelöscht werden.');
+            }
+
+            showNotification('Account wurde erfolgreich gelöscht. Du wirst ausgeloggt.', 'success');
             setTimeout(() => {
                 fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' })
                     .finally(() => window.location.href = '/');
             }, 3000);
+
         } catch (error) {
+            // Zeigt die Fehlermeldung vom Server an (z.B. "Falsches Passwort.")
             showNotification(error.message, 'error');
-            elements.deleteModal.style.display = 'none';
+            // Das Modal bleibt offen, damit der User es erneut versuchen kann.
+            // Passwortfeld für die Sicherheit leeren.
+            elements.deleteConfirmPassword.value = '';
+            // Button wieder deaktivieren, da das Passwortfeld jetzt leer ist.
+            elements.finalDeleteBtn.disabled = true;
         }
     }
+
 
     // --- HILFSFUNKTIONEN ---
 
