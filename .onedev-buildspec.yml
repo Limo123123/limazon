@@ -27,20 +27,6 @@ jobs:
     withSubmodules: false
     condition: SUCCESSFUL
     optional: false
-  - !CommandStep
-    name: Modify
-    runInContainer: true
-    image: node:18-alpine
-    interpreter: !DefaultInterpreter
-      commands: |
-        echo "Installing dependencies..."
-        npm install
-
-        echo "Building the project..."
-        npm run build
-    useTTY: true
-    condition: SUCCESSFUL
-    optional: false
   - !PushRepository
     name: Push to Github
     remoteUrl: https://github.com/Limo123123/limazon
