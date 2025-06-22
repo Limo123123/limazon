@@ -27,14 +27,6 @@ jobs:
     withSubmodules: false
     condition: SUCCESSFUL
     optional: false
-  - !PushRepository
-    name: Push to Github
-    remoteUrl: https://github.com/Limo123123/limazon
-    userName: Limo123123
-    passwordSecret: gh
-    force: true
-    condition: SUCCESSFUL
-    optional: false
   - !CommandStep
     name: Modify
     runInContainer: true
@@ -48,6 +40,14 @@ jobs:
         echo "Building the project..."
         npm run build
     useTTY: true
+    condition: SUCCESSFUL
+    optional: false
+  - !PushRepository
+    name: Push to Github
+    remoteUrl: https://github.com/Limo123123/limazon
+    userName: Limo123123
+    passwordSecret: gh
+    force: true
     condition: SUCCESSFUL
     optional: false
   triggers:
