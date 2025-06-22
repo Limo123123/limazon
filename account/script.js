@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tokens: document.getElementById('tokens-display'),
         createdAt: document.getElementById('createdat-display'),
         status: document.getElementById('status-display'),
-        
+
         specialSettingsCard: document.getElementById('special-settings-card'),
         infinityMoneyToggle: document.getElementById('infinity-money-toggle'),
 
@@ -18,13 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
         modalUsernameConfirm: document.getElementById('modal-username-confirm'),
         deleteConfirmInput: document.getElementById('delete-confirm-input'),
         finalDeleteBtn: document.getElementById('final-delete-btn'),
-        
+
         notification: document.getElementById('notification'),
     };
 
     let currentUser = null;
-    // Die Basis-URL deiner API. Ändere dies, falls dein Backend woanders läuft.
-    const API_BASE_URL = 'https://api.limazon.v6.rocks'; // z.B. 'https://deine-api-url.com'
+    // Die Basis-URL deiner API.
+    const API_BASE_URL = 'https://api.limazon.v6.rocks';
 
     // --- DATENABRUF UND ANZEIGE ---
 
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 if (response.status === 401) {
                     // Nicht eingeloggt, Weiterleitung zur Login-Seite
-                    window.location.href = '/login.html'; // Passe den Pfad bei Bedarf an
+                    window.location.href = '/login.html';
                 }
                 throw new Error('Benutzerdaten konnten nicht geladen werden.');
             }
@@ -54,10 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.userId.textContent = user.userId;
         elements.balance.textContent = `$${user.balance.toFixed(2)}`;
         elements.tokens.textContent = user.tokens;
-        // Das Erstellungsdatum ist nicht direkt im /me Endpoint, aber wir können es aus dem User-Objekt der DB annehmen
         elements.createdAt.textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString('de-DE') : 'N/A';
         elements.status.textContent = user.isAdmin ? 'Administrator' : 'Benutzer';
-        
+
         // "Infinity Money"-Einstellung anzeigen, wenn freigeschaltet oder Admin
         if (user.unlockedInfinityMoney || user.isAdmin) {
             elements.specialSettingsCard.style.display = 'block';
@@ -85,30 +84,28 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupEventListeners() {
         // Event Listener für Infinity Money Toggle
         elements.infinityMoneyToggle.addEventListener('change', handleInfinityMoneyToggle);
-        
+
         // Event Listener für den Account-Löschen-Workflow
         elements.deleteBtn.addEventListener('click', () => {
-             // Da das Backend-Feature fehlt, können wir hier schon abbrechen
-            showNotification('Account-Löschung ist serverseitig noch nicht implementiert.', 'error');
-            // Ansonsten würde das Modal hier geöffnet:
-            // elements.deleteModal.style.display = 'flex';
+            // Öffnet das Modal zur Bestätigung
+            elements.deleteModal.style.display = 'flex';
         });
 
         elements.closeModalBtn.addEventListener('click', () => {
             elements.deleteModal.style.display = 'none';
         });
-        
+
         elements.deleteConfirmInput.addEventListener('input', () => {
             const isMatch = elements.deleteConfirmInput.value === currentUser.username;
             elements.finalDeleteBtn.disabled = !isMatch;
         });
 
-        // WICHTIG: Dieser Button ist absichtlich ohne Funktion, da der Backend-Endpoint fehlt.
+        // Event-Listener für den finalen Lösch-Button
         elements.finalDeleteBtn.addEventListener('click', handleAccountDeletion);
     }
-    
+
     // --- AKTIONEN ---
-    
+
     async function handleInfinityMoneyToggle(event) {
         const isEnabled = event.target.checked;
         try {
@@ -124,10 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 throw new Error(result.error || 'Fehler beim Speichern der Einstellung.');
             }
-            
+
             showNotification('Einstellung erfolgreich gespeichert!', 'success');
             currentUser.infinityMoney = isEnabled; // Lokalen User-State aktualisieren
-            
+
         } catch (error) {
             showNotification(error.message, 'error');
             // Toggle auf den alten Wert zurücksetzen
@@ -136,18 +133,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleAccountDeletion() {
-        // Diese Funktion wird erst aktiv, wenn du den Backend-Endpoint erstellst.
-        showNotification('Diese Funktion ist noch nicht implementiert.', 'error');
-        elements.finalDeleteBtn.disabled = true; // Button wieder deaktivieren
-
-        
-        
+        // Diese Funktion sendet die Anfrage zum Löschen des Accounts an das Backend.
         try {
-            const response = await fetch(`${API_BASE_URL}/api/account`, { // Beispiel-URL
+            const response = await fetch(`${API_BASE_URL}/api/account`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ password: 'HIER MUSS EVENTUELL DAS PASSWORT ZUR BESTÄTIGUNG HIN' })
+                credentials: 'include'
+                // Hinweis: Ein DELETE-Request hat normalerweise keinen Body.
+                // Falls dein Backend z.B. das Passwort zur Bestätigung benötigt,
+                // musst du hier einen 'body' hinzufügen.
             });
 
             const result = await response.json();
@@ -155,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 throw new Error(result.error || 'Account konnte nicht gelöscht werden.');
             }
-            
+
             showNotification('Account wurde erfolgreich gelöscht. Du wirst ausgeloggt.', 'success');
             setTimeout(() => {
                 // Logout durchführen und zur Startseite weiterleiten
