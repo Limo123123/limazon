@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentUser = null;
     // Die Basis-URL deiner API. Ändere dies, falls dein Backend woanders läuft.
-    const API_BASE_URL = ''; // z.B. 'https://deine-api-url.com'
+    const API_BASE_URL = 'https://api.limazon.v6.rocks'; // z.B. 'https://deine-api-url.com'
 
     // --- DATENABRUF UND ANZEIGE ---
 
