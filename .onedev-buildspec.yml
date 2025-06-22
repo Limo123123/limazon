@@ -35,6 +35,21 @@ jobs:
     force: true
     condition: SUCCESSFUL
     optional: false
+  - !CommandStep
+    name: Modify
+    runInContainer: true
+    image: node:18-alpine
+    interpreter: !ShellInterpreter
+      shell: bash
+      commands: |
+        echo "Installing dependencies..."
+        npm install
+
+        echo "Building the project..."
+        npm run build
+    useTTY: true
+    condition: SUCCESSFUL
+    optional: false
   triggers:
   - !BranchUpdateTrigger {}
   retryCondition: never
