@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Limazon Erlebnis Auswahl</title>
+    <title>Limazon Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -18,8 +18,8 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         .theme-card img {
-            height: 180px; /* Feste Höhe für die Vorschaubilder */
-            object-fit: cover; /* Stellt sicher, dass das Bild den Bereich füllt, ohne das Seitenverhältnis zu verzerren */
+            height: 180px;
+            object-fit: cover;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-6">
 
     <div class="text-center mb-12">
-        <h1 class="text-5xl font-bold text-gray-800 mb-3">Willkommen im Limazon Universe!</h1>
+        <h1 class="text-5xl font-bold text-gray-800 mb-3">Willkommen im Limazon <Portal></Portal>!</h1>
         <p class="text-xl text-gray-600">Wähle dein nächstes Abenteuer:</p>
     </div>
 
@@ -78,6 +78,18 @@
                 <p class="text-gray-600 mb-4 text-sm">Schreibe anderen Limo ID Nutzern mit Share Codes!</p>
                 <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
                     Zu Whatslim
+                </button>
+            </div>
+        </div>
+
+    <!-- Option 5: Account -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('account/index.html')">
+            <img src="placeholder_account.png" alt="Account" class="w-full">
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Account</h2>
+                <p class="text-gray-600 mb-4 text-sm">Siehe deine Limo ID ein!</p>
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    Zu Account
                 </button>
             </div>
         </div>
