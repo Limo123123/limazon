@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hall of Fame - Limazon Server</title>
+    <style>
+        /* Modernes, dunkles Design */
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --text-color: #e0e0e0;
+            --border-color: #333;
+            --gold-color: #ffd700;
+            --silver-color: #c0c0c0;
+            --bronze-color: #cd7f32;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Teko:wght@700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 1rem 2rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        #page-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 3.5rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        #last-updated {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: -10px;
+            margin-bottom: 2rem;
+        }
+
+        .category-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .category-card h2 {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.2rem;
+            margin-top: 0;
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .category-card .description {
+            color: #b0b0b0;
+            font-style: italic;
+            margin-bottom: 1.5rem;
+        }
+
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            counter-reset: ranking-counter;
+        }
+
+        .ranking-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            border-left: 4px solid transparent;
+            transition: background-color 0.2s;
+        }
+
+        .ranking-list li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Medaillen für Top 3 */
+        .ranking-list li:nth-child(1) { border-left-color: var(--gold-color); }
+        .ranking-list li:nth-child(2) { border-left-color: var(--silver-color); }
+        .ranking-list li:nth-child(3) { border-left-color: var(--bronze-color); }
+
+        .ranking-list li::before {
+            counter-increment: ranking-counter;
+            content: counter(ranking-counter);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            background: #333;
+            color: var(--text-color);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Spezielle Farben für die Medaillen-Nummern */
+        .ranking-list li:nth-child(1)::before { background: var(--gold-color); color: #000; }
+        .ranking-list li:nth-child(2)::before { background: var(--silver-color); color: #000; }
+        .ranking-list li:nth-child(3)::before { background: var(--bronze-color); color: #000; }
+
+        .username {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .value {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .infinity-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .member-tag {
+            background-color: var(--primary-color);
+            color: var(--bg-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        #loading-message, #error-message {
+            text-align: center;
+            font-size: 1.2rem;
+            padding: 2rem;
+        }
+        
+        #error-message {
+            color: #ff5555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="page-title"></h1>
+        <p id="last-updated"></p>
+
+        <div id="hall-of-fame-content">
+            <p id="loading-message">Lade die Halle des Ruhms... Die Legenden versammeln sich!</p>
+        </div>
+    </div>
+
+    <script>
+        // ===============================================================
+        // == WICHTIG: Passe diese URL an deine Server-Adresse an! ==
+        // ===============================================================
+        // Wenn du lokal testest, könnte es so aussehen: 'http://localhost:10000/api/hall-of-fame'
+        // Auf deinem Live-Server ist es die öffentliche URL.
+        const apiUrl = 'https://api.limazon.v6.rocks/api/hall-of-fame'; 
+        // ===============================================================
+
+        const pageTitleEl = document.getElementById('page-title');
+        const lastUpdatedEl = document.getElementById('last-updated');
+        const contentEl = document.getElementById('hall-of-fame-content');
+        const loadingEl = document.getElementById('loading-message');
+
+        // Hilfsfunktion zur Formatierung von Zahlen
+        function formatNumber(num) {
+            return new Intl.NumberFormat('de-DE').format(num);
+        }
+
+        // Hauptfunktion zum Abrufen und Anzeigen der Daten
+        async function fetchHallOfFame() {
+            try {
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`Netzwerkfehler: ${response.status} - ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                // Lade-Nachricht entfernen
+                loadingEl.style.display = 'none';
+
+                // Titel und Update-Zeit setzen
+                pageTitleEl.textContent = data.title;
+                const updatedDate = new Date(data.lastUpdated);
+                lastUpdatedEl.textContent = `Letzte Aktualisierung: ${updatedDate.toLocaleString('de-DE')}`;
+
+                // Kategorien durchlaufen und HTML generieren
+                data.categories.forEach(category => {
+                    let entriesHtml = '';
+
+                    if (category.id === 'money_magnates') {
+                        entriesHtml = '<ol class="ranking-list">';
+                        category.entries.forEach(entry => {
+                            // Währung formatieren, z.B. $123.456,78
+                            const formattedBalance = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'USD' }).format(entry.balance);
+                            entriesHtml += `
+                                <li>
+                                    <span class="username">${entry.username}</span>
+                                    <span class="value">${formattedBalance}</span>
+                                </li>
+                            `;
+                        });
+                        entriesHtml += '</ol>';
+                    } else if (category.id === 'token_titans') {
+                        entriesHtml = '<ol class="ranking-list">';
+                        category.entries.forEach(entry => {
+                            entriesHtml += `
+                                <li>
+                                    <span class="username">${entry.username}</span>
+                                    <span class="value">${formatNumber(entry.tokens)} Tokens</span>
+                                </li>
+                            `;
+                        });
+                        entriesHtml += '</ol>';
+                    } else if (category.id === 'infinity_club') {
+                        entriesHtml = '<div class="infinity-members">';
+                        category.members.forEach(member => {
+                            entriesHtml += `<span class="member-tag">∞ ${member}</span>`;
+                        });
+                        entriesHtml += '</div>';
+                    }
+
+                    // Die fertige "Karte" für die Kategorie erstellen und einfügen
+                    const categoryCard = `
+                        <div class="category-card">
+                            <h2>${category.title}</h2>
+                            <p class="description">${category.description}</p>
+                            ${entriesHtml}
+                        </div>
+                    `;
+                    contentEl.innerHTML += categoryCard;
+                });
+
+            } catch (error) {
+                console.error('Fehler beim Abrufen der Hall of Fame:', error);
+                loadingEl.style.display = 'none';
+                contentEl.innerHTML = `<p id="error-message">Hoppla! Die Halle des Ruhms konnte nicht geladen werden. Vielleicht polieren die Helden gerade ihre Rüstungen. <br><br>Fehler: ${error.message}</p>`;
+            }
+        }
+
+        // Die Funktion ausführen, sobald die Seite geladen ist
+        document.addEventListener('DOMContentLoaded', fetchHallOfFame);
+
+    </script>
+
+</body>
+</html>
