@@ -548,6 +548,29 @@
             <div id="my-token-codes-content" class="overflow-y-auto flex-grow" style="max-height: calc(80vh - 120px);">
                 <p class="text-center text-gray-500 py-4">Du hast keine unbenutzten Token Codes.</p>
             </div>
+                        <!-- START: New Merge Section -->
+            <div class="border-t pt-4 mt-4">
+                <h3 class="text-lg font-semibold mb-2 text-center">Token Codes zusammenführen</h3>
+                <div class="flex items-center justify-center space-x-2">
+                    <select id="merge-token-value" class="border rounded p-2">
+                        <option value="10">10 Tokens</option>
+                        <option value="50">50 Tokens</option>
+                        <option value="100">100 Tokens</option>
+                        <option value="500">500 Tokens</option>
+                        <option value="1000">1000 Tokens</option>
+                    </select>
+                    <input id="merge-token-count" type="number" placeholder="Anzahl" min="2"
+                        class="border rounded p-2 w-24 text-center">
+                    <button id="merge-token-button"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center"
+                        onclick="mergeTokenCodes()">
+                        <span class="button-text">Zusammenführen</span>
+                        <span class="button-spinner hidden"></span>
+                    </button>
+                </div>
+                <p id="merge-token-message" class="text-sm mt-2 text-center"></p>
+            </div>
+            <!-- END: New Merge Section -->
             <div class="modal-footer flex justify-end">
                 <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
                     onclick="closeMyTokenCodesModal()">Schließen</button>
@@ -895,6 +918,63 @@
         // --- Polling ---
         function startPolling() { if (pollingTimer) clearInterval(pollingTimer); pollingTimer = setInterval(async () => { if (!isServerStarting && !serverStartTimeoutId) { const prevStocks = products.reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {}); const prevCount = products.length; const prevTokenCardsCount = products.filter(p => p.isTokenCard).length; await loadProducts('polling'); if (!isServerStarting) { let changed = false; if (products.length !== prevCount || products.filter(p => p.isTokenCard).length !== prevTokenCardsCount) changed = true; else { for (const curP of products) { if (!curP.isTokenCard && (prevStocks[curP.id] === undefined || prevStocks[curP.id] !== curP.stock)) { changed = true; break; } } } if (changed) { console.log(`${LOG_PREFIX} Polling: Änderungen erkannt.`); if (!document.getElementById('cart-modal').classList.contains('hidden')) viewCart(); const coModal = document.getElementById('checkout-modal'); const tyModal = document.getElementById('thank-you-modal'); if (!coModal.classList.contains('hidden') && tyModal.classList.contains('hidden')) checkout(); if (detailModalProductId !== null) showProductDetails(detailModalProductId); if (!document.getElementById('inventory-modal').classList.contains('hidden') && loggedInUser) showMyInventory(); if (!document.getElementById('my-token-codes-modal').classList.contains('hidden') && loggedInUser) showMyTokenCodes(); } } } else {/* Polling übersprungen */ } }, pollingInterval); }
 
+                // --- START: New Function for merging tokens ---
+        async function mergeTokenCodes() {
+            const valueSelect = document.getElementById('merge-token-value');
+            const countInput = document.getElementById('merge-token-count');
+            const messageEl = document.getElementById('merge-token-message');
+            const mergeButton = document.getElementById('merge-token-button');
+            const btnText = mergeButton.querySelector('.button-text');
+            const spinner = mergeButton.querySelector('.button-spinner');
+
+            const tokenValue = parseInt(valueSelect.value, 10);
+            const count = parseInt(countInput.value, 10);
+
+            messageEl.textContent = '';
+            if (isNaN(count) || count < 2) {
+                messageEl.textContent = 'Anzahl muss mindestens 2 sein.';
+                messageEl.className = 'text-sm mt-2 text-center text-red-500';
+                return;
+            }
+
+            mergeButton.disabled = true;
+            btnText.textContent = 'Führe zusammen...';
+            spinner.classList.remove('hidden');
+            messageEl.className = 'text-sm mt-2 text-center text-blue-500';
+            messageEl.textContent = 'Verarbeite...';
+
+            try {
+                const response = await fetch(`${getApiUrl()}/tokens/merge`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tokenValue, count }),
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || `Serverfehler (${response.status})`);
+                }
+
+                messageEl.className = 'text-sm mt-2 text-center text-green-500';
+                messageEl.textContent = result.message || 'Erfolgreich!';
+                countInput.value = '';
+                showToast("Codes erfolgreich zusammengeführt!");
+                await showMyTokenCodes(); // Refresh the list of codes
+
+            } catch (error) {
+                console.error(`${LOG_PREFIX} Fehler beim Zusammenführen der Token Codes:`, error);
+                messageEl.className = 'text-sm mt-2 text-center text-red-500';
+                messageEl.textContent = error.message;
+            } finally {
+                mergeButton.disabled = false;
+                btnText.textContent = 'Zusammenführen';
+                spinner.classList.add('hidden');
+            }
+        }
+        // --- END: New Function for merging tokens ---
+        
         // --- Initialisierung ---
         window.onload = async () => {
             console.log(`${LOG_PREFIX} window.onload: Initialisiere Seite.`);
