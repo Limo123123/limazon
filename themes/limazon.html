@@ -188,6 +188,9 @@
                     class="bg-teal-400 hover:bg-teal-500 text-black px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
                     onclick="showMyInventory()">Inventar</button>
                 <button
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="openAuctionHouse()">Auktionshaus</button>
+                <button
                     class="bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
                     onclick="showMyTokenCodes()">Meine Token Codes</button> <!-- NEU -->
                 <button
@@ -498,6 +501,127 @@
         </div>
     </div>
 
+    <!-- NEU: Auction House Modal -->
+    <div id="auction-house-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-4xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeAuctionHouse()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Auktionshaus</h2>
+            <div id="auction-house-content"
+                class="overflow-y-auto flex-grow grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
+                <p class="text-center text-gray-500 py-4 col-span-full">Lade Auktionen...</p>
+            </div>
+            <div class="modal-footer flex justify-end">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    onclick="closeAuctionHouse()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Auction Detail Modal -->
+    <div id="auction-detail-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-2xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="document.getElementById('auction-detail-modal').classList.add('hidden')">×</button>
+            <h2 id="auction-detail-name" class="text-2xl font-bold mb-4 text-center flex-shrink-0">Auktion Details</h2>
+
+            <div class="flex-grow overflow-y-auto p-2">
+                <div class="md:flex md:space-x-6">
+                    <!-- Linke Seite: Bild & Infos -->
+                    <div class="md:w-1/2 mb-4 md:mb-0">
+                        <img id="auction-detail-image" src="" alt="Produktbild"
+                            class="w-full h-64 object-cover rounded mx-auto mb-2">
+                        <p class="text-sm text-gray-500">Verkäufer: <span id="auction-detail-seller"
+                                class="font-semibold"></span></p>
+                        <p class="text-sm text-gray-500">Verbleibende Zeit: <span id="auction-detail-time"
+                                class="font-semibold"></span></p>
+                        <hr class="my-3">
+                        <p class="text-2xl font-bold text-blue-600">Aktuelles Gebot: $<span
+                                id="auction-detail-bid"></span></p>
+                        <p class="text-sm text-gray-600">Höchstbietender: <span id="auction-detail-highest-bidder"
+                                class="font-semibold"></span></p>
+                    </div>
+
+                    <!-- Rechte Seite: Gebot abgeben & Historie -->
+                    <div class="md:w-1/2 flex flex-col">
+                        <div class="bg-gray-100 p-3 rounded-lg border">
+                            <h3 class="text-lg font-semibold mb-2">Dein Gebot abgeben</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-lg font-semibold">$</span>
+                                <input type="number" id="bid-amount"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                    placeholder="z.B. 5500.00">
+                            </div>
+                            <button id="confirm-bid-button"
+                                class="mt-2 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
+                                <span class="button-text">Bieten</span>
+                                <span class="button-spinner hidden"></span>
+                            </button>
+                            <p id="auction-detail-error" class="text-red-500 text-sm mt-2 text-center"></p>
+                        </div>
+
+                        <h4 class="font-semibold mt-4 mb-2">Gebotshistorie</h4>
+                        <div id="auction-bid-history"
+                            class="text-xs overflow-y-auto border rounded bg-gray-50 p-2 flex-grow min-h-[100px]">
+                            <p class="text-gray-500">Noch keine Gebote.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Create Auction Modal -->
+    <div id="create-auction-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[95]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeCreateAuctionModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Item Versteigern</h2>
+            <div class="modal-content">
+                <div class="mb-4 text-center">
+                    <img id="create-auction-product-image" src="" class="w-24 h-24 object-cover rounded mx-auto mb-2">
+                    <p>Produkt: <strong id="create-auction-product-name"></strong></p>
+                    <p class="text-sm">Dein Bestand: <span id="create-auction-user-stock">0</span> Stk.</p>
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-quantity" class="block text-sm font-medium text-gray-700 mb-1">Menge zu
+                        versteigern:</label>
+                    <input type="number" id="create-auction-quantity" value="1" min="1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-start-bid"
+                        class="block text-sm font-medium text-gray-700 mb-1">Startgebot ($):</label>
+                    <input type="number" id="create-auction-start-bid" step="0.01" min="0.01"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-duration"
+                        class="block text-sm font-medium text-gray-700 mb-1">Auktionsdauer:</label>
+                    <select id="create-auction-duration"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        <option value="12">12 Stunden</option>
+                        <option value="24" selected>24 Stunden</option>
+                        <option value="48">48 Stunden</option>
+                    </select>
+                </div>
+                <p id="create-auction-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
+            </div>
+            <div class="modal-footer flex justify-between">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                    onclick="closeCreateAuctionModal()">Abbrechen</button>
+                <button id="confirm-create-auction-button"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
+                    <span class="button-text">Auktion starten</span>
+                    <span class="button-spinner hidden"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Token Code Generation Modal -->
     <div id="generate-token-codes-modal"
         class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
@@ -548,7 +672,7 @@
             <div id="my-token-codes-content" class="overflow-y-auto flex-grow" style="max-height: calc(80vh - 120px);">
                 <p class="text-center text-gray-500 py-4">Du hast keine unbenutzten Token Codes.</p>
             </div>
-                        <!-- START: New Merge Section -->
+            <!-- START: New Merge Section -->
             <div class="border-t pt-4 mt-4">
                 <h3 class="text-lg font-semibold mb-2 text-center">Token Codes zusammenführen</h3>
                 <div class="flex items-center justify-center space-x-2">
@@ -784,7 +908,61 @@
         function closeProductDetails() { document.getElementById('product-detail-modal').classList.add('hidden'); detailModalProductId = null; }
 
         // --- Inventar & Verkauf ---
-        async function showMyInventory() { if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; } const modal = document.getElementById('inventory-modal'); const contentDiv = document.getElementById('inventory-content'); contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Lade Inventar...</p>'; modal.classList.remove('hidden'); try { const response = await fetch(`${getApiUrl()}/inventory`, { credentials: 'include' }); if (!response.ok) { const errData = await response.json().catch(() => ({ error: "Unbek. Fehler" })); throw new Error(errData.error || `Fehler ${response.status}`); } const { inventory } = await response.json(); if (!inventory || inventory.length === 0) { contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Inventar leer.</p>'; return; } contentDiv.innerHTML = ''; inventory.forEach(item => { const productDetails = item.productDetails || {}; const invDiv = document.createElement('div'); invDiv.className = 'flex items-center justify-between mb-3 p-3 border rounded shadow-sm'; invDiv.innerHTML = `<div class="flex items-center"><img src="${productDetails.image_url || `https://via.placeholder.com/50x50.png?text=${encodeURIComponent(productDetails.name || 'P')}`}" alt="${productDetails.name}" class="w-12 h-12 object-cover rounded mr-3"><div><p class="font-semibold">${productDetails.name || `Produkt ID: ${item.productId}`}</p><p class="text-sm text-gray-600">Menge: ${item.quantityOwned}</p></div></div><button class="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded ${item.quantityOwned <= 0 ? "opacity-50 cursor-not-allowed" : ""}" onclick="openSellProductModalFromInventory(${item.productId},${item.quantityOwned})" ${item.quantityOwned <= 0 ? "disabled" : ""}>Verkaufen</button>`; contentDiv.appendChild(invDiv); }); } catch (error) { console.error(`${LOG_PREFIX} Fehler Laden Inventar:`, error); contentDiv.innerHTML = `<p class="text-center text-red-500 py-4">Fehler: ${error.message}</p>`; } }
+        async function showMyInventory() {
+            if (!loggedInUser) {
+                openAuthModal('login');
+                showToast("Bitte einloggen.");
+                return;
+            }
+            const modal = document.getElementById('inventory-modal');
+            const contentDiv = document.getElementById('inventory-content');
+            contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Lade Inventar...</p>';
+            modal.classList.remove('hidden');
+            try {
+                const response = await fetch(`${getApiUrl()}/inventory`, {
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({
+                        error: "Unbek. Fehler"
+                    }));
+                    throw new Error(errData.error || `Fehler ${response.status}`);
+                }
+                const {
+                    inventory
+                } = await response.json();
+                if (!inventory || inventory.length === 0) {
+                    contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Inventar leer.</p>';
+                    return;
+                }
+                contentDiv.innerHTML = '';
+                inventory.forEach(item => {
+                    const productDetails = item.productDetails || {};
+                    const invDiv = document.createElement('div');
+                    invDiv.className = 'flex items-center justify-between mb-3 p-3 border rounded shadow-sm';
+
+                    const disabledState = item.quantityOwned <= 0 ? "opacity-50 cursor-not-allowed" : "";
+                    const disabledAttr = item.quantityOwned <= 0 ? "disabled" : "";
+
+                    invDiv.innerHTML = `<div class="flex items-center">
+                    <img src="${productDetails.image_url || `https://via.placeholder.com/50x50.png?text=${encodeURIComponent(productDetails.name || 'P')}`}" alt="${productDetails.name}" class="w-12 h-12 object-cover rounded mr-3">
+                    <div>
+                        <p class="font-semibold">${productDetails.name || `Produkt ID: ${item.productId}`}</p>
+                        <p class="text-sm text-gray-600">Menge: ${item.quantityOwned}</p>
+                    </div>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <button class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded ${disabledState}" onclick="openSellProductModalFromInventory(${item.productId},${item.quantityOwned})" ${disabledAttr}>Verkaufen</button>
+                    <button class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1 rounded ${disabledState}" onclick="openCreateAuctionModal(${item.productId}, '${productDetails.name}', ${item.quantityOwned}, '${productDetails.image_url}')" ${disabledAttr}>Versteigern</button>
+                </div>`;
+
+                    contentDiv.appendChild(invDiv);
+                });
+            } catch (error) {
+                console.error(`${LOG_PREFIX} Fehler Laden Inventar:`, error);
+                contentDiv.innerHTML = `<p class="text-center text-red-500 py-4">Fehler: ${error.message}</p>`;
+            }
+        }
         function closeMyInventory() { document.getElementById('inventory-modal').classList.add('hidden'); }
         function openSellProductModalFromInventory(productId, quantityUserOwns) { if (!loggedInUser) { openAuthModal('login'); return; } const product = products.find(p => p.id === productId); if (!product) { showToast("Produkt nicht im Katalog."); return; } if (quantityUserOwns <= 0) { showToast("Produkt nicht im Bestand."); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); return; } currentSellProductId = productId; document.getElementById('sell-product-name').textContent = product.name; document.getElementById('sell-product-original-price').textContent = product.price; document.getElementById('sell-product-user-stock').textContent = `${quantityUserOwns} Stk.`; const sellQtyInput = document.getElementById('sell-quantity'); sellQtyInput.value = 1; sellQtyInput.max = quantityUserOwns; const sellPriceInput = document.getElementById('sell-price'); const origPriceNum = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; sellPriceInput.value = origPriceNum.toFixed(2); document.getElementById('sell-error-message').classList.add('hidden'); document.getElementById('sell-cooldown-message').classList.add('hidden'); updateSellProbability(); const confirmSellBtn = document.getElementById('confirm-sell-button'); confirmSellBtn.onclick = () => handleSellProduct(); confirmSellBtn.disabled = false; confirmSellBtn.querySelector('.button-text').textContent = 'Verkaufen'; confirmSellBtn.querySelector('.button-spinner').classList.add('hidden'); checkSellCooldown(productId); document.getElementById('sell-product-modal').classList.remove('hidden'); }
         function closeSellProductModal() { document.getElementById('sell-product-modal').classList.add('hidden'); currentSellProductId = null; if (sellCooldownIntervalId) { clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; } }
@@ -918,7 +1096,7 @@
         // --- Polling ---
         function startPolling() { if (pollingTimer) clearInterval(pollingTimer); pollingTimer = setInterval(async () => { if (!isServerStarting && !serverStartTimeoutId) { const prevStocks = products.reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {}); const prevCount = products.length; const prevTokenCardsCount = products.filter(p => p.isTokenCard).length; await loadProducts('polling'); if (!isServerStarting) { let changed = false; if (products.length !== prevCount || products.filter(p => p.isTokenCard).length !== prevTokenCardsCount) changed = true; else { for (const curP of products) { if (!curP.isTokenCard && (prevStocks[curP.id] === undefined || prevStocks[curP.id] !== curP.stock)) { changed = true; break; } } } if (changed) { console.log(`${LOG_PREFIX} Polling: Änderungen erkannt.`); if (!document.getElementById('cart-modal').classList.contains('hidden')) viewCart(); const coModal = document.getElementById('checkout-modal'); const tyModal = document.getElementById('thank-you-modal'); if (!coModal.classList.contains('hidden') && tyModal.classList.contains('hidden')) checkout(); if (detailModalProductId !== null) showProductDetails(detailModalProductId); if (!document.getElementById('inventory-modal').classList.contains('hidden') && loggedInUser) showMyInventory(); if (!document.getElementById('my-token-codes-modal').classList.contains('hidden') && loggedInUser) showMyTokenCodes(); } } } else {/* Polling übersprungen */ } }, pollingInterval); }
 
-                // --- START: New Function for merging tokens ---
+        // --- START: New Function for merging tokens ---
         async function mergeTokenCodes() {
             const valueSelect = document.getElementById('merge-token-value');
             const countInput = document.getElementById('merge-token-count');
@@ -974,7 +1152,275 @@
             }
         }
         // --- END: New Function for merging tokens ---
-        
+
+        // --- NEUE FUNKTIONEN FÜR DAS AUKTIONSHAUS ---
+
+        let auctionUpdateInterval = null;
+
+        function formatTimeRemaining(endTime) {
+            const now = new Date();
+            const end = new Date(endTime);
+            const diff = end - now;
+
+            if (diff <= 0) {
+                return '<span class="text-red-600 font-bold">Beendet</span>';
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            let timeString = '';
+            if (days > 0) timeString += `${days}T `;
+            if (hours > 0 || days > 0) timeString += `${hours.toString().padStart(2, '0')}h `;
+            timeString += `${minutes.toString().padStart(2, '0')}m `;
+            timeString += `${seconds.toString().padStart(2, '0')}s`;
+
+            return `<span class="text-gray-800">${timeString.trim()}</span>`;
+        }
+
+        function openAuctionHouse() {
+            if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; }
+            document.getElementById('auction-house-modal').classList.remove('hidden');
+            renderAuctions();
+        }
+
+        function closeAuctionHouse() {
+            document.getElementById('auction-house-modal').classList.add('hidden');
+            if (auctionUpdateInterval) {
+                clearInterval(auctionUpdateInterval);
+                auctionUpdateInterval = null;
+            }
+        }
+
+        async function renderAuctions() {
+            const contentDiv = document.getElementById('auction-house-content');
+            contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4 col-span-full">Lade Auktionen...</p>';
+
+            if (auctionUpdateInterval) clearInterval(auctionUpdateInterval);
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auctions`);
+                if (!response.ok) throw new Error("Auktionen konnten nicht geladen werden.");
+                const { auctions } = await response.json();
+
+                if (!auctions || auctions.length === 0) {
+                    contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4 col-span-full">Aktuell keine Auktionen verfügbar.</p>';
+                    return;
+                }
+
+                contentDiv.innerHTML = '';
+                auctions.forEach(auction => {
+
+                    const auctionCard = document.createElement('div');
+                    auctionCard.className = 'product bg-white rounded-lg shadow-md flex flex-col overflow-hidden p-2 cursor-pointer hover:shadow-xl transition-shadow'; // Klassen für Hover-Effekt hinzugefügt
+                    auctionCard.dataset.endTime = auction.endTime;
+                    auctionCard.onclick = () => openAuctionDetail(auction._id); // ONCLICK HINZUGEFÜGT
+
+                    const highestBidderText = auction.highestBidderUsername ? auction.highestBidderUsername : 'Niemand';
+
+                    auctionCard.innerHTML = `
+                        <img src="${auction.productImageUrl}" alt="${auction.productName}" class="w-full h-32 object-cover rounded mb-2">
+                        <strong class="text-md mb-1 truncate">${auction.productName}</strong>
+                        <p class="text-xs text-gray-500 mb-2">Verkäufer: ${auction.sellerUsername}</p>
+                        <p class="text-lg font-bold text-blue-600 mb-1">$${auction.currentBid.toFixed(2)}</p>
+                        <p class="text-xs text-gray-600 mb-2">Höchstbietender: ${highestBidderText}</p>
+                        <div class="mt-auto text-center border-t pt-2">
+                            <p class="text-sm font-semibold time-remaining">${formatTimeRemaining(auction.endTime)}</p>
+                        </div>
+                    `;
+                    contentDiv.appendChild(auctionCard);
+                });
+
+                auctionUpdateInterval = setInterval(() => {
+                    document.querySelectorAll('#auction-house-content .product').forEach(card => {
+                        const timeRemainingEl = card.querySelector('.time-remaining');
+                        if (timeRemainingEl) {
+                            timeRemainingEl.innerHTML = formatTimeRemaining(card.dataset.endTime);
+                        }
+                    });
+                }, 1000);
+
+            } catch (error) {
+                contentDiv.innerHTML = `<p class="text-center text-red-500 py-4 col-span-full">Fehler: ${error.message}</p>`;
+            }
+        }
+
+        async function openAuctionDetail(auctionId) {
+            const modal = document.getElementById('auction-detail-modal');
+            modal.classList.remove('hidden');
+
+            // Reset state
+            document.getElementById('auction-detail-name').textContent = 'Lade Auktion...';
+            document.getElementById('auction-detail-image').src = '';
+            document.getElementById('auction-bid-history').innerHTML = '<p class="text-gray-500">Lade Historie...</p>';
+            document.getElementById('auction-detail-error').textContent = '';
+            document.getElementById('bid-amount').value = '';
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auctions/${auctionId}`);
+                if (!response.ok) throw new Error("Details konnten nicht geladen werden.");
+                const { auction } = await response.json();
+
+                // Populate modal with data
+                document.getElementById('auction-detail-name').textContent = auction.productName;
+                document.getElementById('auction-detail-image').src = auction.productImageUrl;
+                document.getElementById('auction-detail-seller').textContent = auction.sellerUsername;
+                document.getElementById('auction-detail-time').textContent = formatTimeRemaining(auction.endTime).replace(/<[^>]+>/g, ''); // strip html tags
+                document.getElementById('auction-detail-bid').textContent = auction.currentBid.toFixed(2);
+                document.getElementById('auction-detail-highest-bidder').textContent = auction.highestBidderUsername || 'Niemand';
+
+                // Populate bid history
+                const historyDiv = document.getElementById('auction-bid-history');
+                if (auction.bids && auction.bids.length > 0) {
+                    historyDiv.innerHTML = auction.bids.map(bid =>
+                        `<div class="flex justify-between border-b last:border-b-0 py-1">
+                            <span><strong>$${bid.amount.toFixed(2)}</strong> von ${bid.bidderUsername}</span>
+                            <span class="text-gray-500">${new Date(bid.timestamp).toLocaleTimeString('de-DE')}</span>
+                        </div>`
+                    ).join('');
+                } else {
+                    historyDiv.innerHTML = '<p class="text-gray-500">Noch keine Gebote.</p>';
+                }
+
+                // Set up bid button
+                const confirmBtn = document.getElementById('confirm-bid-button');
+                confirmBtn.onclick = () => handleBid(auction._id);
+                // Disable button if user is seller
+                if (loggedInUser && loggedInUser.userId === auction.sellerId) {
+                    confirmBtn.disabled = true;
+                    document.getElementById('bid-amount').disabled = true;
+                    document.getElementById('auction-detail-error').textContent = "Du kannst nicht auf deine eigene Auktion bieten.";
+                } else {
+                    confirmBtn.disabled = false;
+                    document.getElementById('bid-amount').disabled = false;
+                }
+
+            } catch (error) {
+                document.getElementById('auction-detail-error').textContent = error.message;
+            }
+        }
+
+        async function handleBid(auctionId) {
+            const bidAmount = parseFloat(document.getElementById('bid-amount').value);
+            const errorEl = document.getElementById('auction-detail-error');
+            const confirmBtn = document.getElementById('confirm-bid-button');
+            const btnText = confirmBtn.querySelector('.button-text');
+            const spinner = confirmBtn.querySelector('.button-spinner');
+
+            errorEl.textContent = '';
+            if (isNaN(bidAmount) || bidAmount <= 0) {
+                errorEl.textContent = "Bitte gib ein gültiges Gebot ein.";
+                return;
+            }
+
+            confirmBtn.disabled = true;
+            btnText.textContent = 'Biete...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auctions/${auctionId}/bid`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bidAmount }),
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                showToast("Gebot erfolgreich abgegeben!");
+                document.getElementById('auction-detail-modal').classList.add('hidden');
+                renderAuctions(); // Refresh the main auction list to show the new bid
+                updateUserInfo(); // Refresh user balance in header
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+            } finally {
+                confirmBtn.disabled = false;
+                btnText.textContent = 'Bieten';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        let currentAuctionProductId = null;
+
+        function openCreateAuctionModal(productId, productName, userStock, imageUrl) {
+            currentAuctionProductId = productId;
+            document.getElementById('create-auction-product-name').textContent = productName;
+            document.getElementById('create-auction-user-stock').textContent = `${userStock} Stk.`;
+            document.getElementById('create-auction-product-image').src = imageUrl;
+
+            const qtyInput = document.getElementById('create-auction-quantity');
+            qtyInput.max = userStock;
+            qtyInput.value = 1;
+
+            document.getElementById('create-auction-start-bid').value = '';
+            document.getElementById('create-auction-duration').value = '24';
+            document.getElementById('create-auction-error-message').classList.add('hidden');
+
+            const confirmBtn = document.getElementById('confirm-create-auction-button');
+            confirmBtn.onclick = handleCreateAuction; // Set onclick handler
+
+            document.getElementById('create-auction-modal').classList.remove('hidden');
+        }
+
+        function closeCreateAuctionModal() {
+            document.getElementById('create-auction-modal').classList.add('hidden');
+            currentAuctionProductId = null;
+        }
+
+        async function handleCreateAuction() {
+            const quantity = parseInt(document.getElementById('create-auction-quantity').value, 10);
+            const startingBid = parseFloat(document.getElementById('create-auction-start-bid').value);
+            const durationInHours = parseInt(document.getElementById('create-auction-duration').value, 10);
+            const errorEl = document.getElementById('create-auction-error-message');
+            const confirmBtn = document.getElementById('confirm-create-auction-button');
+            const btnText = confirmBtn.querySelector('.button-text');
+            const spinner = confirmBtn.querySelector('.button-spinner');
+
+            errorEl.classList.add('hidden');
+            if (isNaN(quantity) || quantity <= 0 || isNaN(startingBid) || startingBid <= 0) {
+                errorEl.textContent = "Bitte geben Sie eine gültige Menge und ein gültiges Startgebot an.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            confirmBtn.disabled = true;
+            btnText.textContent = 'Starte...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auctions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productId: currentAuctionProductId,
+                        quantity,
+                        startingBid,
+                        durationInHours
+                    }),
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                showToast("Auktion erfolgreich gestartet!");
+                closeCreateAuctionModal();
+                showMyInventory(); // Refresh inventory to show decreased stock
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.remove('hidden');
+            } finally {
+                confirmBtn.disabled = false;
+                btnText.textContent = 'Auktion starten';
+                spinner.classList.add('hidden');
+            }
+        }
+
         // --- Initialisierung ---
         window.onload = async () => {
             console.log(`${LOG_PREFIX} window.onload: Initialisiere Seite.`);
