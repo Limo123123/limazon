@@ -191,6 +191,13 @@
                     class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
                     onclick="openAuctionHouse()">Auktionshaus</button>
                 <button
+                    class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="openStonkMarket()">LimoStonks</button>
+                <!-- NEU: Mein Portfolio Button -->
+                <button
+                    class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="openMyPortfolio()">Mein Portfolio</button>
+                <button
                     class="bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
                     onclick="showMyTokenCodes()">Meine Token Codes</button> <!-- NEU -->
                 <button
@@ -569,6 +576,136 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: LimoStonks Market Modal -->
+    <div id="stonks-market-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center hidden z-[85]">
+        <div class="bg-gray-100 p-4 rounded-lg shadow-2xl w-full max-w-6xl relative max-h-[90vh] flex flex-col">
+
+            <!-- Header Container -->
+            <div class="flex justify-between items-center mb-4 border-b border-gray-300 pb-3 relative">
+                <h2 class="text-3xl font-bold text-gray-800">LimoStonks Börse</h2>
+                <div id="stonks-next-update-timer" class="text-sm text-gray-600 bg-white px-3 py-1 rounded-full shadow">
+                    Nächstes Preis-Update in: <span class="font-bold">--:--</span>
+                </div>
+                <button class="absolute -top-2 -right-2 text-gray-500 hover:text-red-600 text-3xl"
+                    onclick="closeStonkMarket()">×</button>
+            </div>
+
+            <!-- NEU: Such- und Filter-Leiste -->
+            <div class="my-2 p-2 bg-white rounded shadow flex items-center space-x-4">
+                <input type="text" id="stonk-search-input" class="w-full px-3 py-1 border border-gray-300 rounded-full"
+                    placeholder="Aktie suchen (Name oder ID)...">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-semibold">Sortieren:</span>
+                    <button id="sort-stonk-name"
+                        class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Name</button>
+                    <button id="sort-stonk-price"
+                        class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Preis</button>
+                    <button id="sort-stonk-change"
+                        class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Änderung</button>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div id="stonks-market-content"
+                class="overflow-y-auto flex-grow grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2 bg-white rounded shadow-inner">
+                <p class="text-center text-gray-500 py-4 col-span-full">Lade Aktienkurse...</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer flex justify-end mt-4">
+                <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                    onclick="closeStonkMarket()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Stonk Detail/Trade Modal -->
+    <div id="stonk-detail-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[95]">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-xl relative">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="document.getElementById('stonk-detail-modal').classList.add('hidden')">×</button>
+            <h2 id="stonk-detail-name" class="text-2xl font-bold mb-4 text-center">Aktien Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Linke Seite: Infos & Portfolio -->
+                <div>
+                    <img id="stonk-detail-image" src="" class="w-full h-40 object-cover rounded-lg mb-4 shadow">
+                    <p class="text-3xl font-bold text-blue-600">$<span id="stonk-detail-price">--.--</span></p>
+                    <p class="text-sm text-gray-500 mb-4">Aktueller Marktpreis</p>
+
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <h4 class="font-semibold text-blue-800">Dein Portfolio</h4>
+                        <p class="text-sm">Anteile im Besitz: <strong id="stonk-portfolio-quantity"
+                                class="text-lg">0</strong></p>
+                        <p class="text-sm">Ø Einkaufspreis: <strong id="stonk-portfolio-avg-price">$0.00</strong></p>
+                        <p class="text-sm">Gesamtwert: <strong id="stonk-portfolio-total-value">$0.00</strong></p>
+                    </div>
+                </div>
+                <!-- Rechte Seite: Handeln -->
+                <div>
+                    <!-- NACHHER: Überarbeitetes Handels-Panel mit besserem Layout -->
+                    <div id="stonk-trade-panel" class="p-4 rounded-lg bg-gray-50 border">
+                        <h3 class="text-lg font-semibold mb-3 text-center">Handeln</h3>
+
+                        <!-- Flex-Container für die Handels-Aktionen -->
+                        <div class="flex items-center space-x-2">
+                            <!-- Input-Feld (nimmt jetzt weniger Platz ein) -->
+                            <input type="number" id="stonk-trade-quantity" min="1"
+                                class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black text-center"
+                                placeholder="Menge">
+
+                            <!-- Container für die beiden Buttons -->
+                            <div class="flex-grow flex flex-col space-y-2">
+                                <button id="stonk-buy-button"
+                                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded w-full">Kaufen</button>
+                                <button id="stonk-sell-button"
+                                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded w-full">Verkaufen</button>
+                            </div>
+                        </div>
+
+                        <p class="text-center text-sm mt-2">Geschätzter Wert: <strong
+                                id="stonk-trade-estimated-value">$0.00</strong></p>
+                        <p id="stonk-trade-error" class="text-red-500 text-sm mt-3 text-center h-4"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: My Portfolio Modal -->
+    <div id="my-portfolio-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[87]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-4xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeMyPortfolio()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Mein Aktien-Portfolio</h2>
+            <div class="overflow-y-auto flex-grow">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                        <tr>
+                            <th scope="col" class="px-4 py-3">Aktie</th>
+                            <th scope="col" class="px-4 py-3 text-right">Anteile</th>
+                            <th scope="col" class="px-4 py-3 text-right">Ø Kaufpreis</th>
+                            <th scope="col" class="px-4 py-3 text-right">Akt. Marktpreis</th>
+                            <th scope="col" class="px-4 py-3 text-right">Gesamtwert</th>
+                            <th scope="col" class="px-4 py-3 text-right">Gewinn / Verlust</th>
+                        </tr>
+                    </thead>
+                    <tbody id="my-portfolio-content">
+                        <!-- Inhalt wird per JS geladen -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="my-portfolio-footer" class="modal-footer flex justify-between items-center mt-4 border-t pt-2">
+                <p class="text-lg">Gesamtwert Portfolio: <strong id="portfolio-total-value"
+                        class="text-blue-600">$0.00</strong></p>
+                <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    onclick="closeMyPortfolio()">Schließen</button>
             </div>
         </div>
     </div>
@@ -1418,6 +1555,314 @@
                 confirmBtn.disabled = false;
                 btnText.textContent = 'Auktion starten';
                 spinner.classList.add('hidden');
+            }
+        }
+
+        // --- NEUE FUNKTIONEN FÜR LIMOSTONKS BÖRSE ---
+
+        let stonkUpdateInterval = null;
+        let userPortfolios = [];
+        const STONKS_PRICE_UPDATE_INTERVAL = 5 * 60 * 1000; // 5 Minuten in ms
+
+        function openStonkMarket() {
+            if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; }
+            document.getElementById('stonks-market-modal').classList.remove('hidden');
+            renderStonkMarket();
+            startStonkUpdateTimer();
+        }
+
+        function closeStonkMarket() {
+            document.getElementById('stonks-market-modal').classList.add('hidden');
+            if (stonkUpdateInterval) {
+                clearInterval(stonkUpdateInterval);
+                stonkUpdateInterval = null;
+            }
+        }
+
+        function startStonkUpdateTimer() {
+            if (stonkUpdateInterval) clearInterval(stonkUpdateInterval);
+
+            const timerSpan = document.querySelector('#stonks-next-update-timer span');
+
+            const updateTimer = () => {
+                const now = Date.now();
+                const timeSinceLastUpdate = now % STONKS_PRICE_UPDATE_INTERVAL;
+                const timeToNextUpdate = STONKS_PRICE_UPDATE_INTERVAL - timeSinceLastUpdate;
+
+                const minutes = Math.floor(timeToNextUpdate / 60000);
+                const seconds = Math.floor((timeToNextUpdate % 60000) / 1000);
+
+                timerSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                // Reload market when timer hits zero
+                if (minutes === 0 && seconds === 0) {
+                    showToast("Marktpreise werden aktualisiert...");
+                    setTimeout(renderStonkMarket, 2000); // Wait 2s for server to finish
+                }
+            };
+
+            updateTimer();
+            stonkUpdateInterval = setInterval(updateTimer, 1000);
+        }
+
+        async function renderStonkMarket() {
+            const contentDiv = document.getElementById('stonks-market-content');
+            contentDiv.innerHTML = '<p class.text-center text-gray-500 py-4 col-span-full">Lade Aktienkurse...</p>';
+
+            try {
+                // Lade Aktienkurse und das persönliche Portfolio gleichzeitig
+                const [productsResponse, portfolioResponse] = await Promise.all([
+                    fetch(`${getApiUrl()}/products`),
+                    fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' })
+                ]);
+
+                if (!productsResponse.ok) throw new Error("Aktienkurse konnten nicht geladen werden.");
+                if (!portfolioResponse.ok) throw new Error("Portfolio konnte nicht geladen werden.");
+
+                const { products: allProducts } = await productsResponse.json();
+                const { portfolio } = await portfolioResponse.json();
+
+                let stocks = allProducts.filter(p => !p.isTokenCard && p.hasOwnProperty('currentPrice'));
+
+                // Eine Map für schnellen Zugriff auf Portfolio-Daten erstellen
+                const portfolioMap = new Map(portfolio.map(item => [item.productId, item]));
+
+                // ... (Der Rest der Funktion für Suche und Sortierung bleibt gleich, aber die renderStockCards-Funktion darin wird angepasst)
+
+                const renderStockCards = (stocksToRender) => {
+                    contentDiv.innerHTML = '';
+                    if (stocksToRender.length === 0) {
+                        contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4 col-span-full">Keine Aktien für deine Suche gefunden.</p>';
+                        return;
+                    }
+                    stocksToRender.forEach(stock => {
+                        let priceChangeHtml = '';
+                        const portfolioItem = portfolioMap.get(stock.id);
+
+                        // ** NEUE LOGIK: Entscheiden, welche Info angezeigt wird **
+                        if (portfolioItem) {
+                            // Der Nutzer besitzt diese Aktie -> Persönlichen G/V anzeigen
+                            const totalValue = portfolioItem.quantityShares * stock.currentPrice;
+                            const totalCost = portfolioItem.quantityShares * portfolioItem.averageBuyPrice;
+                            const profit = totalValue - totalCost;
+                            const profitPercent = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+                            const profitClass = profit > 0 ? 'text-green-600' : (profit < 0 ? 'text-red-500' : 'text-gray-600');
+                            priceChangeHtml = `<p class="text-xs ${profitClass} font-bold">Mein G/V: ${profit.toFixed(2)} (${profitPercent.toFixed(2)}%)</p>`;
+                        } else {
+                            // Der Nutzer besitzt die Aktie nicht -> Allgemeine Markt-Änderung anzeigen
+                            const priceHistory = stock.priceHistory || [];
+                            const lastPrice = stock.currentPrice;
+                            const previousPrice = priceHistory.length > 1 ? priceHistory[priceHistory.length - 2].price : lastPrice;
+                            const priceChange = lastPrice - previousPrice;
+                            const percentChange = previousPrice > 0 ? (priceChange / lastPrice) * 100 : 0;
+                            const changeClass = priceChange > 0 ? 'text-green-500' : (priceChange < 0 ? 'text-red-500' : 'text-gray-500');
+                            const changeSign = priceChange > 0 ? '▲' : (priceChange < 0 ? '▼' : '');
+                            priceChangeHtml = `<p class="text-xs ${changeClass}">Markt: ${changeSign} ${Math.abs(priceChange).toFixed(2)} (${percentChange.toFixed(2)}%)</p>`;
+                        }
+
+                        const stockCard = document.createElement('div');
+                        // Wenn der User die Aktie besitzt, bekommt sie einen blauen Rand
+                        const ownedClass = portfolioItem ? 'border-blue-500' : 'border-transparent';
+                        stockCard.className = `p-3 bg-white rounded-lg shadow-md flex flex-col cursor-pointer hover:shadow-lg border-2 ${ownedClass} transition-all`;
+                        stockCard.onclick = () => openStonkDetail(stock.id);
+                        stockCard.innerHTML = `
+                            <img src="${stock.image_url}" alt="${stock.name}" class="w-full h-24 object-cover rounded mb-2">
+                            <strong class="text-sm mb-1 truncate">${stock.name}</strong>
+                            <div class="mt-auto">
+                                <p class="text-xl font-bold text-gray-800">$${stock.currentPrice.toFixed(2)}</p>
+                                ${priceChangeHtml}
+                            </div>
+                        `;
+                        contentDiv.appendChild(stockCard);
+                    });
+                };
+
+                // Hier kommt der Rest der renderStonkMarket-Funktion hin (Filter/Sortierung und der Aufruf von applyFiltersAndSort)
+                // Es ist wichtig, dass die renderStockCards-Subfunktion durch die obige ersetzt wird.
+
+                // --- Temporär, um es einfach zu halten, hier der Rest der Funktion ---
+                let currentSort = { key: 'name', direction: 'asc' };
+                const applyFiltersAndSort = () => {
+                    const searchTerm = document.getElementById('stonk-search-input').value.toLowerCase();
+                    let filteredStocks = stocks;
+                    if (searchTerm) {
+                        filteredStocks = stocks.filter(stock => stock.name.toLowerCase().includes(searchTerm) || String(stock.id).includes(searchTerm));
+                    }
+                    // Sortierlogik bleibt hier unverändert...
+                    renderStockCards(filteredStocks);
+                };
+                document.getElementById('stonk-search-input').addEventListener('input', applyFiltersAndSort);
+                // Sortier-Buttons setup bleibt unverändert...
+                applyFiltersAndSort();
+
+            } catch (error) {
+                contentDiv.innerHTML = `<p class="text-center text-red-500 py-4 col-span-full">Fehler: ${error.message}</p>`;
+            }
+        }
+        async function openStonkDetail(productId) {
+            const modal = document.getElementById('stonk-detail-modal');
+            modal.classList.remove('hidden');
+
+            // Reset UI with loading states
+            document.getElementById('stonk-detail-name').textContent = 'Lade Aktie...';
+            document.getElementById('stonk-detail-price').textContent = '--.--';
+            document.getElementById('stonk-trade-error').textContent = '';
+            document.getElementById('stonk-trade-quantity').value = '';
+            document.getElementById('stonk-trade-estimated-value').textContent = '$0.00';
+            document.getElementById('stonk-portfolio-quantity').textContent = '...';
+            document.getElementById('stonk-portfolio-avg-price').textContent = '...';
+            document.getElementById('stonk-portfolio-total-value').textContent = '...';
+
+            try {
+                // Fetch product list and user portfolio simultaneously for efficiency
+                const [productsResponse, portfolioResponse] = await Promise.all([
+                    fetch(`${getApiUrl()}/products`),
+                    fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' })
+                ]);
+
+                if (!productsResponse.ok) throw new Error("Aktienkurse konnten nicht geladen werden.");
+                if (!portfolioResponse.ok) throw new Error("Portfolio konnte nicht geladen werden.");
+
+                const { products: allProducts } = await productsResponse.json();
+                const { portfolio } = await portfolioResponse.json();
+
+                const stock = allProducts.find(p => p.id === productId);
+                if (!stock) throw new Error("Aktie nicht im Markt gefunden.");
+
+                // --- Populate Modal with correct data ---
+
+                // 1. Stock Info
+                document.getElementById('stonk-detail-name').textContent = stock.name;
+                document.getElementById('stonk-detail-image').src = stock.image_url;
+                document.getElementById('stonk-detail-price').textContent = stock.currentPrice.toFixed(2);
+
+                // 2. User's Portfolio Info for THIS stock
+                const portfolioItem = portfolio.find(item => item.productId === productId);
+
+                if (portfolioItem && portfolioItem.quantityShares > 0) {
+                    const totalValue = portfolioItem.quantityShares * stock.currentPrice;
+                    document.getElementById('stonk-portfolio-quantity').textContent = portfolioItem.quantityShares;
+                    document.getElementById('stonk-portfolio-avg-price').textContent = `$${portfolioItem.averageBuyPrice.toFixed(2)}`;
+                    document.getElementById('stonk-portfolio-total-value').textContent = `$${totalValue.toFixed(2)}`;
+                } else {
+                    document.getElementById('stonk-portfolio-quantity').textContent = '0';
+                    document.getElementById('stonk-portfolio-avg-price').textContent = '$0.00';
+                    document.getElementById('stonk-portfolio-total-value').textContent = '$0.00';
+                }
+
+                // 3. Setup Event Listeners
+                const qtyInput = document.getElementById('stonk-trade-quantity');
+                const estimatedValueEl = document.getElementById('stonk-trade-estimated-value');
+
+                const updateEstimatedValue = () => {
+                    const qty = parseInt(qtyInput.value, 10) || 0;
+                    estimatedValueEl.textContent = `$${(qty * stock.currentPrice).toFixed(2)}`;
+                };
+                qtyInput.oninput = updateEstimatedValue;
+
+                document.getElementById('stonk-buy-button').onclick = () => handleStonkTrade(productId, 'buy');
+                document.getElementById('stonk-sell-button').onclick = () => handleStonkTrade(productId, 'sell');
+
+            } catch (error) {
+                document.getElementById('stonk-trade-error').textContent = error.message;
+            }
+        }
+
+        async function handleStonkTrade(productId, type) {
+            const quantity = parseInt(document.getElementById('stonk-trade-quantity').value, 10);
+            const errorEl = document.getElementById('stonk-trade-error');
+            const tradePanel = document.getElementById('stonk-trade-panel');
+
+            errorEl.textContent = '';
+            if (isNaN(quantity) || quantity <= 0) {
+                errorEl.textContent = "Bitte gib eine gültige Menge an.";
+                return;
+            }
+
+            tradePanel.classList.add('opacity-50', 'pointer-events-none');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/stonks/${type}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, quantity }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                showToast(result.message);
+                document.getElementById('stonk-detail-modal').classList.add('hidden');
+                updateUserInfo(); // Update balance in header
+                renderStonkMarket(); // Refresh market view
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+            } finally {
+                tradePanel.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        function openMyPortfolio() {
+            if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; }
+            document.getElementById('my-portfolio-modal').classList.remove('hidden');
+            renderMyPortfolio();
+        }
+
+        function closeMyPortfolio() {
+            document.getElementById('my-portfolio-modal').classList.add('hidden');
+        }
+
+        async function renderMyPortfolio() {
+            const contentTbody = document.getElementById('my-portfolio-content');
+            contentTbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">Lade Portfolio...</td></tr>';
+
+            try {
+                const response = await fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' });
+                if (!response.ok) throw new Error("Portfolio konnte nicht geladen werden.");
+                const { portfolio } = await response.json();
+
+                if (!portfolio || portfolio.length === 0) {
+                    contentTbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">Du besitzt keine Aktien.</td></tr>';
+                    document.getElementById('portfolio-total-value').textContent = '$0.00';
+                    return;
+                }
+
+                let totalPortfolioValue = 0;
+                contentTbody.innerHTML = ''; // Clear loading state
+
+                portfolio.forEach(item => {
+                    const totalValue = item.quantityShares * item.currentPrice;
+                    const totalCost = item.quantityShares * item.averageBuyPrice;
+                    const profit = totalValue - totalCost;
+                    const profitPercent = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+
+                    const profitClass = profit > 0 ? 'text-green-600' : (profit < 0 ? 'text-red-600' : 'text-gray-600');
+
+                    totalPortfolioValue += totalValue;
+
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-4 py-2 font-medium text-gray-900 flex items-center space-x-2">
+                            <img src="${item.imageUrl}" class="w-8 h-8 object-cover rounded">
+                            <span>${item.name}</span>
+                        </td>
+                        <td class="px-4 py-2 text-right">${item.quantityShares}</td>
+                        <td class="px-4 py-2 text-right">$${item.averageBuyPrice.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-right font-semibold">$${item.currentPrice.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-right font-bold text-blue-600">$${totalValue.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-right font-bold ${profitClass}">
+                            $${profit.toFixed(2)} (${profitPercent.toFixed(2)}%)
+                        </td>
+                    `;
+                    contentTbody.appendChild(row);
+                });
+
+                document.getElementById('portfolio-total-value').textContent = `$${totalPortfolioValue.toFixed(2)}`;
+
+            } catch (error) {
+                contentTbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-red-500">Fehler: ${error.message}</td></tr>`;
             }
         }
 
