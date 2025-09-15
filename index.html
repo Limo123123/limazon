@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,15 +9,19 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #e9ebee; /* Ein neutraler Hintergrund */
+            background-color: #e9ebee;
+            /* Ein neutraler Hintergrund */
         }
+
         .theme-card {
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
+
         .theme-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
+
         .theme-card img {
             height: 180px;
             object-fit: cover;
@@ -24,6 +29,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
+
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-6">
 
     <div class="text-center mb-12">
@@ -33,62 +39,72 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
         <!-- Option 1: Original Limazon (Blau) -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/limazon.html')">
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+            onclick="navigateToApp('themes/limazon.html')">
             <img src="placeholder_limazon_original.png" alt="Original Limazon Theme" class="w-full">
             <!-- Ersetze placeholder_limazon_original.png mit einem Screenshot deines blauen Themes -->
             <div class="p-6">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-2">Limazon Klassik</h2>
                 <p class="text-gray-600 mb-4 text-sm">Das klassische Einkaufserlebnis. Bewährt und direkt.</p>
-                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                <button
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
                     Zum Shop
                 </button>
             </div>
         </div>
 
         <!-- Option 2: L-Shop (Orange/Nintendo eShop Stil) -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/l-shop.html')">
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+            onclick="navigateToApp('themes/l-shop.html')">
             <img src="placeholder_l_shop.png" alt="L-Shop Theme" class="w-full">
             <!-- Ersetze placeholder_l_shop.png mit einem Screenshot deines orangen L-Shop Themes -->
             <div class="p-6">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-2">L-Shop Erlebnis</h2>
                 <p class="text-gray-600 mb-4 text-sm">Inspiriert vom Nintendo eShop. Modern und verspielt.</p>
-                <button class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                <button
+                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
                     Zum L-Shop
                 </button>
             </div>
         </div>
 
         <!-- Option 3: Glücksrad Paradies -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/wheel.html')">
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+            onclick="navigateToApp('themes/wheel.html')">
             <img src="placeholder_wheel_paradise.png" alt="Glücksrad Paradies" class="w-full">
             <div class="p-6">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-2">Glücksrad Paradies</h2>
                 <p class="text-gray-600 mb-4 text-sm">Erstelle, teile und drehe Glücksräder. Teste dein Glück!</p>
-                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                <button
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
                     Zu den Glücksrädern
                 </button>
             </div>
         </div>
 
         <!-- Option 4: Whatslim -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/whatslim.html')">
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+            onclick="navigateToApp('themes/whatslim.html')">
             <img src="placeholder_whatslim.png" alt="Whatslim" class="w-full">
             <div class="p-6">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-2">Whatslim</h2>
                 <p class="text-gray-600 mb-4 text-sm">Schreibe anderen Limo ID Nutzern mit Share Codes!</p>
-                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                <button
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
                     Zu Whatslim
                 </button>
             </div>
         </div>
 
-    <!-- Option 5: Account -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('account/index.html')">
+        <!-- Option 5: Account -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+            onclick="navigateToApp('account/index.html')">
             <img src="placeholder_account.png" alt="Account" class="w-full">
             <div class="p-6">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-2">Account</h2>
                 <p class="text-gray-600 mb-4 text-sm">Siehe deine Limo ID ein!</p>
-                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                <button
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
                     Zu Account
                 </button>
             </div>
@@ -96,14 +112,25 @@
 
 
         <!-- Option 5: Hall of Fame -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/hall-of-fame.html')">
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+            onclick="navigateToApp('themes/hall-of-fame.html')">
             <img src="placeholder_hall-of-fame.png" alt="HallOfFame" class="w-full">
             <div class="p-6">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-2">Hall of Fame</h2>
                 <p class="text-gray-600 mb-4 text-sm">Siehe die Besten User ein!</p>
-                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                <button
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
                     Zur Hall of Fame
                 </button>
+            </div>
+        </div>
+
+        <div class="platform-card">
+            <div class="card-content">
+                <h2>Ideenbox</h2>
+                <p>Gestalte die Zukunft mit! Reiche deine Ideen und Vorschläge ein und sieh, was die Community sich
+                    wünscht.</p>
+                <a href="themes/ideabox.html" class="btn">Zur Ideenbox</a>
             </div>
         </div>
     </div>
@@ -127,4 +154,5 @@
     </script>
 
 </body>
+
 </html>
