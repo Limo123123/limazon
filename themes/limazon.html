@@ -694,6 +694,7 @@
                             <th scope="col" class="px-4 py-3 text-right">Akt. Marktpreis</th>
                             <th scope="col" class="px-4 py-3 text-right">Gesamtwert</th>
                             <th scope="col" class="px-4 py-3 text-right">Gewinn / Verlust</th>
+                            <th scope="col" class="px-4 py-3 text-center">Aktion</th>
                         </tr>
                     </thead>
                     <tbody id="my-portfolio-content">
@@ -1815,7 +1816,7 @@
 
         async function renderMyPortfolio() {
             const contentTbody = document.getElementById('my-portfolio-content');
-            contentTbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">Lade Portfolio...</td></tr>';
+            contentTbody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Lade Portfolio...</td></tr>';
 
             try {
                 const response = await fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' });
@@ -1823,7 +1824,7 @@
                 const { portfolio } = await response.json();
 
                 if (!portfolio || portfolio.length === 0) {
-                    contentTbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">Du besitzt keine Aktien.</td></tr>';
+                    contentTbody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Du besitzt keine Aktien.</td></tr>';
                     document.getElementById('portfolio-total-value').textContent = '$0.00';
                     return;
                 }
@@ -1855,6 +1856,9 @@
                         <td class="px-4 py-2 text-right font-bold ${profitClass}">
                             $${profit.toFixed(2)} (${profitPercent.toFixed(2)}%)
                         </td>
+                        <td class="px-4 py-2 text-center">
+                            <button onclick="openStonkDetail(${item.productId})" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded">Verkaufen</button>
+                        </td>
                     `;
                     contentTbody.appendChild(row);
                 });
@@ -1862,7 +1866,7 @@
                 document.getElementById('portfolio-total-value').textContent = `$${totalPortfolioValue.toFixed(2)}`;
 
             } catch (error) {
-                contentTbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-red-500">Fehler: ${error.message}</td></tr>`;
+                contentTbody.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-red-500">Fehler: ${error.message}</td></tr>`;
             }
         }
 
