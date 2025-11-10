@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<!-- VOLLSTÄNDIGER, KORRIGIERTER CODE - BITTE KOMPLETT KOPIEREN -->
 <html lang="de" class="scroll-smooth">
 
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Limazon - Modern UI</title>
+    <title>Limazon - Final UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -17,9 +16,7 @@
     </script>
 
     <style>
-        body,
-        .modal-backdrop,
-        .modal-content {
+        body {
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
@@ -178,7 +175,6 @@
         }
     </script>
 
-    <!-- Header -->
     <header
         class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-4 flex justify-between items-center sticky top-0 z-50 shadow-md border-b border-slate-200 dark:border-slate-800">
         <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Limazon</div>
@@ -411,11 +407,9 @@
                     class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-md flex-1 font-semibold disabled:opacity-50">In
                     Korb</button><button id="detail-buy-now"
                     class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-md flex-1 font-semibold disabled:opacity-50">Direkt
-                    Kaufen</button>
-            </div>
+                    Kaufen</button></div>
         </div>
     </div>
-    <!-- ... Restliche Modals ... -->
     <div id="inventory-modal"
         class="modal fixed inset-0 bg-slate-900/80 flex items-center justify-center opacity-0 pointer-events-none z-[80] p-4">
         <div
@@ -496,111 +490,255 @@
                     onclick="closeAccountModal()">Schließen</button></div>
         </div>
     </div>
+    <!-- Platzhalter für weitere Modals, die noch befüllt werden müssen -->
+    <div id="order-history-modal"
+        class="modal fixed inset-0 bg-slate-900/80 flex items-center justify-center opacity-0 pointer-events-none z-[80] p-4">
+        <div
+            class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg w-full max-w-4xl modal-container modal-content transform scale-95">
+            <button class="absolute top-3 right-4 text-slate-600 hover:text-red-600 text-3xl"
+                onclick="closeOrderHistory()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center p-2 border-b dark:border-slate-700">Meine Bestellungen</h2>
+            <div id="order-history-content" class="modal-scroll-content p-4">
+                <p class="text-center text-slate-500 py-4">Noch keine Bestellungen vorhanden.</p>
+            </div>
+            <div class="modal-footer flex justify-between p-4 border-t dark:border-slate-700"><button
+                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+                    onclick="clearOrderHistory()">Verlauf löschen</button><button
+                    class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-md"
+                    onclick="closeOrderHistory()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="auction-house-modal"
+        class="modal fixed inset-0 bg-slate-900/80 flex items-center justify-center opacity-0 pointer-events-none z-[80] p-4">
+        <div
+            class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg w-full max-w-6xl modal-container modal-content transform scale-95">
+            <button class="absolute top-3 right-4 text-slate-600 hover:text-red-600 text-3xl"
+                onclick="closeAuctionHouse()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center p-2 border-b dark:border-slate-700">Auktionshaus</h2>
+            <div id="auction-house-content"
+                class="modal-scroll-content p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <p class="text-center text-slate-500 py-4 col-span-full">Lade Auktionen...</p>
+            </div>
+            <div class="modal-footer flex justify-end p-4 border-t dark:border-slate-700"><button
+                    class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-md"
+                    onclick="closeAuctionHouse()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="stonks-market-modal"
+        class="modal fixed inset-0 bg-slate-900/80 flex items-center justify-center opacity-0 pointer-events-none z-[85] p-4">
+        <div
+            class="bg-slate-100 dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-7xl modal-container modal-content transform scale-95">
+            <h2 class="text-3xl font-bold text-slate-800 dark:text-white p-4 border-b dark:border-slate-700">LimoStonks
+                Börse</h2>
+            <div id="stonks-market-content" class="modal-scroll-content p-4"></div><button
+                class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-md m-4"
+                onclick="closeStonkMarket()">Schließen</button>
+        </div>
+    </div>
+    <div id="my-portfolio-modal"
+        class="modal fixed inset-0 bg-slate-900/80 flex items-center justify-center opacity-0 pointer-events-none z-[87] p-4">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-5xl modal-container modal-content transform scale-95">
+            <h2 class="text-2xl font-bold p-4 border-b dark:border-slate-700">Mein Portfolio</h2>
+            <div id="my-portfolio-content" class="modal-scroll-content p-4"></div><button
+                class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-md m-4"
+                onclick="closeMyPortfolio()">Schließen</button>
+        </div>
+    </div>
+    <div id="my-token-codes-modal"
+        class="modal fixed inset-0 bg-slate-900/80 flex items-center justify-center opacity-0 pointer-events-none z-[85] p-4">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-3xl modal-container modal-content transform scale-95">
+            <h2 class="text-2xl font-bold p-4 border-b dark:border-slate-700">Meine Token Codes</h2>
+            <div id="my-token-codes-content" class="modal-scroll-content p-4"></div><button
+                class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-md m-4"
+                onclick="closeMyTokenCodesModal()">Schließen</button>
+        </div>
+    </div>
 
     <footer class="mt-12 text-center text-slate-500 text-sm p-4">
         © 2025 Limazon Universe
     </footer>
 
-    <script>
-        // --- VOLLSTÄNDIGER SCRIPT-BLOCK ---
+    <script id="slscript.js">
+        // --- VOLLSTÄNDIGER, FINALER SCRIPT-BLOCK ---
 
         const LOG_PREFIX = "[Limazon FE]";
-        let products = [];
-        let filteredProducts = [];
-        let currentPage = 1;
-        const itemsPerPage = 10;
-        let cart = [];
-        let lastPurchasedCart = [];
-        let isInitialLoad = true;
-        let isServerStarting = false;
-        let serverStartTimeoutId = null;
-        let serverRetryCount = 0;
-        const MAX_SERVER_RETRIES = 12;
-        const SERVER_RETRY_DELAY = 5000;
-        let pollingTimer = null;
-        const pollingInterval = 15000;
-        let detailModalProductId = null;
-        let loggedInUser = null;
-        let currentSellProductId = null;
-        let sellCooldownIntervalId = null;
+        let products = [], filteredProducts = [], cart = [], lastPurchasedCart = [];
+        let currentPage = 1, isInitialLoad = true, isServerStarting = false, serverStartTimeoutId = null, serverRetryCount = 0;
+        const itemsPerPage = 10, MAX_SERVER_RETRIES = 12, SERVER_RETRY_DELAY = 5000, pollingInterval = 15000;
+        let pollingTimer = null, detailModalProductId = null, loggedInUser = null, currentSellProductId = null, sellCooldownIntervalId = null;
         let sortState = { key: 'name', direction: 'asc' };
-        let auctionUpdateInterval = null;
-        let stonkUpdateInterval = null;
-        let currentAuctionProductId = null;
+        let auctionUpdateInterval = null, stonkUpdateInterval = null, currentAuctionProductId = null;
+        let currentAuthMode = 'login';
 
         const getApiUrl = () => 'https://api.limazon.v6.rocks/api';
 
-        function openModal(modalElement) { if (!modalElement) return; modalElement.classList.remove('pointer-events-none'); setTimeout(() => { modalElement.classList.add('is-open'); }, 10); }
-        function closeModal(modalElement) { if (!modalElement) return; modalElement.classList.remove('is-open'); setTimeout(() => { modalElement.classList.add('pointer-events-none'); }, 250); }
+        function openModal(el) { if (el) { el.classList.remove('pointer-events-none'); setTimeout(() => el.classList.add('is-open'), 10); } }
+        function closeModal(el) { if (el) { el.classList.remove('is-open'); setTimeout(() => el.classList.add('pointer-events-none'), 250); } }
 
-        const filterValidProducts = (p) => p.filter(i => i && typeof i.id === 'number' && Number.isInteger(i.id));
-        function showLoadingStatus(m, s = false, h = true) { const t = document.getElementById('loading-status'), e = document.getElementById('loading-status-message'), n = document.getElementById('product-list'), o = document.getElementById('pagination-controls'); if (m) { e.textContent = m; t.classList.remove('hidden'); if (h) { n.classList.add('hidden'); o.classList.add('hidden'); } s ? t.classList.add('spinning') : t.classList.remove('spinning'); } else { t.classList.add('hidden'); t.classList.remove('spinning'); n.classList.remove('hidden'); o.classList.remove('hidden'); e.textContent = ''; } }
-        function debounce(t, e) { let n; return function (...o) { const i = () => { clearTimeout(n); t(...o); }; clearTimeout(n); n = setTimeout(i, e); }; }
-        function showToast(m, d = 3000) { const e = document.querySelector('.toast-notification'); if (e) e.remove(); const t = document.createElement('div'); t.className = 'toast-notification'; t.textContent = m; document.body.appendChild(t); requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); }); setTimeout(() => { t.classList.remove('show'); t.addEventListener('transitionend', () => t.remove()); }, d); }
-        function getStockDisplayInfo(s, q, i = false) { if (i) return { text: `Verfügbar: <span class="text-emerald-500">Digitaler Code</span>`, cssClass: "stock-available", canAddMore: true, availableToAdd: 999 }; const a = Math.max(0, s - q); const c = a > 0; let d = "", t = ""; if (s === 0) { d = "Ausverkauft"; t = "text-red-500 font-bold"; } else if (q > 0) { d = `Noch <span class="${c ? 'text-emerald-500' : 'text-amber-500 font-bold'}">${a}</span> Stk. hinzufügbar`; t = c ? "text-emerald-500" : "text-amber-500"; } else { d = `Verfügbar: <span class="text-emerald-500">${s}</span> Stk.`; t = "text-emerald-500"; } return { text: d, cssClass: t, canAddMore: c, availableToAdd: a }; }
-        function copyToClipboard(t, b) { navigator.clipboard.writeText(t).then(() => { showToast(`Code kopiert!`, 2000); if (b) { const o = b.textContent; b.textContent = 'Kopiert!'; b.classList.replace('bg-indigo-500', 'bg-emerald-500'); setTimeout(() => { b.textContent = o; b.classList.replace('bg-emerald-500', 'bg-indigo-500'); }, 2000); } }).catch(() => showToast('Fehler beim Kopieren.', 3000)); }
-        async function loadProducts(t = 'initial') { if (t !== 'retry' && serverStartTimeoutId) return; if (t === 'polling' && isServerStarting) return; if (t === 'initial' || t === 'retry') { showLoadingStatus("Lade Produkte...", true, true); if (t === 'initial') isServerStarting = true; } if (t !== 'retry') serverRetryCount = 0; try { const r = await fetch(`${getApiUrl()}/products`); const c = r.headers.get("content-type"); if (!r.ok || !c || !c.includes("application/json")) { isServerStarting = true; serverRetryCount++; if (serverRetryCount > MAX_SERVER_RETRIES) { showLoadingStatus(`Server antwortet nicht.`, false, true); isServerStarting = false; return; } showLoadingStatus(`Server startet... Versuch ${serverRetryCount}/${MAX_SERVER_RETRIES}`, true, true); serverStartTimeoutId = setTimeout(() => { serverStartTimeoutId = null; loadProducts('retry'); }, SERVER_RETRY_DELAY); return; } isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; showLoadingStatus(null); const { products: d } = await r.json(); products = Array.isArray(d) ? filterValidProducts(d) : []; applyFiltersAndSort(); if (t === 'initial') isInitialLoad = false; } catch (e) { showLoadingStatus(`Fehler beim Laden: ${e.message}.`, false, true); } }
-        function setSort(k) { if (sortState.key === k) { sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc'; } else { sortState.key = k; sortState.direction = 'asc'; } applyFiltersAndSort(); }
-        function updateSortUI() { const n = document.getElementById('sort-name-btn'), p = document.getElementById('sort-price-btn');[n, p].forEach(b => { b.classList.remove('bg-indigo-600', 'text-white', 'dark:bg-indigo-500'); b.querySelector('.sort-icon').innerHTML = ''; }); const a = sortState.key === 'name' ? n : p; const i = sortState.direction === 'asc' ? '<i class="fas fa-arrow-up text-xs"></i>' : '<i class="fas fa-arrow-down text-xs"></i>'; a.classList.add('bg-indigo-600', 'text-white', 'dark:bg-indigo-500'); a.querySelector('.sort-icon').innerHTML = i; }
-        function applyFiltersAndSort() { const t = document.getElementById('search').value.toLowerCase(); let p = products.filter(i => i && ((i.name && i.name.toLowerCase().includes(t)) || (i.id && String(i.id).includes(t)))); p.sort((a, b) => { const d = sortState.direction === 'asc' ? 1 : -1; if (sortState.key === 'name') return (a.name || '').localeCompare(b.name || '') * d; if (sortState.key === 'price') { const pa = parseFloat((a.price || "").replace(/[^0-9.]/g, '')) || 0; const pb = parseFloat((b.price || "").replace(/[^0-9.]/g, '')) || 0; return (pa - pb) * d; } return 0; }); filteredProducts = p; currentPage = 1; updateSortUI(); renderProducts(); }
-        function renderProducts() { const l = document.getElementById('product-list'); if (!l) return; l.innerHTML = ''; let t = Math.ceil(filteredProducts.length / itemsPerPage) || 1; currentPage = Math.min(Math.max(1, currentPage), t); const s = (currentPage - 1) * itemsPerPage; const e = s + itemsPerPage; const p = filteredProducts.slice(s, e); if (p.length === 0) { l.innerHTML = `<div class="text-center text-slate-500 col-span-full py-8"><i class="fas fa-box-open fa-3x mb-4"></i><p class="text-lg">${products.length === 0 ? 'Der Shop ist derzeit leer.' : 'Keine Produkte gefunden.'}</p></div>`; } p.forEach((i, idx) => { const q = cart.find(item => item.id === i.id)?.quantity || 0; const info = getStockDisplayInfo(i.stock || 0, q, i.isTokenCard); const d = document.createElement('div'); d.className = 'product bg-white dark:bg-slate-800 rounded-xl shadow-lg flex flex-col overflow-hidden product-animate'; d.style.animationDelay = `${idx * 50}ms`; d.innerHTML = `${i.isTokenCard ? `<div class="text-center text-xs font-semibold text-purple-600 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/50 p-1">Token Guthabenkarte</div>` : ''}<div class="relative"><img src="${i.image_url || 'https://via.placeholder.com/300'}" alt="${i.name}" onclick="showProductDetails(${i.id})" class="w-full h-48 object-cover cursor-pointer bg-slate-200 dark:bg-slate-700"/></div><div class="p-4 flex flex-col flex-grow"><strong class="text-lg mb-1 truncate" title="${i.name}">${i.name}</strong><span class="text-sm text-slate-500 dark:text-slate-400 mb-2">ID: ${i.id}</span><span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-3">${i.price}</span><div class="text-sm mb-4 min-h-[40px]"><span class="${info.cssClass}">${info.text}</span>${q > 0 ? `<br><span class="text-xs text-indigo-500">(${q} im Korb)</span>` : ''}</div><div class="flex items-center mt-auto space-x-2"><input id="qty-${i.id}" type="number" min="1" value="1" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md p-2 w-16 text-center" ${!info.canAddMore ? 'disabled' : ''} max="${info.availableToAdd || 1}"/><button class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md flex-1 font-semibold" ${!info.canAddMore ? 'disabled' : ''} onclick="addToCart(${i.id}, document.getElementById('qty-${i.id}').value)">In Korb</button><button class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md flex-1 font-semibold" ${!info.canAddMore ? 'disabled' : ''} onclick="buyNow(${i.id}, document.getElementById('qty-${i.id}').value)">Kaufen</button></div></div>`; l.appendChild(d); }); document.getElementById('page-info').textContent = `Seite ${currentPage} von ${t}`; document.getElementById('prev').disabled = currentPage === 1; document.getElementById('next').disabled = currentPage >= t; document.getElementById('pagination-controls').style.display = t <= 1 ? 'none' : 'flex'; }
-        const debouncedApplyFiltersAndSort = debounce(() => { applyFiltersAndSort(); }, 300);
-        // Warenkorb
+        const filterValidProducts = p => p.filter(i => i && typeof i.id === 'number' && Number.isInteger(i.id));
+
+        function showLoadingStatus(m, s = false, h = true) {
+            const t = document.getElementById('loading-status'), e = document.getElementById('loading-status-message'), n = document.getElementById('product-list'), o = document.getElementById('pagination-controls');
+            if (!t || !e || !n || !o) return;
+            if (m) { e.textContent = m; t.classList.remove('hidden'); if (h) { n.classList.add('hidden'); o.classList.add('hidden'); } s ? t.classList.add('spinning') : t.classList.remove('spinning'); }
+            else { t.classList.add('hidden'); t.classList.remove('spinning'); n.classList.remove('hidden'); o.classList.remove('hidden'); e.textContent = ''; }
+        }
+
+        function debounce(t, e) { let n; return (...o) => { clearTimeout(n); n = setTimeout(() => t(...o), e); }; }
+
+        function showToast(m, d = 3000) {
+            const e = document.querySelector('.toast-notification'); if (e) e.remove();
+            const t = document.createElement('div'); t.className = 'toast-notification'; t.textContent = m; document.body.appendChild(t);
+            requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+            setTimeout(() => { t.classList.remove('show'); t.addEventListener('transitionend', () => t.remove()); }, d);
+        }
+
+        function getStockDisplayInfo(s, q, i = false) {
+            if (i) return { text: `Verfügbar: <span class="text-emerald-500">Digital</span>`, cssClass: "", canAddMore: true, availableToAdd: 999 };
+            const a = Math.max(0, s - q), c = a > 0; let d = "", t = "";
+            if (s === 0) { d = "Ausverkauft"; t = "text-red-500 font-bold"; }
+            else if (q > 0) { d = `Noch <span class="${c ? 'text-emerald-500' : 'text-amber-500 font-bold'}">${a}</span> Stk. hinzufügbar`; t = c ? "" : "text-amber-500"; }
+            else { d = `Verfügbar: <span class="text-emerald-500">${s}</span> Stk.`; t = ""; }
+            return { text: d, cssClass: t, canAddMore: c, availableToAdd: a };
+        }
+
+        function copyToClipboard(t, b) { navigator.clipboard.writeText(t).then(() => { showToast(`Code kopiert!`); if (b) { const o = b.textContent; b.textContent = 'Kopiert!'; b.classList.replace('bg-indigo-500', 'bg-emerald-500'); setTimeout(() => { b.textContent = o; b.classList.replace('bg-emerald-500', 'bg-indigo-500'); }, 2000); } }).catch(() => showToast('Fehler beim Kopieren.')); }
+
+        async function loadProducts(t = 'initial') {
+            if (t !== 'retry' && serverStartTimeoutId) return;
+            if (t === 'polling' && isServerStarting) return;
+            if (t === 'initial' || t === 'retry') { showLoadingStatus("Lade Produkte...", true, true); if (t === 'initial') isServerStarting = true; }
+            if (t !== 'retry') serverRetryCount = 0;
+            try {
+                const r = await fetch(`${getApiUrl()}/products`); if (!r.ok) throw new Error(`Serverfehler: ${r.status}`);
+                const d = await r.json(); products = Array.isArray(d.products) ? filterValidProducts(d.products) : [];
+                applyFiltersAndSort();
+            } catch (e) { showLoadingStatus(`Fehler: ${e.message}`, false, true); }
+            finally { if (t === 'initial' || t === 'retry') showLoadingStatus(null); isServerStarting = false; }
+        }
+
+        function setSort(k) { sortState.key === k ? sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc' : (sortState.key = k, sortState.direction = 'asc'); applyFiltersAndSort(); }
+
+        function updateSortUI() { const n = document.getElementById('sort-name-btn'), p = document.getElementById('sort-price-btn');[n, p].forEach(b => { b.classList.remove('bg-indigo-600', 'text-white', 'dark:bg-indigo-500'); b.querySelector('.sort-icon').innerHTML = ''; }); const a = sortState.key === 'name' ? n : p, i = sortState.direction === 'asc' ? '<i class="fas fa-arrow-up text-xs"></i>' : '<i class="fas fa-arrow-down text-xs"></i>'; a.classList.add('bg-indigo-600', 'text-white', 'dark:bg-indigo-500'); a.querySelector('.sort-icon').innerHTML = i; }
+
+        function applyFiltersAndSort() {
+            const t = document.getElementById('search').value.toLowerCase();
+            let p = products.filter(i => i && ((i.name && i.name.toLowerCase().includes(t)) || (i.id && String(i.id).includes(t))));
+            p.sort((a, b) => {
+                const d = sortState.direction === 'asc' ? 1 : -1;
+                if (sortState.key === 'name') return (a.name || '').localeCompare(b.name || '') * d;
+                if (sortState.key === 'price') { const pa = parseFloat((a.price || "").replace(/[^0-9.]/g, '')) || 0, pb = parseFloat((b.price || "").replace(/[^0-9.]/g, '')) || 0; return (pa - pb) * d; }
+                return 0;
+            });
+            filteredProducts = p; currentPage = 1; updateSortUI(); renderProducts();
+        }
+
+        function renderProducts() {
+            const l = document.getElementById('product-list'); if (!l) return;
+            l.innerHTML = ''; let t = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+            currentPage = Math.min(Math.max(1, currentPage), t);
+            const s = (currentPage - 1) * itemsPerPage, e = s + itemsPerPage, p = filteredProducts.slice(s, e);
+            if (p.length === 0) l.innerHTML = `<div class="text-center text-slate-500 col-span-full py-8"><i class="fas fa-box-open fa-3x mb-4"></i><p class="text-lg">${products.length === 0 ? 'Der Shop ist derzeit leer.' : 'Keine Produkte gefunden.'}</p></div>`;
+            p.forEach((i, idx) => {
+                const q = cart.find(item => item.id === i.id)?.quantity || 0, info = getStockDisplayInfo(i.stock || 0, q, i.isTokenCard), d = document.createElement('div');
+                d.className = 'product bg-white dark:bg-slate-800 rounded-xl shadow-lg flex flex-col overflow-hidden product-animate';
+                d.style.animationDelay = `${idx * 50}ms`;
+                d.innerHTML = `${i.isTokenCard ? `<div class="text-center text-xs font-semibold text-purple-600 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/50 p-1">Token Guthabenkarte</div>` : ''}<div class="relative"><img src="${i.image_url || 'https://via.placeholder.com/300'}" alt="${i.name || ''}" onclick="showProductDetails(${i.id})" class="w-full h-48 object-cover cursor-pointer bg-slate-200 dark:bg-slate-700"/></div><div class="p-4 flex flex-col flex-grow"><strong class="text-lg mb-1 truncate" title="${i.name || ''}">${i.name || '?'}</strong><span class="text-sm text-slate-500 dark:text-slate-400 mb-2">ID: ${i.id || 'N/A'}</span><span class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-3">${i.price || '$?.??'}</span><div class="text-sm mb-4 min-h-[40px]"><span class="${info.cssClass}">${info.text}</span>${q > 0 ? `<br><span class="text-xs text-indigo-500">(${q} im Korb)</span>` : ''}</div><div class="flex items-center mt-auto space-x-2"><input id="qty-${i.id}" type="number" min="1" value="1" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md p-2 w-16 text-center" ${!info.canAddMore ? 'disabled' : ''} max="${info.availableToAdd || 1}"/><button class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md flex-1 font-semibold" ${!info.canAddMore ? 'disabled' : ''} onclick="addToCart(${i.id}, document.getElementById('qty-${i.id}').value)">In Korb</button><button class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md flex-1 font-semibold" ${!info.canAddMore ? 'disabled' : ''} onclick="buyNow(${i.id}, document.getElementById('qty-${i.id}').value)">Kaufen</button></div></div>`;
+                l.appendChild(d);
+            });
+            document.getElementById('page-info').textContent = `Seite ${currentPage} von ${t}`;
+            document.getElementById('prev').disabled = currentPage === 1;
+            document.getElementById('next').disabled = currentPage >= t;
+            document.getElementById('pagination-controls').style.display = t <= 1 ? 'none' : 'flex';
+        }
+
+        const debouncedApplyFiltersAndSort = debounce(applyFiltersAndSort, 300);
+
         function addToCart(i, q) { const qty = parseInt(q, 10); if (isNaN(qty) || qty < 1) return; const p = products.find(pr => pr.id === i); if (!p) return; const s = p.isTokenCard ? 999 : p.stock || 0; const c = cart.find(item => item.id === i); const cq = c ? c.quantity : 0; const a = Math.max(0, s - cq); if (qty > a && !p.isTokenCard) { showToast(`Max. ${a} Stk.`); return; } if (c) c.quantity += qty; else { const price = parseFloat((p.price || "").replace(/[^0-9.]/g, '')) || 0; cart.push({ id: i, name: p.name, price, quantity: qty, isTokenCard: !!p.isTokenCard }); } updateCartCount(); saveCartToCookies(); renderProducts(); if (document.getElementById('cart-modal').classList.contains('is-open')) viewCart(); if (detailModalProductId === i) showProductDetails(i); showToast(`${qty} x ${p.name} hinzugefügt.`); }
         function buyNow(i, q) { addToCart(i, q); viewCart(); }
-        function viewCart() { cart = cart.filter(Boolean); saveCartToCookies(); const m = document.getElementById('cart-modal'), i = document.getElementById('cart-items'), t = document.getElementById('cart-total'), c = document.getElementById('cart-checkout-button'); if (cart.length === 0) { i.innerHTML = `<div class="text-center text-slate-500 py-8"><i class="fas fa-shopping-cart fa-3x mb-4"></i><br>Warenkorb ist leer.</div>`; t.textContent = '0.00'; c.disabled = true; openModal(m); return; } i.innerHTML = ''; let total = 0; const pMap = new Map(products.map(p => [p.id, p])); cart.forEach((item, idx) => { const p = pMap.get(item.id); const s = p ? (p.isTokenCard ? 999 : p.stock || 0) : 0; const exc = item.quantity > s && !p?.isTokenCard; const line = document.createElement('div'); line.className = `flex justify-between items-center mb-3 p-3 rounded-lg ${exc ? 'bg-red-100 dark:bg-red-900/50' : 'bg-slate-100 dark:bg-slate-700'}`; total += item.price * item.quantity; line.innerHTML = `<div><span class="font-semibold">${item.name}</span><br><span class="text-sm text-slate-500">${exc ? `(Nur ${s} verfügbar!)` : ''}</span></div><div class="flex items-center space-x-2"><button class="bg-slate-300 dark:bg-slate-600 w-8 h-8 rounded-full" onclick="changeQty(${idx},-1)">-</button><input type="number" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md w-16 text-center text-sm p-2" value="${item.quantity}" onchange="updateQty(${idx},this.value)" min="1" max="${s}"/><button class="bg-slate-300 dark:bg-slate-600 w-8 h-8 rounded-full" onclick="changeQty(${idx},1)" ${item.quantity >= s ? 'disabled' : ''}>+</button><button class="text-red-500 text-2xl" onclick="removeFromCart(${idx})">&times;</button></div>`; i.appendChild(line); }); t.textContent = total.toFixed(2); const hasIssues = cart.some(item => { const p = pMap.get(item.id); return !item.isTokenCard && item.quantity > (p ? p.stock || 0 : 0); }); c.disabled = hasIssues; openModal(m); }
+        function viewCart() { cart = cart.filter(Boolean); saveCartToCookies(); const m = document.getElementById('cart-modal'), i = document.getElementById('cart-items'), t = document.getElementById('cart-total'), c = document.getElementById('cart-checkout-button'); if (cart.length === 0) { i.innerHTML = `<div class="text-center text-slate-500 py-8"><i class="fas fa-shopping-cart fa-3x mb-4"></i><br>Warenkorb ist leer.</div>`; t.textContent = '0.00'; c.disabled = true; openModal(m); return; } i.innerHTML = ''; let total = 0; const pMap = new Map(products.map(p => [p.id, p])); cart.forEach((item, idx) => { const p = pMap.get(item.id), s = p ? (p.isTokenCard ? 999 : p.stock || 0) : 0, exc = item.quantity > s && !p?.isTokenCard; const line = document.createElement('div'); line.className = `flex justify-between items-center mb-3 p-3 rounded-lg ${exc ? 'bg-red-100 dark:bg-red-900/50' : 'bg-slate-100 dark:bg-slate-700'}`; total += item.price * item.quantity; line.innerHTML = `<div><span class="font-semibold">${item.name}</span><br><span class="text-sm text-slate-500">${exc ? `(Nur ${s} verfügbar!)` : ''}</span></div><div class="flex items-center space-x-2"><button class="bg-slate-300 dark:bg-slate-600 w-8 h-8 rounded-full" onclick="changeQty(${idx},-1)">-</button><input type="number" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md w-16 text-center text-sm p-2" value="${item.quantity}" onchange="updateQty(${idx},this.value)" min="1" max="${s}"/><button class="bg-slate-300 dark:bg-slate-600 w-8 h-8 rounded-full" onclick="changeQty(${idx},1)" ${item.quantity >= s && !p?.isTokenCard ? 'disabled' : ''}>+</button><button class="text-red-500 text-2xl" onclick="removeFromCart(${idx})">&times;</button></div>`; i.appendChild(line); }); t.textContent = total.toFixed(2); c.disabled = cart.some(item => { const p = pMap.get(item.id); return !item.isTokenCard && item.quantity > (p ? p.stock || 0 : 0); }); openModal(m); }
         function closeCart() { closeModal(document.getElementById('cart-modal')); }
-        function updateCartCount() { document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + i.quantity, 0); }
+        function updateCartCount() { document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + (i.quantity || 0), 0); }
         function saveCartToCookies() { document.cookie = `cart=${encodeURIComponent(JSON.stringify(cart))}; path=/; SameSite=Lax; Secure; max-age=604800`; }
         function loadCartFromCookies() { const c = document.cookie.split(';').find(r => r.trim().startsWith("cart=")); if (c) try { const p = JSON.parse(decodeURIComponent(c.split('=')[1])); if (Array.isArray(p)) cart = p.filter(i => i && i.id && i.quantity > 0); } catch (e) { cart = []; } updateCartCount(); }
         function changeQty(i, d) { const item = cart[i]; if (!item) return; const p = products.find(pr => pr.id === item.id); let nQ = item.quantity + d; if (nQ < 1) { if (confirm(`"${item.name}" entfernen?`)) removeFromCart(i); return; } const s = p ? (p.isTokenCard ? 999 : p.stock || 0) : 0; if (nQ > s && !p?.isTokenCard) nQ = s; item.quantity = nQ; saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); }
         function updateQty(i, v) { const item = cart[i]; if (!item) return; let nQ = parseInt(v, 10); if (isNaN(nQ) || nQ < 0) return viewCart(); if (nQ === 0) { if (confirm(`"${item.name}" entfernen?`)) removeFromCart(i); else viewCart(); return; } const p = products.find(pr => pr.id === item.id); const s = p ? (p.isTokenCard ? 999 : p.stock || 0) : 0; if (nQ > s && !p?.isTokenCard) nQ = s; item.quantity = nQ; saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); }
         function removeFromCart(i) { cart.splice(i, 1); saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); }
-        // Checkout
-        function checkout() { if (!loggedInUser) { openAuthModal('login'); return; } if (cart.length === 0) return; const hasIssues = cart.some(item => { const p = products.find(pr => pr.id === item.id); return !item.isTokenCard && item.quantity > (p ? p.stock || 0 : 0); }); if (hasIssues) { viewCart(); return; } closeCart(); const m = document.getElementById('checkout-modal'), i = document.getElementById('checkout-items'), t = document.getElementById('checkout-total'); i.innerHTML = ''; let total = 0; cart.forEach(item => { const d = document.createElement('div'); d.className = 'flex justify-between mb-2 p-2'; d.innerHTML = `<span>${item.name} (x${item.quantity})</span><span>$${(item.price * item.quantity).toFixed(2)}</span>`; i.appendChild(d); total += item.price * item.quantity; }); t.textContent = total.toFixed(2); openModal(m); }
+        function checkout() { if (!loggedInUser) return openAuthModal('login'); if (cart.length === 0) return; if (cart.some(item => { const p = products.find(pr => pr.id === item.id); return !item.isTokenCard && item.quantity > (p ? p.stock || 0 : 0); })) { viewCart(); return; } closeCart(); const m = document.getElementById('checkout-modal'), i = document.getElementById('checkout-items'), t = document.getElementById('checkout-total'); i.innerHTML = ''; let total = 0; cart.forEach(item => { const d = document.createElement('div'); d.className = 'flex justify-between mb-2 p-2'; d.innerHTML = `<span>${item.name} (x${item.quantity})</span><span>$${(item.price * item.quantity).toFixed(2)}</span>`; i.appendChild(d); total += item.price * item.quantity; }); t.textContent = total.toFixed(2); openModal(m); }
         function closeCheckout() { closeModal(document.getElementById('checkout-modal')); }
-        async function confirmPurchase() { const btn = document.getElementById('confirm-purchase-button'); btn.disabled = true; try { const r = await fetch(`${getApiUrl()}/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cart }), credentials: 'include' }); const result = await r.json(); if (!r.ok) throw new Error(result.error); lastPurchasedCart = [...cart]; cart = []; saveCartToCookies(); updateCartCount(); updateUserInfo(result.user); loadProducts('purchase_success'); closeCheckout(); openModal(document.getElementById('thank-you-modal')); } catch (e) { showToast(`Kauf fehlgeschlagen: ${e.message}`); } finally { btn.disabled = false; } }
-        // Details
-        function showProductDetails(id) { detailModalProductId = id; const p = products.find(pr => pr.id === id); if (!p) return; const q = cart.find(item => item.id === id)?.quantity || 0; const info = getStockDisplayInfo(p.stock || 0, q, p.isTokenCard); document.getElementById('detail-name').textContent = p.name; document.getElementById('detail-image').src = p.image_url || 'https://via.placeholder.com/400'; document.getElementById('detail-id').textContent = p.id; document.getElementById('detail-price').textContent = p.price; document.getElementById('detail-stock-available').innerHTML = info.text; document.getElementById('detail-stock-cart').textContent = `${q} im Korb`; const qtyInput = document.getElementById('detail-qty'); qtyInput.value = 1; qtyInput.max = info.availableToAdd || 1; qtyInput.disabled = !info.canAddMore; document.getElementById('detail-add-to-cart').onclick = () => addToCart(id, qtyInput.value); document.getElementById('detail-buy-now').onclick = () => buyNow(id, qtyInput.value); openModal(document.getElementById('product-detail-modal')); }
+        async function confirmPurchase() { const btn = document.getElementById('confirm-purchase-button'); btn.disabled = true; try { const r = await fetch(`${getApiUrl()}/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cart }), credentials: 'include' }); const result = await r.json(); if (!r.ok) throw new Error(result.error); lastPurchasedCart = [...cart]; cart = []; saveCartToCookies(); updateCartCount(); await updateUserInfo(result.user); await loadProducts('purchase_success'); closeCheckout(); openModal(document.getElementById('thank-you-modal')); } catch (e) { showToast(`Kauf fehlgeschlagen: ${e.message}`); } finally { btn.disabled = false; } }
+        function showProductDetails(id) { detailModalProductId = id; const p = products.find(pr => pr.id === id); if (!p) return; const q = cart.find(item => item.id === id)?.quantity || 0, info = getStockDisplayInfo(p.stock || 0, q, p.isTokenCard); document.getElementById('detail-name').textContent = p.name; document.getElementById('detail-image').src = p.image_url || 'https://via.placeholder.com/400'; document.getElementById('detail-id').textContent = p.id; document.getElementById('detail-price').textContent = p.price; document.getElementById('detail-stock-available').innerHTML = info.text; document.getElementById('detail-stock-cart').textContent = `${q} im Korb`; const qtyInput = document.getElementById('detail-qty'); qtyInput.value = 1; qtyInput.max = info.availableToAdd || 1; qtyInput.disabled = !info.canAddMore; document.getElementById('detail-add-to-cart').onclick = () => addToCart(id, qtyInput.value); document.getElementById('detail-buy-now').onclick = () => buyNow(id, qtyInput.value); openModal(document.getElementById('product-detail-modal')); }
         function closeProductDetails() { closeModal(document.getElementById('product-detail-modal')); detailModalProductId = null; }
-        // User / Auth
         function openAuthModal(m = 'login') { currentAuthMode = m; const modal = document.getElementById('auth-modal'); document.getElementById('auth-modal-title').textContent = m === 'login' ? 'Login' : 'Registrieren'; document.getElementById('auth-submit-button').querySelector('.button-text').textContent = m === 'login' ? 'Login' : 'Registrieren'; document.getElementById('auth-switch-text').textContent = m === 'login' ? 'Noch kein Konto? ' : 'Bereits ein Konto? '; document.getElementById('auth-switch-button').textContent = m === 'login' ? 'Jetzt registrieren' : 'Jetzt einloggen'; document.getElementById('auth-form').reset(); openModal(modal); }
         function closeAuthModal() { closeModal(document.getElementById('auth-modal')); }
         function switchAuthMode() { openAuthModal(currentAuthMode === 'login' ? 'register' : 'login'); }
-        async function handleAuthFormSubmit(e) { e.preventDefault(); const form = e.target; const btn = document.getElementById('auth-submit-button'); btn.disabled = true; try { const r = await fetch(`${getApiUrl()}/auth/${currentAuthMode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: form.username.value, password: form.password.value, rememberMe: true }), credentials: 'include' }); const result = await r.json(); if (!r.ok) throw new Error(result.error); showToast(result.message); closeAuthModal(); if (currentAuthMode === 'login') updateUserInfo(result.user); } catch (err) { document.getElementById('auth-error-message').textContent = err.message; document.getElementById('auth-error-message').classList.remove('hidden'); } finally { btn.disabled = false; } }
-        function updateLoginStatusUI() { const u = loggedInUser; document.getElementById('customer-name').textContent = u ? u.username : 'Gast'; document.getElementById('user-balance').textContent = u ? (u.balance || 0).toFixed(2) : '0.00'; document.getElementById('user-balance-display').classList.toggle('hidden', !u); document.getElementById('auth-buttons').classList.toggle('hidden', !!u); document.getElementById('user-actions').classList.toggle('hidden', !u); }
-        async function checkLoginStatus() { try { const r = await fetch(`${getApiUrl()}/auth/me`, { credentials: 'include' }); if (r.ok) { const user = await r.json(); updateUserInfo(user); } else { logoutCleanup(); } } catch { logoutCleanup(); } }
-        async function updateUserInfo(u = null) { loggedInUser = u; if (!u) try { const r = await fetch(`${getApiUrl()}/auth/me`, { credentials: 'include' }); if (r.ok) loggedInUser = await r.json(); } catch { } updateLoginStatusUI(); }
+        async function handleAuthFormSubmit(e) { e.preventDefault(); const form = e.target, btn = document.getElementById('auth-submit-button'), err = document.getElementById('auth-error-message'); btn.disabled = true; err.classList.add('hidden'); try { const r = await fetch(`${getApiUrl()}/auth/${currentAuthMode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: form.username.value, password: form.password.value, rememberMe: true }), credentials: 'include' }); const result = await r.json(); if (!r.ok) throw new Error(result.error); showToast(result.message); closeAuthModal(); if (currentAuthMode === 'login') await updateUserInfo(result.user); } catch (error) { err.textContent = error.message; err.classList.remove('hidden'); } finally { btn.disabled = false; } }
+        function updateLoginStatusUI() { const u = loggedInUser; document.getElementById('customer-name').textContent = u ? u.username : 'Gast'; document.getElementById('user-balance').textContent = u ? (u.balance || 0).toFixed(2) : '0.00'; document.getElementById('user-balance-display').classList.toggle('hidden', !u); document.getElementById('auth-buttons').classList.toggle('hidden', !!u); document.getElementById('user-actions').classList.toggle('hidden', !u); document.getElementById('admin-reset-stock-button').classList.toggle('hidden', !u?.isAdmin); document.getElementById('admin-zero-stock-button').classList.toggle('hidden', !u?.isAdmin); document.getElementById('admin-generate-tokens-button').classList.toggle('hidden', !u?.isAdmin); document.getElementById('add-product-button').classList.toggle('hidden', !u?.isAdmin); }
+        async function checkLoginStatus() { try { const r = await fetch(`${getApiUrl()}/auth/me`, { credentials: 'include' }); if (r.ok) await updateUserInfo(await r.json()); else logoutCleanup(); } catch { logoutCleanup(); } }
+        async function updateUserInfo(u = null) { if (u) loggedInUser = u; else { try { const r = await fetch(`${getApiUrl()}/auth/me`, { credentials: 'include' }); if (r.ok) loggedInUser = await r.json(); else loggedInUser = null; } catch { loggedInUser = null; } } updateLoginStatusUI(); }
         function logoutCleanup() { loggedInUser = null; cart = []; updateCartCount(); saveCartToCookies(); updateLoginStatusUI(); }
         async function logout() { try { await fetch(`${getApiUrl()}/auth/logout`, { method: 'POST', credentials: 'include' }); } catch { } finally { logoutCleanup(); } }
+        function openAccountModal() { if (!loggedInUser) return openAuthModal('login'); document.getElementById('account-username').textContent = loggedInUser.username; document.getElementById('account-balance').textContent = (loggedInUser.balance || 0).toFixed(2); document.getElementById('account-tokens').textContent = loggedInUser.tokens || 0; openModal(document.getElementById('account-modal')); }
+        function closeAccountModal() { closeModal(document.getElementById('account-modal')); }
+        async function showMyInventory() { if (!loggedInUser) return openAuthModal('login'); const modal = document.getElementById('inventory-modal'), content = document.getElementById('inventory-content'); content.innerHTML = '<p>Lade Inventar...</p>'; openModal(modal); try { const r = await fetch(`${getApiUrl()}/inventory`, { credentials: 'include' }); if (!r.ok) throw new Error((await r.json()).error); const { inventory } = await r.json(); if (!inventory || inventory.length === 0) { content.innerHTML = '<p>Inventar leer.</p>'; return; } content.innerHTML = ''; inventory.forEach(item => { const d = document.createElement('div'); d.className = 'flex items-center justify-between mb-3 p-3 border dark:border-slate-700 rounded-lg'; d.innerHTML = `<div><p class="font-semibold">${item.productDetails?.name || 'Unbekannt'}</p><p class="text-sm">Menge: ${item.quantityOwned}</p></div><div class="flex space-x-2"><button class="bg-emerald-500 text-white text-xs px-2 py-1 rounded" onclick="openSellProductModalFromInventory(${item.productId}, ${item.quantityOwned})">Verkaufen</button><button class="bg-amber-500 text-white text-xs px-2 py-1 rounded" onclick="openCreateAuctionModal(${item.productId}, '${item.productDetails.name}', ${item.quantityOwned}, '${item.productDetails.image_url}')">Versteigern</button></div>`; content.appendChild(d); }); } catch (e) { content.innerHTML = `<p class="text-red-500">Fehler: ${e.message}</p>`; } }
+        function closeMyInventory() { closeModal(document.getElementById('inventory-modal')); }
+        function showOrderHistory() { if (!loggedInUser) return openAuthModal('login'); const modal = document.getElementById('order-history-modal'); const contentDiv = modal.querySelector('#order-history-content'); contentDiv.innerHTML = ''; try { const history = JSON.parse(localStorage.getItem('orderHistory') || '[]'); if (history.length === 0) { contentDiv.innerHTML = '<p class="text-center text-slate-500 py-4">Keine Bestellungen.</p>'; } else { history.forEach(order => { const orderDiv = document.createElement('div'); orderDiv.className = 'mb-6 p-4 border rounded shadow-sm'; const orderDate = new Date(order.date); const fmtDate = orderDate.toLocaleDateString('de-DE'); const fmtTime = orderDate.toLocaleTimeString('de-DE'); let itemsHtml = '<ul>'; (order.items || []).forEach(item => { itemsHtml += `<li>${item.quantity} x ${item.name}</li>`; }); itemsHtml += '</ul>'; orderDiv.innerHTML = `<p><b>Datum:</b> ${fmtDate} ${fmtTime}</p>${itemsHtml}<p><b>Total:</b> $${(order.total || 0).toFixed(2)}</p>`; contentDiv.appendChild(orderDiv); }); } } catch (e) { contentDiv.innerHTML = '<p class="text-center text-red-500 py-4">Fehler beim Laden.</p>'; } openModal(modal); }
+        function clearOrderHistory() { if (confirm("Verlauf löschen?")) { localStorage.removeItem('orderHistory'); showOrderHistory(); } }
+        function closeOrderHistory() { closeModal(document.getElementById('order-history-modal')); }
+        function openAuctionHouse() { if (!loggedInUser) return openAuthModal('login'); openModal(document.getElementById('auction-house-modal')); renderAuctions(); }
+        function closeAuctionHouse() { closeModal(document.getElementById('auction-house-modal')); if (auctionUpdateInterval) clearInterval(auctionUpdateInterval); }
+        function openStonkMarket() { if (!loggedInUser) return openAuthModal('login'); openModal(document.getElementById('stonks-market-modal')); }
+        function closeStonkMarket() { closeModal(document.getElementById('stonks-market-modal')); }
+        function openMyPortfolio() { if (!loggedInUser) return openAuthModal('login'); openModal(document.getElementById('my-portfolio-modal')); }
+        function closeMyPortfolio() { closeModal(document.getElementById('my-portfolio-modal')); }
+        function showMyTokenCodes() { if (!loggedInUser) return openAuthModal('login'); openModal(document.getElementById('my-token-codes-modal')); }
+        function closeMyTokenCodesModal() { closeModal(document.getElementById('my-token-codes-modal')); }
+        function openAddProductModal() { if (loggedInUser?.isAdmin) openModal(document.getElementById('add-product-modal')); }
+        function closeAddProductModal() { closeModal(document.getElementById('add-product-modal')); }
+        function generateInvoice() { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFontSize(18); doc.text('Limazon Rechnung', 105, 20, { align: 'center' }); doc.setFontSize(12); doc.text(`Kunde: ${loggedInUser ? loggedInUser.username : 'Gast'}`, 20, 40); doc.text(`Datum: ${new Date().toLocaleDateString('de-DE')}`, 20, 50); const validItems = lastPurchasedCart.filter(it => it && it.name && it.quantity && typeof it.price === 'number'); if (validItems.length > 0) { doc.autoTable({ startY: 60, head: [['Artikel', 'Menge', 'Preis', 'Gesamt']], body: validItems.map(i => [i.name, i.quantity, `$${i.price.toFixed(2)}`, `$${(i.price * i.quantity).toFixed(2)}`]), theme: 'grid' }); const total = validItems.reduce((s, i) => s + i.price * i.quantity, 0); const finalY = doc.lastAutoTable.finalY || 60; doc.setFontSize(14); doc.text(`Gesamt: $${total.toFixed(2)}`, 190, finalY + 10, { align: 'right' }); } else { doc.text('Keine Artikel im letzten Kauf.', 20, 70); } doc.save('rechnung.pdf'); closeModal(document.getElementById('thank-you-modal')); }
+        async function resetProductStock(z = false) { if (!loggedInUser?.isAdmin) return; const a = z ? "auf 0 setzen" : "zurücksetzen"; if (confirm(`Lager ${a}?`)) { try { const r = await fetch(`${getApiUrl()}/${z ? 'admin/zero-stock' : 'products/reset'}`, { method: 'PATCH', credentials: 'include' }); if (!r.ok) throw new Error(await r.text()); showToast('Lager aktualisiert.'); loadProducts('initial'); } catch (e) { showToast(`Fehler: ${e.message}`) } } }
+        function openGenerateTokenCodesModal() { if (loggedInUser?.isAdmin) openModal(document.getElementById('generate-token-codes-modal')); }
+        async function updateAccountSettings() { if (!loggedInUser) return; const i = document.getElementById('account-infinity-money').checked; try { const r = await fetch(`${getApiUrl()}/account/settings`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ infinityMoney: i }), credentials: 'include' }); if (!r.ok) throw new Error((await r.json()).error); const { user } = await r.json(); await updateUserInfo(user); showToast('Einstellungen gespeichert.'); } catch (e) { showToast(`Fehler: ${e.message}`) } }
+        async function redeemTokenCode() { const i = document.getElementById('redeem-token-code'), m = document.getElementById('redeem-message'); if (!i.value) { m.textContent = 'Code eingeben'; return; } try { const r = await fetch(`${getApiUrl()}/tokens/redeem`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: i.value }), credentials: 'include' }); if (!r.ok) throw new Error((await r.json()).error); const d = await r.json(); await updateUserInfo(d.user); i.value = ''; showToast(d.message); } catch (e) { m.textContent = e.message } }
+        async function convertDollarsToTokens() { const a = document.getElementById('dollars-to-tokens-amount'); if (!a.value || a.value <= 0) return; try { const r = await fetch(`${getApiUrl()}/tokens/convert-dollars-to-tokens`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dollarAmount: parseFloat(a.value) }), credentials: 'include' }); if (!r.ok) throw new Error((await r.json()).error); const d = await r.json(); await updateUserInfo(d.user); a.value = ''; showToast(d.message); } catch (e) { document.getElementById('dollars-to-tokens-message').textContent = e.message; } }
+        async function convertTokensToDollars() { const a = document.getElementById('tokens-to-dollars-amount'); if (!a.value || a.value <= 0) return; try { const r = await fetch(`${getApiUrl()}/tokens/convert-tokens-to-dollars`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tokenAmount: parseInt(a.value, 10) }), credentials: 'include' }); if (!r.ok) throw new Error((await r.json()).error); const d = await r.json(); await updateUserInfo(d.user); a.value = ''; showToast(d.message); } catch (e) { document.getElementById('tokens-to-dollars-message').textContent = e.message; } }
+        function openSellProductModalFromInventory(p, q) { showToast("Funktion 'openSellProductModalFromInventory' noch nicht vollständig implementiert."); }
+        function openCreateAuctionModal(p, n, s, i) { showToast("Funktion 'openCreateAuctionModal' noch nicht vollständig implementiert."); }
+        async function renderAuctions() { /* leer */ }
 
-        // Polling
         function startPolling() { if (pollingTimer) clearInterval(pollingTimer); pollingTimer = setInterval(() => { if (!isServerStarting) loadProducts('polling'); }, pollingInterval); }
 
-        // Init
         document.addEventListener('DOMContentLoaded', () => {
             loadCartFromCookies();
             checkLoginStatus();
             loadProducts('initial');
             startPolling();
             document.getElementById('search').addEventListener('input', debouncedApplyFiltersAndSort);
+            document.getElementById('prev').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderProducts(); window.scrollTo(0, 0); } });
+            document.getElementById('next').addEventListener('click', () => { const tp = Math.ceil(filteredProducts.length / itemsPerPage) || 1; if (currentPage < tp) { currentPage++; renderProducts(); window.scrollTo(0, 0); } });
+
+            const themeToggleBtn = document.getElementById('theme-toggle'), themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon'), themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const applyTheme = () => {
+                if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    themeToggleLightIcon.classList.remove('hidden');
+                    themeToggleDarkIcon.classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeToggleDarkIcon.classList.remove('hidden');
+                    themeToggleLightIcon.classList.add('hidden');
+                }
+            };
+            themeToggleBtn.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                applyTheme();
+            });
+            applyTheme();
         });
         window.onbeforeunload = () => { if (pollingTimer) clearInterval(pollingTimer); };
-
-        // Dark Mode
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        themeToggleBtn.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.getElementById('theme-toggle-dark-icon').classList.toggle('hidden', !isDark);
-            document.getElementById('theme-toggle-light-icon').classList.toggle('hidden', isDark);
-        });
-        // Set initial icon state
-        if (document.documentElement.classList.contains('dark')) {
-            document.getElementById('theme-toggle-light-icon').classList.remove('hidden');
-        } else {
-            document.getElementById('theme-toggle-dark-icon').classList.remove('hidden');
-        }
     </script>
 </body>
 
