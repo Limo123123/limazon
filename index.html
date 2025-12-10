@@ -6,199 +6,224 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Limazon Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #e9ebee;
-            /* Ein neutraler Hintergrund */
+            font-family: 'Inter', sans-serif;
         }
 
-        .theme-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        .card-image-container img {
+            transition: transform 0.5s ease;
         }
 
-        .theme-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .theme-card img {
-            height: 180px;
-            object-fit: cover;
+        .theme-card:hover .card-image-container img {
+            transform: scale(1.05);
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-6">
+<body
+    class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen text-gray-100 p-6 flex flex-col items-center">
 
-    <div class="text-center mb-12">
-        <h1 class="text-5xl font-bold text-gray-800 mb-3">Willkommen im Limazon <Portal></Portal>!</h1>
-        <p class="text-xl text-gray-600">Wähle dein nächstes Abenteuer:</p>
+    <div class="text-center mb-16 mt-10">
+        <h1
+            class="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-4 tracking-tight drop-shadow-lg">
+            Limazon <span class="text-white">Portal</span>
+        </h1>
+        <p class="text-lg text-gray-400 font-light tracking-wide">Dein Gateway ins Universum. Wähle dein Abenteuer.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
-        <!-- Option 1: Original Limazon (Blau) -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl w-full mb-12">
+
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/limazon.html')">
-            <img src="placeholder_limazon_original.png" alt="Original Limazon Theme" class="w-full">
-            <!-- Ersetze placeholder_limazon_original.png mit einem Screenshot deines blauen Themes -->
-            <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Limazon Klassik</h2>
-                <p class="text-gray-600 mb-4 text-sm">Das klassische Einkaufserlebnis. Bewährt und direkt.</p>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_limazon_original.png" alt="Limazon Klassik" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">Klassik</h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Das klassische Einkaufserlebnis. Bewährt, direkt und
+                    blau.</p>
                 <button
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/20">
                     Zum Shop
                 </button>
             </div>
         </div>
 
-        <!-- Option 8: New Design -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-green-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/limazonsuper.html')">
-            <img src="placeholder_limazon_original.png" alt="Neues Limazon Theme (BETA)" class="w-full">
-            <!-- Ersetze placeholder_limazon_original.png mit einem Screenshot deines blauen Themes -->
-            <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Limazon New</h2>
-                <p class="text-gray-600 mb-4 text-sm">Das neue Einkaufserlebnis. Modern und ansprechend. Nicht zum Normalen Nutzen gedacht</p>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_limazon_original.png" alt="Limazon New" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white group-hover:text-green-400 transition-colors">Limazon New
+                    </h2>
+                    <span
+                        class="bg-green-900/50 text-green-400 text-xs px-2 py-1 rounded border border-green-700">BETA</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Modern und ansprechend. Experimentelles Design.</p>
                 <button
-                    class="w-full bg-green-800 hover:bg-green-900 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                    Zu Limazon
+                    class="w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-green-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Ausprobieren
                 </button>
             </div>
         </div>
 
-        <!-- Option 2: L-Shop (Orange/Nintendo eShop Stil) -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/10 flex flex-col cursor-pointer grayscale hover:grayscale-0"
             onclick="navigateToApp('themes/l-shop.html')">
-            <img src="placeholder_l_shop.png" alt="L-Shop Theme" class="w-full">
-            <!-- Ersetze placeholder_l_shop.png mit einem Screenshot deines orangen L-Shop Themes -->
-            <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-2">L-Shop Erlebnis</h2>
-                <p class="text-gray-600 mb-4 text-sm">Inspiriert vom Nintendo eShop. Modern und verspielt. VERALTET</p>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_l_shop.png" alt="L-Shop" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white group-hover:text-orange-400 transition-colors">L-Shop</h2>
+                    <span class="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded">Legacy</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Nintendo eShop Stil. Veraltet, aber nostalgisch.</p>
                 <button
-                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                    Zum L-Shop (Veraltet)
+                    class="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Archiv öffnen
                 </button>
             </div>
         </div>
 
-        <!-- Option 3: Glücksrad Paradies -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/wheel.html')">
-            <img src="placeholder_wheel_paradise.png" alt="Glücksrad Paradies" class="w-full">
-            <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Glücksrad Paradies</h2>
-                <p class="text-gray-600 mb-4 text-sm">Erstelle, teile und drehe Glücksräder. Teste dein Glück!</p>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_wheel_paradise.png" alt="Glücksrad" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Glücksrad
+                </h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Erstelle und teile Räder. Teste dein Glück!</p>
                 <button
-                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                    Zu den Glücksrädern
+                    class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Drehen
                 </button>
             </div>
         </div>
 
-        <!-- Option 4: Whatslim -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-teal-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/whatslim.html')">
-            <img src="placeholder_whatslim.png" alt="Whatslim" class="w-full">
-            <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Whatslim</h2>
-                <p class="text-gray-600 mb-4 text-sm">Schreibe anderen Limo ID Nutzern mit Share Codes!</p>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_whatslim.png" alt="Whatslim" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-teal-400 transition-colors">Whatslim</h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Chatte mit anderen Limo ID Nutzern via Share Codes.</p>
                 <button
-                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                    Zu Whatslim
+                    class="w-full bg-teal-600 hover:bg-teal-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Chat starten
                 </button>
             </div>
         </div>
 
-        <!-- Option 5: Account -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('account/index.html')">
-            <img src="placeholder_account.png" alt="Account" class="w-full">
-            <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Account</h2>
-                <p class="text-gray-600 mb-4 text-sm">Siehe deine Limo ID ein!</p>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_account.png" alt="Account" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">Account
+                </h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Verwalte deine Limo ID und Einstellungen.</p>
                 <button
-                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                    Zu Account
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Profil ansehen
                 </button>
             </div>
         </div>
 
-
-        <!-- Option 5: Hall of Fame -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/hall-of-fame.html')">
-            <img src="placeholder_hall-of-fame.png" alt="HallOfFame" class="w-full">
-            <div class="p-6">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Hall of Fame</h2>
-                <p class="text-gray-600 mb-4 text-sm">Siehe die Besten User ein!</p>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_hall-of-fame.png" alt="Hall of Fame" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">Hall of
+                    Fame</h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Die besten User des Universums.</p>
                 <button
-                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                    Zur Hall of Fame
+                    class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Legenden
                 </button>
             </div>
         </div>
 
-        <!-- Option 6: Ideenbox -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-emerald-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/ideabox.html')">
-            <img src="placeholder_ideabox.png" alt="Ideenbox" class="w-full">
-            <div class="p-6">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Ideenbox</h2>
-            <p class="text-gray-600 mb-4 text-sm">Gestalte die Zukunft mit! Reiche deine Ideen und Vorschläge ein und sieh, was die Community sich wünscht.</p>
-            <button
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                Zur Ideenbox
-            </button>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_ideabox.png" alt="Ideenbox" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">Ideenbox
+                </h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Gestalte die Zukunft. Reiche deine Vorschläge ein.</p>
+                <button
+                    class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Einreichen
+                </button>
             </div>
         </div>
 
-        <!-- Option 7: Blame Me -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-lime-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-lime-500/10 flex flex-col cursor-pointer"
             onclick="window.open('https://tcg.limazon.v6.rocks')">
-            <img src="placeholder_blame_me.png" alt="Don't Blame Me" class="w-full">
-            <div class="p-6">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Teacher Grades</h2>
-            <p class="text-gray-600 mb-4 text-sm">Bewerte deine Leherer!</p>
-            <button
-            class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-            Zu Teacher Grades
-            </button>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_human_grades.png" alt="Human Grades" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white group-hover:text-lime-400 transition-colors">Human Grades
+                    </h2>
+                    <span
+                        class="bg-lime-900/50 text-lime-400 text-xs px-2 py-1 rounded border border-lime-700">BETA</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Bewerte andere Menschen.</p>
+                <button
+                    class="w-full bg-lime-700 hover:bg-lime-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Bewerten
+                </button>
             </div>
         </div>
 
-        <!-- Option 8: Teacher Grades -->
-        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer"
+        <div class="theme-card group relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-red-600/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-600/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/dont-blame-me.html')">
-            <img src="placeholder_teacher_grades.png" alt="Teacher Grades" class="w-full">
-            <div class="p-6">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Blame Me</h2>
-            <p class="text-gray-600 mb-4 text-sm">ICH HAB NICHTS GETAN</p>
-            <button
-                class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                Zu Blame Me
-            </button>
+            <div class="card-image-container h-48 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent z-10"></div>
+                <img src="placeholder_dont_blame_me.png" alt="Dont Blame Me" class="w-full h-full object-cover">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-red-500 transition-colors">Don't Blame Me
+                </h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">ICH HAB NICHTS GETAN</p>
+                <button
+                    class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                    Zum Unschuldigen
+                </button>
             </div>
         </div>
 
     </div>
 
-    <footer class="mt-12 text-center text-gray-500 text-sm">
+    <footer class="mt-auto py-8 text-center text-gray-500 text-sm border-t border-gray-800 w-full max-w-7xl">
         © 2025 Limazon Universe
     </footer>
 
     <script>
         function navigateToApp(appUrl) {
-            // Einfache Weiterleitung zur gewählten App/Seite
             console.log("Navigiere zu: " + appUrl);
             window.location.href = appUrl;
-
-            // Optional: Wenn du Theme-Präferenzen zwischenspeichern wolltest,
-            // könntest du das hier tun, bevor du weiterleitest.
-            // Für diese Struktur ist es aber wahrscheinlich nicht nötig, da jede "App"
-            // ihr eigenes Theming oder ihre eigene Theme-Auswahl (wie bei wheels.html) haben kann.
-            // localStorage.setItem('lastSelectedApp', appUrl);
         }
     </script>
 
