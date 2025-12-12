@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Master Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; background: #1e293b; color: #f8fafc; }
+        .sidebar-link { display: block; padding: 10px 15px; margin-bottom: 5px; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: #94a3b8; font-weight: bold; }
+        .sidebar-link:hover { background: #334155; color: white; }
+        .sidebar-link.active { background: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3); }
+        .content-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .input-dark { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px; rounded: 6px; width: 100%; }
+        .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .btn-primary { background: #4f46e5; color: white; } .btn-primary:hover { background: #4338ca; }
+        .btn-danger { background: #ef4444; color: white; } .btn-danger:hover { background: #dc2626; }
+        .fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col p-4 shrink-0">
+        <div class="mb-8 flex items-center gap-3 px-2">
+            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white">L</div>
+            <h1 class="text-xl font-bold tracking-tight">Limo Admin</h1>
+        </div>
+        
+        <nav class="flex-grow space-y-1">
+            <a onclick="switchTab('users')" id="nav-users" class="sidebar-link active">👥 Benutzer</a>
+            <a onclick="switchTab('products')" id="nav-products" class="sidebar-link">🛒 Produkte</a>
+            <a onclick="switchTab('human')" id="nav-human" class="sidebar-link">🎓 Human Grades</a>
+            <a onclick="switchTab('system')" id="nav-system" class="sidebar-link text-red-400 hover:text-red-300">⚙️ System & Reset</a>
+        </nav>
+
+        <div class="mt-auto border-t border-slate-800 pt-4">
+            <a href="/" class="sidebar-link text-sm">← Zurück zum Hub</a>
+        </div>
+    </aside>
+
+    <main class="flex-grow overflow-y-auto p-8 relative">
+        
+        <div id="tab-users" class="space-y-6 fade-in">
+            <div class="flex justify-between items-center">
+                <h2 class="text-3xl font-bold">Benutzerverwaltung</h2>
+                <input type="text" oninput="handleUserSearch(this.value)" placeholder="User suchen..." class="input-dark w-64">
+            </div>
+            
+            <div class="content-card overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-slate-400 uppercase border-b border-slate-700">
+                        <tr><th class="p-3">User</th><th class="p-3">Balance</th><th class="p-3">Tokens</th><th class="p-3">Rolle</th><th class="p-3 text-right">Aktionen</th></tr>
+                    </thead>
+                    <tbody id="user-list"></tbody>
+                </table>
+                <div class="text-center py-4 text-slate-500 hidden" id="user-empty">Keine User gefunden.</div>
+            </div>
+
+            <div id="user-pagination" class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
+                <button onclick="changeUserPage(-1)" id="btn-user-prev" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
+                <span class="text-sm font-bold text-slate-300">Seite <span id="user-page-disp">1</span> / <span id="user-page-total">1</span></span>
+                <button onclick="changeUserPage(1)" id="btn-user-next" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
+            </div>
+        </div>
+
+        <div id="tab-products" class="hidden space-y-6 fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h2 class="text-3xl font-bold">Produkte</h2>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="text" oninput="handleProductSearch(this.value)" placeholder="Produkt suchen..." class="input-dark w-full md:w-64">
+                    <button onclick="editProduct()" class="btn btn-primary whitespace-nowrap">+ Neu</button>
+                </div>
+            </div>
+
+            <div id="product-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+            <div id="product-loader" class="hidden text-center py-20">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+                <p class="text-slate-400">Lade Produkte...</p>
+            </div>
+
+            <div id="product-pagination" class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
+                <button onclick="changeProductPage(-1)" id="btn-prod-prev" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
+                <span class="text-sm font-bold text-slate-300">Seite <span id="prod-page-disp">1</span> / <span id="prod-page-total">1</span></span>
+                <button onclick="changeProductPage(1)" id="btn-prod-next" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
+            </div>
+        </div>
+
+        <div id="tab-human" class="hidden space-y-6 fade-in">
+            <h2 class="text-3xl font-bold">Human Grades DB</h2>
+            <div class="content-card">
+                <h3 class="text-xl font-bold mb-4">Verwaltung</h3>
+                <p class="text-slate-400 mb-4">Für die detaillierte Verwaltung von Lehrern, Personen und Kriterien nutze bitte das Haupt-Interface.</p>
+                <a href="https://tcg.limazon.v6.rocks" class="btn btn-primary inline-block">Zum HG Admin Panel</a>
+            </div>
+        </div>
+
+        <div id="tab-system" class="hidden space-y-6 fade-in">
+            <h2 class="text-3xl font-bold text-red-500">System Kern</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="content-card border-red-900/50">
+                    <h3 class="text-xl font-bold mb-2">💰 Wirtschaftsschutz</h3>
+                    <p class="text-slate-400 text-sm mb-4">Korrigiert "Unendlich" oder "e+" Kontostände auf 100 Bio.</p>
+                    <button onclick="triggerNormalize()" class="btn bg-orange-600 text-white w-full hover:bg-orange-700">Balance Normalisieren</button>
+                </div>
+
+                <div class="content-card border-indigo-900/50">
+                    <h3 class="text-xl font-bold mb-2">📰 AI News Trigger</h3>
+                    <p class="text-slate-400 text-sm mb-4">Zwingt den Gemini Bot sofort, einen Artikel zu schreiben.</p>
+                    <button onclick="triggerAI()" class="btn bg-indigo-600 text-white w-full hover:bg-indigo-700">Breaking News generieren</button>
+                </div>
+
+                <div class="content-card border-red-900/50">
+                    <h3 class="text-xl font-bold mb-2">⚠️ Human Grades Reset</h3>
+                    <p class="text-slate-400 text-sm mb-4">Löscht ALLE Lehrer/Personen und setzt Defaults.</p>
+                    <button onclick="resetHumanGrades()" class="btn btn-danger w-full">HG Datenbank Reset</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modal-user" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
+        <div class="bg-slate-900 p-6 rounded-xl w-96 border border-slate-700 shadow-2xl fade-in">
+            <h3 class="text-xl font-bold mb-4">User bearbeiten</h3>
+            <input type="hidden" id="edit-u-id">
+            <div class="space-y-3">
+                <div><label class="text-xs text-slate-400">Username</label><input id="edit-u-name" class="input-dark" disabled></div>
+                <div><label class="text-xs text-slate-400">Balance ($)</label><input id="edit-u-bal" type="number" class="input-dark"></div>
+                <div><label class="text-xs text-slate-400">Tokens</label><input id="edit-u-tok" type="number" class="input-dark"></div>
+                <div class="flex items-center gap-2"><input id="edit-u-admin" type="checkbox"><label>Ist Admin</label></div>
+                <hr class="border-slate-700">
+                <div><label class="text-xs text-red-400">Passwort Reset (optional)</label><input id="edit-u-pass" type="text" placeholder="Neues Passwort" class="input-dark border-red-900/50"></div>
+            </div>
+            <div class="mt-6 flex gap-2">
+                <button onclick="closeModal('modal-user')" class="btn bg-slate-700 text-white flex-1">Abbrechen</button>
+                <button onclick="saveUser()" class="btn btn-primary flex-1">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-product" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
+        <div class="bg-slate-900 p-6 rounded-xl w-96 border border-slate-700 shadow-2xl fade-in">
+            <h3 class="text-xl font-bold mb-4">Produkt</h3>
+            <input type="hidden" id="edit-p-oid">
+            <div class="space-y-3">
+                <input id="edit-p-id" placeholder="ID (z.B. apple)" class="input-dark">
+                <input id="edit-p-name" placeholder="Name" class="input-dark">
+                <input id="edit-p-price" type="number" placeholder="Preis" class="input-dark">
+                <input id="edit-p-stock" type="number" placeholder="Lagerbestand" class="input-dark">
+                <input id="edit-p-img" placeholder="Bild URL (optional)" class="input-dark">
+                <textarea id="edit-p-desc" placeholder="Beschreibung" class="input-dark h-20"></textarea>
+            </div>
+            <div class="mt-6 flex gap-2">
+                <button onclick="closeModal('modal-product')" class="btn bg-slate-700 text-white flex-1">Abbrechen</button>
+                <button onclick="saveProduct()" class="btn btn-primary flex-1">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://api.limazon.v6.rocks';
+        
+        let users = [];
+        let products = [];
+        
+        // --- PAGINATION STATES ---
+        let prodPage = 1;
+        const prodPerPage = 12;
+        let prodFilter = "";
+
+        let userPage = 1;
+        const userPerPage = 15;
+        let userFilter = "";
+
+        // INIT
+        checkAuth();
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(API + '/api/auth/me', { credentials: 'include' });
+                if(res.ok) {
+                    const u = await res.json();
+                    if(!u.isAdmin) return alert("Kein Zutritt!");
+                    loadUsers();
+                    loadProducts();
+                } else { window.location.href = '/'; }
+            } catch(e) { alert("Verbindungsfehler"); }
+        }
+
+        function switchTab(id) {
+            document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
+            document.getElementById('tab-'+id).classList.remove('hidden');
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById('nav-'+id).classList.add('active');
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // ========================
+        // === USER MANAGEMENT ===
+        // ========================
+        async function loadUsers() {
+            const res = await fetch(API + '/api/admin/users', { credentials: 'include' });
+            const data = await res.json();
+            users = data.users;
+            renderUsers();
+        }
+
+        function handleUserSearch(val) {
+            userFilter = val.toLowerCase();
+            userPage = 1;
+            renderUsers();
+        }
+
+        function changeUserPage(delta) {
+            userPage += delta;
+            renderUsers();
+        }
+
+        function renderUsers() {
+            const list = document.getElementById('user-list');
+            const empty = document.getElementById('user-empty');
+            const pag = document.getElementById('user-pagination');
+
+            let filtered = users.filter(u => u.username.toLowerCase().includes(userFilter));
+
+            const totalPages = Math.ceil(filtered.length / userPerPage) || 1;
+            if(userPage > totalPages) userPage = totalPages;
+            if(userPage < 1) userPage = 1;
+
+            const start = (userPage - 1) * userPerPage;
+            const end = start + userPerPage;
+            const pageItems = filtered.slice(start, end);
+
+            document.getElementById('user-page-disp').innerText = userPage;
+            document.getElementById('user-page-total').innerText = totalPages;
+            document.getElementById('btn-user-prev').disabled = userPage === 1;
+            document.getElementById('btn-user-next').disabled = userPage === totalPages;
+            
+            if(filtered.length > 0) pag.classList.remove('hidden'); else pag.classList.add('hidden');
+            if(filtered.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+
+            list.innerHTML = pageItems.map(u => {
+                const tok = (u.tokens !== undefined && u.tokens !== null) ? u.tokens.toLocaleString() : "0";
+                const bal = u.balance ? u.balance.toLocaleString() : "0";
+                return `
+                <tr class="border-b border-slate-800 hover:bg-slate-800/50">
+                    <td class="p-3 font-bold">${u.username}</td>
+                    <td class="p-3 text-emerald-400">$${bal}</td>
+                    <td class="p-3 text-amber-400">${tok} T</td>
+                    <td class="p-3">${u.isAdmin ? '<span class="bg-indigo-600 text-xs px-2 py-1 rounded">ADMIN</span>' : 'User'}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="openEditUser('${u._id}')" class="text-blue-400 hover:text-white mr-2">✏️</button>
+                        <button onclick="deleteUser('${u._id}')" class="text-red-500 hover:text-white">🗑️</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openEditUser(id) {
+            const u = users.find(x => x._id === id);
+            if(!u) return;
+            document.getElementById('edit-u-id').value = id;
+            document.getElementById('edit-u-name').value = u.username;
+            document.getElementById('edit-u-bal').value = u.balance;
+            document.getElementById('edit-u-tok').value = u.tokens || 0;
+            document.getElementById('edit-u-admin').checked = u.isAdmin || false;
+            document.getElementById('edit-u-pass').value = "";
+            document.getElementById('modal-user').classList.remove('hidden');
+        }
+
+        async function saveUser() {
+            const id = document.getElementById('edit-u-id').value;
+            const body = {
+                balance: document.getElementById('edit-u-bal').value,
+                tokens: document.getElementById('edit-u-tok').value,
+                isAdmin: document.getElementById('edit-u-admin').checked
+            };
+            await fetch(API + '/api/admin/users/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'include' });
+            const pass = document.getElementById('edit-u-pass').value;
+            if(pass) {
+                await fetch(API + '/api/admin/users/' + id + '/reset-pw', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({newPassword: pass}), credentials: 'include' });
+            }
+            closeModal('modal-user');
+            loadUsers();
+        }
+
+        async function deleteUser(id) {
+            if(!confirm("Diesen User wirklich unwiderruflich löschen?")) return;
+            await fetch(API + '/api/admin/users/' + id, { method: 'DELETE', credentials: 'include' });
+            loadUsers();
+        }
+
+        // ===========================
+        // === PRODUCT MANAGEMENT ===
+        // ===========================
+        async function loadProducts() {
+            document.getElementById('product-list-container').innerHTML = '';
+            document.getElementById('product-loader').classList.remove('hidden');
+            document.getElementById('product-pagination').classList.add('hidden');
+
+            try {
+                const res = await fetch(API + '/api/admin/products', { credentials: 'include' });
+                const data = await res.json();
+                products = data.products;
+                renderProducts();
+            } catch(e) { console.error(e); } 
+            finally { document.getElementById('product-loader').classList.add('hidden'); }
+        }
+
+        function handleProductSearch(val) {
+            prodFilter = val.toLowerCase();
+            prodPage = 1;
+            renderProducts();
+        }
+
+        function changeProductPage(delta) {
+            prodPage += delta;
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const list = document.getElementById('product-list-container');
+            const pag = document.getElementById('product-pagination');
+            
+            let filtered = products.filter(p => {
+                const name = p.name ? p.name.toLowerCase() : "";
+                const id = p.id ? String(p.id).toLowerCase() : "";
+                return name.includes(prodFilter) || id.includes(prodFilter);
+            });
+
+            const totalPages = Math.ceil(filtered.length / prodPerPage) || 1;
+            if(prodPage > totalPages) prodPage = totalPages;
+            if(prodPage < 1) prodPage = 1;
+
+            const start = (prodPage - 1) * prodPerPage;
+            const end = start + prodPerPage;
+            const pageItems = filtered.slice(start, end);
+
+            document.getElementById('prod-page-disp').innerText = prodPage;
+            document.getElementById('prod-page-total').innerText = totalPages;
+            document.getElementById('btn-prod-prev').disabled = prodPage === 1;
+            document.getElementById('btn-prod-next').disabled = prodPage === totalPages;
+            
+            if(filtered.length > 0) pag.classList.remove('hidden'); else pag.classList.add('hidden');
+
+            if(filtered.length === 0) {
+                list.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">Keine Produkte gefunden.</div>`;
+                return;
+            }
+
+            list.innerHTML = pageItems.map(p => {
+                // --- INTELLIGENTE FELDERKENNUNG (FIX) ---
+                const realPrice = (p.price !== undefined && p.price !== null) ? p.price : p.currentPrice;
+                const isInvalid = (realPrice === undefined || realPrice === null);
+                const priceDisplay = isInvalid ? '<span class="text-red-500 font-bold">INVALID</span>' : `$${realPrice}`;
+                const borderClass = isInvalid ? 'border-red-500/50' : 'border-slate-700 hover:border-indigo-500';
+                
+                return `
+                <div class="content-card flex flex-col justify-between h-full border ${borderClass} transition relative">
+                    ${isInvalid ? '<div class="absolute top-2 right-2 text-xs bg-red-900 text-red-200 px-2 rounded">Fehlerhaft</div>' : ''}
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-lg text-white truncate pr-2">${p.name || "Unbekannt"}</span>
+                            <span class="text-emerald-400 font-mono whitespace-nowrap">${priceDisplay}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2 font-mono">ID: ${p.id || "???"}</p>
+                        <p class="text-sm text-slate-300 mb-4 line-clamp-2">${(p.description||"Keine Beschreibung").substring(0,60)}...</p>
+                    </div>
+                    <div class="flex gap-2 border-t border-slate-700 pt-3 mt-auto">
+                        <button onclick="openEditProduct('${p._id}')" class="btn bg-slate-700 text-xs flex-1 hover:bg-slate-600">Bearbeiten</button>
+                        <button onclick="deleteProduct('${p._id}')" class="btn btn-danger text-xs hover:bg-red-700">Löschen</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- EDIT PRODUCT (MIT FIXES FÜR BILDER/PREIS) ---
+        function openEditProduct(id) {
+            if(!id) {
+                // Neu
+                document.getElementById('edit-p-oid').value = "";
+                document.getElementById('edit-p-id').value = "";
+                document.getElementById('edit-p-name').value = "";
+                document.getElementById('edit-p-price').value = "";
+                document.getElementById('edit-p-stock').value = "999";
+                document.getElementById('edit-p-img').value = "";
+                document.getElementById('edit-p-desc').value = "";
+            } else {
+                // Bearbeiten
+                const p = products.find(x => x._id === id);
+                if(!p) return alert("Fehler: Produkt nicht im Speicher.");
+
+                document.getElementById('edit-p-oid').value = p._id;
+                document.getElementById('edit-p-id').value = p.id || "";
+                document.getElementById('edit-p-name').value = p.name || "";
+                
+                // Preis Fix: Nimm 'price' ODER 'currentPrice'
+                const realPrice = (p.price !== undefined) ? p.price : p.currentPrice;
+                document.getElementById('edit-p-price').value = (realPrice !== undefined) ? realPrice : "";
+                
+                // Stock Fix: Nimm 'stock' ODER 'quantity'
+                const realStock = (p.stock !== undefined) ? p.stock : (p.quantity || 999);
+                document.getElementById('edit-p-stock').value = realStock;
+                
+                // Bild Fix: Prüfe alle Varianten
+                // image_url, imageUrl, image, img
+                const realImg = p.image || p.img || p.imageUrl || p.image_url || "";
+                document.getElementById('edit-p-img').value = realImg;
+                
+                document.getElementById('edit-p-desc').value = p.description || "";
+            }
+            document.getElementById('modal-product').classList.remove('hidden');
+        }
+
+        // Alias
+        function editProduct() { openEditProduct(null); }
+
+        async function saveProduct() {
+            const body = {
+                _id: document.getElementById('edit-p-oid').value,
+                id: document.getElementById('edit-p-id').value,
+                name: document.getElementById('edit-p-name').value,
+                price: document.getElementById('edit-p-price').value,
+                stock: document.getElementById('edit-p-stock').value,
+                image: document.getElementById('edit-p-img').value,
+                description: document.getElementById('edit-p-desc').value
+            };
+            await fetch(API + '/api/admin/products', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'include' });
+            closeModal('modal-product');
+            loadProducts();
+        }
+
+        async function deleteProduct(id) {
+            if(!confirm("Produkt und alle zugehörigen Daten (Aktien/Auktionen) löschen?")) return;
+            const res = await fetch(API + '/api/admin/products/' + id, { method: 'DELETE', credentials: 'include' });
+            if(res.ok) {
+                const d = await res.json();
+                alert(d.message);
+                loadProducts();
+            } else alert("Fehler");
+        }
+
+        // --- SYSTEM ---
+        async function triggerNormalize() {
+            if(!confirm("Starten?")) return;
+            const res = await fetch(API + '/api/admin/system/normalize', { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            alert(data.message);
+        }
+        async function triggerAI() {
+            const res = await fetch(API + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            alert(data.message);
+        }
+        async function resetHumanGrades() {
+            if(!confirm("Reset Human Grades DB?")) return;
+            await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
+            alert("Done.");
+        }
+    </script>
