@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Netzwerk Status</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .stat-card { transition: transform 0.3s ease, border-color 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); border-color: rgba(99, 102, 241, 0.5); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-6 relative overflow-x-hidden">
+
+    <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+    <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-indigo-900/20 to-transparent pointer-events-none"></div>
+
+    <div class="max-w-6xl mx-auto relative z-10">
+        
+        <nav class="flex justify-between items-center mb-12">
+            <a href="/" class="text-slate-400 hover:text-white font-bold transition">← Hub</a>
+            <div class="flex items-center gap-2">
+                <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span class="text-emerald-400 font-mono text-sm">SYSTEM OPERATIONAL</span>
+            </div>
+        </nav>
+
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">
+                Netzwerk Statistik
+            </h1>
+            <p class="text-slate-400">Echtzeit-Metriken aus der Limazon Cloud.</p>
+        </div>
+
+        <div class="glass rounded-3xl p-8 mb-12 flex flex-col md:flex-row items-center justify-around text-center md:text-left gap-8">
+            <div>
+                <h3 class="text-slate-400 text-sm uppercase tracking-widest font-bold mb-2">Gesamte Codebasis</h3>
+                <div class="text-6xl font-extrabold mono text-white" id="stat-loc-total">---</div>
+                <p class="text-slate-500 text-sm mt-2">Zeilen Code (LOC)</p>
+            </div>
+            <div class="h-px w-full md:w-px md:h-24 bg-slate-700"></div>
+            <div class="grid grid-cols-2 gap-x-12 gap-y-4">
+                <div>
+                    <div class="text-2xl font-bold mono text-indigo-400" id="stat-loc-server">---</div>
+                    <div class="text-xs text-slate-500 uppercase">Server (Backend)</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold mono text-pink-400" id="stat-loc-front">---</div>
+                    <div class="text-xs text-slate-500 uppercase">Web (Frontend)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            <div class="glass stat-card p-6 rounded-2xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-indigo-500/10 rounded-xl text-indigo-400 text-2xl">👥</div>
+                    <span class="text-xs font-bold bg-slate-800 px-2 py-1 rounded text-slate-400">DB: Users</span>
+                </div>
+                <div class="text-4xl font-bold text-white mb-1" id="stat-users">0</div>
+                <p class="text-slate-500 text-sm">Registrierte Accounts</p>
+            </div>
+
+            <div class="glass stat-card p-6 rounded-2xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-blue-500/10 rounded-xl text-blue-400 text-2xl">🛒</div>
+                    <span class="text-xs font-bold bg-slate-800 px-2 py-1 rounded text-slate-400">DB: Products</span>
+                </div>
+                <div class="text-4xl font-bold text-white mb-1" id="stat-products">0</div>
+                <p class="text-slate-500 text-sm">Aktive Artikel im Shop</p>
+            </div>
+
+             <div class="glass stat-card p-6 rounded-2xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-lime-500/10 rounded-xl text-lime-400 text-2xl">🎓</div>
+                    <span class="text-xs font-bold bg-slate-800 px-2 py-1 rounded text-slate-400">DB: Humans</span>
+                </div>
+                <div class="text-4xl font-bold text-white mb-1" id="stat-humans">0</div>
+                <p class="text-slate-500 text-sm">Personen in Human Grades</p>
+            </div>
+
+            <div class="glass stat-card p-6 rounded-2xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-purple-500/10 rounded-xl text-purple-400 text-2xl">🎡</div>
+                    <span class="text-xs font-bold bg-slate-800 px-2 py-1 rounded text-slate-400">DB: Wheels</span>
+                </div>
+                <div class="text-4xl font-bold text-white mb-1" id="stat-wheels">0</div>
+                <p class="text-slate-500 text-sm">Erstellte Glücksräder</p>
+            </div>
+            
+        </div>
+
+        <div class="mt-12 text-center text-xs text-slate-600 font-mono">
+            NODE_ENV: production | RENDER.COM | MONGODB ATLAS
+        </div>
+
+    </div>
+
+    <script>
+        const API = 'https://api.limazon.v6.rocks/api/system/stats';
+
+        // Funktion zum Hochzählen der Zahlen (Animation)
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(API);
+                const d = await res.json();
+
+                // DB Stats animieren
+                animateValue(document.getElementById('stat-users'), 0, d.users, 1500);
+                animateValue(document.getElementById('stat-products'), 0, d.products, 1500);
+                animateValue(document.getElementById('stat-humans'), 0, d.humans, 1500);
+                animateValue(document.getElementById('stat-wheels'), 0, d.wheels, 1500);
+
+                // LOC Stats
+                document.getElementById('stat-loc-total').innerText = d.loc.total.toLocaleString();
+                document.getElementById('stat-loc-server').innerText = d.loc.server.toLocaleString();
+                document.getElementById('stat-loc-front').innerText = d.loc.frontend.toLocaleString();
+
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        loadStats();
+    </script>
+</body>
+</html>

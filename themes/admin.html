@@ -246,15 +246,20 @@
 
             list.innerHTML = pageItems.map(u => {
                 const tok = (u.tokens !== undefined && u.tokens !== null) ? u.tokens.toLocaleString() : "0";
+                
+                // Balance rot färben wenn negativ
+                const balClass = u.balance < 0 ? "text-red-500 font-bold" : "text-emerald-400";
                 const bal = u.balance ? u.balance.toLocaleString() : "0";
+
                 return `
                 <tr class="border-b border-slate-800 hover:bg-slate-800/50">
                     <td class="p-3 font-bold">${u.username}</td>
-                    <td class="p-3 text-emerald-400">$${bal}</td>
+                    <td class="p-3 ${balClass}">$${bal}</td>
                     <td class="p-3 text-amber-400">${tok} T</td>
                     <td class="p-3">${u.isAdmin ? '<span class="bg-indigo-600 text-xs px-2 py-1 rounded">ADMIN</span>' : 'User'}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="openEditUser('${u._id}')" class="text-blue-400 hover:text-white mr-2">✏️</button>
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <button onclick="fineUser('${u._id}', '${u.username}')" class="text-yellow-500 hover:text-yellow-300 mr-3" title="Strafe verhängen">🚓</button>
+                        <button onclick="openEditUser('${u._id}')" class="text-blue-400 hover:text-white mr-3">✏️</button>
                         <button onclick="deleteUser('${u._id}')" class="text-red-500 hover:text-white">🗑️</button>
                     </td>
                 </tr>`;
@@ -461,5 +466,32 @@
             if(!confirm("Reset Human Grades DB?")) return;
             await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
             alert("Done.");
+        }
+
+        async function fineUser(id, name) {
+            const amountStr = prompt(`👮 STRAFZETTEL FÜR ${name.toUpperCase()}\n\nWie viel Geld soll zur Strafe abgezogen werden?\n(Dies kann das Konto ins Minus treiben!)`, "500");
+            if(!amountStr) return;
+            
+            const amount = parseFloat(amountStr);
+            if(isNaN(amount) || amount <= 0) return alert("Ungültiger Betrag.");
+
+            const reason = prompt("Grund für die Strafe? (Optional)", "Verstoß gegen die Limo-Gesetze");
+
+            try {
+                const res = await fetch(API + '/api/admin/users/' + id + '/fine', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ amount, reason }),
+                    credentials: 'include'
+                });
+                
+                if(res.ok) {
+                    const data = await res.json();
+                    alert(data.message);
+                    loadUsers(); // Liste aktualisieren -> Rote Zahlen sehen!
+                } else {
+                    alert("Fehler beim Bestrafen.");
+                }
+            } catch(e) { alert("Verbindungsfehler."); }
         }
     </script>
