@@ -246,8 +246,6 @@
 
             list.innerHTML = pageItems.map(u => {
                 const tok = (u.tokens !== undefined && u.tokens !== null) ? u.tokens.toLocaleString() : "0";
-                
-                // Balance rot färben wenn negativ
                 const balClass = u.balance < 0 ? "text-red-500 font-bold" : "text-emerald-400";
                 const bal = u.balance ? u.balance.toLocaleString() : "0";
 
@@ -259,8 +257,12 @@
                     <td class="p-3">${u.isAdmin ? '<span class="bg-indigo-600 text-xs px-2 py-1 rounded">ADMIN</span>' : 'User'}</td>
                     <td class="p-3 text-right whitespace-nowrap">
                         <button onclick="fineUser('${u._id}', '${u.username}')" class="text-yellow-500 hover:text-yellow-300 mr-3" title="Strafe verhängen">🚓</button>
-                        <button onclick="openEditUser('${u._id}')" class="text-blue-400 hover:text-white mr-3">✏️</button>
-                        <button onclick="deleteUser('${u._id}')" class="text-red-500 hover:text-white">🗑️</button>
+                        
+                        <button onclick="openEditUser('${u._id}')" class="text-blue-400 hover:text-white mr-3" title="Bearbeiten">✏️</button>
+                        
+                        <button onclick="deleteUser('${u._id}')" class="text-red-500 hover:text-white mr-3" title="Nur Löschen">🗑️</button>
+                        
+                        <button onclick="banUser('${u._id}', '${u.username}')" class="text-purple-500 hover:text-white font-bold" title="IP BAN & ZERSTÖREN">🔨</button>
                     </td>
                 </tr>`;
             }).join('');
@@ -493,5 +495,39 @@
                     alert("Fehler beim Bestrafen.");
                 }
             } catch(e) { alert("Verbindungsfehler."); }
+        }
+
+        async function banUser(id, name) {
+            const confirmBan = confirm(
+                `⛔ ACHTUNG: BAN-HAMMER ⛔\n\n` + 
+                `Willst du ${name} wirklich vernichten?\n` +
+                `1. Der User wird gelöscht.\n` +
+                `2. Seine IP-Adresse wird PERMANENT gesperrt.\n` +
+                `3. Er kann sich nicht mehr registrieren.\n\n` +
+                `Fortfahren?`
+            );
+            
+            if (!confirmBan) return;
+
+            try {
+                const res = await fetch(API + '/api/admin/banUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUserId: id }),
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert("ERFOLG: " + data.message);
+                    loadUsers(); // Liste aktualisieren
+                } else {
+                    alert("FEHLER: " + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Serverfehler beim Bannen.");
+            }
         }
     </script>
