@@ -382,7 +382,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://limazonapi.any64.de';
+        const API_URL = 'https://raspberrypi.tail75d81e.ts.net:8443';
         let currentUser = null;
         let searchTimeout = null;
 
@@ -611,7 +611,7 @@
 
         async function claimDaily() {
             try {
-                const res = await fetch('https://limazonapi.any64.de/api/daily', { method: 'POST', credentials: 'include' });
+                const res = await fetch('https://raspberrypi.tail75d81e.ts.net:8443/api/daily', { method: 'POST', credentials: 'include' });
                 const data = await res.json();
 
                 if (res.ok) {
