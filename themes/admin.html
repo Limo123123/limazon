@@ -15,8 +15,15 @@
         .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
         .btn-primary { background: #4f46e5; color: white; } .btn-primary:hover { background: #4338ca; }
         .btn-danger { background: #ef4444; color: white; } .btn-danger:hover { background: #dc2626; }
+        .btn-warning { background: #f59e0b; color: white; } .btn-warning:hover { background: #d97706; }
+        .btn-success { background: #10b981; color: white; } .btn-success:hover { background: #059669; }
         .fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Stat Kacheln */
+        .stat-box { background: #1e293b; border-radius: 8px; padding: 10px; text-align: center; border: 1px solid #334155; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 1.25rem; font-weight: bold; color: #fff; margin-top: 4px; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -31,7 +38,7 @@
             <a onclick="switchTab('users')" id="nav-users" class="sidebar-link active">👥 Benutzer</a>
             <a onclick="switchTab('products')" id="nav-products" class="sidebar-link">🛒 Produkte</a>
             <a onclick="switchTab('human')" id="nav-human" class="sidebar-link">🎓 Human Grades</a>
-            <a onclick="switchTab('system')" id="nav-system" class="sidebar-link text-red-400 hover:text-red-300">⚙️ System & Reset</a>
+            <a onclick="switchTab('system')" id="nav-system" class="sidebar-link text-red-400 hover:text-red-300">⚙️ System & Health</a>
         </nav>
 
         <div class="mt-auto border-t border-slate-800 pt-4">
@@ -97,25 +104,55 @@
         </div>
 
         <div id="tab-system" class="hidden space-y-6 fade-in">
-            <h2 class="text-3xl font-bold text-red-500">System Kern</h2>
+            <h2 class="text-3xl font-bold text-red-500">System Konsole</h2>
             
+            <div class="content-card border-blue-900/50">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-blue-400">📡 Server Status (Pi 5)</h3>
+                    <button onclick="refreshHealth()" class="text-xs bg-slate-800 px-2 py-1 rounded hover:bg-slate-700">Refresh</button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="health-stats">
+                    <div class="stat-box"><div class="stat-label">RAM</div><div class="stat-value text-gray-500">...</div></div>
+                    <div class="stat-box"><div class="stat-label">Uptime</div><div class="stat-value text-gray-500">...</div></div>
+                    <div class="stat-box"><div class="stat-label">DB Status</div><div class="stat-value text-gray-500">...</div></div>
+                    <div class="stat-box"><div class="stat-label">Cache Items</div><div class="stat-value text-gray-500">...</div></div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="content-card border-red-900/50">
-                    <h3 class="text-xl font-bold mb-2">💰 Wirtschaftsschutz</h3>
-                    <p class="text-slate-400 text-sm mb-4">Korrigiert "Unendlich" oder "e+" Kontostände auf 100 Bio.</p>
-                    <button onclick="triggerNormalize()" class="btn bg-orange-600 text-white w-full hover:bg-orange-700">Balance Normalisieren</button>
+                
+                <div class="content-card border-orange-900/50">
+                    <h3 class="text-xl font-bold mb-4 text-orange-400">🔧 Reparatur & Wartung</h3>
+                    <div class="space-y-3">
+                        <button onclick="fixImages()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>🖼️ Bilder Fixen (via.placeholder)</span>
+                            <span class="text-xs opacity-50">Auto-Replace</span>
+                        </button>
+                        <button onclick="fixDecimals()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>🔢 Kommastellen Fixen</span>
+                            <span class="text-xs opacity-50">Rundet auf .00</span>
+                        </button>
+                        <button onclick="triggerNormalize()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>💰 Anti-Cheat / Balance Normalize</span>
+                            <span class="text-xs opacity-50">Max 100 Bio.</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="content-card border-indigo-900/50">
-                    <h3 class="text-xl font-bold mb-2">📰 AI News Trigger</h3>
-                    <p class="text-slate-400 text-sm mb-4">Zwingt den Gemini Bot sofort, einen Artikel zu schreiben.</p>
-                    <button onclick="triggerAI()" class="btn bg-indigo-600 text-white w-full hover:bg-indigo-700">Breaking News generieren</button>
-                </div>
-
-                <div class="content-card border-red-900/50">
-                    <h3 class="text-xl font-bold mb-2">⚠️ Human Grades Reset</h3>
-                    <p class="text-slate-400 text-sm mb-4">Löscht ALLE Lehrer/Personen und setzt Defaults.</p>
-                    <button onclick="resetHumanGrades()" class="btn btn-danger w-full">HG Datenbank Reset</button>
+                    <h3 class="text-xl font-bold mb-4 text-indigo-400">⚡ Aktionen</h3>
+                    <div class="space-y-3">
+                        <button onclick="triggerAI()" class="btn bg-indigo-600 text-white w-full hover:bg-indigo-700">
+                            📰 Breaking News generieren
+                        </button>
+                        
+                        <div class="border-t border-slate-700 my-4 pt-4">
+                            <h4 class="text-red-500 font-bold mb-2 text-sm uppercase">Danger Zone</h4>
+                            <button onclick="resetHumanGrades()" class="btn btn-danger w-full">
+                                ⚠️ Human Grades Datenbank Reset
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -186,6 +223,8 @@
                     if(!u.isAdmin) return alert("Kein Zutritt!");
                     loadUsers();
                     loadProducts();
+                    // Wenn direkt auf System Tab, dann Health laden
+                    if(!document.getElementById('tab-system').classList.contains('hidden')) refreshHealth();
                 } else { window.location.href = '/'; }
             } catch(e) { alert("Verbindungsfehler"); }
         }
@@ -195,9 +234,78 @@
             document.getElementById('tab-'+id).classList.remove('hidden');
             document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
             document.getElementById('nav-'+id).classList.add('active');
+            
+            // Wenn System Tab geöffnet wird, Daten laden
+            if(id === 'system') refreshHealth();
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // ========================
+        // === SYSTEM HEALTH ===
+        // ========================
+        async function refreshHealth() {
+            const container = id => document.getElementById('health-stats').children[id].querySelector('.stat-value');
+            
+            // Loading State
+            for(let i=0; i<4; i++) container(i).innerText = "...";
+
+            try {
+                const res = await fetch(API + '/api/admin/health-check', { credentials: 'include' });
+                if(res.ok) {
+                    const data = await res.json();
+                    container(0).innerText = data.memory || "N/A";
+                    container(1).innerText = data.uptime || "N/A";
+                    container(2).innerHTML = data.dbStatus === "Connected ✅" ? '<span class="text-green-400">Online</span>' : '<span class="text-red-500">Offline</span>';
+                    container(3).innerText = data.productCacheSize || "0";
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // ========================
+        // === SYSTEM TOOLS ===
+        // ========================
+        async function fixImages() {
+            if(!confirm("Bilder von via.placeholder auf placehold.co umstellen?")) return;
+            try {
+                const res = await fetch(API + '/api/admin/system/fix-images', { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                alert(d.message);
+                loadProducts(); // Liste neu laden
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+
+        async function fixDecimals() {
+            if(!confirm("Alle Kontostände auf 2 Nachkommastellen runden?")) return;
+            try {
+                const res = await fetch(API + '/api/admin/system/fix-decimals', { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                alert(d.message);
+                loadUsers(); // User neu laden
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+
+        async function triggerNormalize() {
+            if(!confirm("Balance Normalisierung starten (Anti-Cheat)?")) return;
+            const res = await fetch(API + '/api/admin/system/normalize', { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            alert(data.message);
+            loadUsers();
+        }
+
+        async function triggerAI() {
+            const res = await fetch(API + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
+            const data = await res.json();
+            alert(data.message);
+        }
+
+        async function resetHumanGrades() {
+            if(!confirm("⚠️ ACHTUNG: Reset Human Grades DB?\nAlle Bewertungen und Lehrer werden gelöscht!")) return;
+            await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
+            alert("Datenbank wurde zurückgesetzt.");
+        }
 
         // ========================
         // === USER MANAGEMENT ===
@@ -302,6 +410,67 @@
             loadUsers();
         }
 
+        async function fineUser(id, name) {
+            const amountStr = prompt(`👮 STRAFZETTEL FÜR ${name.toUpperCase()}\n\nWie viel Geld soll zur Strafe abgezogen werden?\n(Dies kann das Konto ins Minus treiben!)`, "500");
+            if(!amountStr) return;
+            
+            const amount = parseFloat(amountStr);
+            if(isNaN(amount) || amount <= 0) return alert("Ungültiger Betrag.");
+
+            const reason = prompt("Grund für die Strafe? (Optional)", "Verstoß gegen die Limo-Gesetze");
+
+            try {
+                const res = await fetch(API + '/api/admin/users/' + id + '/fine', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ amount, reason }),
+                    credentials: 'include'
+                });
+                
+                if(res.ok) {
+                    const data = await res.json();
+                    alert(data.message);
+                    loadUsers(); 
+                } else {
+                    alert("Fehler beim Bestrafen.");
+                }
+            } catch(e) { alert("Verbindungsfehler."); }
+        }
+
+        async function banUser(id, name) {
+            const confirmBan = confirm(
+                `⛔ ACHTUNG: BAN-HAMMER ⛔\n\n` + 
+                `Willst du ${name} wirklich vernichten?\n` +
+                `1. Der User wird gelöscht.\n` +
+                `2. Seine IP-Adresse wird PERMANENT gesperrt.\n` +
+                `3. Er kann sich nicht mehr registrieren.\n\n` +
+                `Fortfahren?`
+            );
+            
+            if (!confirmBan) return;
+
+            try {
+                const res = await fetch(API + '/api/admin/banUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUserId: id }),
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert("ERFOLG: " + data.message);
+                    loadUsers(); 
+                } else {
+                    alert("FEHLER: " + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Serverfehler beim Bannen.");
+            }
+        }
+
         // ===========================
         // === PRODUCT MANAGEMENT ===
         // ===========================
@@ -361,7 +530,6 @@
             }
 
             list.innerHTML = pageItems.map(p => {
-                // --- INTELLIGENTE FELDERKENNUNG (FIX) ---
                 const realPrice = (p.price !== undefined && p.price !== null) ? p.price : p.currentPrice;
                 const isInvalid = (realPrice === undefined || realPrice === null);
                 const priceDisplay = isInvalid ? '<span class="text-red-500 font-bold">INVALID</span>' : `$${realPrice}`;
@@ -386,10 +554,8 @@
             }).join('');
         }
 
-        // --- EDIT PRODUCT (MIT FIXES FÜR BILDER/PREIS) ---
         function openEditProduct(id) {
             if(!id) {
-                // Neu
                 document.getElementById('edit-p-oid').value = "";
                 document.getElementById('edit-p-id').value = "";
                 document.getElementById('edit-p-name').value = "";
@@ -398,7 +564,6 @@
                 document.getElementById('edit-p-img').value = "";
                 document.getElementById('edit-p-desc').value = "";
             } else {
-                // Bearbeiten
                 const p = products.find(x => x._id === id);
                 if(!p) return alert("Fehler: Produkt nicht im Speicher.");
 
@@ -406,16 +571,12 @@
                 document.getElementById('edit-p-id').value = p.id || "";
                 document.getElementById('edit-p-name').value = p.name || "";
                 
-                // Preis Fix: Nimm 'price' ODER 'currentPrice'
                 const realPrice = (p.price !== undefined) ? p.price : p.currentPrice;
                 document.getElementById('edit-p-price').value = (realPrice !== undefined) ? realPrice : "";
                 
-                // Stock Fix: Nimm 'stock' ODER 'quantity'
                 const realStock = (p.stock !== undefined) ? p.stock : (p.quantity || 999);
                 document.getElementById('edit-p-stock').value = realStock;
                 
-                // Bild Fix: Prüfe alle Varianten
-                // image_url, imageUrl, image, img
                 const realImg = p.image || p.img || p.imageUrl || p.image_url || "";
                 document.getElementById('edit-p-img').value = realImg;
                 
@@ -424,7 +585,6 @@
             document.getElementById('modal-product').classList.remove('hidden');
         }
 
-        // Alias
         function editProduct() { openEditProduct(null); }
 
         async function saveProduct() {
@@ -451,83 +611,6 @@
                 loadProducts();
             } else alert("Fehler");
         }
-
-        // --- SYSTEM ---
-        async function triggerNormalize() {
-            if(!confirm("Starten?")) return;
-            const res = await fetch(API + '/api/admin/system/normalize', { method: 'POST', credentials: 'include' });
-            const data = await res.json();
-            alert(data.message);
-        }
-        async function triggerAI() {
-            const res = await fetch(API + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
-            const data = await res.json();
-            alert(data.message);
-        }
-        async function resetHumanGrades() {
-            if(!confirm("Reset Human Grades DB?")) return;
-            await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
-            alert("Done.");
-        }
-
-        async function fineUser(id, name) {
-            const amountStr = prompt(`👮 STRAFZETTEL FÜR ${name.toUpperCase()}\n\nWie viel Geld soll zur Strafe abgezogen werden?\n(Dies kann das Konto ins Minus treiben!)`, "500");
-            if(!amountStr) return;
-            
-            const amount = parseFloat(amountStr);
-            if(isNaN(amount) || amount <= 0) return alert("Ungültiger Betrag.");
-
-            const reason = prompt("Grund für die Strafe? (Optional)", "Verstoß gegen die Limo-Gesetze");
-
-            try {
-                const res = await fetch(API + '/api/admin/users/' + id + '/fine', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ amount, reason }),
-                    credentials: 'include'
-                });
-                
-                if(res.ok) {
-                    const data = await res.json();
-                    alert(data.message);
-                    loadUsers(); // Liste aktualisieren -> Rote Zahlen sehen!
-                } else {
-                    alert("Fehler beim Bestrafen.");
-                }
-            } catch(e) { alert("Verbindungsfehler."); }
-        }
-
-        async function banUser(id, name) {
-            const confirmBan = confirm(
-                `⛔ ACHTUNG: BAN-HAMMER ⛔\n\n` + 
-                `Willst du ${name} wirklich vernichten?\n` +
-                `1. Der User wird gelöscht.\n` +
-                `2. Seine IP-Adresse wird PERMANENT gesperrt.\n` +
-                `3. Er kann sich nicht mehr registrieren.\n\n` +
-                `Fortfahren?`
-            );
-            
-            if (!confirmBan) return;
-
-            try {
-                const res = await fetch(API + '/api/admin/banUser', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ targetUserId: id }),
-                    credentials: 'include'
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    alert("ERFOLG: " + data.message);
-                    loadUsers(); // Liste aktualisieren
-                } else {
-                    alert("FEHLER: " + data.error);
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Serverfehler beim Bannen.");
-            }
-        }
     </script>
+</body>
+</html>
