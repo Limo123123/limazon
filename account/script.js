@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let currentUser = null;
-    const API_BASE_URL = 'https://api.limazon.v6.rocks';
+    const API_BASE_URL = 'https://limazonapi.any64.de';
 
     // --- DATENABRUF UND ANZEIGE ---
     async function fetchUserData() {
