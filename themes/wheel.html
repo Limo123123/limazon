@@ -255,11 +255,26 @@
         }
 
         function closeWheelSpinModal() {
-            if (theWheel && wheelSpinning) theWheel.stopAnimation(false);
-            wheelSpinning = false;
+            // 1. Modal ausblenden (Das triggert den Observer)
             document.getElementById('wheel-spin-modal').classList.add('hidden');
+            
+            // 2. Cleanup (Animation stoppen, Variablen resetten)
+            // Wir machen das hier direkt, damit es sich sofort "richtig" anfühlt
+            if (theWheel) {
+                theWheel.stopAnimation(false);
+                theWheel.rotationAngle = 0;
+                theWheel.draw();
+                theWheel = null; // Wichtig für Reset beim nächsten Start
+            }
+            wheelSpinning = false;
             currentOpenWheelData = null;
-            theWheel = null; // Resetten für nächsten Spin
+            
+            // Canvas leeren
+            let canvas = document.getElementById('wheelCanvas');
+            if (canvas) {
+                let ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
         }
 
         async function spinTheWheel() {
@@ -301,16 +316,33 @@
         }
 
         window.onload = async () => {
+            console.log(`${WHEELS_LOG_PREFIX} window.onload: Init.`);
             await checkWheelLoginStatus();
             showView('public');
+            
             const wheelModal = document.getElementById('wheel-spin-modal');
+            
             const observer = new MutationObserver(function (mutationsList) {
                 for (const mutation of mutationsList) {
                     if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                        if (mutation.target.classList.contains('hidden')) closeWheelSpinModal();
+                        // Wenn das Modal versteckt wurde (durch X oder Code)
+                        if (mutation.target.classList.contains('hidden')) {
+                            console.log("Observer: Modal ist zu. Führe Cleanup durch.");
+                            
+                            // HIER KEIN closeWheelSpinModal() AUFRUFEN!
+                            // Nur interne Variablen zurücksetzen (Sicherheitsnetz)
+                            
+                            if (theWheel) {
+                                theWheel.stopAnimation(false);
+                                theWheel = null;
+                            }
+                            wheelSpinning = false;
+                            currentOpenWheelData = null;
+                        }
                     }
                 }
             });
+            
             if (wheelModal) { observer.observe(wheelModal, { attributes: true }) }
         };
     </script>
