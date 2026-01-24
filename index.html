@@ -13,7 +13,7 @@
         .theme-card:hover .card-icon { transform: scale(1.2) rotate(5deg); }
         .card-icon { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         
-        /* Lokale CSS Muster statt externer Bilder für maximale Geschwindigkeit */
+        /* Lokale CSS Muster */
         .pattern-cubes { background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px; opacity: 0.1; }
         .pattern-lines { background: repeating-linear-gradient(45deg, #ffffff, #ffffff 2px, transparent 2px, transparent 10px); opacity: 0.05; }
         .pattern-dots { background-image: radial-gradient(rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 10px 10px; opacity: 0.2; }
@@ -45,22 +45,6 @@
             </div>
         </div>
 
-        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-green-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/10 flex flex-col cursor-pointer"
-            onclick="navigateToApp('themes/limazonsuper.html')">
-            <div class="h-48 bg-gradient-to-br from-green-900 to-emerald-950 flex items-center justify-center relative overflow-hidden">
-                <div class="absolute inset-0 pattern-lines"></div>
-                <span class="text-8xl card-icon drop-shadow-2xl">🧪</span>
-            </div>
-            <div class="p-6 flex flex-col flex-grow">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-2xl font-bold text-white group-hover:text-green-400 transition-colors">Limazon New</h2>
-                    <span class="bg-green-900/50 text-green-400 text-xs px-2 py-1 rounded border border-green-700">BETA</span>
-                </div>
-                <p class="text-gray-400 text-sm mb-6 flex-grow">Modernes, experimentelles Design.</p>
-                <button class="w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-green-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Ausprobieren</button>
-            </div>
-        </div>
-
         <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-cyan-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/bank.html')">
             <div class="h-48 bg-gradient-to-br from-cyan-900 to-blue-950 flex items-center justify-center relative overflow-hidden">
@@ -74,42 +58,80 @@
             </div>
         </div>
 
-        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-fuchsia-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-fuchsia-500/10 flex flex-col cursor-pointer"
-            onclick="navigateToApp('themes/profile.html')">
-            <div class="h-48 bg-gradient-to-br from-fuchsia-900 to-purple-950 flex items-center justify-center relative overflow-hidden">
-                <div class="absolute inset-0 pattern-dots"></div>
-                <span class="text-8xl card-icon drop-shadow-2xl">💳</span>
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/10 flex flex-col cursor-pointer"
+            onclick="navigateToApp('themes/jobs.html')">
+            <div class="h-48 bg-gradient-to-br from-orange-700 to-amber-900 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-lines"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">💼</span>
             </div>
             <div class="p-6 flex flex-col flex-grow">
-                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-fuchsia-400 transition-colors">Limo ID</h2>
-                <p class="text-gray-400 text-sm mb-6 flex-grow">Dein Ausweis, Badges & Inventar.</p>
-                <button class="w-full bg-fuchsia-700 hover:bg-fuchsia-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">Profil ansehen</button>
-            </div>
-        </div>
-
-        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10 flex flex-col cursor-pointer"
-            onclick="navigateToApp('themes/ideabox.html')">
-            <div class="h-48 bg-gradient-to-br from-amber-700 to-orange-900 flex items-center justify-center relative overflow-hidden">
-                <div class="absolute inset-0 pattern-cubes"></div>
-                <span class="text-8xl card-icon drop-shadow-2xl">💡</span>
-            </div>
-            <div class="p-6 flex flex-col flex-grow">
-                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-amber-400 transition-colors">Ideenbox</h2>
-                <p class="text-gray-400 text-sm mb-6 flex-grow">Gestalte die Zukunft mit! Reiche Ideen ein.</p>
-                <button class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Zur Ideenbox</button>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white group-hover:text-orange-400 transition-colors">Job Center</h2>
+                    <span class="bg-orange-900/50 text-orange-400 text-xs px-2 py-1 rounded border border-orange-700">NEU</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Arbeiten, Geld verdienen & Karriere machen.</p>
+                <button class="w-full bg-orange-700 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">Arbeit suchen</button>
             </div>
         </div>
 
         <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-500/10 flex flex-col cursor-pointer"
-            onclick="navigateToApp('themes/hall-of-fame.html')">
-            <div class="h-48 bg-gradient-to-br from-yellow-700 to-orange-900 flex items-center justify-center relative overflow-hidden">
-                <div class="absolute inset-0 pattern-lines"></div>
-                <span class="text-8xl card-icon drop-shadow-2xl">🏆</span>
+            onclick="navigateToApp('themes/casino.html')">
+            <div class="h-48 bg-gradient-to-br from-yellow-600 to-yellow-900 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-dots"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">🎰</span>
             </div>
             <div class="p-6 flex flex-col flex-grow">
-                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">Hall of Fame</h2>
-                <p class="text-gray-400 text-sm mb-6 flex-grow">Die Rangliste der Besten.</p>
-                <button class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Zur Rangliste</button>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white group-hover:text-yellow-400 transition-colors">Casino</h2>
+                    <span class="bg-yellow-900/50 text-yellow-400 text-xs px-2 py-1 rounded border border-yellow-700">NEU</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Versuche dein Glück beim Coinflip.</p>
+                <button class="w-full bg-yellow-700 hover:bg-yellow-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">Zocken</button>
+            </div>
+        </div>
+
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-red-700/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-900/20 flex flex-col cursor-pointer"
+            onclick="navigateToApp('themes/crime.html')">
+            <div class="h-48 bg-gradient-to-br from-red-950 to-black flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-grid"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">🦹</span>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white group-hover:text-red-500 transition-colors">Untergrund</h2>
+                    <span class="bg-red-950 text-red-500 text-xs px-2 py-1 rounded border border-red-800">PvP</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Bankraub, Sicherheit & Risiko.</p>
+                <button class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl transition-all">Eintreten</button>
+            </div>
+        </div>
+
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-slate-400/50 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-500/10 flex flex-col cursor-pointer"
+            onclick="navigateToApp('themes/taxes.html')">
+            <div class="h-48 bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-cubes"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">🏛️</span>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white group-hover:text-slate-300 transition-colors">Finanzamt</h2>
+                    <span class="bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded border border-slate-500">INFO</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Steuern für Superreiche (>$100M).</p>
+                <button class="w-full bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Prüfen</button>
+            </div>
+        </div>
+
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-lime-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-lime-500/10 flex flex-col cursor-pointer"
+            onclick="window.open('https://tcg.limazon.v6.rocks')">
+            <div class="h-48 bg-gradient-to-br from-lime-800 to-green-900 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-dots"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">🎓</span>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white group-hover:text-lime-400 transition-colors">Human Grades</h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Bewerte andere Menschen.</p>
+                <button class="w-full bg-lime-700 hover:bg-lime-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">Bewerten</button>
             </div>
         </div>
 
@@ -123,6 +145,19 @@
                 <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-teal-400 transition-colors">Whatslim</h2>
                 <p class="text-gray-400 text-sm mb-6 flex-grow">Chatte via Share Codes.</p>
                 <button class="w-full bg-teal-600 hover:bg-teal-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Chat starten</button>
+            </div>
+        </div>
+
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 flex flex-col cursor-pointer"
+            onclick="navigateToApp('themes/wheel.html')">
+            <div class="h-48 bg-gradient-to-br from-purple-800 to-indigo-900 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-grid"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">🎡</span>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Glücksrad</h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Erstelle und teile Räder.</p>
+                <button class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Drehen</button>
             </div>
         </div>
 
@@ -142,35 +177,6 @@
             </div>
         </div>
 
-        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 flex flex-col cursor-pointer"
-            onclick="navigateToApp('themes/wheel.html')">
-            <div class="h-48 bg-gradient-to-br from-purple-800 to-indigo-900 flex items-center justify-center relative overflow-hidden">
-                <div class="absolute inset-0 pattern-grid"></div>
-                <span class="text-8xl card-icon drop-shadow-2xl">🎡</span>
-            </div>
-            <div class="p-6 flex flex-col flex-grow">
-                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Glücksrad</h2>
-                <p class="text-gray-400 text-sm mb-6 flex-grow">Erstelle und teile Räder.</p>
-                <button class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Drehen</button>
-            </div>
-        </div>
-
-        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-lime-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-lime-500/10 flex flex-col cursor-pointer"
-            onclick="window.open('https://tcg.limazon.v6.rocks')">
-            <div class="h-48 bg-gradient-to-br from-lime-800 to-green-900 flex items-center justify-center relative overflow-hidden">
-                <div class="absolute inset-0 pattern-dots"></div>
-                <span class="text-8xl card-icon drop-shadow-2xl">🎓</span>
-            </div>
-            <div class="p-6 flex flex-col flex-grow">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-2xl font-bold text-white group-hover:text-lime-400 transition-colors">Human Grades</h2>
-                    <span class="bg-lime-900/50 text-lime-400 text-xs px-2 py-1 rounded border border-lime-700">BETA</span>
-                </div>
-                <p class="text-gray-400 text-sm mb-6 flex-grow">Bewerte andere Menschen.</p>
-                <button class="w-full bg-lime-700 hover:bg-lime-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">Bewerten</button>
-            </div>
-        </div>
-
         <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-red-600/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-600/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('themes/dont-blame-me.html')">
             <div class="h-48 bg-gradient-to-br from-red-950 to-black flex items-center justify-center relative overflow-hidden">
@@ -184,6 +190,45 @@
             </div>
         </div>
 
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-500/10 flex flex-col cursor-pointer"
+            onclick="navigateToApp('themes/hall-of-fame.html')">
+            <div class="h-48 bg-gradient-to-br from-yellow-700 to-orange-900 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-lines"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">🏆</span>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">Hall of Fame</h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Die Rangliste der Besten.</p>
+                <button class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Zur Rangliste</button>
+            </div>
+        </div>
+
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10 flex flex-col cursor-pointer"
+            onclick="navigateToApp('themes/ideabox.html')">
+            <div class="h-48 bg-gradient-to-br from-amber-700 to-orange-900 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-cubes"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">💡</span>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-amber-400 transition-colors">Ideenbox</h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Gestalte die Zukunft mit!</p>
+                <button class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Einreichen</button>
+            </div>
+        </div>
+
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-fuchsia-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-fuchsia-500/10 flex flex-col cursor-pointer"
+            onclick="navigateToApp('themes/profile.html')">
+            <div class="h-48 bg-gradient-to-br from-fuchsia-900 to-purple-950 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-dots"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">💳</span>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-fuchsia-400 transition-colors">Limo ID</h2>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Dein Ausweis, Badges & Inventar.</p>
+                <button class="w-full bg-fuchsia-700 hover:bg-fuchsia-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">Profil ansehen</button>
+            </div>
+        </div>
+
         <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/10 flex flex-col cursor-pointer"
             onclick="navigateToApp('account/index.html')">
             <div class="h-48 bg-gradient-to-br from-indigo-800 to-slate-900 flex items-center justify-center relative overflow-hidden">
@@ -194,6 +239,22 @@
                 <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">Einstellungen</h2>
                 <p class="text-gray-400 text-sm mb-6 flex-grow">Account Einstellungen.</p>
                 <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Öffnen</button>
+            </div>
+        </div>
+
+        <div class="theme-card group bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl overflow-hidden hover:border-green-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/10 flex flex-col cursor-pointer"
+            onclick="navigateToApp('themes/limazonsuper.html')">
+            <div class="h-48 bg-gradient-to-br from-green-900 to-emerald-950 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 pattern-lines"></div>
+                <span class="text-8xl card-icon drop-shadow-2xl">🧪</span>
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white group-hover:text-green-400 transition-colors">Limazon New</h2>
+                    <span class="bg-green-900/50 text-green-400 text-xs px-2 py-1 rounded border border-green-700">BETA</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">Modernes, experimentelles Design.</p>
+                <button class="w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-green-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">Ausprobieren</button>
             </div>
         </div>
 
@@ -242,4 +303,3 @@
     </script>
 </body>
 </html>
-

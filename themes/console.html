@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Limo Engine Console</title>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Consolas', 'Monaco', monospace; margin: 0; padding: 20px; }
+        h1 { color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
+        
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 90vh; }
+        
+        /* Links: Eingabe */
+        .input-panel { display: flex; flex-direction: column; gap: 15px; }
+        
+        .group { background: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; }
+        label { display: block; color: #8b949e; margin-bottom: 5px; font-size: 0.9em; }
+        
+        input, select, textarea {
+            width: 100%; box-sizing: border-box; background: #0d1117; border: 1px solid #30363d; color: #fff;
+            padding: 8px; border-radius: 4px; font-family: inherit;
+        }
+        input:focus, textarea:focus { border-color: #58a6ff; outline: none; }
+        
+        textarea { height: 150px; resize: vertical; }
+
+        button {
+            background: #238636; color: white; border: none; padding: 12px; border-radius: 6px;
+            font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1em;
+        }
+        button:hover { background: #2ea043; }
+
+        /* Rechts: Ausgabe */
+        .output-panel { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 15px; overflow: auto; }
+        pre { white-space: pre-wrap; word-break: break-all; margin: 0; }
+        .json-key { color: #79c0ff; }
+        .json-string { color: #a5d6ff; }
+        .json-number { color: #d2a8ff; }
+        .json-boolean { color: #ff7b72; }
+
+        .presets { display: flex; gap: 10px; margin-bottom: 10px; }
+        .preset-btn { background: #1f6feb; padding: 5px 10px; font-size: 0.8em; }
+
+        a { color: #58a6ff; text-decoration: none; display:block; margin-top:10px; }
+    </style>
+</head>
+<body>
+
+    <h1>⚙️ Limo Engine Console</h1>
+    <a href="./admin.html">← Zurück zum Admin Panel</a>
+
+    <div class="container">
+        <div class="input-panel">
+            
+            <div class="group">
+                <label>Schnellzugriff (Presets)</label>
+                <div class="presets">
+                    <button class="preset-btn" onclick="setPreset('users', 'find', {}, 5)">List Users</button>
+                    <button class="preset-btn" onclick="setPreset('users', 'updateOne', {'username':'NAME'}, {'$set':{'balance':1000}})">Edit Money</button>
+                    <button class="preset-btn" onclick="setPreset('products', 'insertOne', {}, {'name':'Test','price':'$10'})">Add Product</button>
+                    <button class="preset-btn" onclick="setPreset('robberyLogs', 'deleteMany', {}, {})">Clear Logs</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <label>Target Collection</label>
+                <input type="text" id="col" value="users" placeholder="z.B. users, products, orders">
+            </div>
+
+            <div class="group">
+                <label>Operation</label>
+                <select id="op">
+                    <option value="find">FIND (Lesen)</option>
+                    <option value="findOne">FIND ONE</option>
+                    <option value="count">COUNT</option>
+                    <option value="updateOne">UPDATE ONE (Bearbeiten)</option>
+                    <option value="updateMany">UPDATE MANY</option>
+                    <option value="insertOne">INSERT (Erstellen)</option>
+                    <option value="deleteOne">DELETE ONE</option>
+                    <option value="deleteMany">DELETE MANY</option>
+                </select>
+            </div>
+
+            <div class="group">
+                <label>Filter / Query (JSON)</label>
+                <textarea id="filter">{ "username": "erdi_7" }</textarea>
+            </div>
+
+            <div class="group">
+                <label>Payload / Update / Data (JSON)</label>
+                <textarea id="payload">{ "$set": { "balance": 50000 } }</textarea>
+            </div>
+
+            <button onclick="execute()">BEFEHL AUSFÜHREN</button>
+        </div>
+
+        <div class="output-panel">
+            <label>Server Antwort:</label>
+            <pre id="output">// Warte auf Befehl...</pre>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://raspberrypi.tail75d81e.ts.net:8443';
+
+        function setPreset(col, op, filt, pay) {
+            document.getElementById('col').value = col;
+            document.getElementById('op').value = op;
+            document.getElementById('filter').value = JSON.stringify(filt, null, 2);
+            document.getElementById('payload').value = JSON.stringify(pay, null, 2);
+        }
+
+        async function execute() {
+            const output = document.getElementById('output');
+            output.innerHTML = 'Lade...';
+
+            const col = document.getElementById('col').value;
+            const op = document.getElementById('op').value;
+            let filterStr = document.getElementById('filter').value;
+            let payloadStr = document.getElementById('payload').value;
+
+            // JSON Parsen versuchen
+            let filter, payload;
+            try {
+                filter = filterStr ? JSON.parse(filterStr) : {};
+            } catch(e) {
+                output.innerText = "❌ Fehler im Filter-JSON:\n" + e.message;
+                return;
+            }
+            try {
+                payload = payloadStr ? JSON.parse(payloadStr) : {};
+            } catch(e) {
+                output.innerText = "❌ Fehler im Payload-JSON:\n" + e.message;
+                return;
+            }
+
+            // Request bauen
+            const body = {
+                mode: 'db', // Wir nutzen den Raw Mode
+                collection: col,
+                operation: op,
+                filter: filter,
+                payload: payload
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/engine`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(body)
+                });
+
+                const data = await res.json();
+                
+                // Pretty Print JSON
+                output.innerHTML = syntaxHighlight(data);
+
+            } catch (e) {
+                output.innerText = "Netzwerkfehler: " + e.message;
+            }
+        }
+
+        // Hilfsfunktion für buntes JSON
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                 json = JSON.stringify(json, undefined, 2);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-boolean'; // null
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+    </script>
+</body>
+</html>

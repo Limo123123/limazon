@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Crime</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .crime-container {
+            background-color: #1a1a1a;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            overflow: hidden;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            background: #111;
+            border-bottom: 1px solid #333;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: 0.3s;
+        }
+        .tab.active {
+            background: #1a1a1a;
+            color: #e74c3c; /* Crime Red */
+            border-bottom: 2px solid #e74c3c;
+        }
+        .tab:hover:not(.active) { background: #222; }
+
+        .content-area { padding: 30px; display: none; }
+        .content-area.active { display: block; }
+
+        h2 { margin-top: 0; color: #fff; }
+        .sub { color: #777; font-size: 0.9rem; margin-bottom: 20px; display: block;}
+
+        /* FORM */
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #252525;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        .btn-rob {
+            width: 100%;
+            padding: 15px;
+            background: #c0392b;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .btn-rob:hover { background: #e74c3c; }
+        .btn-rob:disabled { background: #555; cursor: not-allowed; }
+
+        /* SECURITY STATS */
+        .security-card {
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        .risk-val { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
+        .risk-low { color: #2ecc71; }
+        .risk-med { color: #f1c40f; }
+        .risk-high { color: #e74c3c; }
+
+        .log-list {
+            list-style: none;
+            padding: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-item {
+            background: #252525;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border-left: 4px solid #e74c3c; /* Default: Robbed */
+            font-size: 0.9rem;
+        }
+        .log-item.defended { border-left-color: #2ecc71; }
+        .log-date { font-size: 0.75rem; color: #666; float: right; }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+            text-align: center;
+        }
+        .res-win { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+        .res-lose { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="crime-container">
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('rob')">🔫 Überfall</div>
+        <div class="tab" onclick="switchTab('security')">🛡️ Meine Sicherheit</div>
+    </div>
+
+    <div id="tab-rob" class="content-area active">
+        <h2>Bankraub & Diebstahl</h2>
+        <span class="sub">Versuche andere User auszurauben. Chance: ca. 40%. <br>Achtung: Bei Fehlschlag zahlst du Strafe!</span>
+
+        <input type="text" id="target-name" placeholder="Nutzername des Opfers">
+        <button class="btn-rob" id="btn-start-rob" onclick="commitCrime()">Überfall starten</button>
+
+        <div id="rob-result" class="result-box"></div>
+    </div>
+
+    <div id="tab-security" class="content-area">
+        <h2>Sicherheits-Check</h2>
+        
+        <div class="security-card">
+            <div>Aktuelles Risiko ausgeraubt zu werden:</div>
+            <div id="risk-display" class="risk-val risk-low">0%</div>
+            <div id="risk-details" style="font-size: 0.85rem; color: #888;">Lade Daten...</div>
+        </div>
+
+        <h3>Vorfall-Protokoll</h3>
+        <ul id="log-list" class="log-list">
+            <li class="log-item" style="text-align:center; color:#666;">Keine Einträge.</li>
+        </ul>
+    </div>
+    
+    <a href="/" class="back-link">← Zurück zum Dashboard</a>
+</div>
+
+<script>
+    const API_URL = 'https://raspberrypi.tail75d81e.ts.net:8443';
+
+    // Tabs umschalten
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.content-area').forEach(c => c.classList.remove('active'));
+        
+        // Button active setzen (einfacher Hack basierend auf Index oder Text wäre sauberer, aber so gehts)
+        const tabs = document.querySelectorAll('.tab');
+        if(tabName === 'rob') tabs[0].classList.add('active');
+        else tabs[1].classList.add('active');
+
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+
+        if(tabName === 'security') loadSecurityData();
+    }
+
+    // Funktion: Überfall
+    async function commitCrime() {
+        const target = document.getElementById('target-name').value;
+        const btn = document.getElementById('btn-start-rob');
+        const resBox = document.getElementById('rob-result');
+
+        if(!target) return;
+
+        btn.disabled = true;
+        btn.innerText = "Plane Überfall...";
+        resBox.style.display = 'none';
+
+        try {
+            const response = await fetch(`${API_URL}/api/crime/rob`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ targetUsername: target })
+            });
+
+            const data = await response.json();
+            btn.disabled = false;
+            btn.innerText = "Überfall starten";
+
+            resBox.style.display = 'block';
+            if (response.ok) {
+                if (data.success) {
+                    resBox.className = 'result-box res-win';
+                    resBox.innerHTML = `<strong>ERFOLG!</strong><br>${data.message}<br><small>Chance war: ${data.chanceWas}%</small>`;
+                } else {
+                    resBox.className = 'result-box res-lose';
+                    resBox.innerHTML = `<strong>FEHLSCHLAG!</strong><br>${data.message}<br><small>Chance war: ${data.chanceWas}%</small>`;
+                }
+            } else {
+                resBox.className = 'result-box res-lose';
+                resBox.innerText = data.error || "Fehler.";
+            }
+
+        } catch (e) {
+            btn.disabled = false;
+            resBox.innerText = "Netzwerkfehler.";
+        }
+    }
+
+    // Funktion: Sicherheitsdaten laden
+    async function loadSecurityData() {
+        try {
+            const response = await fetch(`${API_URL}/api/crime/security`, { credentials: 'include' });
+            const data = await response.json();
+
+            // Risiko Anzeige
+            const riskEl = document.getElementById('risk-display');
+            const detailsEl = document.getElementById('risk-details');
+            
+            if (data.isProtected) {
+                riskEl.innerText = "0%";
+                riskEl.className = "risk-val risk-low";
+                detailsEl.innerText = "Du bist geschützt (Admin oder zu wenig Geld).";
+            } else {
+                riskEl.innerText = data.riskPercent + "%";
+                // Farbe
+                const val = parseFloat(data.riskPercent);
+                if (val < 20) riskEl.className = "risk-val risk-low";
+                else if (val < 40) riskEl.className = "risk-val risk-med";
+                else riskEl.className = "risk-val risk-high";
+
+                let info = "Basisrisiko.";
+                if (data.hasAlarm) info += " Alarmanlage aktiv (-15%).";
+                detailsEl.innerText = info;
+            }
+
+            // Logs
+            const list = document.getElementById('log-list');
+            list.innerHTML = "";
+            if (data.logs && data.logs.length > 0) {
+                data.logs.forEach(log => {
+                    const li = document.createElement('li');
+                    const date = new Date(log.timestamp).toLocaleString();
+                    if (log.success) {
+                        li.className = "log-item";
+                        li.innerHTML = `<strong>${log.attackerName}</strong> hat dich ausgeraubt! <br><span style="color:#e74c3c">-$${log.amountLost}</span> <span class="log-date">${date}</span>`;
+                    } else {
+                        li.className = "log-item defended";
+                        li.innerHTML = `<strong>${log.attackerName}</strong> hat es versucht, ist aber gescheitert. <span class="log-date">${date}</span>`;
+                    }
+                    list.appendChild(li);
+                });
+            } else {
+                list.innerHTML = '<li class="log-item" style="text-align:center; color:#666;">Keine Vorfälle in der Akte.</li>';
+            }
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+</script>
+
+</body>
+</html>

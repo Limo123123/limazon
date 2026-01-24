@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Limo Master Admin</title>
+    <title>Limo Master Admin V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: sans-serif; background: #1e293b; color: #f8fafc; }
@@ -38,7 +38,7 @@
             <a onclick="switchTab('users')" id="nav-users" class="sidebar-link active">👥 Benutzer</a>
             <a onclick="switchTab('products')" id="nav-products" class="sidebar-link">🛒 Produkte</a>
             <a onclick="switchTab('human')" id="nav-human" class="sidebar-link">🎓 Human Grades</a>
-            <a onclick="switchTab('system')" id="nav-system" class="sidebar-link text-red-400 hover:text-red-300">⚙️ System & Health</a>
+            <a onclick="switchTab('system')" id="nav-system" class="sidebar-link text-red-400 hover:text-red-300">⚙️ System & Notfall</a>
         </nav>
 
         <div class="mt-auto border-t border-slate-800 pt-4">
@@ -57,7 +57,7 @@
             <div class="content-card overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead class="text-slate-400 uppercase border-b border-slate-700">
-                        <tr><th class="p-3">User</th><th class="p-3">Balance</th><th class="p-3">Tokens</th><th class="p-3">Rolle</th><th class="p-3 text-right">Aktionen</th></tr>
+                        <tr><th class="p-3">User</th><th class="p-3">Balance</th><th class="p-3">Tokens</th><th class="p-3">Rolle / Status</th><th class="p-3 text-right">Aktionen</th></tr>
                     </thead>
                     <tbody id="user-list"></tbody>
                 </table>
@@ -139,17 +139,26 @@
                     </div>
                 </div>
 
-                <div class="content-card border-indigo-900/50">
-                    <h3 class="text-xl font-bold mb-4 text-indigo-400">⚡ Aktionen</h3>
+                <div class="content-card border-red-900/50">
+                    <h3 class="text-xl font-bold mb-4 text-red-400">🚨 Wirtschafts-Notfall</h3>
                     <div class="space-y-3">
-                        <button onclick="triggerAI()" class="btn bg-indigo-600 text-white w-full hover:bg-indigo-700">
-                            📰 Breaking News generieren
+                        <button onclick="revokeInfinityGlobal()" class="btn bg-red-900/80 text-white w-full hover:bg-red-800 border border-red-700 flex justify-between items-center">
+                            <span>🚫 INFINITY MONEY REVOKE (ALLE)</span>
+                            <span class="text-xs font-bold text-red-200">Anti-Exploit</span>
+                        </button>
+
+                        <button onclick="resetEconomyGlobal()" class="btn bg-red-900/80 text-white w-full hover:bg-red-800 border border-red-700 flex justify-between items-center">
+                            <span>📉 WIRTSCHAFT RESET (>100k)</span>
+                            <span class="text-xs font-bold text-red-200">Reiche -> $5k</span>
                         </button>
                         
                         <div class="border-t border-slate-700 my-4 pt-4">
-                            <h4 class="text-red-500 font-bold mb-2 text-sm uppercase">Danger Zone</h4>
-                            <button onclick="resetHumanGrades()" class="btn btn-danger w-full">
-                                ⚠️ Human Grades Datenbank Reset
+                            <h4 class="text-indigo-400 font-bold mb-2 text-sm uppercase">Tools</h4>
+                            <button onclick="triggerAI()" class="btn bg-indigo-600 text-white w-full hover:bg-indigo-700 mb-2">
+                                📰 Breaking News generieren
+                            </button>
+                            <button onclick="resetHumanGrades()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600">
+                                🗑️ Human Grades DB Reset
                             </button>
                         </div>
                     </div>
@@ -167,7 +176,17 @@
                 <div><label class="text-xs text-slate-400">Username</label><input id="edit-u-name" class="input-dark" disabled></div>
                 <div><label class="text-xs text-slate-400">Balance ($)</label><input id="edit-u-bal" type="number" class="input-dark"></div>
                 <div><label class="text-xs text-slate-400">Tokens</label><input id="edit-u-tok" type="number" class="input-dark"></div>
-                <div class="flex items-center gap-2"><input id="edit-u-admin" type="checkbox"><label>Ist Admin</label></div>
+                
+                <div class="flex items-center gap-2 p-2 bg-slate-800 rounded">
+                    <input id="edit-u-admin" type="checkbox" class="w-4 h-4">
+                    <label class="text-indigo-400 font-bold select-none cursor-pointer" for="edit-u-admin">Ist Admin</label>
+                </div>
+
+                <div class="flex items-center gap-2 p-2 bg-slate-800 rounded border border-cyan-900/50">
+                    <input id="edit-u-infinity" type="checkbox" class="w-4 h-4 text-cyan-500">
+                    <label class="text-cyan-400 font-bold select-none cursor-pointer" for="edit-u-infinity">∞ Infinity Money</label>
+                </div>
+
                 <hr class="border-slate-700">
                 <div><label class="text-xs text-red-400">Passwort Reset (optional)</label><input id="edit-u-pass" type="text" placeholder="Neues Passwort" class="input-dark border-red-900/50"></div>
             </div>
@@ -202,15 +221,8 @@
         
         let users = [];
         let products = [];
-        
-        // --- PAGINATION STATES ---
-        let prodPage = 1;
-        const prodPerPage = 12;
-        let prodFilter = "";
-
-        let userPage = 1;
-        const userPerPage = 15;
-        let userFilter = "";
+        let prodPage = 1, prodPerPage = 12, prodFilter = "";
+        let userPage = 1, userPerPage = 15, userFilter = "";
 
         // INIT
         checkAuth();
@@ -223,7 +235,6 @@
                     if(!u.isAdmin) return alert("Kein Zutritt!");
                     loadUsers();
                     loadProducts();
-                    // Wenn direkt auf System Tab, dann Health laden
                     if(!document.getElementById('tab-system').classList.contains('hidden')) refreshHealth();
                 } else { window.location.href = '/'; }
             } catch(e) { alert("Verbindungsfehler"); }
@@ -234,78 +245,10 @@
             document.getElementById('tab-'+id).classList.remove('hidden');
             document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
             document.getElementById('nav-'+id).classList.add('active');
-            
-            // Wenn System Tab geöffnet wird, Daten laden
             if(id === 'system') refreshHealth();
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        // ========================
-        // === SYSTEM HEALTH ===
-        // ========================
-        async function refreshHealth() {
-            const container = id => document.getElementById('health-stats').children[id].querySelector('.stat-value');
-            
-            // Loading State
-            for(let i=0; i<4; i++) container(i).innerText = "...";
-
-            try {
-                const res = await fetch(API + '/api/admin/health-check', { credentials: 'include' });
-                if(res.ok) {
-                    const data = await res.json();
-                    container(0).innerText = data.memory || "N/A";
-                    container(1).innerText = data.uptime || "N/A";
-                    container(2).innerHTML = data.dbStatus === "Connected ✅" ? '<span class="text-green-400">Online</span>' : '<span class="text-red-500">Offline</span>';
-                    container(3).innerText = data.productCacheSize || "0";
-                }
-            } catch(e) {
-                console.error(e);
-            }
-        }
-
-        // ========================
-        // === SYSTEM TOOLS ===
-        // ========================
-        async function fixImages() {
-            if(!confirm("Bilder von via.placeholder auf placehold.co umstellen?")) return;
-            try {
-                const res = await fetch(API + '/api/admin/system/fix-images', { method: 'POST', credentials: 'include' });
-                const d = await res.json();
-                alert(d.message);
-                loadProducts(); // Liste neu laden
-            } catch(e) { alert("Fehler: " + e.message); }
-        }
-
-        async function fixDecimals() {
-            if(!confirm("Alle Kontostände auf 2 Nachkommastellen runden?")) return;
-            try {
-                const res = await fetch(API + '/api/admin/system/fix-decimals', { method: 'POST', credentials: 'include' });
-                const d = await res.json();
-                alert(d.message);
-                loadUsers(); // User neu laden
-            } catch(e) { alert("Fehler: " + e.message); }
-        }
-
-        async function triggerNormalize() {
-            if(!confirm("Balance Normalisierung starten (Anti-Cheat)?")) return;
-            const res = await fetch(API + '/api/admin/system/normalize', { method: 'POST', credentials: 'include' });
-            const data = await res.json();
-            alert(data.message);
-            loadUsers();
-        }
-
-        async function triggerAI() {
-            const res = await fetch(API + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
-            const data = await res.json();
-            alert(data.message);
-        }
-
-        async function resetHumanGrades() {
-            if(!confirm("⚠️ ACHTUNG: Reset Human Grades DB?\nAlle Bewertungen und Lehrer werden gelöscht!")) return;
-            await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
-            alert("Datenbank wurde zurückgesetzt.");
-        }
 
         // ========================
         // === USER MANAGEMENT ===
@@ -314,19 +257,15 @@
             const res = await fetch(API + '/api/admin/users', { credentials: 'include' });
             const data = await res.json();
             users = data.users;
+            
+            // Sortieren: Reiche User nach oben (damit man Exploits sieht)
+            users.sort((a,b) => b.balance - a.balance);
+            
             renderUsers();
         }
 
-        function handleUserSearch(val) {
-            userFilter = val.toLowerCase();
-            userPage = 1;
-            renderUsers();
-        }
-
-        function changeUserPage(delta) {
-            userPage += delta;
-            renderUsers();
-        }
+        function handleUserSearch(val) { userFilter = val.toLowerCase(); userPage = 1; renderUsers(); }
+        function changeUserPage(delta) { userPage += delta; renderUsers(); }
 
         function renderUsers() {
             const list = document.getElementById('user-list');
@@ -348,7 +287,7 @@
             document.getElementById('btn-user-prev').disabled = userPage === 1;
             document.getElementById('btn-user-next').disabled = userPage === totalPages;
             
-            if(filtered.length > 0) pag.classList.remove('hidden'); else pag.classList.add('hidden');
+            pag.classList.toggle('hidden', filtered.length === 0);
             if(filtered.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
             empty.classList.add('hidden');
 
@@ -356,21 +295,23 @@
                 const tok = (u.tokens !== undefined && u.tokens !== null) ? u.tokens.toLocaleString() : "0";
                 const balClass = u.balance < 0 ? "text-red-500 font-bold" : "text-emerald-400";
                 const bal = u.balance ? u.balance.toLocaleString() : "0";
+                
+                let badges = "";
+                if(u.isAdmin) badges += '<span class="bg-indigo-600 text-xs px-2 py-1 rounded mr-1">ADMIN</span>';
+                if(u.infinityMoney || u.unlockedInfinityMoney) badges += '<span class="bg-cyan-900 text-cyan-300 text-xs px-2 py-1 rounded border border-cyan-700">∞</span>';
+                if(badges === "") badges = '<span class="text-slate-500 text-xs">User</span>';
 
                 return `
                 <tr class="border-b border-slate-800 hover:bg-slate-800/50">
                     <td class="p-3 font-bold">${u.username}</td>
                     <td class="p-3 ${balClass}">$${bal}</td>
                     <td class="p-3 text-amber-400">${tok} T</td>
-                    <td class="p-3">${u.isAdmin ? '<span class="bg-indigo-600 text-xs px-2 py-1 rounded">ADMIN</span>' : 'User'}</td>
+                    <td class="p-3">${badges}</td>
                     <td class="p-3 text-right whitespace-nowrap">
-                        <button onclick="fineUser('${u._id}', '${u.username}')" class="text-yellow-500 hover:text-yellow-300 mr-3" title="Strafe verhängen">🚓</button>
-                        
+                        <button onclick="fineUser('${u._id}', '${u.username}')" class="text-yellow-500 hover:text-yellow-300 mr-3" title="Strafe">🚓</button>
                         <button onclick="openEditUser('${u._id}')" class="text-blue-400 hover:text-white mr-3" title="Bearbeiten">✏️</button>
-                        
-                        <button onclick="deleteUser('${u._id}')" class="text-red-500 hover:text-white mr-3" title="Nur Löschen">🗑️</button>
-                        
-                        <button onclick="banUser('${u._id}', '${u.username}')" class="text-purple-500 hover:text-white font-bold" title="IP BAN & ZERSTÖREN">🔨</button>
+                        <button onclick="deleteUser('${u._id}')" class="text-red-500 hover:text-white mr-3" title="Löschen">🗑️</button>
+                        <button onclick="banUser('${u._id}', '${u.username}')" class="text-purple-500 hover:text-white font-bold" title="BAN">🔨</button>
                     </td>
                 </tr>`;
             }).join('');
@@ -383,19 +324,30 @@
             document.getElementById('edit-u-name').value = u.username;
             document.getElementById('edit-u-bal').value = u.balance;
             document.getElementById('edit-u-tok').value = u.tokens || 0;
+            
             document.getElementById('edit-u-admin').checked = u.isAdmin || false;
+            // Infinity Checkbox setzen
+            document.getElementById('edit-u-infinity').checked = u.infinityMoney || u.unlockedInfinityMoney || false;
+            
             document.getElementById('edit-u-pass').value = "";
             document.getElementById('modal-user').classList.remove('hidden');
         }
 
         async function saveUser() {
             const id = document.getElementById('edit-u-id').value;
+            
+            // HIER IST DAS UPDATE FÜR INFINITY MONEY
             const body = {
                 balance: document.getElementById('edit-u-bal').value,
                 tokens: document.getElementById('edit-u-tok').value,
-                isAdmin: document.getElementById('edit-u-admin').checked
+                isAdmin: document.getElementById('edit-u-admin').checked,
+                infinityMoney: document.getElementById('edit-u-infinity').checked,
+                unlockedInfinityMoney: document.getElementById('edit-u-infinity').checked // Beides setzen für Konsistenz
             };
+            
+            // Backend muss PUT für infinityMoney akzeptieren (siehe server.js Änderungen)
             await fetch(API + '/api/admin/users/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'include' });
+            
             const pass = document.getElementById('edit-u-pass').value;
             if(pass) {
                 await fetch(API + '/api/admin/users/' + id + '/reset-pw', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({newPassword: pass}), credentials: 'include' });
@@ -404,71 +356,108 @@
             loadUsers();
         }
 
+        // ========================
+        // === DANGER ZONE ===
+        // ========================
+        async function revokeInfinityGlobal() {
+            if(!confirm("🚨 ALARM: Soll Infinity Money bei ALLEN normalen Usern (Nicht-Admins) entfernt werden?\n\nDies kann nicht rückgängig gemacht werden!")) return;
+            try {
+                const res = await fetch(API + '/api/admin/system/revoke-infinity', { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                alert(d.message || d.error);
+                loadUsers();
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+
+        async function resetEconomyGlobal() {
+            if(!confirm("🚨 TOTAL-RESET: Alle User mit mehr als 100.000$ (außer Admins) werden auf 5.000$ gesetzt.\n\nTokens über 1.000 werden auf 10 gesetzt.\n\nSicher?")) return;
+            try {
+                const res = await fetch(API + '/api/admin/system/reset-rich-users', { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                alert(d.message || d.error);
+                loadUsers();
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+
+        // ========================
+        // === STANDARD ACTIONS ===
+        // ========================
         async function deleteUser(id) {
-            if(!confirm("Diesen User wirklich unwiderruflich löschen?")) return;
+            if(!confirm("User wirklich löschen?")) return;
             await fetch(API + '/api/admin/users/' + id, { method: 'DELETE', credentials: 'include' });
             loadUsers();
         }
 
         async function fineUser(id, name) {
-            const amountStr = prompt(`👮 STRAFZETTEL FÜR ${name.toUpperCase()}\n\nWie viel Geld soll zur Strafe abgezogen werden?\n(Dies kann das Konto ins Minus treiben!)`, "500");
+            const amountStr = prompt(`👮 Strafe für ${name}: Betrag eingeben`, "500");
             if(!amountStr) return;
-            
             const amount = parseFloat(amountStr);
-            if(isNaN(amount) || amount <= 0) return alert("Ungültiger Betrag.");
-
-            const reason = prompt("Grund für die Strafe? (Optional)", "Verstoß gegen die Limo-Gesetze");
-
+            if(isNaN(amount) || amount <= 0) return alert("Ungültig.");
             try {
-                const res = await fetch(API + '/api/admin/users/' + id + '/fine', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ amount, reason }),
-                    credentials: 'include'
+                await fetch(API + '/api/admin/users/' + id + '/fine', {
+                    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ amount, reason: "Admin Action" }), credentials: 'include'
                 });
-                
-                if(res.ok) {
-                    const data = await res.json();
-                    alert(data.message);
-                    loadUsers(); 
-                } else {
-                    alert("Fehler beim Bestrafen.");
-                }
-            } catch(e) { alert("Verbindungsfehler."); }
+                loadUsers(); 
+            } catch(e) { alert("Fehler."); }
         }
 
         async function banUser(id, name) {
-            const confirmBan = confirm(
-                `⛔ ACHTUNG: BAN-HAMMER ⛔\n\n` + 
-                `Willst du ${name} wirklich vernichten?\n` +
-                `1. Der User wird gelöscht.\n` +
-                `2. Seine IP-Adresse wird PERMANENT gesperrt.\n` +
-                `3. Er kann sich nicht mehr registrieren.\n\n` +
-                `Fortfahren?`
-            );
-            
-            if (!confirmBan) return;
-
+            if (!confirm(`⛔ BAN: ${name} wirklich löschen und IP sperren?`)) return;
             try {
-                const res = await fetch(API + '/api/admin/banUser', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ targetUserId: id }),
-                    credentials: 'include'
+                await fetch(API + '/api/admin/banUser', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ targetUserId: id }), credentials: 'include'
                 });
+                loadUsers(); 
+            } catch (err) { alert("Fehler."); }
+        }
 
-                const data = await res.json();
-
-                if (res.ok) {
-                    alert("ERFOLG: " + data.message);
-                    loadUsers(); 
-                } else {
-                    alert("FEHLER: " + data.error);
+        // ========================
+        // === SYSTEM HEALTH ===
+        // ========================
+        async function refreshHealth() {
+            const container = id => document.getElementById('health-stats').children[id].querySelector('.stat-value');
+            for(let i=0; i<4; i++) container(i).innerText = "...";
+            try {
+                const res = await fetch(API + '/api/admin/health-check', { credentials: 'include' });
+                if(res.ok) {
+                    const data = await res.json();
+                    container(0).innerText = data.memory || "N/A";
+                    container(1).innerText = data.uptime || "N/A";
+                    container(2).innerHTML = data.dbStatus === "Connected ✅" ? '<span class="text-green-400">Online</span>' : '<span class="text-red-500">Offline</span>';
+                    container(3).innerText = data.productCacheSize || "0";
                 }
-            } catch (err) {
-                console.error(err);
-                alert("Serverfehler beim Bannen.");
-            }
+            } catch(e) {}
+        }
+
+        // ========================
+        // === SYSTEM TOOLS ===
+        // ========================
+        async function fixImages() {
+            if(!confirm("Bilder fixen?")) return;
+            const res = await fetch(API + '/api/admin/system/fix-images', { method: 'POST', credentials: 'include' });
+            alert((await res.json()).message);
+            loadProducts();
+        }
+        async function fixDecimals() {
+            if(!confirm("Decimals fixen?")) return;
+            const res = await fetch(API + '/api/admin/system/fix-decimals', { method: 'POST', credentials: 'include' });
+            alert((await res.json()).message);
+            loadUsers();
+        }
+        async function triggerNormalize() {
+            if(!confirm("Normalize?")) return;
+            const res = await fetch(API + '/api/admin/system/normalize', { method: 'POST', credentials: 'include' });
+            alert((await res.json()).message);
+            loadUsers();
+        }
+        async function triggerAI() {
+            const res = await fetch(API + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
+            alert((await res.json()).message);
+        }
+        async function resetHumanGrades() {
+            if(!confirm("Human Grades Reset?")) return;
+            await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
+            alert("Done.");
         }
 
         // ===========================
@@ -478,7 +467,6 @@
             document.getElementById('product-list-container').innerHTML = '';
             document.getElementById('product-loader').classList.remove('hidden');
             document.getElementById('product-pagination').classList.add('hidden');
-
             try {
                 const res = await fetch(API + '/api/admin/products', { credentials: 'include' });
                 const data = await res.json();
@@ -488,31 +476,18 @@
             finally { document.getElementById('product-loader').classList.add('hidden'); }
         }
 
-        function handleProductSearch(val) {
-            prodFilter = val.toLowerCase();
-            prodPage = 1;
-            renderProducts();
-        }
-
-        function changeProductPage(delta) {
-            prodPage += delta;
-            renderProducts();
-        }
+        function handleProductSearch(val) { prodFilter = val.toLowerCase(); prodPage = 1; renderProducts(); }
+        function changeProductPage(delta) { prodPage += delta; renderProducts(); }
 
         function renderProducts() {
             const list = document.getElementById('product-list-container');
             const pag = document.getElementById('product-pagination');
+            let filtered = products.filter(p => (p.name||"").toLowerCase().includes(prodFilter) || String(p.id).toLowerCase().includes(prodFilter));
             
-            let filtered = products.filter(p => {
-                const name = p.name ? p.name.toLowerCase() : "";
-                const id = p.id ? String(p.id).toLowerCase() : "";
-                return name.includes(prodFilter) || id.includes(prodFilter);
-            });
-
             const totalPages = Math.ceil(filtered.length / prodPerPage) || 1;
             if(prodPage > totalPages) prodPage = totalPages;
             if(prodPage < 1) prodPage = 1;
-
+            
             const start = (prodPage - 1) * prodPerPage;
             const end = start + prodPerPage;
             const pageItems = filtered.slice(start, end);
@@ -522,33 +497,24 @@
             document.getElementById('btn-prod-prev').disabled = prodPage === 1;
             document.getElementById('btn-prod-next').disabled = prodPage === totalPages;
             
-            if(filtered.length > 0) pag.classList.remove('hidden'); else pag.classList.add('hidden');
-
-            if(filtered.length === 0) {
-                list.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">Keine Produkte gefunden.</div>`;
-                return;
-            }
+            pag.classList.toggle('hidden', filtered.length === 0);
+            if(filtered.length === 0) { list.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">Keine Produkte.</div>`; return; }
 
             list.innerHTML = pageItems.map(p => {
                 const realPrice = (p.price !== undefined && p.price !== null) ? p.price : p.currentPrice;
-                const isInvalid = (realPrice === undefined || realPrice === null);
-                const priceDisplay = isInvalid ? '<span class="text-red-500 font-bold">INVALID</span>' : `$${realPrice}`;
-                const borderClass = isInvalid ? 'border-red-500/50' : 'border-slate-700 hover:border-indigo-500';
-                
+                const priceDisplay = (realPrice === undefined) ? '<span class="text-red-500">ERR</span>' : `$${realPrice}`;
                 return `
-                <div class="content-card flex flex-col justify-between h-full border ${borderClass} transition relative">
-                    ${isInvalid ? '<div class="absolute top-2 right-2 text-xs bg-red-900 text-red-200 px-2 rounded">Fehlerhaft</div>' : ''}
+                <div class="content-card flex flex-col justify-between h-full border border-slate-700 hover:border-indigo-500 transition">
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-bold text-lg text-white truncate pr-2">${p.name || "Unbekannt"}</span>
                             <span class="text-emerald-400 font-mono whitespace-nowrap">${priceDisplay}</span>
                         </div>
-                        <p class="text-xs text-slate-500 mb-2 font-mono">ID: ${p.id || "???"}</p>
-                        <p class="text-sm text-slate-300 mb-4 line-clamp-2">${(p.description||"Keine Beschreibung").substring(0,60)}...</p>
+                        <p class="text-xs text-slate-500 mb-2 font-mono">ID: ${p.id}</p>
                     </div>
                     <div class="flex gap-2 border-t border-slate-700 pt-3 mt-auto">
-                        <button onclick="openEditProduct('${p._id}')" class="btn bg-slate-700 text-xs flex-1 hover:bg-slate-600">Bearbeiten</button>
-                        <button onclick="deleteProduct('${p._id}')" class="btn btn-danger text-xs hover:bg-red-700">Löschen</button>
+                        <button onclick="openEditProduct('${p._id}')" class="btn bg-slate-700 text-xs flex-1 hover:bg-slate-600">Edit</button>
+                        <button onclick="deleteProduct('${p._id}')" class="btn btn-danger text-xs hover:bg-red-700">Del</button>
                     </div>
                 </div>`;
             }).join('');
@@ -565,26 +531,17 @@
                 document.getElementById('edit-p-desc').value = "";
             } else {
                 const p = products.find(x => x._id === id);
-                if(!p) return alert("Fehler: Produkt nicht im Speicher.");
-
+                if(!p) return;
                 document.getElementById('edit-p-oid').value = p._id;
                 document.getElementById('edit-p-id').value = p.id || "";
                 document.getElementById('edit-p-name').value = p.name || "";
-                
-                const realPrice = (p.price !== undefined) ? p.price : p.currentPrice;
-                document.getElementById('edit-p-price').value = (realPrice !== undefined) ? realPrice : "";
-                
-                const realStock = (p.stock !== undefined) ? p.stock : (p.quantity || 999);
-                document.getElementById('edit-p-stock').value = realStock;
-                
-                const realImg = p.image || p.img || p.imageUrl || p.image_url || "";
-                document.getElementById('edit-p-img').value = realImg;
-                
+                document.getElementById('edit-p-price').value = (p.price !== undefined) ? p.price : p.currentPrice;
+                document.getElementById('edit-p-stock').value = (p.stock !== undefined) ? p.stock : (p.quantity || 999);
+                document.getElementById('edit-p-img').value = p.image || p.image_url || "";
                 document.getElementById('edit-p-desc').value = p.description || "";
             }
             document.getElementById('modal-product').classList.remove('hidden');
         }
-
         function editProduct() { openEditProduct(null); }
 
         async function saveProduct() {
@@ -603,13 +560,9 @@
         }
 
         async function deleteProduct(id) {
-            if(!confirm("Produkt und alle zugehörigen Daten (Aktien/Auktionen) löschen?")) return;
-            const res = await fetch(API + '/api/admin/products/' + id, { method: 'DELETE', credentials: 'include' });
-            if(res.ok) {
-                const d = await res.json();
-                alert(d.message);
-                loadProducts();
-            } else alert("Fehler");
+            if(!confirm("Produkt löschen?")) return;
+            await fetch(API + '/api/admin/products/' + id, { method: 'DELETE', credentials: 'include' });
+            loadProducts();
         }
     </script>
 </body>

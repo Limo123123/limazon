@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Casino</title>
+    <style>
+        /* --- CASINO DESIGN --- */
+        body {
+            background-color: #0f0f0f;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Goldener Schein für Casino Feeling */
+        .casino-wrapper {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #f1c40f;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        }
+
+        .balance-display {
+            background: #222;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid #444;
+            display: inline-block;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+            color: #2ecc71;
+        }
+
+        /* DIE MÜNZE (3D CSS) */
+        .coin-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 30px;
+            perspective: 1000px;
+        }
+
+        .coin {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 3s ease-out; /* Dreh-Dauer */
+        }
+
+        .coin .side {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: absolute;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            border: 5px solid #d4af37;
+        }
+
+        .heads {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #444;
+            transform: rotateY(0deg);
+        }
+        
+        .tails {
+            background: linear-gradient(135deg, #bdc3c7, #95a5a6);
+            color: #333;
+            transform: rotateY(180deg);
+        }
+
+        /* Controls */
+        .controls {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #333;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            background: #333;
+            border: none;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            width: 80%;
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-heads { background: #f39c12; color: #000; }
+        .btn-tails { background: #95a5a6; color: #000; }
+        
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn:hover:not(:disabled) { transform: scale(1.05); }
+
+        #result-msg {
+            margin-top: 20px;
+            min-height: 24px;
+            font-weight: bold;
+        }
+        .win { color: #2ecc71; }
+        .lose { color: #e74c3c; }
+
+        /* Stats Footer */
+        .stats-footer {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #666;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+        }
+        .stat-item span { display: block; color: #fff; font-size: 1.1rem; }
+
+    </style>
+</head>
+<body>
+
+    <div class="casino-wrapper">
+        <h1>🪙 Coinflip</h1>
+        <div class="balance-display" id="user-balance">Lade Guthaben...</div>
+
+        <div class="coin-container">
+            <div class="coin" id="coin">
+                <div class="side heads">KOPF</div>
+                <div class="side tails">ZAHL</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="input-group">
+                <input type="number" id="bet-amount" placeholder="Einsatz (z.B. 100)" min="1">
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-heads" onclick="play('heads')">Kopf</button>
+                <button class="btn btn-tails" onclick="play('tails')">Zahl</button>
+            </div>
+
+            <div id="result-msg">Wähle eine Seite...</div>
+        </div>
+
+        <div class="stats-footer">
+            <div class="stat-item">Gewonnen<span id="stat-wins">0</span></div>
+            <div class="stat-item">Verloren<span id="stat-losses">0</span></div>
+            <div class="stat-item">Profit<span id="stat-profit">$0</span></div>
+        </div>
+        <br>
+        <a href="/" style="color: #444; text-decoration: none;">← Zurück</a>
+    </div>
+
+    <script>
+        const API_URL = 'https://raspberrypi.tail75d81e.ts.net:8443';
+        let isSpinning = false;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            // Fallback Guthaben laden, falls Stats fehlschlagen
+            fetchStats(); 
+        });
+
+        async function fetchStats() {
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+                const data = await res.json();
+                if(data.balance) updateBalance(data.balance);
+            } catch(e) {}
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_URL}/api/casino/stats`, { credentials: 'include' });
+                const data = await res.json();
+                if(data.stats) {
+                    // HIER IST DER FIX (|| 0)
+                    document.getElementById('stat-wins').innerText = data.stats.wins || 0;
+                    document.getElementById('stat-losses').innerText = data.stats.losses || 0;
+                    
+                    // Auch beim Profit sicherstellen, dass es eine Zahl ist
+                    const profit = data.stats.netProfit || 0;
+                    document.getElementById('stat-profit').innerText = `$${profit.toFixed(0)}`;
+                }
+            } catch(e) { console.error("Stats Error", e); }
+        }
+
+        function updateBalance(amount) {
+            document.getElementById('user-balance').innerText = `$${parseFloat(amount).toFixed(2)}`;
+        }
+
+        async function play(choice) {
+            if (isSpinning) return;
+
+            const betInput = document.getElementById('bet-amount');
+            const amount = parseFloat(betInput.value);
+            const msg = document.getElementById('result-msg');
+
+            if (!amount || amount <= 0) {
+                msg.innerHTML = '<span style="color:orange">Ungültiger Einsatz!</span>';
+                return;
+            }
+
+            // UI sperren
+            isSpinning = true;
+            msg.innerText = "Die Münze fliegt...";
+            
+            try {
+                // API Call
+                const response = await fetch(`${API_URL}/api/casino/flip`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ betAmount: amount, side: choice })
+                });
+
+                const data = await response.json();
+
+                if (response.status !== 200) {
+                    msg.innerHTML = `<span style="color:red">${data.error || "Fehler"}</span>`;
+                    isSpinning = false;
+                    return;
+                }
+
+                // ANIMATION
+                const coin = document.getElementById('coin');
+                
+                // Wir resetten die Animation kurz
+                coin.style.transition = 'none';
+                coin.style.transform = 'rotateY(0deg)';
+                
+                // Force Reflow
+                void coin.offsetWidth;
+
+                // Animation starten
+                coin.style.transition = 'transform 3s ease-out';
+                
+                // Berechne Ziel-Rotation
+                // Wenn Ergebnis "heads" ist: viele Umdrehungen + 0 Grad
+                // Wenn Ergebnis "tails" ist: viele Umdrehungen + 180 Grad
+                const extraSpins = 1800; // 5 volle Drehungen (360 * 5)
+                const targetRotation = (data.resultSide === 'tails') 
+                    ? extraSpins + 180 
+                    : extraSpins;
+
+                coin.style.transform = `rotateY(${targetRotation}deg)`;
+
+                // Warten bis Animation fertig ist (3s)
+                setTimeout(() => {
+                    // Ergebnis anzeigen
+                    updateBalance(data.newBalance);
+                    
+                    if (data.won) {
+                        msg.innerHTML = `<span class="win">🎉 GEWONNEN! +$${data.payout.toFixed(2)}</span>`;
+                        // Sound Effekt könnte hier hin
+                    } else {
+                        msg.innerHTML = `<span class="lose">💸 Verloren... Viel Glück beim nächsten Mal!</span>`;
+                    }
+                    
+                    // Stats aktualisieren ohne reload
+                    loadStats();
+                    isSpinning = false;
+
+                }, 3000);
+
+            } catch (err) {
+                msg.innerText = "Verbindungsfehler!";
+                isSpinning = false;
+            }
+        }
+    </script>
+</body>
+</html>
