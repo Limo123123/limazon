@@ -6,7 +6,6 @@
     <title>Limazon | Buy Your Human Now</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -14,7 +13,6 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
                         brand: { 500: '#2563eb', 600: '#1d4ed8', 900: '#1e3a8a' }
                     }
@@ -24,403 +22,398 @@
     </script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px); }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-
-        .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-        }
-
-        .product-card {
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
-        }
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            border-color: #e5e7eb;
-        }
-
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid #ffffff;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-        .spinner-blue { border-top-color: #2563eb; border-color: rgba(37, 99, 235, 0.1); }
-        
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Toast Animation */
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 12px;
-            position: fixed;
-            z-index: 9999;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
+        /* Toast Notification Styling */
+        .toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
         .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        
+        /* Close Button Styling */
+        .close-btn { font-size: 1.5rem; line-height: 1; color: #9ca3af; transition: color 0.2s; cursor: pointer; padding: 0.5rem; }
+        .close-btn:hover { color: #ef4444; }
 
-        /* Utilities */
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
+        /* Card Hover */
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="text-gray-800 flex flex-col min-h-screen">
 
-    <header class="bg-white shadow-md sticky top-0 z-40 border-b border-gray-200">
+    <header class="bg-white shadow-md sticky top-0 z-40">
         <div class="container mx-auto px-4 py-3">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.reload()">
-                    <div class="bg-brand-600 text-white p-2 rounded-lg"><i class="fas fa-robot text-xl"></i></div>
+                    <i class="fas fa-robot text-2xl text-brand-600"></i>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900 leading-none tracking-tight">Limazon</h1>
-                        <span class="text-xs text-gray-500 font-medium tracking-wide">BUY YOUR HUMAN NOW</span>
+                        <h1 class="text-2xl font-bold leading-none">Limazon</h1>
+                        <span class="text-xs text-gray-500 tracking-wider">BUY YOUR HUMAN NOW</span>
                     </div>
                 </div>
 
                 <div class="w-full md:w-1/3 relative">
-                    <input id="search" type="text" placeholder="Suche nach Produkten..." 
-                           class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-all outline-none bg-gray-50 text-sm">
+                    <input id="search" type="text" placeholder="Suche..." class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 bg-gray-50 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
                     <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
                 </div>
 
                 <div class="flex items-center space-x-4">
-                    <div id="user-info" class="text-sm text-right hidden md:block">
-                        <div class="font-semibold text-gray-900">Hallo, <span id="customer-name">Gast</span></div>
-                        <div id="user-balance-display" class="hidden text-xs text-gray-500">
-                            <span class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold mr-1">$<span id="user-balance">0.00</span></span>
-                            <span class="bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-bold"><i class="fas fa-coins text-xs"></i> <span id="account-tokens">0</span></span>
+                    <div id="user-info" class="text-right hidden md:block">
+                        <div class="font-bold text-sm">Hallo, <span id="customer-name">Gast</span></div>
+                        <div id="user-balance-display" class="hidden text-xs space-x-2">
+                            <span class="text-green-600 font-bold">$<span id="user-balance">0.00</span></span>
+                            <span class="text-yellow-600 font-bold"><i class="fas fa-coins"></i> <span id="account-tokens">0</span></span>
                         </div>
                     </div>
 
                     <div id="auth-buttons" class="flex space-x-2">
-                        <button onclick="openAuthModal('login')" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition">Login</button>
-                        <button onclick="openAuthModal('register')" class="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition shadow-sm">Starten</button>
+                        <button onclick="window.openAuthModal('login')" class="px-3 py-1.5 border rounded text-sm hover:bg-gray-50">Login</button>
+                        <button onclick="window.openAuthModal('register')" class="px-3 py-1.5 bg-brand-600 text-white rounded text-sm hover:bg-brand-700">Start</button>
                     </div>
 
-                    <div id="user-actions" class="hidden flex items-center space-x-2">
-                        <button onclick="openAccountModal()" class="p-2 text-gray-600 hover:text-brand-600 hover:bg-gray-100 rounded-full transition" title="Konto"><i class="fas fa-user-circle text-xl"></i></button>
-                        
-                        <div class="relative group">
-                            <button class="p-2 text-gray-600 hover:text-brand-600 hover:bg-gray-100 rounded-full transition"><i class="fas fa-th text-xl"></i></button>
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 hidden group-hover:block p-2 z-50">
-                                <button onclick="showMyInventory()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg"><i class="fas fa-box mr-2 text-blue-500"></i> Inventar</button>
-                                <button onclick="openAuctionHouse()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg"><i class="fas fa-gavel mr-2 text-yellow-500"></i> Auktionen</button>
-                                <button onclick="openStonkMarket()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg"><i class="fas fa-chart-line mr-2 text-green-500"></i> LimoStonks</button>
-                                <button onclick="openMyPortfolio()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg"><i class="fas fa-briefcase mr-2 text-purple-500"></i> Portfolio</button>
-                                <button onclick="showMyTokenCodes()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg"><i class="fas fa-ticket-alt mr-2 text-pink-500"></i> Codes</button>
+                    <div id="user-actions" class="hidden relative group pb-2">
+                        <button class="flex items-center space-x-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-700 transition mt-2">
+                            <i class="fas fa-bars"></i> <span>Menü</span>
+                        </button>
+                        <div class="absolute right-0 top-full pt-1 w-56 hidden group-hover:block z-50">
+                            <div class="bg-white rounded-xl shadow-xl border border-gray-100 p-2">
+                                <button onclick="window.openAccountModal()" class="w-full text-left px-4 py-2 hover:bg-gray-50 rounded flex items-center"><i class="fas fa-user-circle w-6 text-gray-500"></i> Mein Konto</button>
+                                <button onclick="window.showMyInventory()" class="w-full text-left px-4 py-2 hover:bg-gray-50 rounded flex items-center"><i class="fas fa-box w-6 text-blue-500"></i> Inventar</button>
+                                <button onclick="window.openAuctionHouse()" class="w-full text-left px-4 py-2 hover:bg-gray-50 rounded flex items-center"><i class="fas fa-gavel w-6 text-yellow-500"></i> Auktionen</button>
+                                <button onclick="window.openStonkMarket()" class="w-full text-left px-4 py-2 hover:bg-gray-50 rounded flex items-center"><i class="fas fa-chart-line w-6 text-green-500"></i> LimoStonks</button>
+                                <button onclick="window.openMyPortfolio()" class="w-full text-left px-4 py-2 hover:bg-gray-50 rounded flex items-center"><i class="fas fa-briefcase w-6 text-purple-500"></i> Portfolio</button>
+                                <button onclick="window.showOrderHistory()" class="w-full text-left px-4 py-2 hover:bg-gray-50 rounded flex items-center"><i class="fas fa-history w-6 text-gray-500"></i> Bestellungen</button>
                                 <div class="h-px bg-gray-200 my-1"></div>
-                                <button onclick="showOrderHistory()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg"><i class="fas fa-history mr-2"></i> Bestellungen</button>
-                                <button onclick="logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"><i class="fas fa-sign-out-alt mr-2"></i> Logout</button>
+                                <button onclick="window.logout()" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 rounded flex items-center"><i class="fas fa-sign-out-alt w-6"></i> Logout</button>
                             </div>
                         </div>
                     </div>
 
-                    <button onclick="viewCart()" class="relative p-2 text-gray-600 hover:text-brand-600 transition">
-                        <i class="fas fa-shopping-bag text-2xl"></i>
-                        <span id="cart-count" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center border-2 border-white">0</span>
+                    <button onclick="window.viewCart()" class="relative p-2 text-gray-600 hover:text-brand-600">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                        <span id="cart-count" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                     </button>
                 </div>
             </div>
             
-            <div id="admin-toolbar" class="hidden mt-2 pt-2 border-t border-gray-100 flex flex-wrap gap-2 justify-center">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider py-1">Admin:</span>
-                <button onclick="openAddProductModal()" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200">+ Produkt</button>
-                <button onclick="resetProductStock(false)" class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs hover:bg-orange-200">Reset Stock</button>
-                <button onclick="resetProductStock(true)" class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200">Zero Stock</button>
-                <button onclick="openGenerateTokenCodesModal()" class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs hover:bg-purple-200">Gen Codes</button>
+            <div id="admin-toolbar" class="hidden mt-2 pt-2 border-t flex flex-wrap gap-2 justify-center bg-gray-50 p-2 rounded">
+                <span class="text-xs font-bold text-gray-400 uppercase py-1">Admin:</span>
+                <button onclick="window.openAddProductModal()" class="px-2 py-1 bg-white border rounded text-xs hover:bg-gray-100">+ Produkt</button>
+                <button onclick="window.resetProductStock(false)" class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs">Reset Stock</button>
+                <button onclick="window.resetProductStock(true)" class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Zero Stock</button>
+                <button onclick="window.openGenerateTokenCodesModal()" class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">Gen Tokens</button>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
-        
-        <div id="loading-status" class="hidden flex flex-col items-center justify-center py-20">
-            <div class="spinner spinner-blue w-12 h-12 mb-4"></div>
-            <p id="loading-status-message" class="text-gray-500 font-medium animate-pulse">Lade Limazon...</p>
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <div id="loading-status" class="hidden flex justify-center py-10">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div>
         </div>
-
-        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            </div>
-
-        <div id="pagination-controls" class="flex justify-center items-center mt-10 space-x-4 hidden">
-            <button id="prev" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-                <i class="fas fa-chevron-left mr-1"></i> Zurück
-            </button>
-            <span id="page-info" class="text-sm font-medium text-gray-700"></span>
-            <button id="next" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-                Weiter <i class="fas fa-chevron-right ml-1"></i>
-            </button>
+        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        <div id="pagination-controls" class="flex justify-center mt-8 space-x-2 hidden">
+            <button id="prev" class="px-3 py-1 border rounded bg-white hover:bg-gray-50">Zurück</button>
+            <span id="page-info" class="px-3 py-1 font-bold">1</span>
+            <button id="next" class="px-3 py-1 border rounded bg-white hover:bg-gray-50">Weiter</button>
         </div>
     </main>
 
-    <footer class="bg-white border-t border-gray-200 mt-auto py-6">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-500 text-sm">© 2025 Limazon Universe. Made with <i class="fas fa-heart text-red-500 mx-1"></i> by AI.</p>
-        </div>
+    <footer class="bg-white border-t mt-auto py-4 text-center text-sm text-gray-500">
+        © 2025 Limazon Universe
     </footer>
 
-    <div id="toast-container" class="toast shadow-lg font-medium text-sm"></div>
+    <div id="toast-container" class="toast shadow-lg"></div>
 
-    <script>
-        const modalClasses = "fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop overflow-y-auto";
-        const modalContentClasses = "bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col transform transition-all scale-100";
-    </script>
-
-    <div id="cart-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-gray-800">Warenkorb</h2>
-                <button onclick="closeCart()" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            <div id="cart-items" class="p-5 overflow-y-auto flex-grow space-y-3"></div>
-            <div class="p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-                <div class="flex justify-between items-center mb-4 text-lg font-bold">
-                    <span>Gesamt</span>
-                    <span class="text-brand-600">$<span id="cart-total">0.00</span></span>
+    <div id="cart-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col relative">
+            <button onclick="window.closeCart()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <div class="p-4 border-b font-bold text-lg">Warenkorb</div>
+            <div id="cart-items" class="p-4 overflow-y-auto flex-grow bg-gray-50 space-y-2"></div>
+            <div class="p-4 border-t bg-white">
+                <div class="flex justify-between font-bold text-xl mb-3">
+                    <span>Total</span>
+                    <span>$<span id="cart-total">0.00</span></span>
                 </div>
-                <button id="cart-checkout-button" onclick="checkout()" class="w-full bg-brand-600 text-white py-3 rounded-xl font-bold hover:bg-brand-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                    Zur Kasse gehen
+                <button id="cart-checkout-button" onclick="window.checkout()" class="w-full bg-brand-600 text-white py-3 rounded-lg font-bold hover:bg-brand-700">Zur Kasse</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative">
+             <button onclick="window.closeCheckout()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <h2 class="text-xl font-bold mb-4">Kauf bestätigen</h2>
+            <div id="checkout-items" class="max-h-40 overflow-y-auto mb-4 text-sm bg-gray-50 p-2 rounded"></div>
+            <div class="text-right font-bold text-lg mb-4">Total: $<span id="checkout-total">0.00</span></div>
+            <div class="flex gap-3">
+                <button onclick="window.closeCheckout()" class="flex-1 py-2 border rounded">Abbrechen</button>
+                <button id="confirm-purchase-button" onclick="window.confirmPurchase()" class="flex-1 py-2 bg-green-600 text-white rounded font-bold flex justify-center items-center gap-2">
+                    <span class="btn-text">Kaufen</span>
+                    <div class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white spinner"></div>
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="checkout-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col">
-            <div class="p-5 border-b text-center">
-                <h2 class="text-xl font-bold text-gray-800">Bestellung bestätigen</h2>
+    <div id="thank-you-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-8 text-center max-w-sm relative">
+            <div class="text-green-500 text-5xl mb-4"><i class="fas fa-check-circle"></i></div>
+            <h2 class="text-2xl font-bold mb-2">Erfolgreich!</h2>
+            <p id="thank-you-message" class="text-gray-600 mb-6">Danke für deinen Einkauf.</p>
+            <div class="flex flex-col gap-2">
+                <button onclick="window.generateInvoice()" class="py-2 bg-brand-600 text-white rounded font-bold hover:bg-brand-700">Rechnung (PDF)</button>
+                <button onclick="document.getElementById('thank-you-modal').classList.add('hidden')" class="py-2 text-gray-500 hover:text-gray-700">Schließen</button>
             </div>
-            <div id="checkout-items" class="p-5 overflow-y-auto max-h-60 text-sm space-y-2 bg-gray-50 m-4 rounded-lg"></div>
-            <div class="px-6 pb-2 text-right text-xl font-bold text-gray-900">Total: $<span id="checkout-total">0.00</span></div>
-            <div class="p-5 grid grid-cols-2 gap-3">
-                <button onclick="closeCheckout()" class="py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">Abbrechen</button>
-                <button id="confirm-purchase-button" onclick="confirmPurchase()" class="py-2.5 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 flex justify-center items-center gap-2">
-                    <span class="button-text">Kaufen</span>
-                    <div class="spinner hidden"></div>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 relative">
+            <button onclick="window.closeAuthModal()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <h2 id="auth-modal-title" class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <form onsubmit="window.handleAuthFormSubmit(event)" class="space-y-4">
+                <input type="text" id="auth-username" placeholder="Benutzername" required minlength="3" class="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-brand-500 outline-none">
+                <input type="password" id="auth-password" placeholder="Passwort" required minlength="6" class="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-brand-500 outline-none">
+                <label class="flex items-center text-sm"><input type="checkbox" id="auth-remember-me" class="mr-2"> Angemeldet bleiben</label>
+                <p id="auth-error-message" class="text-red-500 text-xs hidden text-center"></p>
+                <button id="auth-submit-button" type="submit" class="w-full bg-brand-600 text-white py-2 rounded font-bold flex justify-center items-center gap-2">
+                    <span class="btn-text">Senden</span>
+                    <div class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white spinner"></div>
                 </button>
+            </form>
+            <div class="mt-4 text-center text-sm">
+                <button id="auth-switch-button" onclick="window.switchAuthMode()" class="text-blue-500 hover:underline">Konto erstellen</button>
             </div>
         </div>
     </div>
 
-    <div id="auth-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative">
-            <button onclick="closeAuthModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <div class="inline-block p-3 bg-brand-100 rounded-full text-brand-600 mb-2"><i class="fas fa-user text-2xl"></i></div>
-                    <h2 id="auth-modal-title" class="text-2xl font-bold text-gray-900">Willkommen</h2>
-                </div>
-                <form id="auth-form" onsubmit="handleAuthFormSubmit(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Benutzername</label>
-                        <input type="text" id="auth-username" required minlength="3" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Passwort</label>
-                        <input type="password" id="auth-password" required minlength="6" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
-                    </div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="auth-remember-me" class="rounded text-brand-600 focus:ring-brand-500">
-                        <label for="auth-remember-me" class="ml-2 text-sm text-gray-600">Angemeldet bleiben</label>
-                    </div>
-                    <p id="auth-error-message" class="text-red-500 text-sm hidden text-center bg-red-50 p-2 rounded"></p>
-                    <button id="auth-submit-button" type="submit" class="w-full bg-brand-600 text-white py-2.5 rounded-lg font-bold hover:bg-brand-700 transition flex justify-center items-center gap-2">
-                        <span class="button-text">Login</span>
-                        <div class="spinner hidden"></div>
-                    </button>
-                </form>
-                <div class="mt-6 text-center text-sm">
-                    <span id="auth-switch-text" class="text-gray-500">Noch kein Konto?</span>
-                    <button id="auth-switch-button" onclick="switchAuthMode()" class="text-brand-600 font-semibold hover:underline">Registrieren</button>
+    <div id="product-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col md:flex-row overflow-hidden max-h-[80vh] relative">
+            <button onclick="window.closeProductDetails()" class="absolute top-3 right-3 close-btn z-10">&times;</button>
+            <div class="md:w-1/2 bg-gray-100 flex items-center justify-center p-4">
+                <img id="detail-image" class="max-h-64 object-contain">
+            </div>
+            <div class="md:w-1/2 p-6 flex flex-col pt-10">
+                <h2 id="detail-name" class="text-2xl font-bold mb-1"></h2>
+                <p class="text-sm text-gray-400 mb-4">ID: <span id="detail-id"></span></p>
+                <div class="text-3xl font-bold text-brand-600 mb-4" id="detail-price"></div>
+                <div id="detail-stock-info" class="mb-6 text-sm font-medium"></div>
+                <div class="mt-auto flex gap-2">
+                    <input type="number" id="detail-qty" value="1" min="1" class="w-16 border rounded text-center font-bold">
+                    <button id="detail-add-to-cart" class="flex-1 bg-gray-800 text-white rounded font-bold hover:bg-black">In Korb</button>
+                    <button id="detail-buy-now" class="flex-1 bg-brand-600 text-white rounded font-bold hover:bg-brand-700">Kaufen</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="product-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col md:flex-row max-h-[80vh]">
-            <div class="md:w-1/2 bg-gray-100 flex items-center justify-center p-6">
-                <img id="detail-image" src="" class="max-h-64 object-contain mix-blend-multiply">
-            </div>
-            <div class="md:w-1/2 p-6 flex flex-col overflow-y-auto">
-                <div class="flex justify-between items-start">
-                    <h2 id="detail-name" class="text-2xl font-bold text-gray-900 leading-tight mb-1">Produkt</h2>
-                    <button onclick="closeProductDetails()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
-                </div>
-                <p class="text-xs text-gray-400 mb-4">ID: <span id="detail-id"></span></p>
-                
-                <div class="mb-6">
-                    <span id="detail-price" class="text-3xl font-bold text-brand-600">$0.00</span>
-                </div>
-
-                <div class="bg-gray-50 p-4 rounded-xl mb-6 space-y-2">
-                    <div id="detail-stock-available" class="font-medium text-sm"></div>
-                    <div id="detail-stock-cart" class="text-xs text-blue-500"></div>
-                </div>
-
-                <div class="mt-auto space-y-3">
-                    <div class="flex items-center space-x-3">
-                        <label class="font-medium text-sm">Menge:</label>
-                        <input id="detail-qty" type="number" min="1" value="1" class="w-20 px-3 py-2 border rounded-lg text-center font-bold">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button id="detail-add-to-cart" class="py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition">In den Korb</button>
-                        <button id="detail-buy-now" class="py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition">Kaufen</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="thank-you-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md">
-            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-check text-3xl text-green-600"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Danke für den Einkauf!</h2>
-            <p id="thank-you-message" class="text-gray-600 mb-6">Deine Bestellung wurde erfolgreich verarbeitet.</p>
-            <div class="flex justify-center space-x-3">
-                <button onclick="generateInvoice()" class="px-6 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 shadow-md">Rechnung (PDF)</button>
-                <button onclick="document.getElementById('thank-you-modal').classList.add('hidden')" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300">Schließen</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="account-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
-                <h2 class="text-xl font-bold text-gray-800">Mein Konto</h2>
-                <button onclick="closeAccountModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-            </div>
+    <div id="account-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+            <button onclick="window.closeAccountModal()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <div class="p-4 border-b font-bold text-lg bg-gray-50">Mein Konto</div>
             <div class="p-6 space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-blue-50 p-4 rounded-xl">
-                        <p class="text-xs text-blue-500 uppercase font-bold">Benutzer</p>
-                        <p id="account-username" class="text-lg font-bold text-gray-900"></p>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-blue-50 p-3 rounded">
+                        <div class="text-xs text-blue-500 font-bold uppercase">User</div>
+                        <div id="account-username" class="font-bold">Gast</div>
                     </div>
-                    <div class="bg-green-50 p-4 rounded-xl">
-                        <p class="text-xs text-green-500 uppercase font-bold">Guthaben</p>
-                        <p class="text-lg font-bold text-gray-900">$<span id="account-balance"></span></p>
+                    <div class="bg-green-50 p-3 rounded">
+                        <div class="text-xs text-green-500 font-bold uppercase">Guthaben</div>
+                        <div class="font-bold">$<span id="account-balance">0.00</span></div>
                     </div>
                 </div>
 
                 <div class="border-t pt-4">
-                    <label class="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition">
-                        <input type="checkbox" id="account-infinity-money" onchange="updateAccountSettings()" class="w-5 h-5 text-brand-600 rounded">
-                        <div>
-                            <span class="font-medium text-gray-900">Infinity Money Mode</span>
-                            <p id="infinity-money-unlock-info" class="text-xs text-red-500 mt-0.5 hidden"><i class="fas fa-lock"></i> Kaufe das teuerste Item zum Freischalten</p>
-                        </div>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="account-infinity-money" onchange="window.updateAccountSettings()">
+                        <span class="font-medium">Infinity Money Mode</span>
                     </label>
+                    <p id="infinity-money-unlock-info" class="text-xs text-red-500 pl-6 mt-1 hidden"><i class="fas fa-lock"></i> Gesperrt (Kaufe das teuerste Item)</p>
                 </div>
-
-                <div class="border-t pt-4 space-y-4">
-                    <h3 class="font-bold text-gray-800">Tokens & Guthaben</h3>
-                    
-                    <div class="flex space-x-2">
-                        <input type="text" id="redeem-token-code" placeholder="Code einlösen (z.B. LMTKN-...)" class="flex-1 px-3 py-2 border rounded-lg text-sm uppercase">
-                        <button onclick="redeemTokenCode()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black">Einlösen</button>
+                
+                <div class="border-t pt-4 space-y-3">
+                    <h3 class="font-bold text-sm">Tokens</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="redeem-token-code" placeholder="Code einlösen" class="flex-1 border rounded px-2 py-1 text-sm uppercase">
+                        <button onclick="window.redeemTokenCode()" class="bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-black">Einlösen</button>
                     </div>
                     <p id="redeem-message" class="text-xs"></p>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-gray-50 p-3 rounded-lg">
-                            <label class="text-xs font-bold text-gray-500">Dollar -> Tokens</label>
-                            <div class="flex mt-1">
-                                <input type="number" id="dollars-to-tokens-amount" placeholder="$" class="w-full px-2 py-1 border rounded-l text-sm">
-                                <button onclick="convertDollarsToTokens()" class="bg-blue-500 text-white px-3 rounded-r text-xs"><i class="fas fa-arrow-right"></i></button>
-                            </div>
-                            <p id="dollars-to-tokens-message" class="text-xs mt-1"></p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-gray-50 p-2 rounded">
+                            <label class="text-xs block mb-1 font-bold text-gray-500">$ zu Tokens</label>
+                            <div class="flex"><input type="number" id="dollars-to-tokens-amount" class="w-full text-xs border p-1 rounded-l"><button onclick="window.convertDollarsToTokens()" class="bg-blue-500 text-white px-2 rounded-r hover:bg-blue-600">→</button></div>
+                            <p id="dollars-to-tokens-message" class="text-[10px] mt-1"></p>
                         </div>
-                        <div class="bg-gray-50 p-3 rounded-lg">
-                            <label class="text-xs font-bold text-gray-500">Tokens -> Dollar</label>
-                            <div class="flex mt-1">
-                                <input type="number" id="tokens-to-dollars-amount" placeholder="T" class="w-full px-2 py-1 border rounded-l text-sm">
-                                <button onclick="convertTokensToDollars()" class="bg-yellow-500 text-white px-3 rounded-r text-xs"><i class="fas fa-arrow-right"></i></button>
-                            </div>
-                            <p id="tokens-to-dollars-message" class="text-xs mt-1"></p>
+                        <div class="bg-gray-50 p-2 rounded">
+                            <label class="text-xs block mb-1 font-bold text-gray-500">Tokens zu $</label>
+                            <div class="flex"><input type="number" id="tokens-to-dollars-amount" class="w-full text-xs border p-1 rounded-l"><button onclick="window.convertTokensToDollars()" class="bg-yellow-500 text-white px-2 rounded-r hover:bg-yellow-600">→</button></div>
+                            <p id="tokens-to-dollars-message" class="text-[10px] mt-1"></p>
                         </div>
                     </div>
                 </div>
-                <p id="account-message" class="text-center font-bold text-sm hidden"></p>
+                
+                <div class="border-t pt-4 space-y-2">
+                     <button onclick="window.showMyTokenCodes(); window.closeAccountModal();" class="w-full text-left text-sm text-blue-600 hover:bg-blue-50 p-2 rounded"><i class="fas fa-ticket-alt mr-2 w-5"></i> Meine Token Codes ansehen</button>
+                     <button onclick="window.showOrderHistory(); window.closeAccountModal();" class="w-full text-left text-sm text-blue-600 hover:bg-blue-50 p-2 rounded"><i class="fas fa-history mr-2 w-5"></i> Bestellhistorie</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="inventory-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between">
-                <h2 class="text-lg font-bold">Mein Inventar</h2>
-                <button onclick="closeMyInventory()"><i class="fas fa-times"></i></button>
-            </div>
+    <div id="inventory-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col relative">
+            <button onclick="window.closeMyInventory()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <div class="p-4 border-b font-bold bg-gray-50 rounded-t-xl">Mein Inventar</div>
             <div id="inventory-content" class="p-4 overflow-y-auto flex-grow bg-gray-50"></div>
         </div>
     </div>
 
-    <div id="auction-house-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between bg-yellow-50 rounded-t-2xl">
-                <h2 class="text-xl font-bold text-yellow-800"><i class="fas fa-gavel mr-2"></i>Auktionshaus</h2>
-                <button onclick="closeAuctionHouse()"><i class="fas fa-times"></i></button>
+    <div id="sell-product-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm relative">
+            <button onclick="window.closeSellProductModal()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <h2 class="font-bold text-lg mb-4">Item Verkaufen</h2>
+            <div class="mb-4 p-3 bg-gray-50 rounded">
+                <p id="sell-product-name" class="font-bold"></p>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Bestand: <span id="sell-product-user-stock" class="font-bold text-black"></span></span>
+                    <span>Orig. Preis: <span id="sell-product-original-price" class="font-bold text-black"></span></span>
+                </div>
+            </div>
+            
+            <label class="block text-xs font-bold uppercase mb-1">Menge zu verkaufen</label>
+            <input type="number" id="sell-quantity" class="w-full border rounded p-2 mb-3">
+            
+            <label class="block text-xs font-bold uppercase mb-1">Dein Verkaufspreis ($)</label>
+            <input type="number" id="sell-price" step="0.01" class="w-full border rounded p-2 mb-2">
+            
+            <div class="text-center text-xs text-gray-500 mb-4">Erfolgschance: <span id="sell-probability" class="font-bold text-green-600">?%</span></div>
+            <p id="sell-error-message" class="text-red-500 text-xs mb-3 hidden"></p>
+            <p id="sell-cooldown-message" class="text-blue-500 text-xs mb-3 hidden"></p>
+
+            <div class="flex gap-2">
+                <button onclick="window.closeSellProductModal()" class="flex-1 border rounded py-2 hover:bg-gray-50">Abbrechen</button>
+                <button id="confirm-sell-button" onclick="window.handleSellProduct()" class="flex-1 bg-green-600 text-white rounded py-2 font-bold hover:bg-green-700 flex justify-center items-center gap-2">
+                    <span class="btn-text">Verkaufen</span>
+                    <div class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white spinner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="auction-house-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col relative">
+            <button onclick="window.closeAuctionHouse()" class="absolute top-3 right-3 close-btn text-yellow-800 hover:text-red-500">&times;</button>
+            <div class="p-4 border-b flex justify-between bg-yellow-50 rounded-t-xl">
+                <h2 class="font-bold text-yellow-800"><i class="fas fa-gavel mr-2"></i>Auktionshaus</h2>
             </div>
             <div id="auction-house-content" class="p-4 overflow-y-auto flex-grow grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 bg-gray-50"></div>
         </div>
     </div>
 
-    <div id="stonks-market-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between items-center bg-gray-900 text-white rounded-t-2xl">
+    <div id="auction-detail-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+            <button onclick="document.getElementById('auction-detail-modal').classList.add('hidden')" class="absolute top-3 right-3 close-btn">&times;</button>
+            <h2 id="auction-detail-name" class="font-bold text-lg mb-2"></h2>
+            <img id="auction-detail-image" class="w-full h-40 object-contain mb-4 bg-gray-50 rounded">
+            <div class="flex justify-between items-end mb-4 border-b pb-4">
                 <div>
-                    <h2 class="text-xl font-bold"><i class="fas fa-chart-line mr-2 text-green-400"></i>LimoStonks</h2>
-                    <span id="stonks-next-update-timer" class="text-xs text-gray-400">Update in: <span>--:--</span></span>
+                    <div class="text-xs text-gray-500">Aktuelles Gebot</div>
+                    <div class="text-2xl font-bold text-blue-600">$<span id="auction-detail-bid"></span></div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <input type="text" id="stonk-search-input" placeholder="Aktie suchen..." class="text-black px-3 py-1 rounded text-sm outline-none">
-                    <button onclick="closeStonkMarket()"><i class="fas fa-times text-xl"></i></button>
+                <div class="text-right">
+                    <div class="text-xs text-gray-500">Endet in</div>
+                    <div id="auction-detail-time" class="font-mono font-bold"></div>
+                </div>
+            </div>
+            <p class="text-xs mb-1">Verkäufer: <span id="auction-detail-seller" class="font-semibold"></span></p>
+            <p class="text-xs mb-4">Höchstbietender: <span id="auction-detail-highest-bidder" class="font-semibold"></span></p>
+
+            <div class="bg-gray-100 p-3 rounded mb-4">
+                <div class="flex gap-2">
+                    <input type="number" id="bid-amount" placeholder="Dein Gebot" class="flex-1 border rounded px-2">
+                    <button id="confirm-bid-button" onclick="window.handleBid()" class="bg-green-600 text-white px-4 rounded font-bold flex justify-center items-center gap-2">
+                        <span class="btn-text">Bieten</span>
+                        <div class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white spinner"></div>
+                    </button>
+                </div>
+                <p id="auction-detail-error" class="text-xs text-red-500 mt-2 text-center"></p>
+            </div>
+            
+            <div class="text-xs font-bold text-gray-400 uppercase mb-2">Historie</div>
+            <div id="auction-bid-history" class="h-32 overflow-y-auto border rounded p-2 text-xs bg-white"></div>
+        </div>
+    </div>
+
+    <div id="create-auction-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 relative">
+             <button onclick="window.closeCreateAuctionModal()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <h2 class="font-bold text-lg mb-4">Auktion starten</h2>
+            <div class="flex items-center gap-3 mb-4 bg-gray-50 p-2 rounded">
+                <img id="create-auction-product-image" class="w-12 h-12 object-cover rounded">
+                <div>
+                    <div id="create-auction-product-name" class="font-bold text-sm"></div>
+                    <div class="text-xs text-gray-500">Bestand: <span id="create-auction-user-stock"></span></div>
+                </div>
+            </div>
+            <input type="number" id="create-auction-quantity" placeholder="Menge" class="w-full border rounded p-2 mb-3">
+            <input type="number" id="create-auction-start-bid" placeholder="Startgebot ($)" class="w-full border rounded p-2 mb-3">
+            <select id="create-auction-duration" class="w-full border rounded p-2 mb-4">
+                <option value="12">12 Stunden</option>
+                <option value="24" selected>24 Stunden</option>
+                <option value="48">48 Stunden</option>
+            </select>
+            <p id="create-auction-error-message" class="text-red-500 text-xs mb-3 hidden"></p>
+            <div class="flex gap-2">
+                <button onclick="window.closeCreateAuctionModal()" class="flex-1 border rounded py-2">Abbrechen</button>
+                <button id="confirm-create-auction-button" onclick="window.handleCreateAuction()" class="flex-1 bg-brand-600 text-white rounded py-2 font-bold flex justify-center items-center gap-2">
+                    <span class="btn-text">Starten</span>
+                    <div class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white spinner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="stonks-market-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col relative">
+             <button onclick="window.closeStonkMarket()" class="absolute top-3 right-3 close-btn text-white hover:text-red-300 z-10">&times;</button>
+            <div class="p-4 border-b flex justify-between items-center bg-gray-900 text-white rounded-t-xl">
+                <div>
+                    <h2 class="text-xl font-bold"><i class="fas fa-chart-line text-green-400 mr-2"></i>LimoStonks</h2>
+                    <span id="stonks-timer" class="text-xs text-gray-400">Update in: --:--</span>
+                </div>
+                <div class="flex gap-3 mr-8">
+                    <input type="text" id="stonk-search" placeholder="Aktie suchen..." class="text-black px-2 py-1 rounded text-sm">
                 </div>
             </div>
             <div id="stonks-market-content" class="p-4 overflow-y-auto flex-grow grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 bg-gray-100"></div>
         </div>
     </div>
 
-    <div id="stonk-detail-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative">
-            <button onclick="document.getElementById('stonk-detail-modal').classList.add('hidden')" class="absolute top-4 right-4"><i class="fas fa-times"></i></button>
+    <div id="stonk-detail-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 relative">
+            <button onclick="document.getElementById('stonk-detail-modal').classList.add('hidden')" class="absolute top-3 right-3 close-btn">&times;</button>
             <h2 id="stonk-detail-name" class="text-2xl font-bold mb-4"></h2>
-            <div class="flex gap-4 mb-4">
+            
+            <div class="flex gap-4 mb-6">
                 <img id="stonk-detail-image" class="w-24 h-24 object-cover rounded-lg border">
                 <div>
                     <div class="text-3xl font-bold text-brand-600 mb-1">$<span id="stonk-detail-price"></span></div>
                     <div class="text-xs text-gray-500">Dein Bestand: <span id="stonk-portfolio-quantity" class="font-bold text-black">0</span></div>
-                    <div class="text-xs text-gray-500">Ø Preis: <span id="stonk-portfolio-avg-price">0</span></div>
+                    <div class="text-xs text-gray-500">Ø Kaufpreis: <span id="stonk-portfolio-avg-price">0</span></div>
                 </div>
             </div>
-            <div id="stonk-trade-panel" class="bg-gray-50 p-4 rounded-xl">
-                <input type="number" id="stonk-trade-quantity" placeholder="Menge" class="w-full mb-3 px-3 py-2 border rounded font-bold text-center">
-                <div class="flex gap-2">
-                    <button id="stonk-buy-button" class="flex-1 bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">Kaufen</button>
-                    <button id="stonk-sell-button" class="flex-1 bg-red-600 text-white py-2 rounded font-bold hover:bg-red-700">Verkaufen</button>
+
+            <div id="stonk-trade-panel" class="bg-gray-50 p-4 rounded-xl border">
+                <input type="number" id="stonk-trade-quantity" placeholder="Menge" class="w-full mb-3 px-3 py-2 border rounded font-bold text-center text-lg">
+                <div class="flex gap-3">
+                    <button id="stonk-buy-button" class="flex-1 bg-green-600 text-white py-3 rounded font-bold hover:bg-green-700 shadow relative flex justify-center items-center gap-2">
+                        <span>Kaufen</span>
+                         <div class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white spinner"></div>
+                    </button>
+                    <button id="stonk-sell-button" class="flex-1 bg-red-600 text-white py-3 rounded font-bold hover:bg-red-700 shadow relative flex justify-center items-center gap-2">
+                        <span>Verkaufen</span>
+                         <div class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white spinner"></div>
+                    </button>
                 </div>
                 <p id="stonk-trade-estimated-value" class="text-center text-xs text-gray-500 mt-2">Est: $0.00</p>
                 <p id="stonk-trade-error" class="text-center text-xs text-red-500 mt-2 h-4"></p>
@@ -428,698 +421,210 @@
         </div>
     </div>
 
-    <div id="sell-product-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
-            <h2 class="text-xl font-bold mb-4">Verkaufen</h2>
-            <p class="mb-2"><strong id="sell-product-name"></strong></p>
-            <p class="text-sm text-gray-500 mb-4">Dein Bestand: <span id="sell-product-user-stock"></span></p>
-            
-            <label class="text-xs font-bold uppercase">Menge</label>
-            <input type="number" id="sell-quantity" class="w-full border rounded p-2 mb-3">
-            
-            <label class="text-xs font-bold uppercase">Preis pro Stück ($)</label>
-            <input type="number" id="sell-price" step="0.01" class="w-full border rounded p-2 mb-2">
-            
-            <div class="text-xs text-center text-gray-500 mb-4">Verkaufschance: <span id="sell-probability" class="font-bold text-green-600">?%</span></div>
-            <p id="sell-error-message" class="text-red-500 text-xs mb-2 hidden"></p>
-            <p id="sell-cooldown-message" class="text-blue-500 text-xs mb-2 hidden"></p>
-            
-            <div class="flex gap-2">
-                <button onclick="closeSellProductModal()" class="flex-1 py-2 border rounded hover:bg-gray-50">Abbrechen</button>
-                <button id="confirm-sell-button" class="flex-1 py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700 flex justify-center gap-2">
-                    <span class="button-text">Verkaufen</span><div class="spinner hidden"></div>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="auction-detail-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md relative">
-            <button onclick="document.getElementById('auction-detail-modal').classList.add('hidden')" class="absolute top-4 right-4"><i class="fas fa-times"></i></button>
-            <h2 id="auction-detail-name" class="text-xl font-bold mb-4"></h2>
-            <img id="auction-detail-image" class="w-full h-40 object-contain mb-4 bg-gray-50 rounded">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <p class="text-xs text-gray-500">Aktuelles Gebot</p>
-                    <p class="text-2xl font-bold text-blue-600">$<span id="auction-detail-bid"></span></p>
-                </div>
-                <div class="text-right">
-                    <p class="text-xs text-gray-500">Endet in</p>
-                    <p id="auction-detail-time" class="font-mono font-bold"></p>
-                </div>
-            </div>
-            <p class="text-xs mb-1">Verkäufer: <span id="auction-detail-seller" class="font-semibold"></span></p>
-            <p class="text-xs mb-4">Höchstbietender: <span id="auction-detail-highest-bidder" class="font-semibold"></span></p>
-            
-            <div class="bg-gray-50 p-3 rounded-lg border mb-4">
-                <div class="flex gap-2">
-                    <input type="number" id="bid-amount" placeholder="Dein Gebot" class="flex-1 border rounded px-3">
-                    <button id="confirm-bid-button" class="bg-green-600 text-white px-4 rounded font-bold flex items-center gap-2">
-                        <span class="button-text">Bieten</span><div class="spinner hidden"></div>
-                    </button>
-                </div>
-                <p id="auction-detail-error" class="text-xs text-red-500 mt-2 text-center"></p>
-            </div>
-            <div class="text-xs font-bold text-gray-400 uppercase mb-2">Historie</div>
-            <div id="auction-bid-history" class="h-24 overflow-y-auto border rounded p-2 text-xs bg-white"></div>
-        </div>
-    </div>
-
-    <div id="create-auction-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
-            <h2 class="text-lg font-bold mb-4">Auktion starten</h2>
-            <div class="flex items-center gap-3 mb-4">
-                <img id="create-auction-product-image" class="w-12 h-12 object-cover rounded">
-                <div>
-                    <p id="create-auction-product-name" class="font-bold text-sm"></p>
-                    <p class="text-xs text-gray-500">Bestand: <span id="create-auction-user-stock"></span></p>
-                </div>
-            </div>
-            <input type="number" id="create-auction-quantity" placeholder="Menge" class="w-full border rounded p-2 mb-3 text-sm">
-            <input type="number" id="create-auction-start-bid" placeholder="Startgebot ($)" class="w-full border rounded p-2 mb-3 text-sm">
-            <select id="create-auction-duration" class="w-full border rounded p-2 mb-4 text-sm">
-                <option value="12">12 Stunden</option>
-                <option value="24" selected>24 Stunden</option>
-                <option value="48">48 Stunden</option>
-            </select>
-            <p id="create-auction-error-message" class="text-red-500 text-xs mb-3 hidden"></p>
-            <div class="flex gap-2">
-                <button onclick="closeCreateAuctionModal()" class="flex-1 py-2 border rounded hover:bg-gray-50 text-sm">Abbrechen</button>
-                <button id="confirm-create-auction-button" class="flex-1 py-2 bg-brand-600 text-white rounded font-bold hover:bg-brand-700 text-sm flex justify-center gap-2">
-                    <span class="button-text">Starten</span><div class="spinner hidden"></div>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="my-portfolio-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between">
-                <h2 class="text-xl font-bold">Mein Portfolio</h2>
-                <button onclick="closeMyPortfolio()"><i class="fas fa-times"></i></button>
+    <div id="my-portfolio-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col relative">
+            <button onclick="window.closeMyPortfolio()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <div class="p-4 border-b flex justify-between bg-gray-50 rounded-t-xl font-bold text-lg">
+                <span>Mein Aktien Portfolio</span>
             </div>
             <div class="overflow-x-auto flex-grow p-4">
                 <table class="w-full text-sm text-left">
-                    <thead class="text-xs text-gray-500 uppercase bg-gray-50">
+                    <thead class="text-xs text-gray-500 uppercase bg-gray-100">
                         <tr>
-                            <th class="px-4 py-3">Aktie</th>
-                            <th class="px-4 py-3 text-right">Menge</th>
-                            <th class="px-4 py-3 text-right">Ø Kauf</th>
-                            <th class="px-4 py-3 text-right">Aktuell</th>
-                            <th class="px-4 py-3 text-right">Wert</th>
-                            <th class="px-4 py-3 text-right">G/V</th>
-                            <th class="px-4 py-3 text-center">Action</th>
+                            <th class="px-4 py-2">Aktie</th>
+                            <th class="px-4 py-2 text-right">Menge</th>
+                            <th class="px-4 py-2 text-right">Ø Kauf</th>
+                            <th class="px-4 py-2 text-right">Aktuell</th>
+                            <th class="px-4 py-2 text-right">Wert</th>
+                            <th class="px-4 py-2 text-right">G/V</th>
+                            <th class="px-4 py-2 text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody id="my-portfolio-content"></tbody>
                 </table>
             </div>
-            <div class="p-4 border-t bg-gray-50 rounded-b-2xl flex justify-between items-center">
+            <div class="p-4 border-t bg-gray-50 flex justify-between rounded-b-xl">
                 <span class="text-gray-500">Gesamtwert</span>
-                <span id="portfolio-total-value" class="text-xl font-bold text-gray-900">$0.00</span>
+                <span id="portfolio-total-value" class="text-xl font-bold text-brand-900">$0.00</span>
             </div>
         </div>
     </div>
 
-    <div id="order-history-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between">
-                <h2 class="text-xl font-bold">Bestellungen</h2>
-                <button onclick="closeOrderHistory()"><i class="fas fa-times"></i></button>
+    <div id="order-history-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col relative">
+             <button onclick="window.closeOrderHistory()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <div class="p-4 border-b flex justify-between font-bold text-lg">
+                <span>Bestellungen</span>
             </div>
             <div id="order-history-content" class="p-4 overflow-y-auto flex-grow bg-gray-50 space-y-3"></div>
             <div class="p-4 border-t text-right">
-                <button onclick="clearOrderHistory()" class="text-red-500 text-sm hover:underline">Verlauf löschen</button>
+                <button onclick="window.clearOrderHistory()" class="text-red-500 text-xs hover:underline">Verlauf löschen</button>
             </div>
         </div>
     </div>
 
-    <div id="add-product-modal" class="fixed inset-0 z-[70] flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
-            <h2 class="text-lg font-bold mb-4">Neues Produkt</h2>
-            <input id="product-name" type="text" placeholder="Name" class="w-full border rounded p-2 mb-2">
-            <input id="product-image" type="text" placeholder="Bild URL" class="w-full border rounded p-2 mb-2">
-            <input id="product-price" type="text" placeholder="Preis ($12.99)" class="w-full border rounded p-2 mb-2">
-            <input id="product-stock" type="number" placeholder="Bestand" value="20" class="w-full border rounded p-2 mb-4">
-            <div class="flex gap-2">
-                <button onclick="closeAddProductModal()" class="flex-1 py-2 border rounded">Abbrechen</button>
-                <button id="submit-product-button" onclick="submitProduct(event)" class="flex-1 py-2 bg-blue-600 text-white rounded font-bold flex justify-center gap-2">
-                    <span class="button-text">Erstellen</span><div class="spinner hidden"></div>
-                </button>
+    <div id="my-token-codes-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col relative">
+             <button onclick="window.closeMyTokenCodesModal()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <div class="p-4 border-b flex justify-between bg-gray-50 rounded-t-xl font-bold">
+                <span>Meine Token Codes</span>
             </div>
-        </div>
-    </div>
-
-    <div id="generate-token-codes-modal" class="fixed inset-0 z-[70] flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
-            <h2 class="text-lg font-bold mb-4">Tokens Generieren</h2>
-            <label class="text-xs uppercase font-bold">Wert pro Code</label>
-            <input id="generate-token-amount" type="number" value="100" class="w-full border rounded p-2 mb-2">
-            <label class="text-xs uppercase font-bold">Anzahl Codes</label>
-            <input id="generate-token-count" type="number" value="1" max="50" class="w-full border rounded p-2 mb-4">
-            
-            <p id="generate-token-codes-message" class="text-xs mb-2"></p>
-            <div id="generated-codes-display" class="bg-gray-100 p-2 rounded text-xs font-mono mb-4 max-h-32 overflow-y-auto"></div>
-            
-            <div class="flex gap-2">
-                <button onclick="closeGenerateTokenCodesModal()" class="flex-1 py-2 border rounded">Schließen</button>
-                <button id="confirm-generate-token-codes-button" onclick="handleGenerateTokenCodes()" class="flex-1 py-2 bg-purple-600 text-white rounded font-bold flex justify-center gap-2">
-                    <span class="button-text">Generieren</span><div class="spinner hidden"></div>
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="my-token-codes-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden modal-backdrop">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
-            <div class="p-4 border-b flex justify-between">
-                <h2 class="text-xl font-bold">Meine Codes</h2>
-                <button onclick="closeMyTokenCodesModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="my-token-codes-content" class="p-4 overflow-y-auto flex-grow bg-gray-50 space-y-2"></div>
-            
+            <div id="my-token-codes-content" class="p-4 overflow-y-auto flex-grow space-y-2"></div>
             <div class="p-4 border-t bg-gray-100">
-                <h3 class="text-sm font-bold mb-2">Codes zusammenführen</h3>
+                <h3 class="text-xs font-bold uppercase mb-2">Codes zusammenführen</h3>
                 <div class="flex gap-2">
-                    <select id="merge-token-value" class="border rounded text-sm px-2">
+                    <select id="merge-token-value" class="border rounded text-sm px-2 bg-white">
                         <option value="10">10er</option>
                         <option value="50">50er</option>
                         <option value="100">100er</option>
                         <option value="500">500er</option>
                     </select>
                     <input id="merge-token-count" type="number" placeholder="Anz." class="w-16 border rounded text-center text-sm">
-                    <button id="merge-token-button" onclick="mergeTokenCodes()" class="bg-green-600 text-white px-3 rounded text-sm font-bold hover:bg-green-700 flex items-center gap-2">
-                        <span class="button-text">Merge</span><div class="spinner hidden"></div>
-                    </button>
+                    <button onclick="window.mergeTokenCodes()" class="bg-green-600 text-white px-3 rounded text-sm font-bold hover:bg-green-700">Merge</button>
                 </div>
                 <p id="merge-token-message" class="text-xs mt-1 text-center"></p>
             </div>
         </div>
     </div>
 
+    <div id="generate-token-codes-modal" class="fixed inset-0 z-[70] flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm relative">
+             <button onclick="window.closeGenerateTokenCodesModal()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <h2 class="font-bold text-lg mb-4">Admin: Tokens Gen.</h2>
+            <input id="generate-token-amount" type="number" value="100" class="w-full border rounded p-2 mb-2" placeholder="Wert">
+            <input id="generate-token-count" type="number" value="1" max="50" class="w-full border rounded p-2 mb-4" placeholder="Anzahl">
+            <p id="generate-token-codes-message" class="text-xs mb-2"></p>
+            <div id="generated-codes-display" class="bg-gray-100 p-2 rounded text-xs font-mono mb-4 max-h-32 overflow-y-auto"></div>
+            <div class="flex gap-2">
+                <button onclick="window.closeGenerateTokenCodesModal()" class="flex-1 border rounded py-2">Schließen</button>
+                <button onclick="window.handleGenerateTokenCodes()" class="flex-1 bg-purple-600 text-white rounded font-bold hover:bg-purple-700">Generieren</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="add-product-modal" class="fixed inset-0 z-[70] flex items-center justify-center hidden modal-backdrop p-4">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm relative">
+             <button onclick="window.closeAddProductModal()" class="absolute top-3 right-3 close-btn">&times;</button>
+            <h2 class="font-bold text-lg mb-4">Neues Produkt</h2>
+            <input id="product-name" type="text" placeholder="Name" class="w-full border rounded p-2 mb-2">
+            <input id="product-image" type="text" placeholder="Bild URL" class="w-full border rounded p-2 mb-2">
+            <input id="product-price" type="text" placeholder="Preis ($12.99)" class="w-full border rounded p-2 mb-2">
+            <input id="product-stock" type="number" placeholder="Bestand" value="20" class="w-full border rounded p-2 mb-4">
+            <div class="flex gap-2">
+                <button onclick="window.closeAddProductModal()" class="flex-1 py-2 border rounded">Abbrechen</button>
+                <button onclick="window.submitProduct()" class="flex-1 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700">Erstellen</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
-        // --- CONSTANTS & STATE ---
+        // --- CONFIG & STATE ---
         const API_URL = 'https://raspberrypi.tail75d81e.ts.net:8443/api';
-        const LOG_PREFIX = "[Limazon V2]";
         
+        // Globale Variablen
         let products = [];
-        let filteredProducts = [];
         let cart = [];
         let loggedInUser = null;
-        
-        // UI State
         let currentPage = 1;
         const itemsPerPage = 8;
-        let isInitialLoad = true;
-        let pollingIntervalId = null;
-        let auctionIntervalId = null;
-        let stonkIntervalId = null;
+        let filteredProducts = [];
+        let inventoryData = []; // Zwischenspeicher für Inventar
         
-        // Temp Data Holders
+        // Timer IDs
+        let stonkInterval = null;
+        let auctionInterval = null;
+        
+        // Temp Data
         let currentSellProductId = null;
-        let sellCooldownIntervalId = null;
-        let lastPurchasedCart = [];
+        let currentAuctionProductId = null;
+        let activeAuctionId = null;
 
-        // --- CORE FUNCTIONS ---
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            container.textContent = message;
-            container.className = 'toast show shadow-lg font-medium text-sm'; // Reset
+        // --- CORE UTILS ---
+        window.setLoading = (btnId, isLoading) => {
+            const btn = document.getElementById(btnId);
+            if(!btn) return;
+            const spinner = btn.querySelector('.spinner') || btn.querySelector('.animate-spin');
             
-            if(type === 'error') container.style.backgroundColor = '#ef4444';
-            else if(type === 'success') container.style.backgroundColor = '#10b981';
-            else container.style.backgroundColor = '#333';
+            if(isLoading) {
+                btn.disabled = true;
+                if(spinner) spinner.classList.remove('hidden');
+            } else {
+                btn.disabled = false;
+                if(spinner) spinner.classList.add('hidden');
+            }
+        };
 
-            setTimeout(() => { container.classList.remove('show'); }, 3000);
-        }
+        window.showToast = function(msg, type = 'info') {
+            const el = document.getElementById('toast-container');
+            el.textContent = msg;
+            el.className = 'toast show shadow-lg font-medium text-sm'; 
+            el.style.backgroundColor = type === 'error' ? '#ef4444' : (type === 'success' ? '#10b981' : '#333');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        };
 
-        // Generic Fetch Wrapper for consistent Error Handling
         async function apiCall(endpoint, options = {}) {
             options.credentials = 'include';
             try {
                 const res = await fetch(`${API_URL}${endpoint}`, options);
                 const isJson = res.headers.get('content-type')?.includes('application/json');
                 const data = isJson ? await res.json() : null;
-
-                if (!res.ok) {
-                    throw new Error(data?.error || data?.message || `Server Error ${res.status}`);
-                }
+                if (!res.ok) throw new Error(data?.error || data?.message || `Fehler ${res.status}`);
                 return data;
-            } catch (error) {
-                console.error(`${LOG_PREFIX} API Error [${endpoint}]:`, error);
-                throw error;
+            } catch (err) {
+                console.error(err);
+                throw err;
             }
         }
 
-        // --- PRODUCT LOADING ---
-
-        async function loadProducts(mode = 'initial') {
-            const loadingEl = document.getElementById('loading-status');
-            const listEl = document.getElementById('product-list');
-            
-            if (mode === 'initial') {
-                loadingEl.classList.remove('hidden');
-                listEl.classList.add('hidden');
-            }
-
-            try {
-                const data = await apiCall('/products');
-                products = Array.isArray(data.products) ? data.products.filter(p => p && p.id).sort((a,b) => a.id - b.id) : [];
-                applySearchFilter();
-                
-                if (mode === 'initial') {
-                    loadingEl.classList.add('hidden');
-                    listEl.classList.remove('hidden');
-                    document.getElementById('pagination-controls').classList.remove('hidden');
-                    isInitialLoad = false;
-                }
-            } catch (error) {
-                if (mode === 'initial') {
-                    loadingEl.innerHTML = `<div class="text-red-500 text-center"><p class="font-bold">Verbindung fehlgeschlagen</p><button onclick="loadProducts('initial')" class="mt-2 text-blue-500 underline">Erneut versuchen</button></div>`;
-                }
-            }
-        }
-
-        function renderProducts() {
-            const list = document.getElementById('product-list');
-            list.innerHTML = '';
-
-            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-            if (currentPage < 1) currentPage = 1;
-
-            const start = (currentPage - 1) * itemsPerPage;
-            const subset = filteredProducts.slice(start, start + itemsPerPage);
-
-            if (subset.length === 0) {
-                list.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400">Keine Produkte gefunden.</div>`;
-                return;
-            }
-
-            subset.forEach(p => {
-                const inCart = cart.find(c => c.id === p.id);
-                const qtyInCart = inCart ? inCart.quantity : 0;
-                const stock = p.isTokenCard ? 9999 : (p.stock || 0);
-                const isSoldOut = stock <= 0;
-                const canAdd = Math.max(0, stock - qtyInCart);
-
-                const card = document.createElement('div');
-                card.className = "product-card bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col h-full relative";
-                
-                let badge = '';
-                if(p.isTokenCard) badge = `<span class="absolute top-2 left-2 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full">TOKEN</span>`;
-                else if(isSoldOut) badge = `<span class="absolute top-2 left-2 bg-red-100 text-red-700 text-[10px] font-bold px-2 py-1 rounded-full">AUSVERKAUFT</span>`;
-                else if(stock < 5) badge = `<span class="absolute top-2 left-2 bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-full">KNAPP</span>`;
-
-                const imgUrl = p.image_url || `https://placehold.co/300x300/f3f4f6/a3a3a3?text=${encodeURIComponent(p.name)}`;
-
-                card.innerHTML = `
-                    <div class="relative h-48 bg-gray-100 cursor-pointer overflow-hidden group" onclick="showProductDetails(${p.id})">
-                        <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="${p.name}">
-                        ${badge}
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all"></div>
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <h3 class="font-bold text-gray-900 truncate" title="${p.name}">${p.name}</h3>
-                        <p class="text-xs text-gray-500 mb-2">ID: ${p.id}</p>
-                        <div class="flex justify-between items-center mt-auto mb-3">
-                            <span class="text-lg font-bold text-brand-600">${p.price}</span>
-                            <span class="text-xs ${canAdd > 0 ? 'text-green-600' : 'text-red-500'} font-medium">
-                                ${p.isTokenCard ? 'Digital' : (stock + ' Stk.')}
-                            </span>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="addToCart(${p.id}, 1)" ${canAdd <= 0 ? 'disabled' : ''} class="flex-1 bg-gray-900 text-white text-xs font-bold py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition">
-                                ${canAdd > 0 ? 'In den Korb' : 'Leer'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-
-            // Update Pagination UI
-            document.getElementById('page-info').textContent = `Seite ${currentPage} / ${totalPages}`;
-            document.getElementById('prev').disabled = currentPage === 1;
-            document.getElementById('next').disabled = currentPage >= totalPages;
-            document.getElementById('pagination-controls').classList.toggle('hidden', totalPages <= 1);
-        }
-
-        // --- SEARCH & FILTER ---
-        const searchInput = document.getElementById('search');
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            filteredProducts = products.filter(p => p.name.toLowerCase().includes(term) || String(p.id).includes(term));
-            currentPage = 1;
-            renderProducts();
-        });
-
-        function applySearchFilter() {
-             const term = searchInput.value.toLowerCase();
-             filteredProducts = products.filter(p => p.name.toLowerCase().includes(term) || String(p.id).includes(term));
-             renderProducts();
-        }
-
-        document.getElementById('prev').onclick = () => { if(currentPage > 1) { currentPage--; renderProducts(); }};
-        document.getElementById('next').onclick = () => { const max = Math.ceil(filteredProducts.length/itemsPerPage); if(currentPage < max) { currentPage++; renderProducts(); }};
-
-        // --- CART LOGIC ---
-        function updateCartCount() {
-            const count = cart.reduce((acc, item) => acc + item.quantity, 0);
-            const badge = document.getElementById('cart-count');
-            badge.textContent = count;
-            badge.classList.toggle('hidden', count === 0);
-            badge.classList.remove('animate-bounce');
-            void badge.offsetWidth; // trigger reflow
-            if(count > 0) badge.classList.add('animate-bounce');
-            
-            // Save Cookie
-            document.cookie = `cart=${encodeURIComponent(JSON.stringify(cart))}; path=/; max-age=604800; SameSite=Lax`;
-        }
-
-        function loadCart() {
-            const match = document.cookie.match(/(^|;) ?cart=([^;]*)(;|$)/);
-            if (match) {
-                try { cart = JSON.parse(decodeURIComponent(match[2])); } catch(e) { cart = []; }
-            }
-            updateCartCount();
-        }
-
-        function addToCart(id, qtyInput) {
-            const qty = parseInt(qtyInput) || 1;
-            const product = products.find(p => p.id === id);
-            if (!product) return;
-
-            const existing = cart.find(c => c.id === id);
-            const currentQty = existing ? existing.quantity : 0;
-            const maxStock = product.isTokenCard ? 9999 : (product.stock || 0);
-
-            if (currentQty + qty > maxStock) {
-                showToast(`Maximal ${maxStock} verfügbar!`, 'error');
-                return;
-            }
-
-            if (existing) {
-                existing.quantity += qty;
-            } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: parseFloat(product.price.replace('$','')),
-                    quantity: qty,
-                    isTokenCard: product.isTokenCard
-                });
-            }
-
-            updateCartCount();
-            showToast(`${qty}x ${product.name} hinzugefügt`, 'success');
-            renderProducts(); // Update UI buttons
-            
-            // Refresh modal if open
-            if(!document.getElementById('cart-modal').classList.contains('hidden')) viewCart();
-        }
-
-        function viewCart() {
-            const modal = document.getElementById('cart-modal');
-            const list = document.getElementById('cart-items');
-            list.innerHTML = '';
-            
-            let total = 0;
-
-            if (cart.length === 0) {
-                list.innerHTML = `<div class="text-center py-10 text-gray-400">Dein Warenkorb ist leer.</div>`;
-                document.getElementById('cart-checkout-button').disabled = true;
-            } else {
-                document.getElementById('cart-checkout-button').disabled = false;
-                cart.forEach((item, idx) => {
-                    const lineTotal = item.price * item.quantity;
-                    total += lineTotal;
-                    
-                    const div = document.createElement('div');
-                    div.className = "flex justify-between items-center bg-gray-50 p-3 rounded-lg";
-                    div.innerHTML = `
-                        <div class="flex-1">
-                            <p class="font-bold text-sm text-gray-800">${item.name} ${item.isTokenCard ? '<span class="text-xs text-purple-500">(Code)</span>' : ''}</p>
-                            <p class="text-xs text-gray-500">$${item.price.toFixed(2)} x ${item.quantity}</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">$${lineTotal.toFixed(2)}</span>
-                            <button onclick="removeFromCart(${idx})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                    list.appendChild(div);
-                });
-            }
-            
-            document.getElementById('cart-total').textContent = total.toFixed(2);
-            modal.classList.remove('hidden');
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartCount();
-            viewCart();
-            renderProducts();
-        }
-
-        function closeCart() { document.getElementById('cart-modal').classList.add('hidden'); }
-
-        // --- CHECKOUT ---
-        function checkout() {
-            if(!loggedInUser) {
-                closeCart();
-                openAuthModal();
-                showToast('Bitte erst einloggen', 'error');
-                return;
-            }
-            
-            closeCart();
-            const modal = document.getElementById('checkout-modal');
-            const list = document.getElementById('checkout-items');
-            list.innerHTML = '';
-            let total = 0;
-            
-            cart.forEach(item => {
-                total += item.price * item.quantity;
-                const div = document.createElement('div');
-                div.className = "flex justify-between border-b border-gray-200 last:border-0 pb-1 mb-1 last:pb-0 last:mb-0";
-                div.innerHTML = `<span>${item.quantity}x ${item.name}</span><span>$${(item.price*item.quantity).toFixed(2)}</span>`;
-                list.appendChild(div);
-            });
-            
-            document.getElementById('checkout-total').textContent = total.toFixed(2);
-            
-            // Reset Button State
-            const btn = document.getElementById('confirm-purchase-button');
-            btn.disabled = false;
-            btn.querySelector('.button-text').textContent = "Kaufen";
-            btn.querySelector('.spinner').classList.add('hidden');
-            
-            modal.classList.remove('hidden');
-        }
-
-        function closeCheckout() { document.getElementById('checkout-modal').classList.add('hidden'); }
-
-        async function confirmPurchase() {
-            const btn = document.getElementById('confirm-purchase-button');
-            const txt = btn.querySelector('.button-text');
-            const spin = btn.querySelector('.spinner');
-            
-            btn.disabled = true;
-            txt.textContent = "Verarbeite...";
-            spin.classList.remove('hidden');
-
-            try {
-                await apiCall('/purchase', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cart })
-                });
-
-                lastPurchasedCart = [...cart];
-                cart = [];
-                updateCartCount();
-                closeCheckout();
-                document.getElementById('thank-you-modal').classList.remove('hidden');
-                
-                // Refresh Data
-                loadProducts(); 
-                updateUserInfo(); 
-                
-                // Save Order History Locally (Backup)
-                const history = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-                history.unshift({ date: new Date().toISOString(), items: lastPurchasedCart, total: parseFloat(document.getElementById('checkout-total').textContent) });
-                localStorage.setItem('orderHistory', JSON.stringify(history.slice(0, 50)));
-
-            } catch (error) {
-                showToast(error.message, 'error');
-                btn.disabled = false;
-                txt.textContent = "Kaufen";
-                spin.classList.add('hidden');
-            }
-        }
-
-        // --- AUTH ---
-        async function checkLogin() {
+        // --- AUTH & USER ---
+        window.checkLogin = async function() {
             try {
                 const user = await apiCall('/auth/me');
-                updateUserInfo(user);
-            } catch (e) {
-                updateUserInfo(null);
-            }
-        }
+                window.updateUserInfo(user);
+            } catch { window.updateUserInfo(null); }
+        };
 
-        function updateUserInfo(user) {
+        window.updateUserInfo = function(user) {
             loggedInUser = user;
-            const infoDiv = document.getElementById('user-info');
-            const btnsDiv = document.getElementById('auth-buttons');
-            const actsDiv = document.getElementById('user-actions');
-            const adminBar = document.getElementById('admin-toolbar');
+            const info = document.getElementById('user-info');
+            const btns = document.getElementById('auth-buttons');
+            const acts = document.getElementById('user-actions');
+            const admin = document.getElementById('admin-toolbar');
+            
+            const balance = user && user.balance !== undefined ? user.balance.toFixed(2) : '0.00';
+            const tokens = user && user.tokens !== undefined ? user.tokens : '0';
+            const name = user && user.username ? user.username : 'Gast';
+
+            document.getElementById('customer-name').textContent = name;
+            document.getElementById('user-balance').textContent = balance;
+            document.getElementById('account-tokens').textContent = tokens;
+            document.getElementById('account-balance').textContent = balance;
+            document.getElementById('account-username').textContent = name;
 
             if (user) {
-                document.getElementById('customer-name').textContent = user.username;
-                document.getElementById('user-balance').textContent = (user.balance || 0).toFixed(2);
-                document.getElementById('account-tokens').textContent = user.tokens || 0;
-                
                 document.getElementById('user-balance-display').classList.remove('hidden');
-                infoDiv.classList.remove('hidden');
-                btnsDiv.classList.add('hidden');
-                actsDiv.classList.remove('hidden');
-                
-                if(user.isAdmin) adminBar.classList.remove('hidden');
-                else adminBar.classList.add('hidden');
-            } else {
-                infoDiv.classList.add('hidden');
-                btnsDiv.classList.remove('hidden');
-                actsDiv.classList.add('hidden');
-                adminBar.classList.add('hidden');
-            }
-        }
-
-        let authMode = 'login';
-        function openAuthModal(mode = 'login') {
-            authMode = mode;
-            document.getElementById('auth-modal').classList.remove('hidden');
-            document.getElementById('auth-modal-title').textContent = mode === 'login' ? 'Willkommen zurück' : 'Konto erstellen';
-            document.getElementById('auth-submit-button').querySelector('.button-text').textContent = mode === 'login' ? 'Login' : 'Registrieren';
-            document.getElementById('auth-switch-text').textContent = mode === 'login' ? 'Neu hier?' : 'Bereits registriert?';
-            document.getElementById('auth-switch-button').textContent = mode === 'login' ? 'Registrieren' : 'Login';
-            document.getElementById('auth-error-message').classList.add('hidden');
-        }
-
-        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
-        function switchAuthMode() { openAuthModal(authMode === 'login' ? 'register' : 'login'); }
-
-        async function handleAuthFormSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const username = document.getElementById('auth-username').value;
-            const password = document.getElementById('auth-password').value;
-            const rememberMe = document.getElementById('auth-remember-me').checked;
-            
-            const btn = document.getElementById('auth-submit-button');
-            const err = document.getElementById('auth-error-message');
-            
-            btn.disabled = true;
-            btn.querySelector('.spinner').classList.remove('hidden');
-            err.classList.add('hidden');
-
-            try {
-                const endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
-                const res = await apiCall(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, rememberMe })
-                });
-
-                showToast(res.message || 'Erfolgreich!', 'success');
-                closeAuthModal();
-                if(authMode === 'login') updateUserInfo(res.user);
-                else openAuthModal('login'); // Nach Registrierung zum Login
-
-            } catch (error) {
-                err.textContent = error.message;
-                err.classList.remove('hidden');
-            } finally {
-                btn.disabled = false;
-                btn.querySelector('.spinner').classList.add('hidden');
-            }
-        }
-
-        async function logout() {
-            try {
-                await apiCall('/auth/logout', { method: 'POST' });
-                window.location.reload();
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        // --- DETAILS ---
-        function showProductDetails(id) {
-            const p = products.find(x => x.id === id);
-            if (!p) return;
-            
-            document.getElementById('detail-name').textContent = p.name;
-            document.getElementById('detail-id').textContent = p.id;
-            document.getElementById('detail-price').textContent = p.price;
-            document.getElementById('detail-image').src = p.image_url;
-            
-            const inCart = cart.find(c => c.id === id);
-            const stock = p.isTokenCard ? 9999 : (p.stock || 0);
-            const canAdd = Math.max(0, stock - (inCart?.quantity || 0));
-
-            const stockEl = document.getElementById('detail-stock-available');
-            if(stock <= 0 && !p.isTokenCard) stockEl.innerHTML = `<span class="text-red-500 font-bold">Ausverkauft</span>`;
-            else stockEl.innerHTML = `<span class="text-green-600 font-bold">${p.isTokenCard ? 'Digital verfügbar' : stock + ' verfügbar'}</span>`;
-
-            document.getElementById('detail-stock-cart').textContent = inCart ? `${inCart.quantity} bereits im Korb` : '';
-            
-            const addBtn = document.getElementById('detail-add-to-cart');
-            const buyBtn = document.getElementById('detail-buy-now');
-            
-            addBtn.disabled = canAdd <= 0;
-            buyBtn.disabled = canAdd <= 0;
-            
-            addBtn.onclick = () => addToCart(id, document.getElementById('detail-qty').value);
-            buyBtn.onclick = () => {
-                addToCart(id, document.getElementById('detail-qty').value);
-                closeProductDetails();
-                viewCart();
-            };
-            
-            document.getElementById('product-detail-modal').classList.remove('hidden');
-        }
-        function closeProductDetails() { document.getElementById('product-detail-modal').classList.add('hidden'); }
-
-        // --- ACCOUNT SETTINGS ---
-        function openAccountModal() {
-            if(!loggedInUser) return;
-            document.getElementById('account-username').textContent = loggedInUser.username;
-            document.getElementById('account-balance').textContent = (loggedInUser.balance || 0).toFixed(2);
-            document.getElementById('account-infinity-money').checked = loggedInUser.infinityMoney;
-            
-            // Check Unlock
-            const check = document.getElementById('account-infinity-money');
-            const info = document.getElementById('infinity-money-unlock-info');
-            
-            if(loggedInUser.isAdmin || loggedInUser.unlockedInfinityMoney) {
-                check.disabled = false;
-                check.parentElement.classList.remove('opacity-50');
-                info.classList.add('hidden');
-            } else {
-                check.disabled = true;
-                check.parentElement.classList.add('opacity-50');
                 info.classList.remove('hidden');
+                btns.classList.add('hidden');
+                acts.classList.remove('hidden');
+                if(user.isAdmin) admin.classList.remove('hidden'); else admin.classList.add('hidden');
+                
+                const chk = document.getElementById('account-infinity-money');
+                const lck = document.getElementById('infinity-money-unlock-info');
+                chk.checked = user.infinityMoney;
+                if(user.isAdmin || user.unlockedInfinityMoney) { chk.disabled = false; lck.classList.add('hidden'); }
+                else { chk.disabled = true; lck.classList.remove('hidden'); }
+
+            } else {
+                info.classList.add('hidden');
+                btns.classList.remove('hidden');
+                acts.classList.add('hidden');
+                admin.classList.add('hidden');
             }
+        };
 
-            document.getElementById('account-modal').classList.remove('hidden');
-        }
-        function closeAccountModal() { document.getElementById('account-modal').classList.add('hidden'); }
-
-        async function updateAccountSettings() {
+        // --- ACCOUNT SETTINGS (FIXED) ---
+        window.updateAccountSettings = async () => {
             const infMoney = document.getElementById('account-infinity-money').checked;
             try {
                 const res = await apiCall('/account/settings', {
@@ -1127,117 +632,646 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ infinityMoney: infMoney })
                 });
-                if(res.user) updateUserInfo(res.user);
-                showToast("Einstellungen gespeichert", 'success');
-            } catch(e) { showToast(e.message, 'error'); }
-        }
+                window.showToast(res.message || "Gespeichert", 'success');
+                if(res.user) window.updateUserInfo(res.user);
+            } catch(e) {
+                window.showToast(e.message, 'error');
+            }
+        };
+
+        window.openAuthModal = (mode) => {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            document.getElementById('auth-modal-title').textContent = mode === 'login' ? 'Login' : 'Registrieren';
+            const btn = document.getElementById('auth-submit-button');
+            if(btn.querySelector('.btn-text')) btn.querySelector('.btn-text').textContent = mode === 'login' ? 'Login' : 'Registrieren';
+            window.currentAuthMode = mode;
+        };
+        window.closeAuthModal = () => document.getElementById('auth-modal').classList.add('hidden');
+        window.switchAuthMode = () => window.openAuthModal(window.currentAuthMode === 'login' ? 'register' : 'login');
+
+        window.handleAuthFormSubmit = async (e) => {
+            e.preventDefault();
+            window.setLoading('auth-submit-button', true);
+            const u = document.getElementById('auth-username').value;
+            const p = document.getElementById('auth-password').value;
+            const r = document.getElementById('auth-remember-me').checked;
+            const err = document.getElementById('auth-error-message');
+            err.classList.add('hidden');
+            
+            try {
+                const ep = window.currentAuthMode === 'login' ? '/auth/login' : '/auth/register';
+                await apiCall(ep, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: u, password: p, rememberMe: r})
+                });
+                window.showToast("Erfolgreich!", 'success');
+                window.closeAuthModal();
+                if(window.currentAuthMode==='login') window.checkLogin();
+                else window.openAuthModal('login');
+            } catch(e) {
+                err.textContent = e.message; err.classList.remove('hidden');
+            }
+            window.setLoading('auth-submit-button', false);
+        };
+
+        window.logout = async () => {
+            await apiCall('/auth/logout', {method:'POST'});
+            window.location.reload();
+        };
+
+        // --- SHOP & PRODUCTS ---
+        window.loadProducts = async (mode = 'initial') => {
+            if(mode === 'initial') {
+                document.getElementById('loading-status').classList.remove('hidden');
+                document.getElementById('product-list').classList.add('hidden');
+            }
+            try {
+                const data = await apiCall('/products');
+                products = data.products || [];
+                window.applySearch();
+                if(mode === 'initial') {
+                    document.getElementById('loading-status').classList.add('hidden');
+                    document.getElementById('product-list').classList.remove('hidden');
+                    document.getElementById('pagination-controls').classList.remove('hidden');
+                }
+            } catch(e) { window.showToast("Ladefehler Produkte", 'error'); }
+        };
+
+        window.applySearch = () => {
+            const term = document.getElementById('search').value.toLowerCase();
+            filteredProducts = products.filter(p => p.name.toLowerCase().includes(term));
+            window.renderProducts();
+        };
+
+        window.renderProducts = () => {
+            const list = document.getElementById('product-list');
+            list.innerHTML = '';
+            
+            const pages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+            if(currentPage > pages) currentPage = pages;
+            const start = (currentPage -1)*itemsPerPage;
+            const sub = filteredProducts.slice(start, start+itemsPerPage);
+
+            sub.forEach(p => {
+                const inCart = cart.find(c=>c.id===p.id)?.quantity || 0;
+                const stock = p.isTokenCard ? 9999 : (p.stock||0);
+                const canAdd = stock - inCart > 0;
+                
+                const div = document.createElement('div');
+                div.className = "product-card bg-white rounded-xl shadow-sm overflow-hidden flex flex-col relative transition-all";
+                div.innerHTML = `
+                    <div class="h-48 bg-gray-100 relative cursor-pointer" onclick="window.showProductDetails(${p.id})">
+                        <img src="${p.image_url || 'https://placehold.co/300'}" class="w-full h-full object-cover">
+                        ${p.isTokenCard ? '<span class="absolute top-2 right-2 bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">TOKEN</span>' : ''}
+                        ${stock<=0 && !p.isTokenCard ? '<span class="absolute top-2 right-2 bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded">AUSVERKAUFT</span>' : ''}
+                    </div>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h3 class="font-bold truncate">${p.name}</h3>
+                        <p class="text-xs text-gray-500 mb-2">ID: ${p.id}</p>
+                        <div class="mt-auto flex justify-between items-center mb-3">
+                            <span class="text-lg font-bold text-brand-600">${p.price}</span>
+                            <span class="text-xs ${canAdd ? 'text-green-600' : 'text-red-500'} font-bold">${p.isTokenCard ? 'Digital' : stock+' Stk.'}</span>
+                        </div>
+                        <button onclick="window.addToCart(${p.id}, 1)" ${!canAdd?'disabled':''} class="w-full bg-gray-900 text-white py-2 rounded font-bold text-xs hover:bg-black disabled:opacity-50">
+                            In den Korb
+                        </button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('page-info').textContent = `${currentPage}/${pages}`;
+            document.getElementById('prev').disabled = currentPage === 1;
+            document.getElementById('next').disabled = currentPage >= pages;
+        };
+
+        document.getElementById('search').addEventListener('input', window.applySearch);
+        document.getElementById('prev').onclick = () => { if(currentPage>1) { currentPage--; window.renderProducts(); }};
+        document.getElementById('next').onclick = () => { if(currentPage < Math.ceil(filteredProducts.length/itemsPerPage)) { currentPage++; window.renderProducts(); }};
+
+        // --- CART ---
+        window.loadCart = () => {
+            const c = document.cookie.match(/(^|;) ?cart=([^;]*)(;|$)/);
+            if(c) try { cart = JSON.parse(decodeURIComponent(c[2])); } catch(e){cart=[];}
+            window.updateCartCount();
+        };
+        window.updateCartCount = () => {
+            const cnt = cart.reduce((a,b)=>a+b.quantity,0);
+            const el = document.getElementById('cart-count');
+            el.textContent = cnt; el.classList.toggle('hidden', cnt===0);
+            document.cookie = `cart=${encodeURIComponent(JSON.stringify(cart))}; path=/; max-age=604800`;
+        };
+        window.addToCart = (id, q) => {
+            const qty = parseInt(q)||1;
+            const p = products.find(x=>x.id===id);
+            if(!p) return;
+            const ex = cart.find(x=>x.id===id);
+            const cur = ex ? ex.quantity : 0;
+            const max = p.isTokenCard ? 9999 : p.stock;
+            if(cur+qty > max) { window.showToast('Bestand überschritten', 'error'); return; }
+            if(ex) ex.quantity += qty;
+            else cart.push({id:p.id, name:p.name, price:parseFloat(p.price.replace('$','')), quantity:qty, isTokenCard:p.isTokenCard});
+            window.updateCartCount();
+            window.renderProducts();
+            window.showToast(`${qty}x ${p.name} im Korb`, 'success');
+        };
+        window.viewCart = () => {
+            const list = document.getElementById('cart-items');
+            list.innerHTML = '';
+            let total = 0;
+            cart.forEach((item,i) => {
+                total += item.price * item.quantity;
+                const d = document.createElement('div');
+                d.className = "flex justify-between items-center bg-white p-3 rounded shadow-sm";
+                d.innerHTML = `<div><div class="font-bold text-sm">${item.name}</div><div class="text-xs text-gray-500">$${item.price.toFixed(2)} x ${item.quantity}</div></div>
+                <div class="flex items-center gap-3"><span class="font-bold">$${(item.price*item.quantity).toFixed(2)}</span><button onclick="window.removeFromCart(${i})" class="text-red-500"><i class="fas fa-trash"></i></button></div>`;
+                list.appendChild(d);
+            });
+            document.getElementById('cart-total').textContent = total.toFixed(2);
+            document.getElementById('cart-checkout-button').disabled = cart.length === 0;
+            document.getElementById('cart-modal').classList.remove('hidden');
+        };
+        window.removeFromCart = (i) => { cart.splice(i,1); window.updateCartCount(); window.viewCart(); window.renderProducts(); };
+        window.closeCart = () => document.getElementById('cart-modal').classList.add('hidden');
+        
+        window.checkout = () => {
+            if(!loggedInUser) { window.closeCart(); window.openAuthModal('login'); return; }
+            window.closeCart();
+            const list = document.getElementById('checkout-items');
+            list.innerHTML = '';
+            let t = 0;
+            cart.forEach(i => {
+                t += i.price*i.quantity;
+                list.innerHTML += `<div class="flex justify-between mb-1"><span>${i.quantity}x ${i.name}</span><span>$${(i.price*i.quantity).toFixed(2)}</span></div>`;
+            });
+            document.getElementById('checkout-total').textContent = t.toFixed(2);
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        };
+        window.closeCheckout = () => document.getElementById('checkout-modal').classList.add('hidden');
+        
+        window.confirmPurchase = async () => {
+            window.setLoading('confirm-purchase-button', true);
+            try {
+                await apiCall('/purchase', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({cart})});
+                // Local Storage History
+                const h = JSON.parse(localStorage.getItem('orderHistory')||'[]');
+                h.unshift({date:new Date().toISOString(), items:[...cart], total:parseFloat(document.getElementById('checkout-total').textContent)});
+                localStorage.setItem('orderHistory', JSON.stringify(h));
+                
+                cart = []; window.updateCartCount(); window.closeCheckout();
+                document.getElementById('thank-you-modal').classList.remove('hidden');
+                window.loadProducts(); window.checkLogin();
+            } catch(e) { window.showToast(e.message, 'error'); }
+            window.setLoading('confirm-purchase-button', false);
+        };
+
+        // --- INVENTORY ---
+        window.showMyInventory = async () => {
+            if(!loggedInUser) { window.openAuthModal('login'); return; }
+            const mod = document.getElementById('inventory-modal');
+            const con = document.getElementById('inventory-content');
+            con.innerHTML = '<div class="text-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div></div>';
+            mod.classList.remove('hidden');
+            
+            try {
+                const res = await apiCall('/inventory');
+                const inv = res.inventory || [];
+                window.inventoryData = inv; 
+                con.innerHTML = '';
+                if(inv.length === 0) con.innerHTML = '<p class="text-center text-gray-500">Leer.</p>';
+                inv.forEach((i, idx) => {
+                    const d = document.createElement('div');
+                    d.className = "flex justify-between items-center bg-white p-3 rounded mb-2 shadow-sm";
+                    d.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <img src="${i.productDetails.image_url}" class="w-12 h-12 object-cover rounded">
+                            <div><div class="font-bold text-sm">${i.productDetails.name}</div><div class="text-xs text-gray-500">Menge: ${i.quantityOwned}</div></div>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <button onclick="window.openSellModal(${idx})" class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded hover:bg-green-200">Verkaufen</button>
+                            <button onclick="window.openCreateAuctionModal(${idx})" class="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded hover:bg-yellow-200">Versteigern</button>
+                        </div>
+                    `;
+                    con.appendChild(d);
+                });
+            } catch(e) { con.innerHTML = `<p class="text-red-500 text-center">${e.message}</p>`; }
+        };
+        window.closeMyInventory = () => document.getElementById('inventory-modal').classList.add('hidden');
+
+        // --- SELL ---
+        window.openSellModal = (index) => {
+            const item = window.inventoryData[index];
+            if(!item) return;
+            
+            currentSellProductId = item.productId;
+            document.getElementById('sell-product-name').textContent = item.productDetails.name;
+            document.getElementById('sell-product-user-stock').textContent = item.quantityOwned;
+            
+            // ROBUSTER PREIS CHECK
+            let priceVal = item.productDetails.price;
+            if(!priceVal || priceVal === 0 || priceVal === "0" || priceVal === 'undefined') {
+                const globalProd = products.find(p => p.id === item.productId);
+                if(globalProd) priceVal = globalProd.price;
+            }
+            if(!priceVal) priceVal = "$0.00";
+            
+            document.getElementById('sell-product-original-price').textContent = priceVal;
+            document.getElementById('sell-quantity').value = 1;
+            document.getElementById('sell-quantity').max = item.quantityOwned;
+            
+            let numericPrice = 0;
+            if(typeof priceVal === 'number') numericPrice = priceVal;
+            else numericPrice = parseFloat(String(priceVal).replace(/[^0-9.]/g, '')) || 0;
+            
+            document.getElementById('sell-price').value = numericPrice.toFixed(2);
+            document.getElementById('sell-product-modal').classList.remove('hidden');
+            
+            const inp = document.getElementById('sell-price');
+            inp.oninput = () => {
+                const p = parseFloat(inp.value);
+                let chance = 100;
+                if(p > numericPrice) chance = Math.max(5, 100 - ((p-numericPrice)/numericPrice)*200);
+                document.getElementById('sell-probability').textContent = Math.round(chance)+'%';
+            };
+        };
+        window.closeSellProductModal = () => document.getElementById('sell-product-modal').classList.add('hidden');
+        window.handleSellProduct = async () => {
+            const q = parseInt(document.getElementById('sell-quantity').value);
+            const p = parseFloat(document.getElementById('sell-price').value);
+            window.setLoading('confirm-sell-button', true);
+            try {
+                await apiCall('/products/sell', {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({productId: currentSellProductId, quantity: q, sellPrice: p})
+                });
+                window.showToast("Verkauft!", 'success');
+                window.closeSellProductModal();
+                window.showMyInventory();
+                window.checkLogin();
+            } catch(e) { document.getElementById('sell-error-message').textContent = e.message; document.getElementById('sell-error-message').classList.remove('hidden'); }
+            window.setLoading('confirm-sell-button', false);
+        };
+
+        // --- AUCTIONS ---
+        window.openAuctionHouse = () => {
+            if(!loggedInUser) { window.openAuthModal('login'); return; }
+            document.getElementById('auction-house-modal').classList.remove('hidden');
+            window.renderAuctions();
+            if(auctionInterval) clearInterval(auctionInterval);
+            auctionInterval = setInterval(window.renderAuctions, 15000);
+        };
+        window.closeAuctionHouse = () => {
+            document.getElementById('auction-house-modal').classList.add('hidden');
+            clearInterval(auctionInterval);
+        };
+        window.renderAuctions = async () => {
+            const con = document.getElementById('auction-house-content');
+            try {
+                const res = await apiCall('/auctions');
+                const aucs = res.auctions || [];
+                con.innerHTML = '';
+                if(aucs.length===0) { con.innerHTML = '<p class="col-span-full text-center text-gray-500">Keine Auktionen.</p>'; return; }
+                
+                aucs.forEach(a => {
+                    const end = new Date(a.endTime);
+                    const now = new Date();
+                    const diff = Math.max(0, Math.floor((end-now)/1000));
+                    const hrs = Math.floor(diff/3600);
+                    const mins = Math.floor((diff%3600)/60);
+                    
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-3 rounded shadow hover:shadow-md cursor-pointer border transition";
+                    div.onclick = () => window.openAuctionDetail(a._id);
+                    div.innerHTML = `
+                        <img src="${a.productImageUrl}" class="w-full h-32 object-cover rounded mb-2">
+                        <div class="font-bold text-sm truncate">${a.productName}</div>
+                        <div class="text-xs text-gray-500">Verkäufer: ${a.sellerUsername}</div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="font-bold text-blue-600">$${a.currentBid.toFixed(2)}</span>
+                            <span class="text-xs bg-gray-100 px-2 py-1 rounded font-mono">${hrs}h ${mins}m</span>
+                        </div>
+                    `;
+                    con.appendChild(div);
+                });
+            } catch(e) { con.innerHTML = '<p class="text-red-500">Fehler beim Laden.</p>'; }
+        };
+
+        window.openAuctionDetail = async (id) => {
+            activeAuctionId = id;
+            const mod = document.getElementById('auction-detail-modal');
+            mod.classList.remove('hidden');
+            try {
+                const res = await apiCall(`/auctions/${id}`);
+                const a = res.auction;
+                document.getElementById('auction-detail-name').textContent = a.productName;
+                document.getElementById('auction-detail-image').src = a.productImageUrl;
+                document.getElementById('auction-detail-bid').textContent = a.currentBid.toFixed(2);
+                document.getElementById('auction-detail-seller').textContent = a.sellerUsername;
+                document.getElementById('auction-detail-highest-bidder').textContent = a.highestBidderUsername || '-';
+                
+                const hist = document.getElementById('auction-bid-history');
+                hist.innerHTML = '';
+                (a.bids || []).forEach(b => {
+                    hist.innerHTML += `<div class="flex justify-between border-b py-1"><span>$${b.amount.toFixed(2)} (${b.bidderUsername})</span><span class="text-gray-400">${new Date(b.timestamp).toLocaleTimeString()}</span></div>`;
+                });
+                document.getElementById('auction-detail-time').textContent = new Date(a.endTime).toLocaleString();
+            } catch(e) { window.showToast('Fehler Details', 'error'); mod.classList.add('hidden'); }
+        };
+
+        window.handleBid = async () => {
+            const amt = parseFloat(document.getElementById('bid-amount').value);
+            window.setLoading('confirm-bid-button', true);
+            const err = document.getElementById('auction-detail-error');
+            err.textContent = "";
+            try {
+                await apiCall(`/auctions/${activeAuctionId}/bid`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({bidAmount: amt})
+                });
+                window.showToast("Gebot platziert!", 'success');
+                window.openAuctionDetail(activeAuctionId); 
+                window.checkLogin();
+            } catch(e) { err.textContent = e.message; }
+            window.setLoading('confirm-bid-button', false);
+        };
+
+        window.openCreateAuctionModal = (index) => {
+             const item = window.inventoryData[index];
+             if(!item) return;
+             
+            currentAuctionProductId = item.productId;
+            document.getElementById('create-auction-product-name').textContent = item.productDetails.name;
+            document.getElementById('create-auction-product-image').src = item.productDetails.image_url;
+            document.getElementById('create-auction-user-stock').textContent = item.quantityOwned;
+            document.getElementById('create-auction-quantity').value = 1;
+            document.getElementById('create-auction-quantity').max = item.quantityOwned;
+            document.getElementById('create-auction-modal').classList.remove('hidden');
+        };
+        window.closeCreateAuctionModal = () => document.getElementById('create-auction-modal').classList.add('hidden');
+        window.handleCreateAuction = async () => {
+            const q = parseInt(document.getElementById('create-auction-quantity').value);
+            const start = parseFloat(document.getElementById('create-auction-start-bid').value);
+            const dur = parseInt(document.getElementById('create-auction-duration').value);
+            window.setLoading('confirm-create-auction-button', true);
+            try {
+                await apiCall('/auctions', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({productId: currentAuctionProductId, quantity:q, startingBid:start, durationInHours:dur})
+                });
+                window.showToast("Auktion gestartet!", 'success');
+                window.closeCreateAuctionModal();
+                window.closeMyInventory(); 
+            } catch(e) { document.getElementById('create-auction-error-message').textContent=e.message; document.getElementById('create-auction-error-message').classList.remove('hidden'); }
+            window.setLoading('confirm-create-auction-button', false);
+        };
 
         // --- STONKS ---
-        function openStonkMarket() {
+        window.openStonkMarket = () => {
+            if(!loggedInUser) { window.openAuthModal('login'); return; }
             document.getElementById('stonks-market-modal').classList.remove('hidden');
-            loadStonks();
-            if(stonkIntervalId) clearInterval(stonkIntervalId);
-            stonkIntervalId = setInterval(loadStonks, 10000); // Live Updates
-        }
-        function closeStonkMarket() { 
-            document.getElementById('stonks-market-modal').classList.add('hidden'); 
-            clearInterval(stonkIntervalId); 
-        }
-
-        async function loadStonks() {
-            const content = document.getElementById('stonks-market-content');
+            window.renderStonkMarket();
+            if(stonkInterval) clearInterval(stonkInterval);
+            stonkInterval = setInterval(window.renderStonkMarket, 5000); 
+        };
+        window.closeStonkMarket = () => {
+            document.getElementById('stonks-market-modal').classList.add('hidden');
+            clearInterval(stonkInterval);
+        };
+        window.renderStonkMarket = async () => {
+            const con = document.getElementById('stonks-market-content');
+            if(con.children.length === 0) con.innerHTML = '<div class="col-span-full text-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div></div>';
+            
             try {
-                // Parallel fetch
-                const [prodRes, portRes] = await Promise.all([
+                const [pRes, portRes] = await Promise.all([
                     apiCall('/products'),
                     apiCall('/stonks/portfolio')
                 ]);
                 
-                const stocks = prodRes.products.filter(p => !p.isTokenCard && p.currentPrice !== undefined);
-                const portfolio = portRes.portfolio;
+                const stocks = pRes.products.filter(p => !p.isTokenCard && p.currentPrice !== undefined);
+                const portfolio = portRes.portfolio || [];
+                const term = document.getElementById('stonk-search').value.toLowerCase();
+                const filtered = stocks.filter(s => s.name.toLowerCase().includes(term));
 
-                content.innerHTML = '';
-                stocks.forEach(s => {
+                con.innerHTML = '';
+                filtered.forEach(s => {
                     const owned = portfolio.find(x => x.productId === s.id);
-                    const card = document.createElement('div');
-                    card.className = "bg-white p-3 rounded-xl shadow border border-gray-100 cursor-pointer hover:border-brand-500 transition relative";
-                    if(owned) card.classList.add('ring-2', 'ring-blue-100');
-                    
-                    const change = (Math.random() * 2 - 1).toFixed(2); // Mock change visual if API doesn't provide
-                    const color = change >= 0 ? 'text-green-500' : 'text-red-500';
-
-                    card.onclick = () => openStonkDetail(s.id);
-                    card.innerHTML = `
+                    const color = Math.random() > 0.5 ? 'text-green-500' : 'text-red-500'; 
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-3 rounded-lg shadow border cursor-pointer hover:border-green-400 transition relative";
+                    if(owned) div.classList.add('ring-2', 'ring-blue-100');
+                    div.onclick = function() { window.openStonkDetail(s.id); };
+                    div.innerHTML = `
                         <div class="flex justify-between items-start mb-2">
-                            <img src="${s.image_url}" class="w-10 h-10 rounded-lg object-cover">
-                            ${owned ? '<span class="text-[10px] bg-blue-100 text-blue-600 px-1 rounded font-bold">BESITZ</span>' : ''}
+                            <img src="${s.image_url}" class="w-10 h-10 rounded object-cover">
+                            ${owned ? '<span class="text-[10px] bg-blue-100 text-blue-600 font-bold px-1 rounded">OWNED</span>' : ''}
                         </div>
                         <h4 class="font-bold text-sm truncate">${s.name}</h4>
-                        <div class="flex justify-between items-end mt-2">
-                            <span class="text-lg font-bold">$${s.currentPrice.toFixed(2)}</span>
-                            <span class="text-xs ${color}">${change}%</span>
+                        <div class="mt-2 flex justify-between items-end">
+                            <div class="text-xl font-bold text-gray-800">$${s.currentPrice.toFixed(2)}</div>
+                            <div class="text-xs ${color} font-mono">24h %</div> 
                         </div>
                     `;
-                    content.appendChild(card);
+                    con.appendChild(div);
                 });
-            } catch(e) { console.error(e); }
-        }
+            } catch(e) { con.innerHTML = `<p class="text-red-500">Fehler: ${e.message}</p>`; }
+        };
 
-        // --- INITIALIZATION ---
-        window.onload = async () => {
-            loadCart();
-            await checkLogin();
-            await loadProducts();
+        window.openStonkDetail = async (pid) => {
+            const mod = document.getElementById('stonk-detail-modal');
+            mod.classList.remove('hidden');
+            document.getElementById('stonk-detail-name').textContent = "Lade...";
+            
+            try {
+                const [pRes, portRes] = await Promise.all([apiCall('/products'), apiCall('/stonks/portfolio')]);
+                const s = pRes.products.find(x => x.id === pid);
+                const port = portRes.portfolio.find(x => x.productId === pid);
+                
+                document.getElementById('stonk-detail-name').textContent = s.name;
+                document.getElementById('stonk-detail-image').src = s.image_url;
+                document.getElementById('stonk-detail-price').textContent = s.currentPrice.toFixed(2);
+                document.getElementById('stonk-portfolio-quantity').textContent = port ? port.quantityShares : 0;
+                document.getElementById('stonk-portfolio-avg-price').textContent = port ? `$${port.averageBuyPrice.toFixed(2)}` : '$0.00';
+                
+                const inp = document.getElementById('stonk-trade-quantity');
+                inp.value = '';
+                const est = document.getElementById('stonk-trade-estimated-value');
+                est.textContent = "Est: $0.00";
+                inp.oninput = () => { est.textContent = `Est: $${((parseInt(inp.value)||0) * s.currentPrice).toFixed(2)}`; };
 
-            // Polling for updates (Lightweight)
-            setInterval(async () => {
-                if(document.hidden) return; // Save resources
-                try {
-                    const res = await fetch(`${API_URL}/status/versions`); // Assuming this exists from your prompt context
-                    if(res.ok) {
-                        // Complex logic omitted for brevity, just refreshing products occasionally
-                        // In a real app, compare versions.
-                    }
-                } catch(e) {}
-            }, 5000);
+                // Rebind buttons
+                const bBuy = document.getElementById('stonk-buy-button');
+                const bSell = document.getElementById('stonk-sell-button');
+                
+                // Remove listeners hack
+                const nBuy = bBuy.cloneNode(true);
+                const nSell = bSell.cloneNode(true);
+                bBuy.parentNode.replaceChild(nBuy, bBuy);
+                bSell.parentNode.replaceChild(nSell, bSell);
+
+                nBuy.onclick = () => window.handleStonkTrade(pid, 'buy');
+                nSell.onclick = () => window.handleStonkTrade(pid, 'sell');
+
+            } catch(e) { window.showToast("Fehler beim Laden", 'error'); mod.classList.add('hidden'); }
+        };
+
+        window.handleStonkTrade = async (pid, type) => {
+            const q = parseInt(document.getElementById('stonk-trade-quantity').value);
+            if(!q || q<=0) return;
+            const btnId = type === 'buy' ? 'stonk-buy-button' : 'stonk-sell-button';
+            window.setLoading(btnId, true);
+            const err = document.getElementById('stonk-trade-error');
+            err.textContent = "";
+            try {
+                await apiCall(`/stonks/${type}`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({productId: pid, quantity: q})
+                });
+                window.showToast("Trade erfolgreich!", 'success');
+                window.openStonkDetail(pid); 
+                window.renderStonkMarket(); 
+                window.checkLogin(); 
+            } catch(e) { err.textContent = e.message; }
+            window.setLoading(btnId, false);
+        };
+
+        // --- TOKENS & PORTFOLIO ---
+        window.openMyPortfolio = () => { document.getElementById('my-portfolio-modal').classList.remove('hidden'); window.renderPortfolio(); };
+        window.closeMyPortfolio = () => document.getElementById('my-portfolio-modal').classList.add('hidden');
+        window.renderPortfolio = async () => {
+            const body = document.getElementById('my-portfolio-content');
+            body.innerHTML = '<tr><td colspan="7" class="text-center p-4">Lade...</td></tr>';
+            try {
+                const res = await apiCall('/stonks/portfolio');
+                const port = res.portfolio || [];
+                body.innerHTML = '';
+                let total = 0;
+                port.forEach(p => {
+                    const val = p.quantityShares * p.currentPrice;
+                    const cost = p.quantityShares * p.averageBuyPrice;
+                    const prof = val - cost;
+                    total += val;
+                    const row = document.createElement('tr');
+                    row.className = "border-b";
+                    row.innerHTML = `
+                        <td class="p-3 font-bold">${p.name}</td>
+                        <td class="p-3 text-right">${p.quantityShares}</td>
+                        <td class="p-3 text-right">$${p.averageBuyPrice.toFixed(2)}</td>
+                        <td class="p-3 text-right">$${p.currentPrice.toFixed(2)}</td>
+                        <td class="p-3 text-right font-bold">$${val.toFixed(2)}</td>
+                        <td class="p-3 text-right ${prof>=0?'text-green-600':'text-red-600'}">${prof.toFixed(2)}</td>
+                        <td class="p-3 text-center"><button onclick="window.openStonkDetail(${p.productId})" class="text-blue-500 text-xs underline">Handeln</button></td>
+                    `;
+                    body.appendChild(row);
+                });
+                document.getElementById('portfolio-total-value').textContent = `$${total.toFixed(2)}`;
+            } catch(e) { body.innerHTML = '<tr><td colspan="7" class="text-red-500 p-4">Fehler.</td></tr>'; }
+        };
+
+        window.showMyTokenCodes = async () => {
+            document.getElementById('my-token-codes-modal').classList.remove('hidden');
+            const con = document.getElementById('my-token-codes-content');
+            con.innerHTML = 'Lade...';
+            try {
+                const res = await apiCall('/tokens/my-codes');
+                const codes = res.codes || [];
+                con.innerHTML = '';
+                codes.forEach(c => {
+                    con.innerHTML += `<div class="bg-gray-50 p-2 border rounded flex justify-between items-center mb-1">
+                        <div><div class="font-mono font-bold text-green-700">${c.code}</div><div class="text-xs text-gray-500">${c.tokenAmount} Tokens</div></div>
+                        <button onclick="navigator.clipboard.writeText('${c.code}')" class="text-xs bg-white border px-2 py-1 rounded">Copy</button>
+                    </div>`;
+                });
+            } catch(e) { con.innerHTML = 'Fehler.'; }
+        };
+        window.closeMyTokenCodesModal = () => document.getElementById('my-token-codes-modal').classList.add('hidden');
+        window.mergeTokenCodes = async () => { /* ...existing logic but with window. ... */
+             // Kurzfassung der Logik wie vorher
+             const v = document.getElementById('merge-token-value').value;
+             const c = document.getElementById('merge-token-count').value;
+             try { await apiCall('/tokens/merge', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tokenValue:parseInt(v), count:parseInt(c)})}); window.showMyTokenCodes(); }
+             catch(e) { window.showToast(e.message, 'error'); }
+        };
+
+        window.redeemTokenCode = async () => {
+            const c = document.getElementById('redeem-token-code').value;
+            try {
+                await apiCall('/tokens/redeem', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:c}) });
+                window.showToast("Eingelöst!", 'success');
+                window.checkLogin();
+                document.getElementById('redeem-token-code').value = '';
+            } catch(e) { window.showToast(e.message, 'error'); }
+        };
+
+        window.convertDollarsToTokens = async () => {
+            const amt = parseFloat(document.getElementById('dollars-to-tokens-amount').value);
+            try {
+                await apiCall('/tokens/convert-dollars-to-tokens', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({dollarAmount:amt})});
+                window.checkLogin(); window.showToast("Umgewandelt!", 'success');
+            } catch(e) { document.getElementById('dollars-to-tokens-message').textContent=e.message; }
         };
         
-        // --- ADMIN HELPERS ---
-        async function resetProductStock(zero) {
-            if(!confirm("Bist du sicher?")) return;
-            const endpoint = zero ? '/admin/zero-stock' : '/products/reset';
+        window.convertTokensToDollars = async () => {
+            const amt = parseInt(document.getElementById('tokens-to-dollars-amount').value);
             try {
-                await apiCall(endpoint, { method: 'PATCH' });
-                showToast('Erledigt!', 'success');
-                loadProducts();
-            } catch(e) { showToast(e.message, 'error'); }
-        }
-        
-        function openAddProductModal() { document.getElementById('add-product-modal').classList.remove('hidden'); }
-        function closeAddProductModal() { document.getElementById('add-product-modal').classList.add('hidden'); }
-        async function submitProduct(e) {
-            const btn = e.target.closest('button');
-            btn.disabled = true;
-            try {
-                await apiCall('/products', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        name: document.getElementById('product-name').value,
-                        image_url: document.getElementById('product-image').value,
-                        price: document.getElementById('product-price').value,
-                        stock: parseInt(document.getElementById('product-stock').value)
-                    })
-                });
-                closeAddProductModal();
-                loadProducts();
-                showToast('Produkt erstellt', 'success');
-            } catch(err) { showToast(err.message, 'error'); }
-            btn.disabled = false;
-        }
+                await apiCall('/tokens/convert-tokens-to-dollars', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tokenAmount:amt})});
+                window.checkLogin(); window.showToast("Umgewandelt!", 'success');
+            } catch(e) { document.getElementById('tokens-to-dollars-message').textContent=e.message; }
+        };
 
-        // --- PDF INVOICE ---
-        function generateInvoice() {
+        window.showOrderHistory = async () => {
+            const mod = document.getElementById('order-history-modal');
+            const con = document.getElementById('order-history-content');
+            mod.classList.remove('hidden');
+            const h = JSON.parse(localStorage.getItem('orderHistory')||'[]');
+            con.innerHTML = '';
+            if(h.length===0) con.innerHTML = "Keine lokale Historie.";
+            h.forEach(o => {
+                let items = "";
+                o.items.forEach(i => items += `<div>${i.quantity}x ${i.name}</div>`);
+                con.innerHTML += `<div class="bg-gray-50 p-3 rounded shadow-sm border mb-2">
+                    <div class="flex justify-between font-bold text-sm"><span>${new Date(o.date).toLocaleDateString()}</span><span>$${o.total.toFixed(2)}</span></div>
+                    <div class="text-xs text-gray-500 mt-1">${items}</div>
+                </div>`;
+            });
+        };
+        window.closeOrderHistory = () => document.getElementById('order-history-modal').classList.add('hidden');
+        window.clearOrderHistory = () => { localStorage.removeItem('orderHistory'); window.showOrderHistory(); };
+
+        // --- ADMIN & HELPERS ---
+        window.openGenerateTokenCodesModal = () => document.getElementById('generate-token-codes-modal').classList.remove('hidden');
+        window.closeGenerateTokenCodesModal = () => document.getElementById('generate-token-codes-modal').classList.add('hidden');
+        window.handleGenerateTokenCodes = async () => {
+            const amt = parseInt(document.getElementById('generate-token-amount').value);
+            const cnt = parseInt(document.getElementById('generate-token-count').value);
+            const dis = document.getElementById('generated-codes-display');
+            dis.innerHTML = "Generiere...";
+            try {
+                const res = await apiCall('/admin/generate-token-code', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({tokenAmount:amt, count:cnt})});
+                dis.innerHTML = '';
+                (res.codes||[]).forEach(c => dis.innerHTML += `<div>${c.code}</div>`);
+            } catch(e) { dis.innerHTML = e.message; }
+        };
+
+        window.openAddProductModal = () => document.getElementById('add-product-modal').classList.remove('hidden');
+        window.closeAddProductModal = () => document.getElementById('add-product-modal').classList.add('hidden');
+        window.submitProduct = async () => {
+            // ... (Simple implementation)
+             const n = document.getElementById('product-name').value;
+            const i = document.getElementById('product-image').value;
+            const p = document.getElementById('product-price').value;
+            const s = parseInt(document.getElementById('product-stock').value);
+            try {
+                await apiCall('/products', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:n, image_url:i, price:p, stock:s})});
+                window.showToast("Erstellt!", 'success'); window.closeAddProductModal(); window.loadProducts();
+            } catch(e) { window.showToast(e.message, 'error'); }
+        };
+        window.resetProductStock = async (z) => {
+            if(!confirm("Sicher?")) return;
+            try{ await apiCall(z?'/admin/zero-stock':'/products/reset', {method:'PATCH'}); window.showToast("Reset OK", 'success'); window.loadProducts(); }
+            catch(e){ window.showToast(e.message, 'error'); }
+        };
+        
+        // --- REAL PDF INVOICE ---
+        window.generateInvoice = () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
@@ -1247,24 +1281,46 @@
             doc.text(`Datum: ${new Date().toLocaleDateString()}`, 14, 30);
             doc.text(`Kunde: ${loggedInUser ? loggedInUser.username : 'Gast'}`, 14, 35);
 
-            const tableRows = lastPurchasedCart.map(item => [
-                item.name,
-                item.quantity,
-                `$${item.price.toFixed(2)}`,
-                `$${(item.price * item.quantity).toFixed(2)}`
-            ]);
+            // Holen der letzten Bestellung aus localStorage, da `lastPurchasedCart` beim Reload verloren geht
+            const history = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+            const lastOrder = history[0]; 
+            const items = lastOrder ? lastOrder.items : [];
 
-            doc.autoTable({
-                head: [['Produkt', 'Menge', 'Einzelpreis', 'Gesamt']],
-                body: tableRows,
-                startY: 45,
-            });
+            if(items.length > 0) {
+                 const tableRows = items.map(item => [
+                    item.name,
+                    item.quantity,
+                    `$${item.price.toFixed(2)}`,
+                    `$${(item.price * item.quantity).toFixed(2)}`
+                ]);
 
-            const total = lastPurchasedCart.reduce((acc, i) => acc + (i.price*i.quantity), 0);
-            doc.text(`Summe: $${total.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 10);
-            
+                doc.autoTable({
+                    head: [['Produkt', 'Menge', 'Einzelpreis', 'Gesamt']],
+                    body: tableRows,
+                    startY: 45,
+                });
+                
+                const total = items.reduce((acc, i) => acc + (i.price*i.quantity), 0);
+                doc.text(`Summe: $${total.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 10);
+            } else {
+                doc.text("Keine Artikeldaten gefunden.", 14, 50);
+            }
+
             doc.save(`Rechnung_${Date.now()}.pdf`);
-        }
+        };
+
+        // --- CLOSING HELPERS (Overlays) ---
+        window.closeProductDetails = () => document.getElementById('product-detail-modal').classList.add('hidden');
+        window.closeAccountModal = () => document.getElementById('account-modal').classList.add('hidden');
+        window.openAccountModal = () => { if(!loggedInUser) { window.openAuthModal('login'); return; } document.getElementById('account-modal').classList.remove('hidden'); };
+
+        // --- INIT ---
+        window.onload = async () => {
+            window.loadCart();
+            await window.checkLogin();
+            await window.loadProducts('initial');
+        };
+
     </script>
 </body>
 </html>
