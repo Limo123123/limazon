@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let currentUser = null;
-    const API_BASE_URL = 'https://raspberrypi.tail75d81e.ts.net:8443';
+    const API_BASE_URL = 'https://api.limazon.v6.rocks';
 
     // --- DATENABRUF UND ANZEIGE ---
     async function fetchUserData() {
