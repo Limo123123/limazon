@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Limo Crime</title>
+    <title>Limo Crime & Heist</title>
     <style>
         body {
             background-color: #0d0d0d;
             color: #e0e0e0;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', 'Courier New', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,6 +24,9 @@
             border: 1px solid #333;
             box-shadow: 0 0 40px rgba(0,0,0,0.8);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
         }
 
         /* TABS */
@@ -40,97 +43,91 @@
             font-weight: bold;
             color: #666;
             transition: 0.3s;
+            border-bottom: 2px solid transparent;
         }
         .tab.active {
             background: #1a1a1a;
-            color: #e74c3c; /* Crime Red */
+            color: #e74c3c;
             border-bottom: 2px solid #e74c3c;
         }
+        /* Spezielle Farbe für Heist Tab */
+        .tab-heist.active { color: #f1c40f; border-bottom: 2px solid #f1c40f; }
+        
         .tab:hover:not(.active) { background: #222; }
 
-        .content-area { padding: 30px; display: none; }
+        .content-area { padding: 30px; display: none; flex: 1; }
         .content-area.active { display: block; }
 
         h2 { margin-top: 0; color: #fff; }
         .sub { color: #777; font-size: 0.9rem; margin-bottom: 20px; display: block;}
 
-        /* FORM */
+        /* STANDARD FORM & BUTTONS */
         input {
-            width: 100%;
-            padding: 12px;
-            background: #252525;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            margin-bottom: 15px;
+            width: 100%; padding: 12px; background: #252525; border: 1px solid #444;
+            color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 1rem; margin-bottom: 15px;
         }
         
         .btn-rob {
-            width: 100%;
-            padding: 15px;
-            background: #c0392b;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: 0.2s;
+            width: 100%; padding: 15px; background: #c0392b; color: #fff; border: none;
+            border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            text-transform: uppercase; transition: 0.2s;
         }
         .btn-rob:hover { background: #e74c3c; }
         .btn-rob:disabled { background: #555; cursor: not-allowed; }
 
+        /* HEIST SPECIAL STYLES */
+        .heist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .heist-pot { font-size: 1.5rem; color: #f1c40f; font-family: 'Courier New', monospace; font-weight: bold; text-shadow: 0 0 10px rgba(241, 196, 15, 0.3); }
+        
+        .firewall-container { margin-bottom: 20px; }
+        .firewall-label { display: flex; justify-content: space-between; font-size: 0.8rem; color: #e74c3c; font-weight: bold; margin-bottom: 5px; }
+        .firewall-bg { width: 100%; height: 20px; background: #333; border: 1px solid #555; border-radius: 4px; overflow: hidden; }
+        .firewall-fill { height: 100%; background: #c0392b; width: 100%; transition: width 0.5s ease; }
+        .firewall-open .firewall-fill { background: #2ecc71; box-shadow: 0 0 15px #2ecc71; }
+        .firewall-open .firewall-label { color: #2ecc71; }
+
+        .heist-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .btn-hack { background: #2c3e50; border: 1px solid #34495e; color: #ecf0f1; }
+        .btn-hack:hover { background: #34495e; }
+        .btn-raid { background: #1a1a1a; border: 1px solid #333; color: #555; cursor: not-allowed; }
+        .btn-raid.active { background: #f1c40f; color: #000; border-color: #f39c12; cursor: pointer; box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); animation: pulse 2s infinite; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        .console-log {
+            background: #000; border: 1px solid #333; color: #2ecc71; 
+            font-family: 'Courier New', monospace; font-size: 0.8rem;
+            height: 100px; padding: 10px; overflow-y: auto; border-radius: 4px;
+        }
+        .console-line { margin-bottom: 2px; }
+        .console-err { color: #e74c3c; }
+        .console-warn { color: #f1c40f; }
+
         /* SECURITY STATS */
         .security-card {
-            background: #222;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 20px;
-            border: 1px solid #333;
+            background: #222; padding: 20px; border-radius: 8px; text-align: center;
+            margin-bottom: 20px; border: 1px solid #333;
         }
         .risk-val { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
         .risk-low { color: #2ecc71; }
         .risk-med { color: #f1c40f; }
         .risk-high { color: #e74c3c; }
 
-        .log-list {
-            list-style: none;
-            padding: 0;
-            max-height: 200px;
-            overflow-y: auto;
-        }
+        .log-list { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; }
         .log-item {
-            background: #252525;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            border-left: 4px solid #e74c3c; /* Default: Robbed */
-            font-size: 0.9rem;
+            background: #252525; padding: 10px; margin-bottom: 8px; border-radius: 4px;
+            border-left: 4px solid #e74c3c; font-size: 0.9rem;
         }
         .log-item.defended { border-left-color: #2ecc71; }
         .log-date { font-size: 0.75rem; color: #666; float: right; }
 
         .result-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 6px;
-            display: none;
-            text-align: center;
+            margin-top: 20px; padding: 15px; border-radius: 6px; display: none; text-align: center;
         }
         .res-win { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
         .res-lose { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
 
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-            text-decoration: none;
-        }
+        .back-link { display: block; text-align: center; margin-top: auto; padding: 20px; color: #666; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -138,7 +135,8 @@
 <div class="crime-container">
     <div class="tabs">
         <div class="tab active" onclick="switchTab('rob')">🔫 Überfall</div>
-        <div class="tab" onclick="switchTab('security')">🛡️ Meine Sicherheit</div>
+        <div class="tab tab-heist" onclick="switchTab('heist')">💰 The Heist</div>
+        <div class="tab" onclick="switchTab('security')">🛡️ Sicherheit</div>
     </div>
 
     <div id="tab-rob" class="content-area active">
@@ -149,6 +147,41 @@
         <button class="btn-rob" id="btn-start-rob" onclick="commitCrime()">Überfall starten</button>
 
         <div id="rob-result" class="result-box"></div>
+    </div>
+
+    <div id="tab-heist" class="content-area">
+        <div class="heist-header">
+            <h2 style="margin:0">STAATSKASSE</h2>
+            <div id="heist-pot" class="heist-pot">$LOADING</div>
+        </div>
+        
+        <div id="firewall-container" class="firewall-container">
+            <div class="firewall-label">
+                <span id="fw-status-text">FIREWALL STATUS</span>
+                <span id="fw-percent">100%</span>
+            </div>
+            <div class="firewall-bg">
+                <div id="fw-bar" class="firewall-fill"></div>
+            </div>
+        </div>
+
+        <div class="heist-actions">
+            <button id="btn-hack" class="btn-rob btn-hack" onclick="doHack()">
+                <div style="font-size:1.5rem">💻</div>
+                <div style="font-size:0.8rem">SYSTEM HACKEN</div>
+                <div style="font-size:0.7rem; opacity:0.7">Kosten: $500</div>
+            </button>
+            <button id="btn-raid" class="btn-rob btn-raid" onclick="doRaid()" disabled>
+                <div style="font-size:1.5rem">💣</div>
+                <div style="font-size:0.8rem">ZUGRIFF</div>
+                <div style="font-size:0.7rem; opacity:0.7" id="raid-subtext">Gesperrt</div>
+            </button>
+        </div>
+
+        <div id="heist-console" class="console-log">
+            <div class="console-line">> Verbindung hergestellt...</div>
+            <div class="console-line">> Warte auf Community-Input...</div>
+        </div>
     </div>
 
     <div id="tab-security" class="content-area">
@@ -170,24 +203,182 @@
 </div>
 
 <script>
-    const API_URL = 'https://api.limazon.v6.rocks';
+    const API_URL = 'https://api.limazon.v6.rocks'; // URL ANPASSEN
+    let heistInterval = null;
 
     // Tabs umschalten
     function switchTab(tabName) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.content-area').forEach(c => c.classList.remove('active'));
         
-        // Button active setzen (einfacher Hack basierend auf Index oder Text wäre sauberer, aber so gehts)
+        // Button active setzen
         const tabs = document.querySelectorAll('.tab');
         if(tabName === 'rob') tabs[0].classList.add('active');
-        else tabs[1].classList.add('active');
+        else if(tabName === 'heist') tabs[1].classList.add('active');
+        else tabs[2].classList.add('active');
 
         document.getElementById(`tab-${tabName}`).classList.add('active');
 
+        // Logic Handling
         if(tabName === 'security') loadSecurityData();
+        
+        // Heist Interval starten/stoppen
+        if(tabName === 'heist') {
+            updateHeistData();
+            if(!heistInterval) heistInterval = setInterval(updateHeistData, 5000);
+        } else {
+            if(heistInterval) { clearInterval(heistInterval); heistInterval = null; }
+        }
     }
 
-    // Funktion: Überfall
+    // --- HEIST LOGIC ---
+    function logHeist(msg, type='info') {
+        const con = document.getElementById('heist-console');
+        const line = document.createElement('div');
+        line.className = 'console-line ' + (type === 'err' ? 'console-err' : (type === 'warn' ? 'console-warn' : ''));
+        line.innerText = `> ${msg}`;
+        con.prepend(line); // Neueste oben
+        if(con.children.length > 20) con.lastChild.remove();
+    }
+
+    async function updateHeistData() {
+        try {
+            const res = await fetch(`${API_URL}/api/heist/info`, { credentials: 'include' });
+            const data = await res.json();
+
+            // Pot
+            document.getElementById('heist-pot').innerText = '$' + data.treasuryBalance.toLocaleString();
+
+            // Firewall
+            const integrity = data.integrity.toFixed(2);
+            document.getElementById('fw-percent').innerText = integrity + '%';
+            document.getElementById('fw-bar').style.width = integrity + '%';
+
+            const fwContainer = document.getElementById('firewall-container');
+            const btnRaid = document.getElementById('btn-raid');
+            const btnHack = document.getElementById('btn-hack');
+
+            if (data.isOpen) {
+                fwContainer.classList.add('firewall-open');
+                document.getElementById('fw-status-text').innerText = "SYSTEM OFFEN!";
+                document.getElementById('fw-bar').style.width = '100%'; // Full green bar
+                
+                // Hack disable, Raid enable
+                btnHack.disabled = true;
+                btnHack.style.opacity = '0.3';
+                
+                btnRaid.disabled = false;
+                btnRaid.classList.add('active');
+                document.getElementById('raid-subtext').innerText = "Kosten: $2000 | Chance: 60%";
+            } else {
+                fwContainer.classList.remove('firewall-open');
+                document.getElementById('fw-status-text').innerText = "FIREWALL STATUS";
+                
+                btnHack.disabled = false;
+                btnHack.style.opacity = '1';
+
+                btnRaid.disabled = true;
+                btnRaid.classList.remove('active');
+                document.getElementById('raid-subtext').innerText = "Benötigt: Firewall 0%";
+            }
+
+        } catch (e) { console.error(e); }
+    }
+
+    async function doHack() {
+        const btn = document.getElementById('btn-hack');
+        
+        // Button sperren & Feedback geben
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        
+        logHeist("Starte Brute-Force...", "warn");
+        
+        try {
+            const res = await fetch(`${API_URL}/api/heist/hack`, { 
+                method: 'POST', 
+                headers: {'Content-Type':'application/json'},
+                credentials: 'include'
+            });
+            const json = await res.json();
+            
+            if(res.ok) {
+                logHeist(json.message);
+                updateHeistData();
+                
+                // --- VISUELLER COOLDOWN STARTEN (60s) ---
+                startHackCooldown(60); 
+                
+            } else {
+                logHeist("FEHLER: " + json.error, "err");
+                
+                // Wenn Fehler "überhitzt" war, Button gesperrt lassen, sonst freigeben
+                if(json.error.includes("überhitzt")) {
+                    // Versuchen Zeit auszulesen (optional), sonst pauschal 5s warten
+                    setTimeout(() => { 
+                        btn.disabled = false; 
+                        btn.style.opacity = '1';
+                    }, 5000);
+                } else {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            }
+        } catch(e) { 
+            logHeist("Verbindungsfehler", "err"); 
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }
+    }
+
+    // Hilfsfunktion für den Button-Countdown
+    function startHackCooldown(seconds) {
+        const btn = document.getElementById('btn-hack');
+        const originalText = '<div style="font-size:1.5rem">💻</div><div style="font-size:0.8rem">SYSTEM HACKEN</div><div style="font-size:0.7rem; opacity:0.7">Kosten: $500</div>';
+        
+        let left = seconds;
+        
+        const interval = setInterval(() => {
+            left--;
+            btn.innerHTML = `<div style="font-size:1.5rem">⏳</div><div style="font-size:0.8rem">COOLDOWN</div><div style="font-size:0.7rem;">${left}s</div>`;
+            
+            if(left <= 0) {
+                clearInterval(interval);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        }, 1000);
+    }
+
+    async function doRaid() {
+        if(!confirm("Startkapital $2000 wird benötigt. Bei Misserfolg droht hohe Strafe. Bereit?")) return;
+        
+        logHeist("Transferiere Daten...", "warn");
+        try {
+            const res = await fetch(`${API_URL}/api/heist/start`, { 
+                method: 'POST', 
+                headers: {'Content-Type':'application/json'},
+                credentials: 'include'
+            });
+            const json = await res.json();
+            if(res.ok) {
+                if(json.success) {
+                    logHeist("SUCCESS: " + json.message, "info"); // Grün via CSS class wäre besser, aber info reicht
+                    alert("GELD ERBEUTET! " + json.message);
+                } else {
+                    logHeist("FAILED: " + json.message, "err");
+                    alert("GESCHNAPPT! " + json.message);
+                }
+                updateHeistData();
+            } else {
+                logHeist("ABBRUCH: " + json.error, "err");
+            }
+        } catch(e) { logHeist("Verbindungsfehler", "err"); }
+    }
+
+
+    // --- PVP ROBBERY LOGIC ---
     async function commitCrime() {
         const target = document.getElementById('target-name').value;
         const btn = document.getElementById('btn-start-rob');
@@ -231,13 +422,12 @@
         }
     }
 
-    // Funktion: Sicherheitsdaten laden
+    // --- SECURITY LOGIC ---
     async function loadSecurityData() {
         try {
             const response = await fetch(`${API_URL}/api/crime/security`, { credentials: 'include' });
             const data = await response.json();
 
-            // Risiko Anzeige
             const riskEl = document.getElementById('risk-display');
             const detailsEl = document.getElementById('risk-details');
             
@@ -247,7 +437,6 @@
                 detailsEl.innerText = "Du bist geschützt (Admin oder zu wenig Geld).";
             } else {
                 riskEl.innerText = data.riskPercent + "%";
-                // Farbe
                 const val = parseFloat(data.riskPercent);
                 if (val < 20) riskEl.className = "risk-val risk-low";
                 else if (val < 40) riskEl.className = "risk-val risk-med";
@@ -258,7 +447,6 @@
                 detailsEl.innerText = info;
             }
 
-            // Logs
             const list = document.getElementById('log-list');
             list.innerHTML = "";
             if (data.logs && data.logs.length > 0) {
@@ -278,11 +466,8 @@
                 list.innerHTML = '<li class="log-item" style="text-align:center; color:#666;">Keine Vorfälle in der Akte.</li>';
             }
 
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
     }
 </script>
-
 </body>
 </html>
