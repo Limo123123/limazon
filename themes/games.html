@@ -376,12 +376,13 @@
     }
 
     // ==========================================
-    // === FLAPPY ENGINE ===
+    // === FLAPPY ENGINE (ORIGINAL LOOK + UPDATE) ===
     // ==========================================
     const flappyEngine = {
         cvs: document.getElementById('gameCanvas'),
         ctx: document.getElementById('gameCanvas').getContext('2d'),
         running: false,
+        gameState: 'START', // NEU: Status für Schwebe-Modus
         bird: { x:50, y:150, v:0 }, pipes: [], score: 0, frame: 0,
 
         init: () => {
@@ -390,7 +391,15 @@
             window.onkeydown=null; window.ontouchstart=null; window.onmousedown=null;
         },
         resize: () => { flappyEngine.cvs.width = window.innerWidth; flappyEngine.cvs.height = window.innerHeight; },
-        reset: () => { flappyEngine.bird={x:50,y:flappyEngine.cvs.height/2,v:0}; flappyEngine.pipes=[]; flappyEngine.score=0; flappyEngine.frame=0; },
+        
+        reset: () => { 
+            flappyEngine.bird = { x: 50, y: flappyEngine.cvs.height / 2, v: 0 }; 
+            flappyEngine.pipes = []; 
+            flappyEngine.score = 0; 
+            // NEU: Frame auf 1 setzen, damit die erste Röhre erst bei 120 kommt (nicht sofort bei 0)
+            flappyEngine.frame = 1; 
+            flappyEngine.gameState = 'START';
+        },
         
         start: async () => {
             if(!await startGameSession('flappy')) return;
@@ -407,8 +416,19 @@
             const jump = (e) => { 
                 if(!flappyEngine.running) return;
                 e?.preventDefault(); 
-                flappyEngine.bird.v = -flappyEngine.cvs.height * 0.012; 
-                document.getElementById('tapMsg').style.display='none';
+                
+                // NEU: Start-Logik
+                if (flappyEngine.gameState === 'START') {
+                    flappyEngine.gameState = 'PLAYING'; // Spiel physikalisch starten
+                    document.getElementById('tapMsg').style.display='none';
+                    flappyEngine.bird.v = -flappyEngine.cvs.height * 0.012; // Erster Sprung
+                    return;
+                }
+
+                // Normaler Sprung
+                if (flappyEngine.gameState === 'PLAYING') {
+                    flappyEngine.bird.v = -flappyEngine.cvs.height * 0.012; 
+                }
             };
             window.onkeydown=(e)=>{if(e.code==='Space')jump(e)}; window.ontouchstart=jump; window.onmousedown=jump;
         },
@@ -420,6 +440,14 @@
 
         update: () => {
             const h=flappyEngine.cvs.height, w=flappyEngine.cvs.width;
+
+            // NEU: Schwebe-Modus (Vogel fällt nicht, keine Röhren)
+            if (flappyEngine.gameState === 'START') {
+                flappyEngine.bird.y = (h / 2) + Math.sin(Date.now() / 300) * 10;
+                return; 
+            }
+
+            // Ab hier: Physik nur wenn PLAYING
             flappyEngine.bird.v += h*0.0006; flappyEngine.bird.y += flappyEngine.bird.v;
             
             if(flappyEngine.frame%120===0) {
@@ -440,6 +468,7 @@
         },
 
         draw: () => {
+            // ORIGINAL GRAFIK CODE
             const ctx=flappyEngine.ctx, w=flappyEngine.cvs.width, h=flappyEngine.cvs.height;
             ctx.fillStyle="#70c5ce"; ctx.fillRect(0,0,w,h);
             ctx.fillStyle="#2E7D32"; 

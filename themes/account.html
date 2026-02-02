@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Account Hub</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-panel: #161616;
+            --bg-card: #1e1e1e;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #8b5cf6;
+            --text-main: #ffffff;
+            --text-muted: #a3a3a3;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --border: #333;
+            --glass: rgba(30, 30, 30, 0.6);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR (Account Switcher) --- */
+        .sidebar {
+            width: 80px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            gap: 15px;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .avatar-wrapper { position: relative; width: 50px; height: 50px; flex-shrink: 0; }
+
+        .account-avatar {
+            width: 100%; height: 100%; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 20px; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .account-avatar:hover { transform: scale(1.1); }
+        .account-avatar.active { border-color: var(--text-main); box-shadow: 0 0 10px var(--primary); }
+        
+        .remove-account-btn {
+            position: absolute; top: -5px; right: -5px;
+            width: 20px; height: 20px;
+            background-color: var(--danger); color: white;
+            border-radius: 50%; font-size: 14px;
+            display: none; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10; font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .avatar-wrapper:hover .remove-account-btn { display: flex; }
+
+        .add-account-btn {
+            width: 50px; height: 50px; min-height: 50px;
+            border-radius: 50%; background-color: var(--bg-card);
+            border: 1px dashed var(--text-muted); color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; cursor: pointer; margin-top: 10px; flex-shrink: 0;
+        }
+        .add-account-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1; display: flex; flex-direction: column;
+            overflow-y: auto; position: relative;
+        }
+
+        /* --- LOGIN SCREEN --- */
+        #login-view {
+            display: none; /* Standardmäßig versteckt */
+            flex: 1;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .login-card {
+            background-color: var(--bg-card);
+            padding: 40px; border-radius: 16px;
+            width: 90%; max-width: 400px;
+            border: 1px solid var(--border);
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .login-card h2 { margin-bottom: 20px; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* --- DASHBOARD SCREEN --- */
+        #dashboard-view { display: none; flex-direction: column; flex: 1; }
+
+        header {
+            padding: 20px 40px; background-color: var(--glass);
+            backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 50;
+        }
+
+        h1 { font-size: 1.5rem; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .container {
+            padding: 40px; max-width: 1200px; margin: 0 auto; width: 100%;
+            display: grid; grid-template-columns: 300px 1fr; gap: 30px;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background-color: var(--bg-card); border-radius: 16px;
+            padding: 30px; text-align: center; border: 1px solid var(--border);
+            height: fit-content;
+        }
+
+        .big-avatar {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+            font-size: 40px; font-weight: bold;
+        }
+
+        .user-stats {
+            display: flex; justify-content: space-around; margin-top: 20px;
+            padding-top: 20px; border-top: 1px solid var(--border); gap: 10px;
+        }
+
+        .stat-box { display: flex; flex-direction: column; width: 100%; overflow: hidden; }
+        .stat-val { font-size: 1.1rem; font-weight: bold; color: var(--text-main); word-break: break-word; overflow-wrap: break-word; line-height: 1.2; }
+        .stat-lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* Tabs */
+        .tabs-wrapper { display: flex; flex-direction: column; gap: 20px; }
+        .tabs-nav { display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn {
+            background: none; border: none; color: var(--text-muted);
+            padding: 10px 20px; cursor: pointer; font-size: 1rem;
+            transition: color 0.2s; border-radius: 8px;
+        }
+        .tab-btn.active { background-color: var(--bg-card); color: var(--primary); font-weight: bold; }
+        .tab-btn:hover:not(.active) { color: var(--text-main); }
+        
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Settings */
+        .settings-section {
+            background-color: var(--bg-card); border-radius: 12px;
+            padding: 25px; margin-bottom: 20px; border: 1px solid var(--border);
+        }
+        .settings-section h3 { margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        
+        input[type="text"], input[type="password"], textarea {
+            width: 100%; padding: 12px; background-color: var(--bg-dark);
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--text-main); outline: none; transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus { border-color: var(--primary); }
+
+        button.action-btn {
+            background-color: var(--primary); color: white; border: none;
+            padding: 12px 24px; border-radius: 8px; cursor: pointer;
+            font-weight: 600; transition: background 0.2s; width: 100%;
+        }
+        button.action-btn:hover { background-color: var(--primary-hover); }
+        button.btn-danger { background-color: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        button.btn-danger:hover { background-color: var(--danger); color: white; }
+
+        /* Switch */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-dark); transition: .4s; border-radius: 34px; border: 1px solid var(--border); }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: var(--text-muted); transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); border-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); background-color: white; }
+
+        /* Loading */
+        #loading-view { display: flex; justify-content: center; align-items: center; height: 100%; flex: 1; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal {
+            background: var(--bg-panel); padding: 30px; border-radius: 16px;
+            width: 90%; max-width: 400px; border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed; bottom: 20px; right: 20px;
+            background: var(--bg-card); padding: 15px 25px;
+            border-left: 4px solid var(--primary);
+            border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateX(120%); transition: transform 0.3s ease;
+            z-index: 3000;
+        }
+        .notification.show { transform: translateX(0); }
+        .notification.error { border-color: var(--danger); }
+        .notification.success { border-color: var(--success); }
+
+        /* Badge Grid */
+        .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-top: 15px; }
+        .badge-item { background: var(--bg-dark); padding: 10px; border-radius: 8px; text-align: center; font-size: 24px; border: 1px solid var(--border); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; padding: 20px; }
+            .sidebar { width: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="account-sidebar">
+        </div>
+
+    <div class="main-content">
+        
+        <div id="loading-view">
+            <p>Verbinde mit Limazon...</p>
+        </div>
+
+        <div id="login-view">
+            <div class="login-card">
+                <h2>Limazon Login</h2>
+                <div class="form-group">
+                    <label>Benutzername</label>
+                    <input type="text" id="main-login-user" placeholder="Dein Username">
+                </div>
+                <div class="form-group">
+                    <label>Passwort</label>
+                    <input type="password" id="main-login-pass" placeholder="Dein Passwort">
+                </div>
+                <button class="action-btn" onclick="performMainLogin()">Anmelden</button>
+                <p style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">Noch keinen Account? Registrierung ist im Hauptmenü.</p>
+            </div>
+        </div>
+
+        <div id="dashboard-view">
+            <header>
+                <h1>Mein Konto</h1>
+                <button class="action-btn btn-danger" style="width: auto; padding: 8px 16px; font-size: 0.9rem;" onclick="handleLogout()">Ausloggen</button>
+            </header>
+
+            <div class="container">
+                <div class="profile-card">
+                    <div class="big-avatar" id="profile-avatar">U</div>
+                    <h2 id="profile-username">...</h2>
+                    <p id="profile-role" style="color: var(--primary); font-size: 0.9rem; margin-top: 5px;">...</p>
+                    <p id="profile-id" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px; font-family: monospace;">...</p>
+                    
+                    <div class="user-stats">
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-balance">...</span>
+                            <span class="stat-lbl">Guthaben</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-tokens">...</span>
+                            <span class="stat-lbl">Tokens</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: left;">
+                        <small style="color: var(--text-muted);">Share-Code:</small>
+                        <div style="background: var(--bg-dark); padding: 8px; border-radius: 6px; font-family: monospace; margin-top: 5px; border: 1px solid var(--border); display: flex; justify-content: space-between;">
+                            <span id="profile-sharecode">...</span>
+                            <span style="cursor: pointer; color: var(--primary);" onclick="regenerateShareCode()">↻</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tabs-wrapper">
+                    <nav class="tabs-nav">
+                        <button class="tab-btn active" onclick="switchTab('overview')">Übersicht</button>
+                        <button class="tab-btn" onclick="switchTab('security')">Sicherheit</button>
+                        <button class="tab-btn" onclick="switchTab('danger')">Gefahrenzone</button>
+                    </nav>
+
+                    <div id="tab-overview" class="tab-content active">
+                        <div class="settings-section">
+                            <h3>👤 Profil anpassen</h3>
+                            <div class="form-group">
+                                <label>Bio (Über mich)</label>
+                                <textarea id="settings-bio" rows="3" placeholder="Erzähl etwas über dich..."></textarea>
+                            </div>
+                            <div class="toggle-row">
+                                <span>Inventar öffentlich anzeigen?</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settings-public-inv">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <button class="action-btn" onclick="saveProfileSettings()">Speichern</button>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>🏆 Achievements</h3>
+                            <div class="badge-grid" id="badge-container"></div>
+                        </div>
+
+                        <div class="settings-section" id="admin-settings-card" style="display: none;">
+                            <h3>⚡ Spezial / Admin</h3>
+                            <div class="toggle-row">
+                                <span>Infinity Money</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settings-infinity">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-security" class="tab-content">
+                        <div class="settings-section">
+                            <h3>🔑 Zugangsdaten</h3>
+                            <div class="form-group">
+                                <label>Benutzernamen ändern</label>
+                                <input type="text" id="new-username" placeholder="Neuer Username">
+                                <button class="action-btn" style="margin-top: 10px;" onclick="changeUsername()">Ändern</button>
+                            </div>
+                            <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+                            <div class="form-group">
+                                <label>Passwort ändern</label>
+                                <input type="password" id="current-pw" placeholder="Aktuelles Passwort" style="margin-bottom: 10px;">
+                                <input type="password" id="new-pw" placeholder="Neues Passwort" style="margin-bottom: 10px;">
+                                <input type="password" id="confirm-pw" placeholder="Bestätigen">
+                                <button class="action-btn" style="margin-top: 10px;" onclick="changePassword()">Ändern</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-danger" class="tab-content">
+                        <div class="settings-section" style="border-color: var(--danger);">
+                            <h3 style="color: var(--danger);">⚠️ Account löschen</h3>
+                            <p style="margin-bottom: 20px; color: var(--text-muted);">
+                                Diese Aktion ist endgültig.
+                            </p>
+                            <button class="action-btn btn-danger" onclick="openDeleteModal()">Löschen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 style="color: var(--danger);">Wirklich löschen?</h2>
+            <input type="password" id="delete-confirm-pw" placeholder="Passwort zur Bestätigung">
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="action-btn btn-danger" style="flex: 1;" onclick="performDelete()">LÖSCHEN</button>
+                <button class="action-btn" style="flex: 1;" onclick="document.getElementById('delete-modal').style.display='none'">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // --- CONFIG ---
+        const API_BASE = 'https://api.limazon.v6.rocks'; 
+        const STORAGE_KEY = 'limazon_saved_accounts';
+
+        let currentUser = null;
+        let savedAccounts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSidebar();
+            checkAuth(); // Hauptstartpunkt
+        });
+
+        // --- AUTH LOGIC (INTEGRATED) ---
+
+        async function checkAuth() {
+            try {
+                // Versuch, User-Daten zu laden
+                const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    // Erfolg: Zeige Dashboard
+                    const data = await res.json();
+                    await loadFullProfile(data);
+                } else {
+                    // Fehler (401): Zeige Login
+                    showLoginScreen();
+                }
+            } catch (err) {
+                console.error(err);
+                showLoginScreen(); // Bei Fehler sicherheitshalber Login zeigen
+                showNotify("Server nicht erreichbar", "error");
+            }
+        }
+
+        async function loadFullProfile(userData) {
+            currentUser = userData;
+            // Profil-Details laden
+            try {
+                const profRes = await fetch(`${API_BASE}/api/profile/${userData.username}`, { credentials: 'include' });
+                if(profRes.ok) {
+                    const profData = await profRes.json();
+                    currentUser.bio = profData.profile.bio;
+                    currentUser.isInventoryPublic = profData.profile.isInventoryPublic;
+                    currentUser.achievements = profData.profile.achievements || [];
+                }
+            } catch(e) { console.warn("Profil-Meta-Daten Fehler", e); }
+
+            // Ansicht wechseln
+            document.getElementById('loading-view').style.display = 'none';
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'flex';
+            
+            updateDashboardUI();
+            
+            // Auto-Add zu gespeicherten Accounts (nur Username)
+            if(!savedAccounts.find(a => a.username.toLowerCase() === userData.username.toLowerCase())) {
+                showNotify("Tipp: Logge dich über '+' in der Leiste ein, um das Passwort zu speichern.", "info");
+            }
+            renderSidebar();
+        }
+
+        function showLoginScreen() {
+            document.getElementById('loading-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('login-view').style.display = 'flex';
+            renderSidebar(); // Sidebar bleibt auch beim Login sichtbar
+        }
+
+        async function performMainLogin() {
+            const u = document.getElementById('main-login-user').value;
+            const p = document.getElementById('main-login-pass').value;
+            if(!u || !p) return showNotify("Bitte alles ausfüllen", "error");
+
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p }),
+                    credentials: 'include'
+                });
+
+                if(res.ok) {
+                    // Speichern für Sidebar
+                    saveAccountLocally(u, p);
+                    
+                    // Neu laden (Dashboard zeigen)
+                    const data = await res.json();
+                    // Wir laden nicht neu (reload), sondern rufen direkt checkAuth auf -> SPA Feeling
+                    checkAuth(); 
+                } else {
+                    const d = await res.json();
+                    showNotify(d.error || "Login fehlgeschlagen", "error");
+                }
+            } catch(e) { showNotify("Serverfehler", "error"); }
+        }
+
+        function saveAccountLocally(u, p) {
+            const existingIdx = savedAccounts.findIndex(a => a.username.toLowerCase() === u.toLowerCase());
+            const accObj = { username: u, auth: btoa(p) }; // Base64 (Basic Obfuscation)
+            
+            if(existingIdx >= 0) savedAccounts[existingIdx] = accObj;
+            else savedAccounts.push(accObj);
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
+            renderSidebar();
+        }
+
+        function handleLogout() {
+            fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' })
+                .then(() => {
+                    currentUser = null;
+                    showLoginScreen();
+                });
+        }
+
+        // --- SIDEBAR & SWITCHING ---
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('account-sidebar');
+            sidebar.innerHTML = '';
+            
+            savedAccounts.forEach(acc => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'avatar-wrapper';
+
+                const avatar = document.createElement('div');
+                avatar.className = 'account-avatar';
+                avatar.textContent = acc.username.charAt(0).toUpperCase();
+                avatar.title = `Zu ${acc.username} wechseln`;
+                avatar.onclick = () => switchAccount(acc);
+                
+                if(currentUser && acc.username.toLowerCase() === currentUser.username.toLowerCase()) {
+                    avatar.classList.add('active');
+                }
+
+                const delBtn = document.createElement('div');
+                delBtn.className = 'remove-account-btn';
+                delBtn.textContent = '×';
+                delBtn.title = 'Entfernen';
+                delBtn.onclick = (e) => removeSavedAccount(e, acc.username);
+
+                wrapper.appendChild(avatar);
+                wrapper.appendChild(delBtn);
+                sidebar.appendChild(wrapper);
+            });
+
+            // Add Button (führt zum leeren Login Screen)
+            const addBtn = document.createElement('div');
+            addBtn.className = 'add-account-btn';
+            addBtn.textContent = '+';
+            addBtn.title = 'Neuer Login';
+            addBtn.onclick = () => {
+                // Wenn wir schon im Login Screen sind, Felder leeren
+                document.getElementById('main-login-user').value = '';
+                document.getElementById('main-login-pass').value = '';
+                if(currentUser) handleLogout(); // Wenn eingeloggt, ausloggen
+                else showLoginScreen();
+            };
+            sidebar.appendChild(addBtn);
+        }
+
+        function removeSavedAccount(e, username) {
+            e.stopPropagation();
+            if(!confirm(`"${username}" aus der Liste entfernen?`)) return;
+            savedAccounts = savedAccounts.filter(a => a.username.toLowerCase() !== username.toLowerCase());
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
+            renderSidebar();
+        }
+
+        async function switchAccount(account) {
+            if(currentUser && currentUser.username.toLowerCase() === account.username.toLowerCase()) return;
+
+            if(account.auth) {
+                try {
+                    const password = atob(account.auth);
+                    showNotify(`Wechsle zu ${account.username}...`, "info");
+                    
+                    // 1. Logout
+                    await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+                    
+                    // 2. Login
+                    const res = await fetch(`${API_BASE}/api/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: account.username, password: password }),
+                        credentials: 'include'
+                    });
+
+                    if(res.ok) {
+                        checkAuth(); // Dashboard laden
+                    } else {
+                        showNotify("Passwort wohl geändert. Bitte neu einloggen.", "error");
+                        handleLogout();
+                    }
+                } catch(e) { console.error(e); }
+            } else {
+                handleLogout(); // Zum Login Screen
+            }
+        }
+
+        // --- DASHBOARD UI ---
+
+        function formatNumber(num, isMoney = false) {
+            if (num > 1000000000000) return (isMoney ? '$' : '') + (num / 1000000000000).toFixed(2) + ' Bio.';
+            if (num > 1000000000) return (isMoney ? '$' : '') + (num / 1000000000).toFixed(2) + ' Mrd.';
+            if (num > 1000000) return (isMoney ? '$' : '') + (num / 1000000).toFixed(2) + ' Mio.';
+            return (isMoney ? '$' : '') + num.toLocaleString(undefined, {minimumFractionDigits: isMoney ? 2 : 0});
+        }
+
+        function updateDashboardUI() {
+            document.getElementById('profile-username').textContent = currentUser.username;
+            document.getElementById('profile-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('profile-role').textContent = currentUser.isAdmin ? 'Administrator 🛡️' : 'Mitglied';
+            document.getElementById('profile-id').textContent = 'ID: ' + currentUser.userId;
+
+            // Stats
+            const balEl = document.getElementById('stat-balance');
+            balEl.textContent = formatNumber(currentUser.balance, true);
+            balEl.title = '$' + currentUser.balance.toLocaleString();
+
+            const tokEl = document.getElementById('stat-tokens');
+            tokEl.textContent = formatNumber(currentUser.tokens, false);
+            tokEl.title = currentUser.tokens.toLocaleString();
+
+            // Settings Fields
+            document.getElementById('settings-bio').value = currentUser.bio || '';
+            document.getElementById('settings-public-inv').checked = !!currentUser.isInventoryPublic;
+
+            fetchShareCode();
+
+            if(currentUser.isAdmin || currentUser.unlockedInfinityMoney) {
+                document.getElementById('admin-settings-card').style.display = 'block';
+                document.getElementById('settings-infinity').checked = !!currentUser.infinityMoney;
+                document.getElementById('settings-infinity').onchange = (e) => toggleInfinity(e.target.checked);
+            }
+
+            const badgeContainer = document.getElementById('badge-container');
+            badgeContainer.innerHTML = '';
+            if(currentUser.achievements && currentUser.achievements.length > 0) {
+                currentUser.achievements.forEach(badgeId => {
+                    const badge = document.createElement('div');
+                    badge.className = 'badge-item';
+                    let icon = '🏅'; 
+                    if(badgeId.includes('million')) icon = '💎';
+                    if(badgeId.includes('admin')) icon = '🛡️';
+                    if(badgeId.includes('bug')) icon = '🐛';
+                    badge.textContent = icon;
+                    badge.title = badgeId;
+                    badgeContainer.appendChild(badge);
+                });
+            } else {
+                badgeContainer.innerHTML = '<p style="color:var(--text-muted)">Keine Abzeichen.</p>';
+            }
+        }
+
+        // --- ACTIONS ---
+
+        async function saveProfileSettings() {
+            const bio = document.getElementById('settings-bio').value;
+            const isPublic = document.getElementById('settings-public-inv').checked;
+            try {
+                const res = await fetch(`${API_BASE}/api/profile/edit`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bio, isInventoryPublic: isPublic }), credentials: 'include'
+                });
+                if(res.ok) showNotify("Gespeichert!", "success");
+            } catch(e) { showNotify("Fehler", "error"); }
+        }
+
+        async function toggleInfinity(enabled) {
+            try {
+                await fetch(`${API_BASE}/api/account/settings`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ infinityMoney: enabled }), credentials: 'include'
+                });
+                showNotify("Einstellung gespeichert", "success");
+            } catch(e) {}
+        }
+
+        async function changeUsername() {
+            const newName = document.getElementById('new-username').value;
+            if(newName.length < 3) return showNotify("Zu kurz", "error");
+            const pw = prompt("Passwort zur Bestätigung:");
+            if(!pw) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/account/username`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newUsername: newName, password: pw }), credentials: 'include'
+                });
+                if(res.ok) {
+                    showNotify("Geändert! Bitte neu einloggen.", "success");
+                    // Update LocalStorage
+                    const idx = savedAccounts.findIndex(a => a.username.toLowerCase() === currentUser.username.toLowerCase());
+                    if(idx >= 0) {
+                        savedAccounts[idx].username = newName;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
+                    }
+                    setTimeout(() => handleLogout(), 1500);
+                } else showNotify("Fehler", "error");
+            } catch(e) { showNotify("Fehler", "error"); }
+        }
+
+        async function changePassword() {
+            const cur = document.getElementById('current-pw').value;
+            const n = document.getElementById('new-pw').value;
+            const c = document.getElementById('confirm-pw').value;
+            if(n !== c) return showNotify("Passwörter ungleich", "error");
+
+            try {
+                const res = await fetch(`${API_BASE}/api/account/password`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword: cur, newPassword: n }), credentials: 'include'
+                });
+                if(res.ok) {
+                    showNotify("Passwort geändert!", "success");
+                    // Update LocalStorage
+                    const idx = savedAccounts.findIndex(a => a.username.toLowerCase() === currentUser.username.toLowerCase());
+                    if(idx >= 0) {
+                        savedAccounts[idx].auth = btoa(n);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
+                    }
+                    document.getElementById('current-pw').value = '';
+                    document.getElementById('new-pw').value = '';
+                    document.getElementById('confirm-pw').value = '';
+                } else {
+                    const d = await res.json();
+                    showNotify(d.error, "error");
+                }
+            } catch(e) { showNotify("Fehler", "error"); }
+        }
+
+        async function fetchShareCode() {
+            try {
+                const res = await fetch(`${API_BASE}/api/chat/me/sharecode`, { credentials: 'include' });
+                const d = await res.json();
+                document.getElementById('profile-sharecode').textContent = d.userShareCode || '---';
+            } catch(e) {}
+        }
+
+        async function regenerateShareCode() {
+            if(!confirm("Code erneuern?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/chat/me/sharecode/regenerate`, { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                document.getElementById('profile-sharecode').textContent = d.userShareCode;
+            } catch(e) {}
+        }
+
+        function openDeleteModal() { document.getElementById('delete-modal').style.display = 'flex'; }
+        
+        async function performDelete() {
+            const pw = document.getElementById('delete-confirm-pw').value;
+            if(!pw) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/account`, {
+                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pw }), credentials: 'include'
+                });
+                if(res.ok) {
+                    savedAccounts = savedAccounts.filter(a => a.username.toLowerCase() !== currentUser.username.toLowerCase());
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
+                    alert("Account gelöscht.");
+                    window.location.reload();
+                } else showNotify("Fehler beim Löschen", "error");
+            } catch(e) {}
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            // Einfache Logik für aktive Buttons
+            const btns = document.querySelectorAll('.tab-btn');
+            if(tabId==='overview') btns[0].classList.add('active');
+            if(tabId==='security') btns[1].classList.add('active');
+            if(tabId==='danger') btns[2].classList.add('active');
+        }
+
+        function showNotify(msg, type) {
+            const el = document.getElementById('notification');
+            el.textContent = msg;
+            el.className = `notification show ${type}`;
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
