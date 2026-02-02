@@ -45,7 +45,7 @@
 
         /* Game Overlay (Fullscreen) */
         #gameOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; flex-direction: column; }
-        #gameCanvas { display: block; width: 100%; height: 100%; object-fit: contain; background: #111; }
+        #gameCanvas { display: block; width: 100%; height: 100%; object-fit: contain; background: #111; touch-action: none; }
         
         /* In-Game UI */
         .game-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -208,13 +208,19 @@
                 const data = await res.json();
                 
                 const playDisplay = document.getElementById('gamePlays');
-                if(playDisplay) playDisplay.innerText = data.remainingPlays;
+                // FIX: Fallback, falls undefined
+                if(playDisplay) playDisplay.innerText = (data.remainingPlays !== undefined) ? data.remainingPlays : '-';
                 
                 if(data.tokens !== undefined) {
                     app.user.tokens = data.tokens;
                     app.renderUser();
                 }
-            } catch(e){}
+            } catch(e){
+                console.error("Stats Error:", e);
+                // Fallback bei Fehler
+                const playDisplay = document.getElementById('gamePlays');
+                if(playDisplay) playDisplay.innerText = '-';
+            }
         },
 
         showLogin: () => document.getElementById('loginModal').style.display = 'flex',
@@ -468,7 +474,7 @@
     };
 
     // ==========================================
-    // === SNAKE ENGINE (OPTIMIERT) ===
+    // === SNAKE ENGINE ===
     // ==========================================
     const snakeEngine = {
         cvs: document.getElementById('gameCanvas'),
@@ -477,32 +483,33 @@
         
         tileCount: 20, 
         tileSize: 0, 
-        gameSpeed: 100, // Ms pro Tick (niedriger = schneller)
+        gameSpeed: 100, 
+        lastRenderTime: 0, // Für den neuen Loop
         
         snake: [], apple: {}, vel: {x:0,y:0}, score: 0,
 
         init: () => {
             snakeEngine.resize();
             snakeEngine.drawStatic();
-            window.onkeydown=null; window.ontouchstart=null; window.onmousedown=null;
+            // Event Listener säubern
+            window.onkeydown=null; window.ontouchstart=null; window.onmousedown=null; window.ontouchmove=null;
         },
 
         setSize: (s, m, btn) => {
             document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
-            // Logik: Größeres Feld = Schnelleres Spiel
             if(s==='small') {
                 snakeEngine.tileCount = 15; 
-                snakeEngine.gameSpeed = 120; // Langsam
+                snakeEngine.gameSpeed = 120;
             }
             if(s==='medium') {
                 snakeEngine.tileCount = 25;
-                snakeEngine.gameSpeed = 90; // Mittel
+                snakeEngine.gameSpeed = 90;
             }
             if(s==='large') {
                 snakeEngine.tileCount = 40;
-                snakeEngine.gameSpeed = 60; // Schnell (Profi)
+                snakeEngine.gameSpeed = 60;
             }
         },
 
@@ -514,12 +521,12 @@
         },
 
         reset: () => {
-            // WICHTIG: Snake startet mittig und STEHT STILL (vel 0,0)
             const mid = Math.floor(snakeEngine.tileCount / 2);
             snakeEngine.snake = [{x:mid, y:mid}, {x:mid-1, y:mid}, {x:mid-2, y:mid}];
-            snakeEngine.vel = {x:0, y:0}; // Kein Auto-Start
+            snakeEngine.vel = {x:0, y:0};
             snakeEngine.score = 0;
             snakeEngine.placeApple();
+            snakeEngine.lastRenderTime = 0;
         },
 
         start: async () => {
@@ -527,7 +534,6 @@
             document.getElementById('startScreen').style.display='none';
             document.getElementById('gameOverScreen').style.display='none';
             
-            // Hinweis anzeigen
             const tap = document.getElementById('tapMsg');
             tap.innerText = "DRÜCKE PFEILTASTE\nODER WISCHE";
             tap.style.display='block';
@@ -536,12 +542,12 @@
             snakeEngine.resize();
             snakeEngine.running = true;
             snakeEngine.inputs();
-            snakeEngine.loop();
+            // Start des Loops
+            window.requestAnimationFrame(snakeEngine.loop);
         },
 
         inputs: () => {
             const setVel = (x,y) => {
-                // Verhindert 180 Grad Wende
                 if (snakeEngine.vel.x === -x && x !== 0) return;
                 if (snakeEngine.vel.y === -y && y !== 0) return;
                 
@@ -550,6 +556,10 @@
             };
 
             window.onkeydown = (e) => {
+                // Verhindert Scrollen mit Pfeiltasten
+                if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+                    e.preventDefault();
+                }
                 switch(e.key) {
                     case 'ArrowLeft': setVel(-1,0); break;
                     case 'ArrowUp': setVel(0,-1); break;
@@ -558,13 +568,28 @@
                 }
             };
 
-            // Touch Swipe
+            // Touch Swipe Logic
             let tsX=0, tsY=0;
-            window.ontouchstart = (e) => { tsX=e.changedTouches[0].screenX; tsY=e.changedTouches[0].screenY; };
+            
+            // WICHTIG: preventDefault bei touchstart/move verhindert Browser-Reload
+            window.ontouchstart = (e) => { 
+                tsX=e.changedTouches[0].screenX; 
+                tsY=e.changedTouches[0].screenY; 
+            };
+            
+            // Verhindert das Ziehen der Seite
+            window.addEventListener('touchmove', (e) => {
+                if(snakeEngine.running) e.preventDefault();
+            }, { passive: false });
+
             window.ontouchend = (e) => {
                 if(!snakeEngine.running) return;
                 let dX = e.changedTouches[0].screenX - tsX;
                 let dY = e.changedTouches[0].screenY - tsY;
+                
+                // Schwellenwert für Swipe, damit nicht jedes Tippen zählt
+                if(Math.abs(dX) < 30 && Math.abs(dY) < 30) return;
+
                 if(Math.abs(dX) > Math.abs(dY)) {
                     if(dX>0) setVel(1,0); else setVel(-1,0);
                 } else {
@@ -573,42 +598,44 @@
             };
         },
 
-        loop: () => {
+        // NEUER LOOP: Delta Time basierend (Kein Flackern mehr)
+        loop: (currentTime) => {
             if(!snakeEngine.running) return;
+            
+            window.requestAnimationFrame(snakeEngine.loop);
+            
+            const secondsSinceLastRender = (currentTime - snakeEngine.lastRenderTime) / 1000;
+            if (secondsSinceLastRender < snakeEngine.gameSpeed / 1000) return;
+            
+            snakeEngine.lastRenderTime = currentTime;
+
             snakeEngine.update(); 
             snakeEngine.draw();
-            // Variable Geschwindigkeit nutzen
-            setTimeout(() => requestAnimationFrame(snakeEngine.loop), snakeEngine.gameSpeed);
         },
 
         update: () => {
-            // Wenn Velocity 0 ist (Start), nichts tun
             if(snakeEngine.vel.x === 0 && snakeEngine.vel.y === 0) return;
 
             const head = { x: snakeEngine.snake[0].x + snakeEngine.vel.x, y: snakeEngine.snake[0].y + snakeEngine.vel.y };
             
-            // 1. Tod durch Wand
+            // 1. Wand Kollision
             if(head.x<0 || head.x>=snakeEngine.tileCount || head.y<0 || head.y>=snakeEngine.tileCount) {
                 snakeEngine.over(); return;
             }
             
-            // 2. Tod durch Selbstkollision
+            // 2. Selbst Kollision
             for(let t of snakeEngine.snake) {
                 if(head.x===t.x && head.y===t.y) { snakeEngine.over(); return; }
             }
 
             snakeEngine.snake.unshift(head);
 
-            // 3. Essen (1 Punkt)
+            // 3. Essen
             if(head.x===snakeEngine.apple.x && head.y===snakeEngine.apple.y) {
                 snakeEngine.score++;
-                
-                // 4. Win Condition (Feld voll)
                 if(snakeEngine.snake.length >= snakeEngine.tileCount * snakeEngine.tileCount) {
-                    snakeEngine.win();
-                    return;
+                    snakeEngine.win(); return;
                 }
-                
                 snakeEngine.placeApple();
             } else {
                 snakeEngine.snake.pop();
@@ -616,7 +643,6 @@
         },
 
         placeApple: () => {
-            // Zufällig platzieren, aber nicht in der Schlange
             let valid = false;
             while(!valid) {
                 snakeEngine.apple = { 
@@ -629,24 +655,22 @@
 
         draw: () => {
             const ctx=snakeEngine.ctx; const cs=snakeEngine.tileSize;
+            // Canvas komplett reinigen verhindert Artefakte
+            ctx.clearRect(0, 0, snakeEngine.cvs.width, snakeEngine.cvs.height);
             ctx.fillStyle="#111"; ctx.fillRect(0,0,snakeEngine.cvs.width,snakeEngine.cvs.height);
 
             const fW = snakeEngine.tileCount * cs;
             const sX = (snakeEngine.cvs.width - fW)/2;
             const sY = (snakeEngine.cvs.height - fW)/2;
 
-            // Rahmen
             ctx.strokeStyle="#333"; ctx.lineWidth=2; ctx.strokeRect(sX,sY,fW,fW);
 
-            // Snake
             ctx.fillStyle="#4CAF50";
             snakeEngine.snake.forEach(t => ctx.fillRect(sX+t.x*cs, sY+t.y*cs, cs-1, cs-1));
 
-            // Apple
             ctx.fillStyle="#ff5252";
             ctx.fillRect(sX+snakeEngine.apple.x*cs, sY+snakeEngine.apple.y*cs, cs-1, cs-1);
 
-            // Score
             ctx.fillStyle="white"; ctx.font="bold 30px sans-serif"; ctx.fillText("Score: "+snakeEngine.score, 20, 50);
         },
         
@@ -667,7 +691,7 @@
             sendScore('snake', snakeEngine.score);
             document.getElementById('gameOverScreen').style.display='block';
             document.getElementById('gameTitleDisplay').innerHTML = "GEWONNEN!";
-            document.getElementById('finalScore').innerText = "Perfektes Spiel! Score: "+snakeEngine.score;
+            document.getElementById('finalScore').innerText = "Perfekt! Score: "+snakeEngine.score;
             document.getElementById('finalScore').style.color = "#4CAF50";
         }
     };
