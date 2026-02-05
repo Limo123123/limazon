@@ -1061,37 +1061,101 @@
             const start = (currentPage - 1) * itemsPerPage;
             const chunk = filteredProducts.slice(start, start + itemsPerPage);
 
+            if (chunk.length === 0) {
+                list.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">Keine Produkte gefunden.</p>';
+                return;
+            }
+
             chunk.forEach(p => {
-                // NEU: Logik-Check VOR dem Anzeigen
+                // 1. SICHERHEITS-LOGIK FÜR BILDER
                 let imgUrl = p.image_url;
-                // Wenn keine URL da ist ODER es die blockierte Seite ist -> Lokales Bild nehmen
                 if (!imgUrl || imgUrl.includes('placehold.co') || imgUrl.includes('via.placeholder')) {
                     imgUrl = PLACEHOLDER_IMG;
                 }
 
+                // 2. LAGER & WARENKORB LOGIK
+                const sStock = p.isTokenCard ? 99999 : (p.stock || 0);
+                const itemInCart = cart.find(i => i.id === p.id);
+                const qCart = itemInCart ? itemInCart.quantity : 0; // Wie viele habe ich schon?
+
+                const availableToAdd = Math.max(0, sStock - qCart);
+                const canAdd = availableToAdd > 0;
+
+                // Lager Text & Farbe bestimmen
+                let stockText = `Verfügbar: ${sStock}`;
+                let stockClass = "text-green-600";
+
+                if (sStock === 0) {
+                    stockText = "Ausverkauft";
+                    stockClass = "text-red-600 font-bold";
+                } else if (qCart > 0) {
+                    // Wenn schon was im Korb ist, zeigen wir an, wie viel NOCH geht
+                    stockText = `Noch ${availableToAdd} verfügbar`;
+                    stockClass = "text-orange-500";
+                }
+
+                // 3. HTML ZUSAMMENBAUEN
                 const div = document.createElement('div');
                 div.className = 'product bg-white rounded-lg shadow-md flex flex-col overflow-hidden';
 
-                // NEU: Im <img> Tag nutzen wir 'onerror', falls ein echtes Bild doch mal kaputt ist
                 div.innerHTML = `
-            <img src="${imgUrl}" 
-                 onerror="this.src='${PLACEHOLDER_IMG}'" 
-                 onclick="openDetail(${p.id})">
-                 
-            <div class="p-4 flex flex-col flex-grow">
-                <strong class="text-lg mb-1">${p.name}</strong>
-                <span class="text-xl font-bold text-blue-600 mb-2">${p.price}</span>
-                <div class="mt-auto flex space-x-2">
-                    <button class="bg-blue-600 text-white px-3 py-1 rounded flex-1" onclick="addToCart(${p.id}, 1)">In Korb</button>
-                </div>
-            </div>
-                                    `;
+                    <img src="${imgUrl}" 
+                         class="w-full h-40 object-cover bg-gray-200"
+                         onerror="this.src='${PLACEHOLDER_IMG}'" 
+                         onclick="openDetail(${p.id})">
+                         
+                    <div class="p-4 flex flex-col flex-grow">
+                        <div class="mb-2">
+                            <strong class="text-lg block leading-tight">${p.name}</strong>
+                            <span class="text-xs text-gray-500">ID: ${p.id}</span>
+                        </div>
+                        
+                        <span class="text-xl font-bold text-blue-600 mb-2">${p.price}</span>
+                        
+                        <div class="text-sm mb-3">
+                            <span class="${stockClass}">${stockText}</span>
+                            
+                            ${qCart > 0 ? `<span class="block text-xs text-blue-500 font-semibold mt-1">(${qCart} im Korb)</span>` : ''}
+                            
+                            ${p.isTokenCard ? '<span class="text-xs text-purple-600 block mt-1">(Token Code)</span>' : ''}
+                        </div>
+
+                        <div class="mt-auto flex items-center space-x-2">
+                            <input id="qty-${p.id}" type="number" min="1" value="1" max="${availableToAdd > 0 ? availableToAdd : 1}" 
+                                   class="border rounded p-1 w-12 text-center text-sm" 
+                                   ${!canAdd ? 'disabled' : ''}>
+                            
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm flex-1 disabled:opacity-50" 
+                                    onclick="addToCart(${p.id}, document.getElementById('qty-${p.id}').value)"
+                                    ${!canAdd ? 'disabled' : ''}>
+                                In Korb
+                            </button>
+                            
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-sm flex-1 disabled:opacity-50" 
+                                    onclick="buyNow(${p.id}, document.getElementById('qty-${p.id}').value)"
+                                    ${!canAdd ? 'disabled' : ''}>
+                                Kaufen
+                            </button>
+                        </div>
+                    </div>
+                `;
                 list.appendChild(div);
             });
 
-            document.getElementById('page-info').textContent = `Seite ${currentPage}`;
+            // Update Page Info
+            const maxPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+            document.getElementById('page-info').textContent = `Seite ${currentPage} von ${maxPages}`;
+
+            // Buttons deaktivieren wenn am Ende/Anfang
+            document.getElementById('prev').disabled = currentPage <= 1;
+            document.getElementById('next').disabled = currentPage >= maxPages;
         }
 
+        // Hilfsfunktion für "Direkt Kaufen", falls sie fehlt
+        function buyNow(id, qty) {
+            addToCart(id, qty);
+            viewCart();
+        }
         const debouncedApplySearchFilter = debounce(() => { applySearchFilter(); }, 300);
         document.getElementById('search').addEventListener('input', debouncedApplySearchFilter);
         document.getElementById('search').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); applySearchFilter(); } });
@@ -1995,31 +2059,55 @@
                 currentPage = 1; renderProducts();
             });
 
-            document.getElementById('prev').onclick = () => { if (currentPage > 1) { currentPage--; renderProducts(); } };
-            document.getElementById('next').onclick = () => { if (currentPage < Math.ceil(filteredProducts.length / itemsPerPage)) { currentPage++; renderProducts(); } };
+            // --- ROBUST PAGINATION FIX ---
+            const prevBtnOriginal = document.getElementById('prev');
+            const nextBtnOriginal = document.getElementById('next');
+
+            if (prevBtnOriginal && nextBtnOriginal) {
+                // Clone nodes to strip ALL existing event listeners (including invisible ones)
+                const prevBtn = prevBtnOriginal.cloneNode(true);
+                const nextBtn = nextBtnOriginal.cloneNode(true);
+
+                // Replace the original buttons in the DOM with the clean clones
+                prevBtnOriginal.parentNode.replaceChild(prevBtn, prevBtnOriginal);
+                nextBtnOriginal.parentNode.replaceChild(nextBtn, nextBtnOriginal);
+
+                // Explicitly remove any inline onclick attributes from the clones
+                prevBtn.removeAttribute('onclick');
+                nextBtn.removeAttribute('onclick');
+
+                // Attach SINGLE, controlled event listeners
+                prevBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // Stop any default form submission or link following
+                    e.stopPropagation(); // Stop event bubbling
+
+                    if (currentPage > 1) {
+                        console.log(`${LOG_PREFIX} Page ${currentPage} -> ${currentPage - 1}`);
+                        currentPage--;
+                        renderProducts();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+
+                nextBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const maxPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+
+                    if (currentPage < maxPages) {
+                        console.log(`${LOG_PREFIX} Page ${currentPage} -> ${currentPage + 1}`);
+                        currentPage++;
+                        renderProducts();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+
+                console.log("[Fix] Pagination buttons completely reset and re-bound.");
+            }
         });
         window.onbeforeunload = () => { if (pollingTimer) clearInterval(pollingTimer); if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); console.log(`${LOG_PREFIX} Unload: Polling/Retry gestoppt.`); };
-    
-        // --- NOTFALL-FALLSCHIRM ---
-        // Falls irgendwas hängt (Netzwerk, CDN, Bilder), erzwinge den Start nach 2 Sekunde.
-        setTimeout(() => {
-            const loader = document.getElementById('loading-status');
-            const list = document.getElementById('product-list');
-            const pag = document.getElementById('pagination-controls');
-            
-            // Wenn der Ladebildschirm noch zu sehen ist...
-            if (loader && !loader.classList.contains('hidden')) {
-                console.warn(`${LOG_PREFIX} Notfall-Start ausgelöst (Timeout).`);
-                loader.classList.add('hidden'); // Ladebildschirm weg
-                list.classList.remove('hidden'); // Liste anzeigen
-                pag.classList.remove('hidden');  // Buttons anzeigen
-                
-                // Falls noch keine Produkte gerendert wurden (weil loadProducts hing)
-                if (list.children.length === 0 && products.length > 0) {
-                    renderProducts();
-                }
-            }
-        }, 2000); // Nach 1000ms (1 Sekunde) Gewaltanwendung
+
     </script>
 </body>
 
