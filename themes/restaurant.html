@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo's Diner 🍔</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --primary: #ff9f43; /* Burger Orange */
+            --accent: #2ecc71;  /* Money Green */
+            --text: #ffffff;
+            --text-muted: #a0a0a0;
+            --danger: #ff6b6b;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- HEADER & STATUS --- */
+        .header {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+        }
+
+        .energy-bar-container {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .energy-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #e67e22, #f1c40f);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .energy-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .balance-display {
+            font-size: 1.2rem;
+            color: var(--accent);
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* --- MENU GRID --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 80px; /* Platz für den Button unten */
+        }
+
+        .food-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .food-card:hover {
+            transform: translateY(-3px);
+            background: #2a2a2a;
+        }
+
+        .food-card.selected {
+            border-color: var(--primary);
+            background: #2a2a2a;
+            box-shadow: 0 0 15px rgba(255, 159, 67, 0.3);
+        }
+
+        .food-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .food-name {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .food-price {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .food-energy {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--primary);
+            color: #000;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.2s;
+        }
+
+        .food-card.selected .count-badge {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* --- FOOTER / ORDER BUTTON --- */
+        .order-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 580px;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #444;
+            z-index: 100;
+        }
+
+        .total-price {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .btn-order {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn-order:active {
+            transform: scale(0.95);
+        }
+
+        .btn-order:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        /* --- HISTORY --- */
+        .history-section {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 30px;
+            padding-bottom: 100px;
+        }
+        
+        .history-item {
+            background: #252525;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        .history-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-right: 10px;
+            min-width: 60px;
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 16px;
+            position: fixed;
+            z-index: 101;
+            left: 50%;
+            bottom: 90px;
+            transform: translateX(-50%);
+            border: 1px solid var(--primary);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 90px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 90px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🍔 Limo's Diner 🍟</h1>
+        <p style="color: var(--text-muted); margin-top: -10px;">Energie tanken & Cooldown skippen</p>
+        
+        <div class="status-card">
+            <div style="display: flex; justify-content: space-between;">
+                <span>Energie Status</span>
+                <span id="status-text">Lade...</span>
+            </div>
+            <div class="energy-bar-container">
+                <div id="energy-bar" class="energy-bar"></div>
+            </div>
+            <div class="balance-display" id="user-balance">Guthaben: $---</div>
+        </div>
+    </div>
+
+    <div id="menu-container" class="menu-grid">
+        </div>
+
+    <div class="history-section">
+        <h3 style="border-bottom: 1px solid #333; padding-bottom: 5px;">Letzte Mahlzeiten</h3>
+        <div id="history-list"></div>
+    </div>
+
+    <div class="order-bar">
+        <div class="total-price">
+            Summe: <span style="color: var(--accent)">$<span id="total-sum">0.00</span></span>
+            <br>
+            <span style="font-size: 0.8rem; color: #aaa;">Energie: +<span id="total-energy">0</span> Min</span>
+        </div>
+        <button id="btn-eat" class="btn-order" onclick="placeOrder()" disabled>ESSEN!</button>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        // 1. Hier die korrekte API URL eintragen
+        const API_BASE = 'https://api.limazon.v6.rocks/api'; 
+
+        let cart = {}; 
+        let menuData = [];
+
+        // HILFSFUNKTION: Fetch mit Cookies (WICHTIG!)
+        async function fetchWithAuth(url, options = {}) {
+            // Standard-Optionen setzen, damit Cookies immer mitgesendet werden
+            const defaultOptions = {
+                credentials: 'include', // <--- DAS IST DER FIX
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            // Optionen zusammenführen
+            const finalOptions = { ...defaultOptions, ...options };
+            
+            const response = await fetch(url, finalOptions);
+            
+            // Wenn nicht eingeloggt (401), User warnen
+            if (response.status === 401) {
+                document.querySelector('.header').innerHTML = `
+                    <div style="background:#ff6b6b; padding:20px; border-radius:10px; color:white;">
+                        <h2>Nicht eingeloggt! 🔒</h2>
+                        <p>Bitte logge dich zuerst auf der Hauptseite ein.</p>
+                        <a href="https://wl.limazon.v6.rocks" style="color:white; font-weight:bold;">Zum Login</a>
+                    </div>`;
+                throw new Error("Nicht eingeloggt (401)");
+            }
+
+            return response;
+        }
+
+        async function init() {
+            try {
+                await Promise.all([fetchMenu(), fetchStatus(), fetchHistory()]);
+            } catch (e) {
+                console.log("Init teilweise fehlgeschlagen, siehe Console.");
+            }
+        }
+
+        // 2. Menü laden
+        async function fetchMenu() {
+            try {
+                const res = await fetchWithAuth(`${API_BASE}/restaurant/menu`);
+                if (!res.ok) return; // Abbrechen bei Fehler
+
+                const data = await res.json();
+                
+                // Sicherheitscheck: Gibt es das Menü?
+                if (data && data.menu) {
+                    menuData = data.menu;
+                    renderMenu();
+                }
+            } catch (e) {
+                console.error("Fehler beim Laden des Menüs", e);
+            }
+        }
+
+        // 3. Status laden (Energie & Geld)
+        async function fetchStatus() {
+            try {
+                // Status laden
+                const res = await fetchWithAuth(`${API_BASE}/restaurant/status`);
+                if (!res.ok) return;
+                const data = await res.json(); 
+
+                // User Info (Geld) laden
+                const meRes = await fetchWithAuth(`${API_BASE}/auth/me`);
+                if (!meRes.ok) return;
+                const meData = await meRes.json(); 
+
+                // UI Updates (Nur wenn Daten da sind)
+                if (meData && typeof meData.balance === 'number') {
+                    document.getElementById('user-balance').innerText = `Guthaben: $${meData.balance.toFixed(2)}`;
+                }
+                
+                if (data) {
+                    document.getElementById('status-text').innerText = data.statusText || "Bereit";
+                    const bar = document.getElementById('energy-bar');
+                    const energy = data.energy || 0;
+                    bar.style.width = `${energy}%`;
+                    
+                    if(energy < 30) bar.style.background = '#ff6b6b'; 
+                    else if(energy < 70) bar.style.background = '#f1c40f'; 
+                    else bar.style.background = '#2ecc71'; 
+                }
+
+            } catch (e) { console.error(e); }
+        }
+
+        // 4. Historie laden
+        async function fetchHistory() {
+            try {
+                const res = await fetchWithAuth(`${API_BASE}/restaurant/history`);
+                if (!res.ok) return;
+                
+                const data = await res.json();
+                const list = document.getElementById('history-list');
+                list.innerHTML = '';
+
+                if(!data.history || data.history.length === 0) {
+                    list.innerHTML = '<div style="color:#555; text-align:center;">Noch nichts gegessen.</div>';
+                    return;
+                }
+
+                data.history.slice(0, 5).forEach(entry => {
+                    const date = new Date(entry.date);
+                    const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    // Falls items ein Array ist, Icons holen, sonst Fallback
+                    const itemsStr = Array.isArray(entry.items) 
+                        ? entry.items.map(i => i.icon).join(' ') 
+                        : '🍽️';
+                    
+                    const div = document.createElement('div');
+                    div.className = 'history-item';
+                    div.innerHTML = `
+                        <span class="history-time">${timeStr}</span>
+                        <span style="flex-grow:1;">${itemsStr}</span>
+                        <span style="color:var(--danger);">-$${entry.cost.toFixed(0)}</span>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch(e) {}
+        }
+
+        // 5. Menü rendern
+        function renderMenu() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+
+            if (!menuData || menuData.length === 0) return;
+
+            menuData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'food-card';
+                card.onclick = () => toggleItem(item.id);
+                card.id = `card-${item.id}`;
+
+                card.innerHTML = `
+                    <div class="count-badge" id="badge-${item.id}">0</div>
+                    <span class="food-icon">${item.icon}</span>
+                    <span class="food-name">${item.name}</span>
+                    <span class="food-price">$${item.price.toFixed(2)}</span>
+                    <br>
+                    <span class="food-energy">⚡ ${item.energy} Min</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 6. Warenkorb Logik
+        function toggleItem(id) {
+            if (!cart[id]) cart[id] = 0;
+            cart[id]++;
+            
+            if (cart[id] > 5) {
+                cart[id] = 0;
+                delete cart[id];
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            let total = 0;
+            let energy = 0;
+            let count = 0;
+
+            menuData.forEach(item => {
+                const qty = cart[item.id] || 0;
+                const card = document.getElementById(`card-${item.id}`);
+                const badge = document.getElementById(`badge-${item.id}`);
+
+                if (qty > 0) {
+                    card.classList.add('selected');
+                    badge.innerText = qty;
+                    total += item.price * qty;
+                    energy += item.energy * qty;
+                    count += qty;
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+
+            document.getElementById('total-sum').innerText = total.toFixed(2);
+            document.getElementById('total-energy').innerText = energy;
+            const btn = document.getElementById('btn-eat');
+            btn.disabled = count === 0;
+            btn.innerText = count === 0 ? "Wähle Essen" : `JETZT ESSEN ($${total.toFixed(0)})`;
+        }
+
+        // 7. Bestellen
+        async function placeOrder() {
+            const itemIds = [];
+            for (const [id, qty] of Object.entries(cart)) {
+                for(let i=0; i<qty; i++) itemIds.push(id);
+            }
+
+            const btn = document.getElementById('btn-eat');
+            btn.disabled = true;
+            btn.innerText = "Mampf...";
+
+            try {
+                // Auch hier fetchWithAuth nutzen!
+                const res = await fetchWithAuth(`${API_BASE}/restaurant/order`, {
+                    method: 'POST',
+                    body: JSON.stringify({ itemIds })
+                });
+                
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(data.message);
+                    cart = {};
+                    updateUI();
+                    await fetchStatus();
+                    await fetchHistory();
+                } else {
+                    showToast("Fehler: " + (data.error || "Unbekannt"));
+                }
+            } catch (e) {
+                showToast("Verbindungsfehler");
+            } finally {
+                btn.disabled = false;
+                updateUI();
+            }
+        }
+
+        function showToast(text) {
+            const x = document.getElementById("toast");
+            x.innerText = text;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        // Starten
+        init();
+        
+        // Auto-Refresh
+        setInterval(fetchStatus, 10000);
+
+    </script>
+</body>
+</html>

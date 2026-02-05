@@ -861,12 +861,12 @@
         let serverRetryCount = 0;
         const MAX_SERVER_RETRIES = 12;
         const SERVER_RETRY_DELAY = 5000;
-        
+
         // NEU: Polling Timer Variable
         let pollingTimer = null;
         // NEU: Schnelleres Intervall (3 Sekunden), da der Check winzig ist
-        const pollingInterval = 3000; 
-        
+        const pollingInterval = 3000;
+
         // NEU: Speichert den lokalen Zeitstempel der Daten
         let localDataVersions = { products: 0, chat: 0, news: 0, stonks: 0 };
 
@@ -876,6 +876,7 @@
         let sellCooldownIntervalId = null;
 
         const getApiUrl = () => 'https://api.limazon.v6.rocks/api';
+        const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%239ca3af'%3EBild nicht verfügbar%3C/text%3E%3C/svg%3E";
 
         // --- Hilfsfunktionen ---
         const filterValidProducts = (productList) => {
@@ -946,19 +947,19 @@
                 // Wir fragen nur den winzigen Version-Endpoint (ca. 200 Bytes)
                 const res = await fetch(`${getApiUrl()}/status/versions`);
                 if (!res.ok) return;
-                
+
                 const serverVersions = await res.json();
 
                 // 1. PRODUKTE CHECK
                 // Wenn Server-Zeitstempel neuer ist als unserer -> Laden!
                 if (serverVersions.products > localDataVersions.products) {
                     console.log(`${LOG_PREFIX} Smart-Polling: Neue Produktdaten erkannt (Server: ${serverVersions.products}, Local: ${localDataVersions.products}).`);
-                    
+
                     // Wir speichern die vorherigen Bestände für den Vergleich
                     const prevStocks = products.reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {});
-                    
+
                     await loadProducts('polling');
-                    
+
                     // UI Updates nach dem Laden (nur wenn nötig)
                     if (!isServerStarting) {
                         let changed = false;
@@ -969,14 +970,14 @@
                                 break;
                             }
                         }
-                        
+
                         if (changed) {
                             if (!document.getElementById('cart-modal').classList.contains('hidden')) viewCart();
                             if (detailModalProductId !== null) showProductDetails(detailModalProductId);
                             if (!document.getElementById('inventory-modal').classList.contains('hidden') && loggedInUser) showMyInventory();
                         }
                     }
-                    
+
                     // Aktualisiere unsere lokale Version
                     localDataVersions.products = serverVersions.products;
                 }
@@ -984,11 +985,11 @@
                 // 2. STONKS CHECK (Optional, falls Börse offen ist)
                 const stonkModal = document.getElementById('stonks-market-modal');
                 if (stonkModal && !stonkModal.classList.contains('hidden')) {
-                     if (serverVersions.stonks > localDataVersions.stonks) {
-                         console.log(`${LOG_PREFIX} Smart-Polling: Neue Börsendaten.`);
-                         renderStonkMarket();
-                         localDataVersions.stonks = serverVersions.stonks;
-                     }
+                    if (serverVersions.stonks > localDataVersions.stonks) {
+                        console.log(`${LOG_PREFIX} Smart-Polling: Neue Börsendaten.`);
+                        renderStonkMarket();
+                        localDataVersions.stonks = serverVersions.stonks;
+                    }
                 }
 
             } catch (e) {
@@ -1001,14 +1002,14 @@
             console.log(`${LOG_PREFIX} loadProducts. Trigger: ${triggeredBy}, ServerStart: ${isServerStarting}, TimeoutID: ${serverStartTimeoutId !== null}`);
             if (triggeredBy !== 'retry' && serverStartTimeoutId) { console.log(`${LOG_PREFIX} loadProducts (${triggeredBy}): Ignoriert (Retry geplant).`); return; }
             if (triggeredBy === 'polling' && isServerStarting) { console.log(`${LOG_PREFIX} loadProducts (${triggeredBy}): Ignoriert (Server startet).`); return; }
-            
+
             if (triggeredBy === 'initial' || triggeredBy === 'retry') { showLoadingStatus("Lade Produkte...", true, true); if (triggeredBy === 'initial') isServerStarting = true; }
             if (triggeredBy !== 'retry') serverRetryCount = 0;
-            
+
             try {
-                const res = await fetch(`${getApiUrl()}/products`); 
+                const res = await fetch(`${getApiUrl()}/products`);
                 const contentType = res.headers.get("content-type");
-                
+
                 if (!res.ok || !contentType || !contentType.includes("application/json")) {
                     console.warn(`${LOG_PREFIX} loadProducts: Nicht OK (${res.status}) oder kein JSON (${contentType}). Server startet?`);
                     isServerStarting = true; serverRetryCount++;
@@ -1016,29 +1017,29 @@
                     const waitTime = SERVER_RETRY_DELAY / 1000; showLoadingStatus(`Server startet... (Versuch ${serverRetryCount}/${MAX_SERVER_RETRIES}, +${waitTime}s)`, true, true);
                     if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = setTimeout(() => { serverStartTimeoutId = null; loadProducts('retry'); }, SERVER_RETRY_DELAY); return;
                 }
-                
+
                 const wasStarting = isServerStarting; isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) { clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; }
                 if (wasStarting) console.log(`${LOG_PREFIX} loadProducts: Server scheint gestartet.`);
                 if (wasStarting || triggeredBy === 'initial' || triggeredBy === 'retry') showLoadingStatus(null);
-                
-                const { products: data } = await res.json(); 
+
+                const { products: data } = await res.json();
                 products = Array.isArray(data) ? filterValidProducts(data).sort((a, b) => a.id - b.id) : [];
-                
+
                 // NEU: Lokale Version synchronisieren, damit Polling nicht doppelt lädt
                 // Wir setzen es einfach auf "jetzt", das verhindert einen sofortigen Reload
                 if (triggeredBy !== 'polling') {
-                    localDataVersions.products = Date.now(); 
+                    localDataVersions.products = Date.now();
                 }
 
-                console.log(`${LOG_PREFIX} Produkte geladen: ${products.length}`); 
-                applySearchFilter(); 
+                console.log(`${LOG_PREFIX} Produkte geladen: ${products.length}`);
+                applySearchFilter();
                 if (triggeredBy === 'initial') isInitialLoad = false;
 
             } catch (error) {
                 console.error(`${LOG_PREFIX} Fehler Laden Produkte (${triggeredBy}):`, error);
                 if (triggeredBy === 'initial' || !isServerStarting) showLoadingStatus(`Fehler Laden Produkte: ${error.message}.`, false, true);
                 if (serverRetryCount >= MAX_SERVER_RETRIES || (triggeredBy === 'initial' && !serverStartTimeoutId)) isServerStarting = false;
-                
+
                 // UI Disable Logik bei Fehler
                 const pageInfoEl = document.getElementById('page-info'); if (pageInfoEl) pageInfoEl.textContent = 'Fehler';
                 const prevBtn = document.getElementById('prev'); if (prevBtn) prevBtn.disabled = true;
@@ -1054,25 +1055,41 @@
         }
 
         function renderProducts() {
-            if (isServerStarting && isInitialLoad) { console.log(`${LOG_PREFIX} renderProducts: Übersprungen (Server startet).`); return; }
-            const list = document.getElementById('product-list'); if (!list) { console.error(`${LOG_PREFIX} Produktliste nicht im DOM.`); return; } list.innerHTML = '';
-            let totalPgs = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
-            if (currentPage > totalPgs) currentPage = totalPgs; if (currentPage < 1) currentPage = 1;
-            const start = (currentPage - 1) * itemsPerPage; const end = start + itemsPerPage; const prodsToShow = filteredProducts.slice(start, end);
-            if (prodsToShow.length === 0 && !isServerStarting) { let msg = '<p class="text-center text-gray-500 col-span-full py-4"><i class="fas fa-box-open fa-2x mb-2 text-gray-400"></i><br>'; if (filteredProducts.length === 0 && document.getElementById('search').value.trim() !== '') msg += 'Keine Produkte zum Suchbegriff.'; else if (products.length === 0) msg += 'Shop ist leer.'; else msg += 'Keine weiteren Produkte.'; msg += '</p>'; list.innerHTML = msg; }
-            prodsToShow.forEach(p => {
-                const sStock = p.stock || 0; const iCart = cart.find(item => item.id === p.id); const qCart = iCart ? iCart.quantity : 0;
-                const sInfo = getStockDisplayInfo(sStock, qCart, p.isTokenCard); const div = document.createElement('div');
+            const list = document.getElementById('product-list');
+            list.innerHTML = '';
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const chunk = filteredProducts.slice(start, start + itemsPerPage);
+
+            chunk.forEach(p => {
+                // NEU: Logik-Check VOR dem Anzeigen
+                let imgUrl = p.image_url;
+                // Wenn keine URL da ist ODER es die blockierte Seite ist -> Lokales Bild nehmen
+                if (!imgUrl || imgUrl.includes('placehold.co') || imgUrl.includes('via.placeholder')) {
+                    imgUrl = PLACEHOLDER_IMG;
+                }
+
+                const div = document.createElement('div');
                 div.className = 'product bg-white rounded-lg shadow-md flex flex-col overflow-hidden';
-                let prodSpecificHtml = p.isTokenCard ? `<span class="block text-center text-xs text-purple-600 bg-purple-100 p-1 rounded-t-lg -mt-px">Token Guthabenkarte (${p.tokenValue} Tokens)</span>` : '';
-                div.innerHTML = `${prodSpecificHtml}<img src="${p.image_url || `https://placehold.co/150x160.png?text=${encodeURIComponent(p.name || 'P')}`}" alt="${p.name || '?'}" onclick="showProductDetails(${p.id})"/><div class="p-4 flex flex-col flex-grow"><strong class="text-lg mb-1">${p.name || '?'}</strong><span class="text-sm text-gray-600 mb-2">ID: ${p.id || 'N/A'}</span><span class="text-xl font-bold text-blue-600 mb-2">${p.price || '$?.??'}</span><div class="text-sm mb-3"><span class="stock-status ${sInfo.cssClass}">${sInfo.text}</span>${qCart > 0 ? `<br><span class="text-xs text-blue-500">(${qCart} im Korb)</span>` : ''}</div><div class="flex items-center mt-auto space-x-2"><input id="qty-${p.id}" type="number" min="1" value="1" class="border rounded p-1 w-16 text-center"${!sInfo.canAddMore ? ' disabled' : ''} max="${sInfo.availableToAdd > 0 ? sInfo.availableToAdd : 1}"/><button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded flex-1 disabled:opacity-50 disabled:cursor-not-allowed"${!sInfo.canAddMore ? ' disabled' : ''} onclick="addToCart(${p.id}, document.getElementById('qty-${p.id}').value)">In Korb</button><button class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex-1 disabled:opacity-50 disabled:cursor-not-allowed"${!sInfo.canAddMore ? ' disabled' : ''} onclick="buyNow(${p.id}, document.getElementById('qty-${p.id}').value)">${p.isTokenCard ? 'Code kaufen' : 'Kaufen'}</button></div></div>`;
+
+                // NEU: Im <img> Tag nutzen wir 'onerror', falls ein echtes Bild doch mal kaputt ist
+                div.innerHTML = `
+            <img src="${imgUrl}" 
+                 onerror="this.src='${PLACEHOLDER_IMG}'" 
+                 onclick="openDetail(${p.id})">
+                 
+            <div class="p-4 flex flex-col flex-grow">
+                <strong class="text-lg mb-1">${p.name}</strong>
+                <span class="text-xl font-bold text-blue-600 mb-2">${p.price}</span>
+                <div class="mt-auto flex space-x-2">
+                    <button class="bg-blue-600 text-white px-3 py-1 rounded flex-1" onclick="addToCart(${p.id}, 1)">In Korb</button>
+                </div>
+            </div>
+                                    `;
                 list.appendChild(div);
             });
-            totalPgs = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
-            document.getElementById('page-info').textContent = `Seite ${currentPage} von ${totalPgs}`;
-            document.getElementById('prev').disabled = currentPage === 1;
-            document.getElementById('next').disabled = currentPage >= totalPgs;
-            const pagCtrl = document.getElementById('pagination-controls'); if (pagCtrl) pagCtrl.classList.toggle('hidden', totalPgs <= 1 && prodsToShow.length === 0);
+
+            document.getElementById('page-info').textContent = `Seite ${currentPage}`;
         }
 
         const debouncedApplySearchFilter = debounce(() => { applySearchFilter(); }, 300);
@@ -1314,14 +1331,14 @@
         async function showMyTokenCodes() { if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; } openMyTokenCodesModal(); const contentDiv = document.getElementById('my-token-codes-content'); contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Lade Codes...</p>'; try { const response = await fetch(`${getApiUrl()}/tokens/my-codes`, { credentials: 'include' }); if (!response.ok) { const errData = await response.json().catch(() => ({ error: "Unbek. Fehler Laden Codes" })); throw new Error(errData.error || `Fehler ${response.status}`); } const { codes } = await response.json(); if (!codes || codes.length === 0) { contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Keine unbenutzten Token Codes.</p>'; return; } contentDiv.innerHTML = ''; codes.forEach(tokenCode => { const codeDiv = document.createElement('div'); codeDiv.className = 'mb-3 p-3 border rounded shadow-sm bg-gray-50'; const purDate = new Date(tokenCode.createdAt).toLocaleDateString('de-DE', { year: 'numeric', month: 'short', day: 'numeric' }); codeDiv.innerHTML = `<div class="flex justify-between items-center"><div><p class="font-semibold text-green-600 font-mono break-all">${tokenCode.code}</p><p class="text-sm text-gray-700">Wert: ${tokenCode.tokenAmount} Tokens</p><p class="text-xs text-gray-500">Gekauft als: "${tokenCode.productName || 'Token Guthaben'}" am ${purDate}</p></div><button class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded" onclick="copyToClipboard('${tokenCode.code}',this)">Kopieren</button></div>`; contentDiv.appendChild(codeDiv); }); } catch (error) { console.error(`${LOG_PREFIX} Fehler Laden meiner Token Codes:`, error); contentDiv.innerHTML = `<p class="text-center text-red-500 py-4">Fehler Laden: ${error.message}</p>`; } }
 
         // --- Polling ---
-        function startPolling() { 
-            if (pollingTimer) clearInterval(pollingTimer); 
-            
+        function startPolling() {
+            if (pollingTimer) clearInterval(pollingTimer);
+
             // Wir rufen jetzt checkForUpdates auf
-            pollingTimer = setInterval(async () => { 
-                if (!isServerStarting && !serverStartTimeoutId) { 
+            pollingTimer = setInterval(async () => {
+                if (!isServerStarting && !serverStartTimeoutId) {
                     await checkForUpdates();
-                } 
+                }
             }, pollingInterval); // Alle 3 Sekunden (Definiert in Variable oben)
         }
 
@@ -1962,15 +1979,47 @@
         }
 
         // --- Initialisierung ---
-        window.onload = async () => {
-            console.log(`${LOG_PREFIX} window.onload: Initialisiere Seite.`);
+        // WICHTIG: DOMContentLoaded feuert sofort, auch wenn Bilder noch laden/blockieren
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log(`${LOG_PREFIX} Start.`);
+
+            // Deine Initialisierungs-Funktionen
             loadCartFromCookies();
             await checkLoginStatus();
-            await loadProducts('initial');
-            startPolling();
-            const sellPriceInput = document.getElementById('sell-price'); if (sellPriceInput) sellPriceInput.addEventListener('input', debounce(updateSellProbability, 250));
-        };
+            await loadProducts();
+
+            // Event Listeners wieder anhängen
+            document.getElementById('search').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                filteredProducts = products.filter(p => p.name.toLowerCase().includes(term));
+                currentPage = 1; renderProducts();
+            });
+
+            document.getElementById('prev').onclick = () => { if (currentPage > 1) { currentPage--; renderProducts(); } };
+            document.getElementById('next').onclick = () => { if (currentPage < Math.ceil(filteredProducts.length / itemsPerPage)) { currentPage++; renderProducts(); } };
+        });
         window.onbeforeunload = () => { if (pollingTimer) clearInterval(pollingTimer); if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); console.log(`${LOG_PREFIX} Unload: Polling/Retry gestoppt.`); };
+    
+        // --- NOTFALL-FALLSCHIRM ---
+        // Falls irgendwas hängt (Netzwerk, CDN, Bilder), erzwinge den Start nach 2 Sekunde.
+        setTimeout(() => {
+            const loader = document.getElementById('loading-status');
+            const list = document.getElementById('product-list');
+            const pag = document.getElementById('pagination-controls');
+            
+            // Wenn der Ladebildschirm noch zu sehen ist...
+            if (loader && !loader.classList.contains('hidden')) {
+                console.warn(`${LOG_PREFIX} Notfall-Start ausgelöst (Timeout).`);
+                loader.classList.add('hidden'); // Ladebildschirm weg
+                list.classList.remove('hidden'); // Liste anzeigen
+                pag.classList.remove('hidden');  // Buttons anzeigen
+                
+                // Falls noch keine Produkte gerendert wurden (weil loadProducts hing)
+                if (list.children.length === 0 && products.length > 0) {
+                    renderProducts();
+                }
+            }
+        }, 2000); // Nach 1000ms (1 Sekunde) Gewaltanwendung
     </script>
 </body>
 
