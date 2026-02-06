@@ -163,6 +163,24 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="content-card border-purple-900/50">
+                    <h3 class="text-xl font-bold mb-4 text-purple-400">📦 Lager & Steuern</h3>
+                    <div class="space-y-3">
+                        <button onclick="resetStock(false)" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>📦 Lager Reset (Standard)</span>
+                            <span class="text-xs opacity-50">Füllt Regale auf</span>
+                        </button>
+                        <button onclick="resetStock(true)" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>🚫 Lager Nullen</span>
+                            <span class="text-xs opacity-50">Alles auf 0</span>
+                        </button>
+                         <button onclick="forceTax()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>👮 Sofort-Steuer (0,5%)</span>
+                            <span class="text-xs opacity-50">Bei >100M Usern</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -563,6 +581,37 @@
             if(!confirm("Produkt löschen?")) return;
             await fetch(API + '/api/admin/products/' + id, { method: 'DELETE', credentials: 'include' });
             loadProducts();
+        }
+
+        async function resetStock(zero) {
+            const endpoint = zero ? '/api/admin/zero-stock' : '/api/products/reset';
+            const action = zero ? "auf 0 setzen" : "auffüllen";
+            
+            if(!confirm(`Lager wirklich ${action}?`)) return;
+            
+            try {
+                const res = await fetch(API + endpoint, { method: 'PATCH', credentials: 'include' });
+                const d = await res.json();
+                alert(d.message);
+                loadProducts(); // Liste aktualisieren
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+
+        async function forceTax() {
+            if(!confirm("⚠️ Sofort 0,5% Steuern bei allen Reichen (>100M) einziehen?")) return;
+            
+            try {
+                const res = await fetch(API + '/api/admin/system/force-tax', { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                
+                if(d.success) {
+                    const det = d.details;
+                    alert(`Erfolg!\n\nEingesammelt: $${det.collected.toLocaleString()}\nBetroffene User: ${det.taxedCount}\nGeschützt: ${det.shieldedCount}`);
+                } else {
+                    alert(d.message);
+                }
+                loadUsers(); // User-Liste aktualisieren (Geld hat sich geändert)
+            } catch(e) { alert("Fehler: " + e.message); }
         }
     </script>
 </body>

@@ -3,277 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hall of Fame - Limazon Server</title>
+    <title>Hall of Fame 🏆 - Limazon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* Modernes, dunkles Design */
-        :root {
-            --bg-color: #121212;
-            --surface-color: #1e1e1e;
-            --primary-color: #bb86fc;
-            --secondary-color: #03dac6;
-            --text-color: #e0e0e0;
-            --border-color: #333;
-            --gold-color: #ffd700;
-            --silver-color: #c0c0c0;
-            --bronze-color: #cd7f32;
-        }
-
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Teko:wght@700&display=swap');
-
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Hintergründe & Glows */
+        .bg-noise {
+            position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .glow-spot {
+            position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(100px); z-index: -2; opacity: 0.15;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 1rem 2rem;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-        }
-
-        #page-title {
-            font-family: 'Teko', sans-serif;
-            font-size: 3.5rem;
-            text-align: center;
-            margin-bottom: 0.5rem;
-            color: var(--primary-color);
-            text-shadow: 0 0 10px var(--primary-color);
-        }
-
-        #last-updated {
-            text-align: center;
-            font-size: 0.9rem;
-            color: #aaa;
-            margin-top: -10px;
-            margin-bottom: 2rem;
-        }
-
-        .category-card {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .category-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .category-card h2 {
-            font-family: 'Teko', sans-serif;
-            font-size: 2.2rem;
-            margin-top: 0;
-            color: var(--secondary-color);
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 10px;
-        }
-
-        .category-card .description {
-            color: #b0b0b0;
-            font-style: italic;
-            margin-bottom: 1.5rem;
-        }
-
-        .ranking-list {
-            list-style: none;
-            padding: 0;
-            counter-reset: ranking-counter;
-        }
-
-        .ranking-list li {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            margin-bottom: 8px;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            border-left: 4px solid transparent;
-            transition: background-color 0.2s;
-        }
-
-        .ranking-list li:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Medaillen für Top 3 */
-        .ranking-list li:nth-child(1) { border-left-color: var(--gold-color); }
-        .ranking-list li:nth-child(2) { border-left-color: var(--silver-color); }
-        .ranking-list li:nth-child(3) { border-left-color: var(--bronze-color); }
-
-        .ranking-list li::before {
-            counter-increment: ranking-counter;
-            content: counter(ranking-counter);
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-right: 15px;
-            background: #333;
-            color: var(--text-color);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Spezielle Farben für die Medaillen-Nummern */
-        .ranking-list li:nth-child(1)::before { background: var(--gold-color); color: #000; }
-        .ranking-list li:nth-child(2)::before { background: var(--silver-color); color: #000; }
-        .ranking-list li:nth-child(3)::before { background: var(--bronze-color); color: #000; }
-
-        .username {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .value {
-            font-weight: bold;
-            color: var(--secondary-color);
-        }
-
-        .infinity-members {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .member-tag {
-            background-color: var(--primary-color);
-            color: var(--bg-color);
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        #loading-message, #error-message {
-            text-align: center;
-            font-size: 1.2rem;
-            padding: 2rem;
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         
-        #error-message {
-            color: #ff5555;
+        /* Podium Styles */
+        .podium-container {
+            display: flex; align-items: flex-end; justify-content: center; gap: 1rem; margin-bottom: 2rem; min-height: 220px;
         }
+        .podium-place {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            width: 100px; text-align: center; position: relative; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .podium-place:hover { transform: translateY(-10px); }
+        
+        .avatar-circle {
+            width: 60px; height: 60px; border-radius: 50%; background: #333; margin-bottom: 10px;
+            border: 3px solid transparent; object-fit: cover;
+        }
+        .rank-1 .avatar-circle { width: 80px; height: 80px; border-color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .rank-2 .avatar-circle { border-color: #c0c0c0; box-shadow: 0 0 15px rgba(192, 192, 192, 0.2); }
+        .rank-3 .avatar-circle { border-color: #cd7f32; box-shadow: 0 0 15px rgba(205, 127, 50, 0.2); }
+
+        .podium-bar {
+            width: 100%; border-top-left-radius: 8px; border-top-right-radius: 8px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .rank-1 .podium-bar { height: 120px; background: linear-gradient(to bottom, rgba(255, 215, 0, 0.2), transparent); }
+        .rank-2 .podium-bar { height: 85px; }
+        .rank-3 .podium-bar { height: 60px; }
+
+        .rank-number {
+            font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 2rem; margin-top: -40px; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 10;
+        }
+        .rank-1 .rank-number { color: #ffd700; font-size: 3rem; }
+        .rank-2 .rank-number { color: #c0c0c0; }
+        .rank-3 .rank-number { color: #cd7f32; }
+
+        /* Listen-Elemente (Platz 4+) */
+        .list-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; margin-bottom: 8px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .list-item:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.1); transform: translateX(5px); }
+        
+        /* Infinity Club Special */
+        .infinity-card {
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(40, 30, 10, 0.9));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            position: relative; overflow: hidden;
+        }
+        .infinity-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite; pointer-events: none;
+        }
+        @keyframes rotate { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+
+        .infinity-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #ffd700; padding: 6px 14px; border-radius: 99px; font-weight: bold; font-size: 0.9rem;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.1); transition: all 0.3s;
+        }
+        .infinity-tag:hover { background: rgba(255, 215, 0, 0.2); box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); transform: scale(1.05); }
+
+        /* Animationen */
+        .fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
     </style>
 </head>
-<body>
+<body class="min-h-screen pb-20">
 
-    <div class="container">
-        <h1 id="page-title"></h1>
-        <p id="last-updated"></p>
+    <div class="bg-noise"></div>
+    <div class="glow-spot bg-purple-600 top-[-100px] left-[-100px]"></div>
+    <div class="glow-spot bg-blue-600 bottom-[-100px] right-[-100px]"></div>
 
-        <div id="hall-of-fame-content">
-            <p id="loading-message">Lade die Halle des Ruhms... Die Legenden versammeln sich!</p>
-        </div>
+    <header class="text-center py-16 px-6 fade-in-up">
+        <h1 class="text-6xl md:text-8xl font-bold tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-500 to-amber-600 drop-shadow-2xl">
+            HALL OF FAME
+        </h1>
+        <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+            Hier werden Legenden geboren. Die reichsten, mächtigsten und einflussreichsten Bürger des Limazon Universums.
+        </p>
+        <p id="last-updated" class="text-xs text-gray-600 mt-4 uppercase tracking-widest">Lade Daten...</p>
+    </header>
+
+    <div class="container mx-auto px-4 max-w-6xl grid grid-cols-1 gap-16">
+
+        <section id="section-money" class="fade-in-up delay-100">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="h-10 w-1 bg-green-500 rounded-full"></div>
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Finanz-Magnaten 💰</h2>
+                    <p class="text-gray-400 text-sm">Die Elite der Wirtschaft.</p>
+                </div>
+            </div>
+            
+            <div id="podium-money" class="podium-container"></div>
+            
+            <div id="list-money" class="max-w-2xl mx-auto"></div>
+        </section>
+
+        <section id="section-tokens" class="fade-in-up delay-200">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="h-10 w-1 bg-blue-500 rounded-full"></div>
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Token Titanen ✨</h2>
+                    <p class="text-gray-400 text-sm">Sammler der seltensten Währung.</p>
+                </div>
+            </div>
+            
+            <div id="podium-tokens" class="podium-container"></div>
+            <div id="list-tokens" class="max-w-2xl mx-auto"></div>
+        </section>
+
+        <section id="section-infinity" class="fade-in-up delay-300">
+            <div class="glass-card infinity-card rounded-3xl p-8 md:p-12 text-center">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-600">
+                    ∞ INFINITY CLUB ∞
+                </h2>
+                <p class="text-amber-100/60 mb-8 max-w-xl mx-auto text-lg">
+                    Jenseits von Reichtum. Diese Legenden haben das Spiel durchgespielt. Geld spielt keine Rolle mehr.
+                </p>
+                
+                <div id="infinity-list" class="flex flex-wrap justify-center gap-4">
+                    </div>
+            </div>
+        </section>
+
     </div>
 
+    <div id="status-msg" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-surface border border-white/10 px-6 py-3 rounded-full text-sm text-gray-400 hidden"></div>
+
     <script>
-        // ===============================================================
-        // == WICHTIG: Passe diese URL an deine Server-Adresse an! ==
-        // ===============================================================
-        // Wenn du lokal testest, könnte es so aussehen: 'http://localhost:10000/api/hall-of-fame'
-        // Auf deinem Live-Server ist es die öffentliche URL.
-        const apiUrl = 'https://api.limazon.v6.rocks/api/hall-of-fame'; 
-        // ===============================================================
+        const API_BASE = 'https://api.limazon.v6.rocks/api';
 
-        const pageTitleEl = document.getElementById('page-title');
-        const lastUpdatedEl = document.getElementById('last-updated');
-        const contentEl = document.getElementById('hall-of-fame-content');
-        const loadingEl = document.getElementById('loading-message');
-
-        // Hilfsfunktion zur Formatierung von Zahlen
-        function formatNumber(num) {
-            return new Intl.NumberFormat('de-DE').format(num);
-        }
-
-        // Hauptfunktion zum Abrufen und Anzeigen der Daten
-        async function fetchHallOfFame() {
+        async function init() {
             try {
-                const response = await fetch(apiUrl);
+                const res = await fetch(`${API_BASE}/hall-of-fame`);
+                if(!res.ok) throw new Error("Netzwerkfehler");
+                const data = await res.json();
+                
+                renderPage(data);
+                
+                const date = new Date(data.lastUpdated);
+                document.getElementById('last-updated').innerText = `LETZTES UPDATE: ${date.toLocaleTimeString()} Uhr`;
 
-                if (!response.ok) {
-                    throw new Error(`Netzwerkfehler: ${response.status} - ${response.statusText}`);
-                }
-
-                const data = await response.json();
-
-                // Lade-Nachricht entfernen
-                loadingEl.style.display = 'none';
-
-                // Titel und Update-Zeit setzen
-                pageTitleEl.textContent = data.title;
-                const updatedDate = new Date(data.lastUpdated);
-                lastUpdatedEl.textContent = `Letzte Aktualisierung: ${updatedDate.toLocaleString('de-DE')}`;
-
-                // Kategorien durchlaufen und HTML generieren
-                data.categories.forEach(category => {
-                    let entriesHtml = '';
-
-                    if (category.id === 'money_magnates') {
-                        entriesHtml = '<ol class="ranking-list">';
-                        category.entries.forEach(entry => {
-                            // Währung formatieren, z.B. $123.456,78
-                            const formattedBalance = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'USD' }).format(entry.balance);
-                            entriesHtml += `
-                                <li>
-                                    <span class="username">${entry.username}</span>
-                                    <span class="value">${formattedBalance}</span>
-                                </li>
-                            `;
-                        });
-                        entriesHtml += '</ol>';
-                    } else if (category.id === 'token_titans') {
-                        entriesHtml = '<ol class="ranking-list">';
-                        category.entries.forEach(entry => {
-                            entriesHtml += `
-                                <li>
-                                    <span class="username">${entry.username}</span>
-                                    <span class="value">${formatNumber(entry.tokens)} Tokens</span>
-                                </li>
-                            `;
-                        });
-                        entriesHtml += '</ol>';
-                    } else if (category.id === 'infinity_club') {
-                        entriesHtml = '<div class="infinity-members">';
-                        category.members.forEach(member => {
-                            entriesHtml += `<span class="member-tag">∞ ${member}</span>`;
-                        });
-                        entriesHtml += '</div>';
-                    }
-
-                    // Die fertige "Karte" für die Kategorie erstellen und einfügen
-                    const categoryCard = `
-                        <div class="category-card">
-                            <h2>${category.title}</h2>
-                            <p class="description">${category.description}</p>
-                            ${entriesHtml}
-                        </div>
-                    `;
-                    contentEl.innerHTML += categoryCard;
-                });
-
-            } catch (error) {
-                console.error('Fehler beim Abrufen der Hall of Fame:', error);
-                loadingEl.style.display = 'none';
-                contentEl.innerHTML = `<p id="error-message">Hoppla! Die Halle des Ruhms konnte nicht geladen werden. Vielleicht polieren die Helden gerade ihre Rüstungen. <br><br>Fehler: ${error.message}</p>`;
+            } catch(e) {
+                console.error(e);
+                document.getElementById('status-msg').innerText = "Fehler beim Laden der Daten.";
+                document.getElementById('status-msg').classList.remove('hidden');
             }
         }
 
-        // Die Funktion ausführen, sobald die Seite geladen ist
-        document.addEventListener('DOMContentLoaded', fetchHallOfFame);
+        function renderPage(data) {
+            data.categories.forEach(cat => {
+                if (cat.id === 'money_magnates') {
+                    renderPodiumAndList(cat.entries, 'money', 'USD');
+                } else if (cat.id === 'token_titans') {
+                    renderPodiumAndList(cat.entries, 'tokens', 'TOKEN');
+                } else if (cat.id === 'infinity_club') {
+                    renderInfinity(cat.members);
+                }
+            });
+        }
+
+        function renderPodiumAndList(entries, type, currency) {
+            const podiumContainer = document.getElementById(`podium-${type}`);
+            const listContainer = document.getElementById(`list-${type}`);
+            
+            // Top 3 fürs Podium
+            // Array muss sortiert sein: [2. Platz, 1. Platz, 3. Platz] für die Optik
+            // Daten kommen als [1, 2, 3, 4, 5]
+            
+            // Safe check
+            if(!entries || entries.length === 0) {
+                podiumContainer.innerHTML = '<p class="text-gray-500">Keine Daten.</p>';
+                return;
+            }
+
+            const top3 = [];
+            // Logik: Platz 2 links, Platz 1 mitte, Platz 3 rechts
+            if(entries[1]) top3.push({ ...entries[1], rank: 2 });
+            if(entries[0]) top3.push({ ...entries[0], rank: 1 });
+            if(entries[2]) top3.push({ ...entries[2], rank: 3 });
+
+            // Render Podium
+            podiumContainer.innerHTML = top3.map(u => {
+                let val = 0;
+                if(currency === 'USD') val = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'USD' }).format(u.balance);
+                else val = u.tokens.toLocaleString() + " T";
+
+                const avatarUrl = `https://ui-avatars.com/api/?name=${u.username}&background=random&color=fff&size=128`;
+
+                return `
+                    <div class="podium-place rank-${u.rank}">
+                        <div class="rank-number">${u.rank}</div>
+                        <img src="${avatarUrl}" class="avatar-circle">
+                        <div class="text-white font-bold text-sm mb-1 truncate w-full">${u.username}</div>
+                        <div class="text-xs text-gray-400 font-mono mb-2">${val}</div>
+                        <div class="podium-bar"></div>
+                    </div>
+                `;
+            }).join('');
+
+            // Render List (Platz 4+)
+            const rest = entries.slice(3);
+            if(rest.length > 0) {
+                listContainer.innerHTML = rest.map((u, i) => {
+                    let val = 0;
+                    if(currency === 'USD') val = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'USD' }).format(u.balance);
+                    else val = u.tokens.toLocaleString() + " T";
+                    
+                    return `
+                        <div class="list-item">
+                            <div class="flex items-center gap-4">
+                                <span class="font-mono text-gray-500 text-lg w-6 text-center">${i + 4}</span>
+                                <span class="font-bold text-gray-200">${u.username}</span>
+                            </div>
+                            <span class="font-mono text-gray-400 text-sm">${val}</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                listContainer.innerHTML = '';
+            }
+        }
+
+        function renderInfinity(members) {
+            const container = document.getElementById('infinity-list');
+            if(!members || members.length === 0) {
+                container.innerHTML = '<p class="text-amber-100/40">Noch keine Mitglieder.</p>';
+                return;
+            }
+            container.innerHTML = members.map(m => `
+                <div class="infinity-tag">
+                    <span>∞</span>
+                    <span>${m}</span>
+                </div>
+            `).join('');
+        }
+
+        // Start
+        document.addEventListener('DOMContentLoaded', init);
 
     </script>
-
 </body>
 </html>
