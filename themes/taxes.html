@@ -1,0 +1,254 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Finanzamt</title>
+    <style>
+        /* --- DESIGN (CSS) --- */
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .tax-container {
+            background-color: #1e1e1e;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #ffcc00;
+            /* Limo Gelb */
+            font-size: 2.5rem;
+        }
+
+        .header p {
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Status Banner */
+        .status-banner {
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+        }
+
+        .status-banner.danger {
+            background-color: rgba(231, 76, 60, 0.15);
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .status-banner.safe {
+            background-color: rgba(46, 204, 113, 0.15);
+            border-color: #2ecc71;
+            color: #2ecc71;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+        }
+
+        /* Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #252525;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+
+            word-break: break-word;
+            hyphens: auto;
+            line-height: 1.2;
+        }
+
+        .desc {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            text-align: center;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: #888;
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+        }
+
+        .btn-back {
+            display: block;
+            margin: 20px auto 0;
+            background: none;
+            border: 1px solid #444;
+            color: #888;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            width: fit-content;
+        }
+
+        .btn-back:hover {
+            background: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="tax-container">
+        <div class="header">
+            <h1>🏛️ Finanzamt</h1>
+            <p>Übersicht deiner Steuerlast</p>
+        </div>
+
+        <div id="content-area">
+            <div class="loading">Lade Steuerdaten...</div>
+        </div>
+
+        <a href="/" class="btn-back">← Zurück zum Dashboard</a>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks';
+
+        // Geld formatieren
+        const formatMoney = (amount) => {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(amount);
+        };
+
+        async function initTaxDashboard() {
+            const content = document.getElementById('content-area');
+
+            try {
+                // API Anfrage (mit Credentials für Session Cookie)
+                const response = await fetch(`${API_URL}/api/taxes/my-stats`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (response.status === 401) {
+                    content.innerHTML = `<div class="error">Bitte logge dich erst ein, um deine Steuern zu sehen.</div>`;
+                    return;
+                }
+
+                if (!response.ok) throw new Error("Netzwerkfehler");
+
+                const data = await response.json();
+
+                // Status Logik
+                let bannerClass = data.isLiable ? 'danger' : 'safe';
+                let bannerIcon = data.isLiable ? '👮' : '🛡️';
+                let bannerText = data.isLiable
+                    ? `ACHTUNG: Du bist steuerpflichtig!`
+                    : `Du bist sicher. (Vermögen unter 100 Mio)`;
+
+                let nextTaxColor = data.isLiable ? '#e74c3c' : '#777';
+
+                // HTML rendern
+                content.innerHTML = `
+                    <div class="status-banner ${bannerClass}">
+                        <span class="icon">${bannerIcon}</span>
+                        <span>${bannerText}</span>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="card">
+                            <div class="label">Gesamt gezahlt</div>
+                            <div class="value" style="color: #2ecc71;">${formatMoney(data.totalPaid)}</div>
+                            <div class="desc">Vielen Dank!</div>
+                        </div>
+                        <div class="card">
+                            <div class="label">Nächste Schätzung</div>
+                            <div class="value" style="color: ${nextTaxColor};">${formatMoney(data.estimatedNextTax)}</div>
+                            <div class="desc">Fällig in max 24h</div>
+                        </div>
+                        <div class="card">
+                            <div class="label">Steuersatz</div>
+                            <div class="value">${data.ratePercent}%</div>
+                            <div class="desc">Vermögenssteuer</div>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        Die Steuer wird automatisch einmal täglich abgezogen, falls dein Kontostand 
+                        über <strong>${formatMoney(data.threshold)}</strong> liegt.
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error(error);
+                content.innerHTML = `<div class="error">Fehler beim Laden der Daten. Ist der Server erreichbar?</div>`;
+            }
+        }
+
+        // Starten
+        initTaxDashboard();
+    </script>
+
+
+</body></html>
