@@ -277,7 +277,7 @@
             const lbBtn = document.getElementById('lbBtn');
 
             if(id === 'flappy') {
-                flappyEngine.init();
+                flappyEngine.init(); // Wichtig: Init resettet Events
                 title.innerHTML = "FLAPPY<br>LIMO";
                 sub.innerHTML = "1 Token = 3 Versuche";
                 snakeSet.style.display = 'none';
@@ -297,7 +297,7 @@
 
         closeGame: () => {
             document.getElementById('gameOverlay').style.display = 'none';
-            flappyEngine.running = false;
+            flappyEngine.stop(); // Stop Funktion nutzen
             snakeEngine.running = false;
             app.updateGameStats();
         },
@@ -376,27 +376,59 @@
     }
 
     // ==========================================
-    // === FLAPPY ENGINE (ORIGINAL LOOK + UPDATE) ===
+    // === FLAPPY ENGINE  ===
     // ==========================================
     const flappyEngine = {
         cvs: document.getElementById('gameCanvas'),
         ctx: document.getElementById('gameCanvas').getContext('2d'),
         running: false,
-        gameState: 'START', // NEU: Status für Schwebe-Modus
-        bird: { x:50, y:150, v:0 }, pipes: [], score: 0, frame: 0,
+        gameState: 'START',
+        bird: { x:50, y:150, v:0, r:0 }, // r = rotation
+        pipes: [], 
+        score: 0, 
+        frame: 0,
+        
+        // Skalierungsfaktor für Konsistenz (PC vs Mobile)
+        scale: 1, 
 
         init: () => {
             flappyEngine.resize();
+            window.addEventListener('resize', flappyEngine.resize);
             flappyEngine.drawStatic();
-            window.onkeydown=null; window.ontouchstart=null; window.onmousedown=null;
+            // Events säubern, damit wir sie sauber neu setzen können
+            flappyEngine.removeEvents();
         },
-        resize: () => { flappyEngine.cvs.width = window.innerWidth; flappyEngine.cvs.height = window.innerHeight; },
+
+        removeEvents: () => {
+            window.removeEventListener('keydown', flappyEngine.handleInput);
+            window.removeEventListener('touchstart', flappyEngine.handleInput);
+            window.removeEventListener('mousedown', flappyEngine.handleInput);
+        },
+
+        stop: () => {
+            flappyEngine.running = false;
+            flappyEngine.removeEvents();
+        },
+
+        resize: () => {
+            flappyEngine.cvs.width = window.innerWidth;
+            flappyEngine.cvs.height = window.innerHeight;
+            
+            // WICHTIG: Wir berechnen die Physik basierend auf einer Referenzhöhe (z.B. 800px).
+            // Das sorgt dafür, dass das Spiel auf allen Geräten gleich "schnell" wirkt.
+            flappyEngine.scale = window.innerHeight / 800; 
+        },
         
         reset: () => { 
-            flappyEngine.bird = { x: 50, y: flappyEngine.cvs.height / 2, v: 0 }; 
+            const h = flappyEngine.cvs.height;
+            flappyEngine.bird = { 
+                x: window.innerWidth * 0.1, // Vogel immer bei 10% der Breite
+                y: h / 2, 
+                v: 0,
+                r: 0
+            }; 
             flappyEngine.pipes = []; 
             flappyEngine.score = 0; 
-            // NEU: Frame auf 1 setzen, damit die erste Röhre erst bei 120 kommt (nicht sofort bei 0)
             flappyEngine.frame = 1; 
             flappyEngine.gameState = 'START';
         },
@@ -406,88 +438,215 @@
             document.getElementById('startScreen').style.display='none';
             document.getElementById('gameOverScreen').style.display='none';
             document.getElementById('tapMsg').style.display='block';
+            
+            flappyEngine.resize();
             flappyEngine.reset();
-            flappyEngine.running=true;
-            flappyEngine.inputs();
+            flappyEngine.running = true;
+            
+            // Event Listener hinzufügen (nur einmal!)
+            flappyEngine.removeEvents(); // Zur Sicherheit erst entfernen
+            window.addEventListener('keydown', flappyEngine.handleInput);
+            // Passive: false erlaubt uns preventDefault() zu nutzen
+            window.addEventListener('touchstart', flappyEngine.handleInput, {passive: false});
+            window.addEventListener('mousedown', flappyEngine.handleInput);
+            
             flappyEngine.loop();
         },
 
-        inputs: () => {
-            const jump = (e) => { 
-                if(!flappyEngine.running) return;
-                e?.preventDefault(); 
-                
-                // NEU: Start-Logik
-                if (flappyEngine.gameState === 'START') {
-                    flappyEngine.gameState = 'PLAYING'; // Spiel physikalisch starten
-                    document.getElementById('tapMsg').style.display='none';
-                    flappyEngine.bird.v = -flappyEngine.cvs.height * 0.012; // Erster Sprung
-                    return;
-                }
+        // Einheitliche Input-Behandlung für alle Geräte
+        handleInput: (e) => {
+            // Verhindert Scrollen oder Zoomen bei Touch
+            if (e.type === 'touchstart') e.preventDefault(); 
+            // Verhindert Key-Repeat (Gedrückthalten fliegt nicht nach unten)
+            if (e.type === 'keydown' && e.repeat) return; 
+            // Spacebar Check
+            if (e.type === 'keydown' && e.code !== 'Space') return;
 
-                // Normaler Sprung
-                if (flappyEngine.gameState === 'PLAYING') {
-                    flappyEngine.bird.v = -flappyEngine.cvs.height * 0.012; 
-                }
-            };
-            window.onkeydown=(e)=>{if(e.code==='Space')jump(e)}; window.ontouchstart=jump; window.onmousedown=jump;
+            if(!flappyEngine.running) return;
+
+            // Start aus dem Schweben
+            if (flappyEngine.gameState === 'START') {
+                flappyEngine.gameState = 'PLAYING';
+                document.getElementById('tapMsg').style.display='none';
+                // Erster Sprung
+                flappyEngine.jump();
+                return;
+            }
+
+            if (flappyEngine.gameState === 'PLAYING') {
+                flappyEngine.jump();
+            }
+        },
+
+        jump: () => {
+            // Sprungkraft skaliert mit der Höhe!
+            flappyEngine.bird.v = -8 * flappyEngine.scale; 
         },
 
         loop: () => {
             if(!flappyEngine.running) return;
-            flappyEngine.update(); flappyEngine.draw(); requestAnimationFrame(flappyEngine.loop);
+            flappyEngine.update(); 
+            flappyEngine.draw(); 
+            requestAnimationFrame(flappyEngine.loop);
         },
 
         update: () => {
-            const h=flappyEngine.cvs.height, w=flappyEngine.cvs.width;
+            const h = flappyEngine.cvs.height;
+            const s = flappyEngine.scale; // Kurzform für Skalierung
 
-            // NEU: Schwebe-Modus (Vogel fällt nicht, keine Röhren)
+            // Schwebe-Modus
             if (flappyEngine.gameState === 'START') {
-                flappyEngine.bird.y = (h / 2) + Math.sin(Date.now() / 300) * 10;
+                flappyEngine.bird.y = (h / 2) + Math.sin(Date.now() / 300) * (10 * s);
+                flappyEngine.bird.r = 0;
                 return; 
             }
 
-            // Ab hier: Physik nur wenn PLAYING
-            flappyEngine.bird.v += h*0.0006; flappyEngine.bird.y += flappyEngine.bird.v;
+            // Physik
+            const gravity = 0.35 * s; // Schwerkraft skaliert
+            flappyEngine.bird.v += gravity; 
+            flappyEngine.bird.y += flappyEngine.bird.v;
             
-            if(flappyEngine.frame%120===0) {
-                const gap=h*0.25, min=h*0.1, max=h-min-gap;
-                flappyEngine.pipes.push({x:w, y:Math.random()*(max-min)+min, gap:gap, passed:false});
+            // Rotation basierend auf Geschwindigkeit
+            flappyEngine.bird.r = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (flappyEngine.bird.v * 0.1)));
+
+            // Röhren Spawnen (Abstand basiert auf Höhe/Skalierung, nicht Zeit)
+            // Wir spawnen eine Röhre alle X Pixel, die wir uns "bewegt" haben, simuliert durch Frames
+            // Rohrabstand ca alle 1800ms bei 60fps, aber skaliert
+            if(flappyEngine.frame % 100 === 0) {
+                // Gap ist fest basierend auf Scale, damit es fair bleibt
+                const gap = 190 * s; 
+                const minPos = 100 * s;
+                const maxPos = h - minPos - gap;
+                
+                flappyEngine.pipes.push({
+                    x: flappyEngine.cvs.width, 
+                    y: Math.random() * (maxPos - minPos) + minPos, 
+                    gap: gap, 
+                    passed: false
+                });
             }
-            flappyEngine.pipes.forEach(p=>{
-                p.x -= w*0.006;
-                const bw=30, pw=w*0.15;
-                if(flappyEngine.bird.x+bw/2 > p.x && flappyEngine.bird.x-bw/2 < p.x+pw) {
-                    if(flappyEngine.bird.y-bw/2 < p.y || flappyEngine.bird.y+bw/2 > p.y+p.gap) flappyEngine.over();
+
+            // Röhren Bewegen & Kollision
+            const birdSize = 25 * s; // Vogelgröße skaliert
+            const pipeSpeed = 5 * s; // Geschwindigkeit skaliert (WICHTIG!)
+            const pipeWidth = 70 * s; // Röhrenbreite skaliert
+
+            flappyEngine.pipes.forEach(p => {
+                p.x -= pipeSpeed; // Konstante Geschwindigkeit auf allen Geräten!
+
+                // Hitbox Check (Etwas verzeihender: birdSize * 0.8)
+                const hitX = flappyEngine.bird.x + birdSize*0.6 > p.x && flappyEngine.bird.x - birdSize*0.6 < p.x + pipeWidth;
+                const hitY = flappyEngine.bird.y - birdSize*0.6 < p.y || flappyEngine.bird.y + birdSize*0.6 > p.y + p.gap;
+
+                if(hitX && hitY) flappyEngine.over();
+
+                // Score
+                if(p.x + pipeWidth < flappyEngine.bird.x && !p.passed) { 
+                    flappyEngine.score++; 
+                    p.passed = true; 
                 }
-                if(p.x+pw < flappyEngine.bird.x && !p.passed) { flappyEngine.score++; p.passed=true; }
             });
-            if(flappyEngine.bird.y>h || flappyEngine.bird.y<0) flappyEngine.over();
-            flappyEngine.pipes = flappyEngine.pipes.filter(p=>p.x>-w*0.2);
+
+            // Boden/Decke Kollision
+            if(flappyEngine.bird.y + birdSize > h || flappyEngine.bird.y - birdSize < 0) flappyEngine.over();
+
+            // Röhren löschen
+            flappyEngine.pipes = flappyEngine.pipes.filter(p => p.x > -pipeWidth * 2);
+            
             flappyEngine.frame++;
         },
 
         draw: () => {
-            // ORIGINAL GRAFIK CODE
-            const ctx=flappyEngine.ctx, w=flappyEngine.cvs.width, h=flappyEngine.cvs.height;
-            ctx.fillStyle="#70c5ce"; ctx.fillRect(0,0,w,h);
-            ctx.fillStyle="#2E7D32"; 
-            flappyEngine.pipes.forEach(p=>{ 
-                ctx.fillRect(p.x,0,w*0.15,p.y); 
-                ctx.fillRect(p.x,p.y+p.gap,w*0.15,h); 
-                ctx.fillStyle="#1B5E20";
-                ctx.fillRect(p.x-5,p.y-20,w*0.15+10,20);
-                ctx.fillRect(p.x-5,p.y+p.gap,w*0.15+10,20);
-                ctx.fillStyle="#2E7D32";
+            const ctx = flappyEngine.ctx; 
+            const w = flappyEngine.cvs.width; 
+            const h = flappyEngine.cvs.height;
+            const s = flappyEngine.scale;
+
+            // Hintergrund
+            ctx.fillStyle = "#70c5ce"; 
+            ctx.fillRect(0,0,w,h);
+
+            // Röhren
+            const pipeWidth = 70 * s;
+            ctx.fillStyle = "#2E7D32"; 
+            
+            flappyEngine.pipes.forEach(p => { 
+                // Oberes Rohr
+                ctx.fillRect(p.x, 0, pipeWidth, p.y); 
+                // Unteres Rohr
+                ctx.fillRect(p.x, p.y + p.gap, pipeWidth, h); 
+                
+                // Kappen (Deko)
+                const capH = 30 * s;
+                const capW = pipeWidth + (10 * s);
+                ctx.fillStyle = "#1B5E20"; // Dunkler Rand
+                ctx.fillRect(p.x - (5*s), p.y - capH, capW, capH); // Kappe oben
+                ctx.fillRect(p.x - (5*s), p.y + p.gap, capW, capH); // Kappe unten
+                
+                // Highlights
+                ctx.fillStyle = "#4CAF50"; // Hellere Farbe zurück
+                ctx.fillRect(p.x + (5*s), 0, pipeWidth * 0.1, p.y); // Glanz oben
+                ctx.fillRect(p.x + (5*s), p.y + p.gap, pipeWidth * 0.1, h); // Glanz unten
+
+                ctx.fillStyle = "#2E7D32"; // Reset für nächstes Rohr
             });
-            ctx.fillStyle="#ded895"; ctx.fillRect(0,h-50,w,50);
-            ctx.save(); ctx.translate(flappyEngine.bird.x, flappyEngine.bird.y);
-            ctx.fillStyle="#FFD700"; ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.fill(); 
-            ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(6,-6,5,0,Math.PI*2); ctx.fill();
-            ctx.fillStyle="#000"; ctx.beginPath(); ctx.arc(8,-6,2,0,Math.PI*2); ctx.fill();
+
+            // Boden
+            const groundH = 50 * s;
+            ctx.fillStyle = "#ded895"; 
+            ctx.fillRect(0, h - groundH, w, groundH);
+            // Graslinie
+            ctx.fillStyle = "#73bf2e";
+            ctx.fillRect(0, h - groundH, w, 10 * s);
+
+            // Vogel
+            ctx.save(); 
+            ctx.translate(flappyEngine.bird.x, flappyEngine.bird.y);
+            ctx.rotate(flappyEngine.bird.r);
+            
+            const bSize = 25 * s;
+            
+            // Körper
+            ctx.fillStyle = "#FFD700"; 
+            ctx.beginPath(); ctx.arc(0, 0, bSize, 0, Math.PI*2); ctx.fill(); 
+            // Rand
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 2 * s;
+            ctx.stroke();
+
+            // Auge
+            ctx.fillStyle = "#fff"; 
+            ctx.beginPath(); ctx.arc(bSize*0.4, -bSize*0.4, bSize*0.35, 0, Math.PI*2); ctx.fill();
+            ctx.stroke(); // Augenrand
+            ctx.fillStyle = "#000"; 
+            ctx.beginPath(); ctx.arc(bSize*0.5, -bSize*0.4, bSize*0.1, 0, Math.PI*2); ctx.fill();
+            
+            // Schnabel
+            ctx.fillStyle = "#f44336";
+            ctx.beginPath();
+            ctx.moveTo(bSize*0.5, bSize*0.1);
+            ctx.lineTo(bSize*1.2, bSize*0.4);
+            ctx.lineTo(bSize*0.4, bSize*0.7);
+            ctx.fill();
+            ctx.stroke();
+
+            // Flügel (simuliert durch Kreisbogen)
+            ctx.fillStyle = "#FBC02D";
+            ctx.beginPath();
+            ctx.arc(-bSize*0.2, bSize*0.1, bSize*0.5, 0, Math.PI, false);
+            ctx.fill();
+            ctx.stroke();
+
             ctx.restore();
-            ctx.fillStyle="white"; ctx.font="bold 50px sans-serif"; ctx.lineWidth=3; ctx.strokeStyle="black";
-            ctx.strokeText(flappyEngine.score,w/2-10,80); ctx.fillText(flappyEngine.score,w/2-10,80);
+
+            // Score
+            ctx.fillStyle = "white"; 
+            ctx.font = `bold ${60 * s}px 'Segoe UI', sans-serif`; 
+            ctx.textAlign = "center";
+            ctx.lineWidth = 4 * s; 
+            ctx.strokeStyle = "black";
+            ctx.strokeText(flappyEngine.score, w/2, 100 * s); 
+            ctx.fillText(flappyEngine.score, w/2, 100 * s);
         },
 
         drawStatic: () => {
@@ -495,7 +654,7 @@
         },
 
         over: () => {
-            flappyEngine.running=false;
+            flappyEngine.running = false;
             sendScore('flappy', flappyEngine.score);
             document.getElementById('gameOverScreen').style.display='block';
             document.getElementById('finalScore').innerText = "Score: "+flappyEngine.score;
