@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YAKUZA SERVICES</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>THE VOID</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
@@ -11,13 +11,16 @@
             font-family: 'Teko', sans-serif;
             background-color: #1a0000;
             color: #fff;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh; /* Mindestens Bildschirmhöhe */
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* Zentriert Inhalt vertikal */
             user-select: none;
+            overflow-x: hidden;
+            overflow-y: auto; /* Erlaubt Scrollen wenn Bildschirm zu klein */
         }
+
         .font-mono { font-family: 'Share Tech Mono', monospace; }
 
         /* --- BACKGROUND --- */
@@ -41,24 +44,43 @@
 
         /* --- MENÜ BUTTONS --- */
         .menu-btn {
-            position: relative; background: #fff; color: #000; width: 100%; max-width: 450px;
-            padding: 12px 40px; margin-bottom: 25px; font-size: 2.2rem; text-transform: uppercase;
-            letter-spacing: 2px; transform: skewX(-15deg); cursor: pointer; transition: all 0.1s;
+            position: relative; background: #fff; color: #000; width: 100%; 
+            padding: 12px 20px; margin-bottom: 15px; 
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px; transform: skewX(-10deg); cursor: pointer; transition: all 0.1s;
             display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 10px 10px 0px rgba(0,0,0,0.6);
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.6);
             border: 2px solid transparent;
         }
-        .menu-btn span { display: block; transform: skewX(15deg); }
         
-        .menu-btn:hover {
-            background: #e60000; color: #fff; transform: skewX(-15deg) translate(-5px, -5px);
-            box-shadow: 15px 15px 0px rgba(0,0,0,0.8); border-color: #fff;
+        /* Desktop/Laptop Styles */
+        @media (min-width: 1024px) {
+            .menu-btn {
+                padding: 12px 30px; margin-bottom: 20px; font-size: 2rem;
+                transform: skewX(-15deg);
+                box-shadow: 10px 10px 0px rgba(0,0,0,0.6);
+            }
+        }
+
+        .menu-btn span { display: block; transform: skewX(10deg); }
+        @media (min-width: 1024px) { .menu-btn span { transform: skewX(15deg); } }
+        
+        .menu-btn:hover, .menu-btn.active-btn {
+            background: #e60000; color: #fff; transform: skewX(-10deg) translate(-2px, -2px);
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.8); border-color: #fff;
+        }
+        @media (min-width: 1024px) {
+            .menu-btn:hover, .menu-btn.active-btn {
+                transform: skewX(-15deg) translate(-5px, -5px);
+            }
         }
 
         .price-tag {
-            font-size: 1.4rem; background: #000; color: #fff; padding: 2px 12px; transform: skewX(15deg);
+            font-size: 1rem; background: #000; color: #fff; padding: 2px 8px; transform: skewX(10deg);
             font-family: 'Share Tech Mono', monospace;
         }
+        @media (min-width: 1024px) { .price-tag { font-size: 1.2rem; transform: skewX(15deg); } }
 
         /* --- MASKE --- */
         .mask-container {
@@ -82,22 +104,33 @@
 
         /* --- PANELS --- */
         .details-panel {
-            display: none; background: rgba(10, 0, 0, 0.95); border: 2px solid #fff; padding: 25px;
-            transform: skewX(-5deg); width: 100%; max-width: 450px; height: 550px; /* Feste Höhe */
+            display: none; background: rgba(10, 0, 0, 0.95); border: 2px solid #fff; padding: 20px;
+            transform: skewX(-2deg); width: 100%; 
+            min-height: 400px; 
             position: relative; box-shadow: 0 0 30px rgba(255, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
-        /* WICHTIG: Flexbox für Layout */
+        
+        @media (min-width: 1024px) {
+            .details-panel {
+                transform: skewX(-5deg); max-width: 450px; 
+                height: 500px; /* Etwas kleiner für Laptops */
+                margin-bottom: 0;
+            }
+        }
+
         .details-panel.active { 
             display: flex; flex-direction: column; 
-            animation: slideIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(100px) skewX(-5deg); } to { opacity: 1; transform: translateX(0) skewX(-5deg); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Data Dump Style */
         .data-dump {
-            font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: #0f0;
-            background: #000; padding: 15px; border: 1px solid #333; flex-grow: 1; overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: #0f0;
+            background: #000; padding: 10px; border: 1px solid #333; flex-grow: 1; overflow-y: auto;
             white-space: pre-wrap; margin-top: 15px; box-shadow: inset 0 0 20px rgba(0,255,0,0.1);
+            max-height: 300px;
         }
         .data-key { color: #666; } .data-val { color: #fff; font-weight: bold; } .data-alert { color: #f00; text-shadow: 0 0 5px #f00; }
 
@@ -108,14 +141,12 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #ff0000; }
     </style>
 </head>
-<body>
-
-    <div class="yakuza-bg"></div>
+<body class="p-4 lg:py-10"> <div class="yakuza-bg"></div>
     <div class="crt-overlay"></div>
 
-    <div class="relative z-10 flex flex-col lg:flex-row w-full max-w-7xl items-center justify-between px-4 lg:px-10 gap-10">
+    <div class="relative z-10 flex flex-col lg:flex-row w-full max-w-7xl items-center justify-between lg:px-10 lg:gap-10">
 
-        <div class="w-full lg:w-1/3 flex justify-center mask-container">
+        <div class="hidden lg:flex w-full lg:w-1/3 justify-center mask-container">
             <svg class="absolute opacity-30 mask-glitch" style="left: -2px; fill: red;" viewBox="0 0 512 512" width="100%" height="100%">
                <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0zm0 472c-119.3 0-216-96.7-216-216S136.7 40 256 40s216 96.7 216 216-96.7 216-216 216zm-80-344c0-22.1 17.9-40 40-40h80c22.1 0 40 17.9 40 40v32h-160v-32zm160 224c0 22.1-17.9 40-40 40h-80c-22.1 0-40-17.9-40-40v-32h160v32zm48-128H128v-32h256v32zm-32-80H160v-32h192v32z" transform="scale(0.8) translate(60,60)"/>
             </svg>
@@ -130,53 +161,73 @@
             </svg>
         </div>
 
-        <div class="w-full lg:w-1/3 flex flex-col items-center z-20">
-            <h1 class="text-7xl lg:text-8xl text-white italic mb-12 uppercase" style="text-shadow: 6px 6px 0 #b00; transform: skewX(-10deg);">THE<br>VOID</h1>
-            <div class="menu-btn group" onclick="showDetails('fakeid')"><span class="group-hover:text-black">Gefälschte ID</span><div class="price-tag group-hover:bg-black group-hover:text-white transition">$500k</div></div>
-            <div class="menu-btn group" onclick="showDetails('leak')"><span class="group-hover:text-black">Datenleck</span><div class="price-tag group-hover:bg-black group-hover:text-white transition">$1.0 Mio</div></div>
-            <div class="menu-btn group" onclick="showDetails('achieve')"><span class="group-hover:text-black">Achievements</span><div class="price-tag group-hover:bg-black group-hover:text-white transition">VAR</div></div>
-            <a href="/" class="menu-btn group" style="background: #111; color: #666; margin-top: 40px; border: 1px solid #333;"><span class="group-hover:text-white">Zurück (Exit)</span></a>
+        <div class="w-full lg:w-1/3 flex flex-col items-center z-20 mt-6 lg:mt-0">
+            <h1 class="text-6xl lg:text-8xl xl:text-9xl text-white italic mb-8 lg:mb-12 uppercase tracking-tighter text-center" 
+                style="text-shadow: 4px 4px 0 #b00; transform: skewX(-10deg); line-height: 0.9;">
+                THE<br>VOID
+            </h1>
+
+            <div class="w-full max-w-sm">
+                <div id="btn-fakeid" class="menu-btn group" onclick="showDetails('fakeid')">
+                    <span class="group-hover:text-black">Gefälschte ID</span>
+                    <div class="price-tag group-hover:bg-black group-hover:text-white transition">$500k</div>
+                </div>
+                <div id="btn-leak" class="menu-btn group" onclick="showDetails('leak')">
+                    <span class="group-hover:text-black">Datenleck</span>
+                    <div class="price-tag group-hover:bg-black group-hover:text-white transition">$1.0 Mio</div>
+                </div>
+                <div id="btn-achieve" class="menu-btn group" onclick="showDetails('achieve')">
+                    <span class="group-hover:text-black">Achievements</span>
+                    <div class="price-tag group-hover:bg-black group-hover:text-white transition">VAR</div>
+                </div>
+                <a href="/" class="menu-btn group" style="background: #111; color: #666; margin-top: 30px; border: 1px solid #333;">
+                    <span class="group-hover:text-white">Zurück (Exit)</span>
+                </a>
+            </div>
         </div>
 
-        <div class="w-full lg:w-1/3 lg:pl-5 h-[550px] flex items-center justify-center lg:justify-start">
-            <div id="intro-text" class="text-center lg:text-right w-full">
-                <h2 class="text-5xl text-red-600 uppercase mb-4" style="text-shadow: 0 0 20px rgba(255,0,0,0.5);">Exklusiver Zugang</h2>
-                <p class="text-2xl opacity-70 font-mono tracking-widest">KEINE SPUREN.<br>KEINE ZEUGEN.</p>
-                <div class="mt-12 text-6xl font-bold opacity-40 font-mono" id="balance-display">$ ---</div>
+        <div class="w-full lg:w-1/3 lg:pl-5 flex flex-col items-center lg:items-start min-h-[300px]">
+            
+            <div id="intro-text" class="text-center lg:text-right w-full mt-8 lg:mt-0">
+                <h2 class="text-3xl lg:text-4xl xl:text-5xl text-red-600 uppercase mb-2" style="text-shadow: 0 0 20px rgba(255,0,0,0.5);">Exklusiver Zugang</h2>
+                <p class="text-lg lg:text-xl xl:text-2xl opacity-70 font-mono tracking-widest">KEINE SPUREN.<br>KEINE ZEUGEN.</p>
+                <div class="mt-8 lg:mt-12 text-5xl lg:text-5xl xl:text-6xl font-bold opacity-40 font-mono" id="balance-display">$ ---</div>
             </div>
 
-            <div id="panel-fakeid" class="details-panel justify-between">
-                <div>
-                    <h3 class="text-4xl text-red-600 mb-2 uppercase italic font-bold">Neue Identität</h3>
-                    <p class="mb-6 text-xl text-gray-300">Setzt deinen Fahndungsstatus zurück. Löscht alle Cooldowns für Raubüberfälle und Hacks.</p>
-                    <div class="border-t border-b border-gray-600 py-4 mb-6 flex justify-between items-center">
-                        <span class="text-gray-500 font-mono">KOSTEN</span>
-                        <span class="text-3xl font-bold">$500.000</span>
+            <div id="panels-container" class="w-full">
+                <div id="panel-fakeid" class="details-panel justify-between">
+                    <div>
+                        <h3 class="text-3xl md:text-4xl text-red-600 mb-2 uppercase italic font-bold">Neue Identität</h3>
+                        <p class="mb-6 text-lg text-gray-300">Setzt deinen Fahndungsstatus zurück. Löscht alle Cooldowns.</p>
+                        <div class="border-t border-b border-gray-600 py-4 mb-6 flex justify-between items-center">
+                            <span class="text-gray-500 font-mono">KOSTEN</span>
+                            <span class="text-2xl md:text-3xl font-bold">$500.000</span>
+                        </div>
                     </div>
+                    <button class="w-full bg-white text-black font-bold py-3 md:py-4 text-xl hover:bg-red-600 hover:text-white transition transform active:scale-95 uppercase tracking-widest" onclick="buyService('fakeid')">Jetzt Kaufen</button>
                 </div>
-                <button class="w-full bg-white text-black font-bold py-4 text-2xl hover:bg-red-600 hover:text-white transition transform active:scale-95 uppercase tracking-widest" onclick="buyService('fakeid')">Jetzt Kaufen</button>
-            </div>
 
-            <div id="panel-leak" class="details-panel">
-                <h3 class="text-4xl text-red-600 mb-2 uppercase italic font-bold">Doxing Service</h3>
-                <p class="mb-4 text-gray-400">Vollständiger Datenauszug eines Ziel-Users.</p>
-                <input type="text" id="target-user" placeholder="ZIEL USERNAME" class="w-full bg-black border-2 border-red-900 text-white p-4 mb-4 focus:outline-none focus:border-red-500 font-mono text-center uppercase text-xl placeholder-red-900/50">
-                <button id="btn-scan" class="w-full bg-white text-black font-bold py-3 text-xl hover:bg-red-600 hover:text-white transition uppercase" onclick="buyService('leak')">SCAN STARTEN ($1.0 Mio)</button>
-                <div id="leak-result" class="data-dump hidden"></div>
-            </div>
+                <div id="panel-leak" class="details-panel">
+                    <h3 class="text-3xl md:text-4xl text-red-600 mb-2 uppercase italic font-bold">Doxing Service</h3>
+                    <p class="mb-4 text-gray-400">Vollständiger Datenauszug eines Ziel-Users.</p>
+                    <input type="text" id="target-user" placeholder="ZIEL USERNAME" class="w-full bg-black border-2 border-red-900 text-white p-3 mb-4 focus:outline-none focus:border-red-500 font-mono text-center uppercase text-xl placeholder-red-900/50">
+                    <button id="btn-scan" class="w-full bg-white text-black font-bold py-3 text-xl hover:bg-red-600 hover:text-white transition uppercase" onclick="buyService('leak')">SCAN STARTEN</button>
+                    <div id="leak-result" class="data-dump hidden"></div>
+                </div>
 
-            <div id="panel-achieve" class="details-panel">
-                <div class="flex-shrink-0 mb-4">
-                    <h3 class="text-4xl text-red-600 mb-1 uppercase italic font-bold leading-none">Katalog</h3>
-                    <p class="text-sm text-gray-500 mb-3">Erkaufe dir Ruhm, Ehre und Skill.</p>
-                    <div class="flex gap-2">
-                        <button onclick="filterCatalog('all')" class="flex-1 text-xs bg-red-900/50 border border-red-900 px-2 py-1 hover:bg-red-600 transition font-bold">ALLE</button>
-                        <button onclick="filterCatalog('owned')" class="flex-1 text-xs bg-black border border-green-900 text-green-700 px-2 py-1 hover:text-green-400 transition font-bold">BESITZ</button>
-                        <button onclick="filterCatalog('missing')" class="flex-1 text-xs bg-black border border-gray-700 px-2 py-1 hover:border-white transition font-bold">FEHLT</button>
+                <div id="panel-achieve" class="details-panel h-[500px]">
+                    <div class="flex-shrink-0 mb-4">
+                        <h3 class="text-3xl md:text-4xl text-red-600 mb-1 uppercase italic font-bold leading-none">Katalog</h3>
+                        <p class="text-sm text-gray-500 mb-3">Erkaufe dir Ruhm, Ehre und Skill.</p>
+                        <div class="flex gap-2">
+                            <button onclick="filterCatalog('all')" class="flex-1 text-xs bg-red-900/50 border border-red-900 px-2 py-1 hover:bg-red-600 transition font-bold">ALLE</button>
+                            <button onclick="filterCatalog('owned')" class="flex-1 text-xs bg-black border border-green-900 text-green-700 px-2 py-1 hover:text-green-400 transition font-bold">BESITZ</button>
+                            <button onclick="filterCatalog('exclusive')" class="flex-1 text-xs bg-black border border-gray-700 px-2 py-1 hover:border-white transition font-bold">ONI</button>
+                        </div>
                     </div>
-                </div>
-                <div id="achievement-list" class="flex-grow min-h-0 pr-2 space-y-2 custom-scrollbar">
-                    <div class="text-center mt-10 text-gray-600 animate-pulse">Lade Server...</div>
+                    <div id="achievement-list" class="flex-grow min-h-0 pr-2 space-y-2 custom-scrollbar">
+                        <div class="text-center mt-10 text-gray-600 animate-pulse">Lade Server...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -188,11 +239,17 @@
 
         function showDetails(type) {
             document.getElementById('intro-text').style.display = 'none';
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active-btn'));
+            const btn = document.getElementById(`btn-${type}`);
+            if(btn) btn.classList.add('active-btn');
             document.querySelectorAll('.details-panel').forEach(p => p.classList.remove('active'));
             const panel = document.getElementById(`panel-${type}`);
             if(panel) {
                 panel.classList.add('active');
                 if(type === 'achieve') loadAchievementCatalog();
+                if(window.innerWidth < 1024) {
+                    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+                }
             }
         }
 
@@ -229,6 +286,9 @@
                     if(serviceType === 'leak' && data.leak) {
                         displayLeak(data.leak);
                         btn.innerText = "FERTIG";
+                    } else if (serviceType === 'fakeid') {
+                        alert("Identität gefälscht! Wir leiten dich neu, um die Akten zu aktualisieren.");
+                        window.location.href = '/themes/crime.html'; 
                     } else if (serviceType.startsWith('badge_')) {
                         alert(data.message || "Gekauft!");
                         btn.innerText = "GEKAUFT";
@@ -242,13 +302,12 @@
                 } else {
                     alert(data.error || "Fehler.");
                     btn.innerText = originalText;
-                    btn.disabled = false;
                 }
             } catch(e) {
                 alert("Fehler");
                 btn.innerText = originalText;
-                btn.disabled = false;
             }
+            btn.disabled = false;
         }
 
         function displayLeak(data) {
@@ -256,9 +315,10 @@
             let cds = "Keine";
             if(data.cooldowns && Object.keys(data.cooldowns).length > 0) {
                 cds = Object.keys(data.cooldowns).map(k => {
+                    if(!data.cooldowns[k]) return null;
                     const diff = new Date(data.cooldowns[k]) - new Date();
                     const min = Math.ceil(diff / 60000);
-                    return diff > 0 ? `${k.toUpperCase()}: ${min}m` : null;
+                    return diff > 0 ? `${k.replace('At','').toUpperCase()}: ${min}m` : null;
                 }).filter(Boolean).join(", ");
                 if(cds === "") cds = "BEREIT";
             }
@@ -276,22 +336,14 @@
             container.classList.remove('hidden');
         }
 
-        // --- CATALOG ---
         async function loadAchievementCatalog() {
             try {
-                // Wir rufen NUR den Katalog auf. Der Server sagt uns jetzt auch, was wir besitzen.
                 const res = await fetch(`${API_URL}/api/yakuza/catalog`, { credentials: 'include' });
                 const data = await res.json();
-                
                 fullCatalog = data.catalog; 
-                
-                // Hier nehmen wir die frische 'owned' Liste direkt vom Server
                 const myBadges = data.owned || []; 
-
                 renderCatalog(fullCatalog, myBadges);
-
             } catch (e) {
-                console.error(e);
                 document.getElementById('achievement-list').innerHTML = '<div class="text-red-500 font-mono">CONNECTION LOST.</div>';
             }
         }
@@ -299,26 +351,20 @@
         function renderCatalog(items, ownedBadges) {
             const list = document.getElementById('achievement-list');
             list.innerHTML = '';
-
             const ownedItems = items.filter(i => ownedBadges.includes(i.id));
             const missingItems = items.filter(i => !ownedBadges.includes(i.id));
-
             missingItems.sort((a, b) => b.price - a.price);
             ownedItems.sort((a, b) => b.price - a.price);
-
             const sortedItems = [...missingItems, ...ownedItems];
 
             sortedItems.forEach(item => {
                 const isOwned = ownedBadges.includes(item.id);
-                const isExclusive = ['badge_yakuza', 'badge_hacker', 'badge_rich', 'badge_illuminati'].includes(item.id);
-                
+                const isExclusive = ['badge_yakuza', 'badge_hacker', 'badge_rich', 'badge_illuminati', 'badge_hunter'].includes(item.id);
                 let priceDisplay = '$' + (item.price / 1000000).toFixed(1) + 'M';
                 if(item.price >= 1000000000) priceDisplay = '$' + (item.price / 1000000000).toFixed(1) + 'B';
                 if(item.price < 1000000) priceDisplay = '$' + (item.price / 1000).toFixed(0) + 'k';
-
                 let containerClass = "flex justify-between items-center p-2 border-l-4 transition group mb-1";
                 let btnHtml = "";
-
                 if (isOwned) {
                     containerClass += " border-green-600 bg-green-950/20 opacity-60 hover:opacity-100";
                     btnHtml = `<div class="flex flex-col items-end"><span class="text-green-500 text-xl">✔️</span><span class="text-[10px] text-green-700 font-mono">GEKAUFT</span></div>`;
@@ -327,7 +373,6 @@
                     else containerClass += " border-gray-600 bg-black hover:bg-white/5";
                     btnHtml = `<button onclick="buyService('badge_${item.id}')" class="font-mono text-sm bg-white text-black px-3 py-1 hover:bg-red-600 hover:text-white transition transform skew-x-[-10deg] font-bold shadow-lg">${priceDisplay}</button>`;
                 }
-
                 const div = document.createElement('div');
                 div.className = containerClass;
                 div.innerHTML = `<div class="flex items-center gap-3 overflow-hidden"><span class="text-3xl filter drop-shadow-md">${item.icon || '🏆'}</span><div class="flex flex-col"><span class="font-bold uppercase text-base ${isOwned ? 'text-green-400' : 'text-white group-hover:text-red-500'} transition leading-none">${item.title}</span><span class="text-[10px] text-gray-400 truncate w-40 font-mono mt-1">${item.desc}</span></div></div><div class="text-right pl-2">${btnHtml}</div>`;
@@ -339,9 +384,11 @@
             const list = document.getElementById('achievement-list');
             for(let div of list.children) {
                 const isOwned = div.innerHTML.includes('✔️'); 
+                const isOni = div.className.includes('border-red-600');
                 if (mode === 'all') div.style.display = 'flex';
                 else if (mode === 'owned') div.style.display = isOwned ? 'flex' : 'none';
                 else if (mode === 'missing') div.style.display = !isOwned ? 'flex' : 'none';
+                else if (mode === 'exclusive') div.style.display = isOni ? 'flex' : 'none';
             }
         }
 
