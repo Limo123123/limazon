@@ -1,534 +1,508 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Limo's Diner 🍔</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo's Diner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --primary: #ff9f43; /* Burger Orange */
-            --accent: #2ecc71;  /* Money Green */
-            --text: #ffffff;
-            --text-muted: #a0a0a0;
-            --danger: #ff6b6b;
+            --bg-dark: #0f0f12;
+            --panel-bg: rgba(30, 30, 35, 0.6);
+            --border: rgba(255, 255, 255, 0.08);
+            --brand: #db2777;
+            /* Pink */
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e4e4e7;
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(219, 39, 119, 0.1), transparent 40%),
+                radial-gradient(circle at 100% 0%, rgba(234, 179, 8, 0.05), transparent 40%);
+            background-attachment: fixed;
         }
 
-        /* --- HEADER & STATUS --- */
-        .header {
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 20px;
-            text-align: center;
+        .font-brand {
+            font-family: 'Rajdhani', sans-serif;
         }
 
-        .status-card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 15px;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            border: 1px solid #333;
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
         }
 
-        .energy-bar-container {
-            width: 100%;
-            height: 20px;
-            background: #333;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 10px 0;
-            position: relative;
+        /* Card Hover Effects */
+        .menu-card {
+            transition: all 0.2s ease-in-out;
         }
 
-        .energy-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #e67e22, #f1c40f);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        .energy-text {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .balance-display {
-            font-size: 1.2rem;
-            color: var(--accent);
-            font-weight: bold;
-            margin-top: 5px;
-        }
-
-        /* --- MENU GRID --- */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 15px;
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 80px; /* Platz für den Button unten */
-        }
-
-        .food-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            position: relative;
-        }
-
-        .food-card:hover {
+        .menu-card:hover {
             transform: translateY(-3px);
-            background: #2a2a2a;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--brand);
         }
 
-        .food-card.selected {
-            border-color: var(--primary);
-            background: #2a2a2a;
-            box-shadow: 0 0 15px rgba(255, 159, 67, 0.3);
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
 
-        .food-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            display: block;
+        ::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .food-name {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 5px;
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
         }
 
-        .food-price {
-            color: var(--accent);
-            font-weight: bold;
-        }
-
-        .food-energy {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .count-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--primary);
-            color: #000;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.8rem;
-            opacity: 0;
-            transform: scale(0);
-            transition: all 0.2s;
-        }
-
-        .food-card.selected .count-badge {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* --- FOOTER / ORDER BUTTON --- */
-        .order-bar {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 580px;
-            background: rgba(30, 30, 30, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #444;
-            z-index: 100;
-        }
-
-        .total-price {
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-
-        .btn-order {
-            background: var(--primary);
-            color: #000;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 10px;
-            font-weight: 800;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        .btn-order:active {
-            transform: scale(0.95);
-        }
-
-        .btn-order:disabled {
+        ::-webkit-scrollbar-thumb:hover {
             background: #555;
-            cursor: not-allowed;
         }
 
-        /* --- HISTORY --- */
-        .history-section {
-            width: 100%;
-            max-width: 600px;
-            margin-top: 30px;
-            padding-bottom: 100px;
-        }
-        
-        .history-item {
-            background: #252525;
-            margin-bottom: 8px;
-            padding: 10px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-        }
-        .history-time {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            margin-right: 10px;
-            min-width: 60px;
+        /* Hide Number Arrows */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
-        /* Toast Notification */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
-            position: fixed;
-            z-index: 101;
-            left: 50%;
-            bottom: 90px;
-            transform: translateX(-50%);
-            border: 1px solid var(--primary);
+        .active-tab {
+            background-color: var(--brand);
+            color: white;
+            border-color: var(--brand);
         }
 
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        .inactive-tab {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #9ca3af;
+            border-color: rgba(255, 255, 255, 0.1);
         }
-
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 90px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 90px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
-<body>
 
-    <div class="header">
-        <h1>🍔 Limo's Diner 🍟</h1>
-        <p style="color: var(--text-muted); margin-top: -10px;">Energie tanken & Cooldown skippen</p>
-        
-        <div class="status-card">
-            <div style="display: flex; justify-content: space-between;">
-                <span>Energie Status</span>
-                <span id="status-text">Lade...</span>
+<body class="min-h-screen flex flex-col pb-24 lg:pb-0">
+
+    <nav class="sticky top-0 z-50 glass-panel border-b border-white/10 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-4">
+                    <button onclick="window.location.href='/'"
+                        class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition text-gray-400 hover:text-white">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <h1 class="text-2xl font-brand font-bold uppercase tracking-widest text-white italic">
+                        Limo's <span class="text-pink-500">Diner</span>
+                    </h1>
+                </div>
+
+                <div class="hidden lg:flex space-x-4">
+                    <button onclick="switchView('menu')" id="nav-menu"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition bg-pink-600 text-white shadow-lg shadow-pink-900/50">SPEISEKARTE</button>
+                    <button onclick="switchView('history')" id="nav-history"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition bg-white/5 text-gray-400 hover:text-white">BESTELLUNGEN</button>
+                </div>
+
+                <div class="lg:hidden text-right">
+                    <div class="text-[10px] text-gray-500 uppercase font-bold">Budget</div>
+                    <div class="font-mono font-bold text-green-400" id="mobile-balance">$ ---</div>
+                </div>
             </div>
-            <div class="energy-bar-container">
-                <div id="energy-bar" class="energy-bar"></div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+
+        <div class="flex lg:hidden mb-6 bg-white/5 p-1 rounded-xl">
+            <button onclick="switchView('menu')" id="mob-nav-menu"
+                class="flex-1 py-2 rounded-lg text-sm font-bold text-center bg-pink-600 text-white shadow">Karte</button>
+            <button onclick="switchView('history')" id="mob-nav-history"
+                class="flex-1 py-2 rounded-lg text-sm font-bold text-center text-gray-400">Verlauf</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <div class="lg:col-span-8 space-y-6" id="view-menu">
+
+                <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                    <button onclick="filterMenu('all', this)"
+                        class="cat-btn active-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition">Alle</button>
+                    <button onclick="filterMenu('burger', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white">🍔
+                        Burger</button>
+                    <button onclick="filterMenu('pizza', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white">🍕
+                        Pizza</button>
+                    <button onclick="filterMenu('side', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white">🍟
+                        Sides</button>
+                    <button onclick="filterMenu('drink', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white">🥤
+                        Drinks</button>
+                    <button onclick="filterMenu('luxury', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/10">💎
+                        Luxus</button>
+                </div>
+
+                <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="col-span-full py-20 text-center text-gray-500 animate-pulse">Lade Küche...</div>
+                </div>
             </div>
-            <div class="balance-display" id="user-balance">Guthaben: $---</div>
+
+            <div class="lg:col-span-8 hidden" id="view-history">
+                <h2 class="text-xl font-brand font-bold text-white mb-4 border-b border-white/10 pb-2">Deine letzten
+                    Mahlzeiten</h2>
+                <div id="history-list" class="space-y-4">
+                </div>
+            </div>
+
+            <div class="hidden lg:block lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+
+                <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none">
+                    </div>
+
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Dein Guthaben</span>
+                        <span class="font-mono font-bold text-green-400 text-lg" id="desktop-balance">$ ---</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs text-gray-300">
+                            <span>Energie</span>
+                            <span id="energy-text" class="font-bold">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                            <div id="energy-bar"
+                                class="bg-gradient-to-r from-yellow-600 to-yellow-400 h-full rounded-full transition-all duration-500"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-[10px] text-gray-500 pt-1">Iss etwas, um Energie für deinen Job zu tanken.</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 border-t-4 border-t-pink-500">
+                    <h3 class="font-brand font-bold text-lg text-white mb-4 flex items-center gap-2">
+                        <span>🛒</span> Warenkorb
+                    </h3>
+
+                    <div id="desktop-cart-list" class="space-y-3 mb-6 max-h-[300px] overflow-y-auto pr-1">
+                        <div class="text-sm text-gray-500 text-center py-4">Wähle Gerichte aus.</div>
+                    </div>
+
+                    <div class="border-t border-white/10 pt-4 space-y-4">
+                        <div class="flex justify-between items-end">
+                            <span class="text-sm text-gray-400">Summe</span>
+                            <span class="text-2xl font-mono font-bold text-white" id="desktop-cart-total">$ 0.00</span>
+                        </div>
+                        <button onclick="placeOrder()" id="desktop-order-btn"
+                            class="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl transition shadow-lg shadow-pink-900/30 disabled:opacity-50 disabled:cursor-not-allowed">
+                            KOSTENPFLICHTIG BESTELLEN
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="mobile-cart"
+        class="fixed bottom-0 left-0 right-0 glass-panel border-t border-pink-500/30 p-4 lg:hidden z-40 transform translate-y-full transition-transform duration-300">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <div class="flex flex-col">
+                <span class="text-[10px] text-gray-400 uppercase font-bold">Summe</span>
+                <span class="text-xl font-mono font-bold text-white" id="mobile-cart-total">$ 0.00</span>
+            </div>
+            <button onclick="placeOrder()" id="mobile-order-btn"
+                class="bg-pink-600 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg shadow-lg">
+                BESTELLEN (<span id="mobile-cart-count">0</span>)
+            </button>
         </div>
     </div>
-
-    <div id="menu-container" class="menu-grid">
-        </div>
-
-    <div class="history-section">
-        <h3 style="border-bottom: 1px solid #333; padding-bottom: 5px;">Letzte Mahlzeiten</h3>
-        <div id="history-list"></div>
-    </div>
-
-    <div class="order-bar">
-        <div class="total-price">
-            Summe: <span style="color: var(--accent)">$<span id="total-sum">0.00</span></span>
-            <br>
-            <span style="font-size: 0.8rem; color: #aaa;">Energie: +<span id="total-energy">0</span> Min</span>
-        </div>
-        <button id="btn-eat" class="btn-order" onclick="placeOrder()" disabled>ESSEN!</button>
-    </div>
-
-    <div id="toast"></div>
 
     <script>
-        // 1. Hier die korrekte API URL eintragen
-        const API_BASE = 'https://api.limazon.v6.rocks/api'; 
-
-        let cart = {}; 
+        const API_URL = 'https://api.limazon.v6.rocks';
         let menuData = [];
+        let cart = {}; // { itemId: quantity }
 
-        // HILFSFUNKTION: Fetch mit Cookies (WICHTIG!)
-        async function fetchWithAuth(url, options = {}) {
-            // Standard-Optionen setzen, damit Cookies immer mitgesendet werden
-            const defaultOptions = {
-                credentials: 'include', // <--- DAS IST DER FIX
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            };
-            
-            // Optionen zusammenführen
-            const finalOptions = { ...defaultOptions, ...options };
-            
-            const response = await fetch(url, finalOptions);
-            
-            // Wenn nicht eingeloggt (401), User warnen
-            if (response.status === 401) {
-                document.querySelector('.header').innerHTML = `
-                    <div style="background:#ff6b6b; padding:20px; border-radius:10px; color:white;">
-                        <h2>Nicht eingeloggt! 🔒</h2>
-                        <p>Bitte logge dich zuerst auf der Hauptseite ein.</p>
-                        <a href="https://wl.limazon.v6.rocks" style="color:white; font-weight:bold;">Zum Login</a>
-                    </div>`;
-                throw new Error("Nicht eingeloggt (401)");
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMenu();
+            loadStatus();
+        });
 
-            return response;
-        }
-
-        async function init() {
+        // --- DATA ---
+        async function loadMenu() {
             try {
-                await Promise.all([fetchMenu(), fetchStatus(), fetchHistory()]);
-            } catch (e) {
-                console.log("Init teilweise fehlgeschlagen, siehe Console.");
-            }
-        }
-
-        // 2. Menü laden
-        async function fetchMenu() {
-            try {
-                const res = await fetchWithAuth(`${API_BASE}/restaurant/menu`);
-                if (!res.ok) return; // Abbrechen bei Fehler
-
-                const data = await res.json();
-                
-                // Sicherheitscheck: Gibt es das Menü?
-                if (data && data.menu) {
+                const res = await fetch(`${API_URL}/api/restaurant/menu`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
                     menuData = data.menu;
-                    renderMenu();
+                    renderMenu('all');
                 }
-            } catch (e) {
-                console.error("Fehler beim Laden des Menüs", e);
-            }
-        }
-
-        // 3. Status laden (Energie & Geld)
-        async function fetchStatus() {
-            try {
-                // Status laden
-                const res = await fetchWithAuth(`${API_BASE}/restaurant/status`);
-                if (!res.ok) return;
-                const data = await res.json(); 
-
-                // User Info (Geld) laden
-                const meRes = await fetchWithAuth(`${API_BASE}/auth/me`);
-                if (!meRes.ok) return;
-                const meData = await meRes.json(); 
-
-                // UI Updates (Nur wenn Daten da sind)
-                if (meData && typeof meData.balance === 'number') {
-                    document.getElementById('user-balance').innerText = `Guthaben: $${meData.balance.toFixed(2)}`;
-                }
-                
-                if (data) {
-                    document.getElementById('status-text').innerText = data.statusText || "Bereit";
-                    const bar = document.getElementById('energy-bar');
-                    const energy = data.energy || 0;
-                    bar.style.width = `${energy}%`;
-                    
-                    if(energy < 30) bar.style.background = '#ff6b6b'; 
-                    else if(energy < 70) bar.style.background = '#f1c40f'; 
-                    else bar.style.background = '#2ecc71'; 
-                }
-
             } catch (e) { console.error(e); }
         }
 
-        // 4. Historie laden
-        async function fetchHistory() {
+        async function loadStatus() {
             try {
-                const res = await fetchWithAuth(`${API_BASE}/restaurant/history`);
-                if (!res.ok) return;
+                // 1. User Daten laden (Guthaben)
+                const resUser = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
                 
-                const data = await res.json();
-                const list = document.getElementById('history-list');
-                list.innerHTML = '';
-
-                if(!data.history || data.history.length === 0) {
-                    list.innerHTML = '<div style="color:#555; text-align:center;">Noch nichts gegessen.</div>';
-                    return;
-                }
-
-                data.history.slice(0, 5).forEach(entry => {
-                    const date = new Date(entry.date);
-                    const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    // Falls items ein Array ist, Icons holen, sonst Fallback
-                    const itemsStr = Array.isArray(entry.items) 
-                        ? entry.items.map(i => i.icon).join(' ') 
-                        : '🍽️';
+                if (resUser.ok) {
+                    const u = await resUser.json();
                     
-                    const div = document.createElement('div');
-                    div.className = 'history-item';
-                    div.innerHTML = `
-                        <span class="history-time">${timeStr}</span>
-                        <span style="flex-grow:1;">${itemsStr}</span>
-                        <span style="color:var(--danger);">-$${entry.cost.toFixed(0)}</span>
-                    `;
-                    list.appendChild(div);
-                });
-            } catch(e) {}
-        }
-
-        // 5. Menü rendern
-        function renderMenu() {
-            const container = document.getElementById('menu-container');
-            container.innerHTML = '';
-
-            if (!menuData || menuData.length === 0) return;
-
-            menuData.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'food-card';
-                card.onclick = () => toggleItem(item.id);
-                card.id = `card-${item.id}`;
-
-                card.innerHTML = `
-                    <div class="count-badge" id="badge-${item.id}">0</div>
-                    <span class="food-icon">${item.icon}</span>
-                    <span class="food-name">${item.name}</span>
-                    <span class="food-price">$${item.price.toFixed(2)}</span>
-                    <br>
-                    <span class="food-energy">⚡ ${item.energy} Min</span>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // 6. Warenkorb Logik
-        function toggleItem(id) {
-            if (!cart[id]) cart[id] = 0;
-            cart[id]++;
-            
-            if (cart[id] > 5) {
-                cart[id] = 0;
-                delete cart[id];
-            }
-            updateUI();
-        }
-
-        function updateUI() {
-            let total = 0;
-            let energy = 0;
-            let count = 0;
-
-            menuData.forEach(item => {
-                const qty = cart[item.id] || 0;
-                const card = document.getElementById(`card-${item.id}`);
-                const badge = document.getElementById(`badge-${item.id}`);
-
-                if (qty > 0) {
-                    card.classList.add('selected');
-                    badge.innerText = qty;
-                    total += item.price * qty;
-                    energy += item.energy * qty;
-                    count += qty;
+                    // KORREKTUR: min 2, max 2 (damit es immer z.B. "10,50" ist)
+                    const moneyText = '$ ' + u.balance.toLocaleString('de-DE', {
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    });
+                    
+                    // Alle möglichen IDs updaten
+                    const idsToUpdate = ['mobile-balance', 'desktop-balance', 'user-balance'];
+                    
+                    idsToUpdate.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.innerText = moneyText;
+                            el.classList.remove('text-red-500'); 
+                            el.classList.add('text-green-400');
+                        }
+                    });
                 } else {
-                    card.classList.remove('selected');
+                    // Nicht eingeloggt
+                    ['mobile-balance', 'desktop-balance'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.innerText = "Login?";
+                            el.className = "font-mono font-bold text-red-500 text-xs";
+                        }
+                    });
                 }
-            });
 
-            document.getElementById('total-sum').innerText = total.toFixed(2);
-            document.getElementById('total-energy').innerText = energy;
-            const btn = document.getElementById('btn-eat');
-            btn.disabled = count === 0;
-            btn.innerText = count === 0 ? "Wähle Essen" : `JETZT ESSEN ($${total.toFixed(0)})`;
+                // 2. Energie Status laden
+                const resStat = await fetch(`${API_URL}/api/restaurant/status`, { credentials: 'include' });
+                if (resStat.ok) {
+                    const d = await resStat.json();
+                    const enEl = document.getElementById('energy-text');
+                    const barEl = document.getElementById('energy-bar');
+                    const bubbleEl = document.getElementById('user-energy');
+
+                    if (enEl) enEl.innerText = d.energy + '%';
+                    if (barEl) barEl.style.width = d.energy + '%';
+                    
+                    if (bubbleEl) {
+                        bubbleEl.innerText = d.energy + '%';
+                        if (d.energy < 30) {
+                            bubbleEl.className = "w-10 h-10 rounded-full bg-red-900/20 flex items-center justify-center font-mono font-bold text-xs text-red-400 border border-red-500/50";
+                        } else {
+                            bubbleEl.className = "w-10 h-10 rounded-full bg-green-900/20 flex items-center justify-center font-mono font-bold text-xs text-green-400 border border-green-500/50";
+                        }
+                    }
+                }
+
+            } catch (e) {
+                console.error("Status Error:", e);
+            }
+        }
+        
+        async function loadHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '<div class="py-10 text-center text-gray-500">Lade...</div>';
+            try {
+                const res = await fetch(`${API_URL}/api/restaurant/history`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.history.length === 0) { list.innerHTML = '<div class="py-10 text-center text-gray-500">Keine Einträge.</div>'; return; }
+
+                    list.innerHTML = data.history.map(h => {
+                        const date = new Date(h.date).toLocaleString('de-DE', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        return `
+                        <div class="glass-panel p-4 rounded-xl flex justify-between items-center">
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">${date}</div>
+                                <div class="text-sm font-bold text-white">${h.items.map(i => i.name).join(', ')}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-mono text-red-400 font-bold">-$${h.cost.toFixed(2)}</div>
+                                <div class="text-[10px] text-yellow-500 font-bold">+${h.energyGained}% Energy</div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+            } catch (e) { list.innerHTML = '<div class="text-red-500">Fehler.</div>'; }
         }
 
-        // 7. Bestellen
-        async function placeOrder() {
-            const itemIds = [];
+        // --- UI ---
+        function switchView(view) {
+            // Update Desktop Nav
+            document.getElementById('nav-menu').className = view === 'menu' ? "px-4 py-2 rounded-lg text-sm font-bold transition bg-pink-600 text-white shadow-lg" : "px-4 py-2 rounded-lg text-sm font-bold transition bg-white/5 text-gray-400 hover:text-white";
+            document.getElementById('nav-history').className = view === 'history' ? "px-4 py-2 rounded-lg text-sm font-bold transition bg-pink-600 text-white shadow-lg" : "px-4 py-2 rounded-lg text-sm font-bold transition bg-white/5 text-gray-400 hover:text-white";
+
+            // Update Mobile Nav
+            document.getElementById('mob-nav-menu').className = view === 'menu' ? "flex-1 py-2 rounded-lg text-sm font-bold text-center bg-pink-600 text-white shadow" : "flex-1 py-2 rounded-lg text-sm font-bold text-center text-gray-400";
+            document.getElementById('mob-nav-history').className = view === 'history' ? "flex-1 py-2 rounded-lg text-sm font-bold text-center bg-pink-600 text-white shadow" : "flex-1 py-2 rounded-lg text-sm font-bold text-center text-gray-400";
+
+            // Content
+            if (view === 'menu') {
+                document.getElementById('view-menu').classList.remove('hidden');
+                document.getElementById('view-history').classList.add('hidden');
+            } else {
+                document.getElementById('view-menu').classList.add('hidden');
+                document.getElementById('view-history').classList.remove('hidden');
+                loadHistory();
+            }
+        }
+
+        function filterMenu(type, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.className = "cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white border-white/10");
+            btn.className = "cat-btn active-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition shadow-lg shadow-pink-900/30";
+            renderMenu(type);
+        }
+
+        function renderMenu(type) {
+            const grid = document.getElementById('menu-grid');
+            const items = type === 'all' ? menuData : menuData.filter(i => i.type === type);
+
+            grid.innerHTML = items.map(item => {
+                const qty = cart[item.id] || 0;
+                const activeClass = qty > 0 ? 'border-pink-500 bg-pink-500/5' : 'border-white/5 bg-white/5';
+
+                return `
+                <div class="menu-card rounded-xl p-4 border ${activeClass} flex gap-4">
+                    <div class="text-4xl w-16 h-16 rounded-lg bg-black/40 flex items-center justify-center shadow-inner border border-white/5">
+                        ${item.icon}
+                    </div>
+                    <div class="flex-grow flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-white text-lg leading-tight">${item.name}</h3>
+                                <p class="text-[10px] text-gray-500">${item.desc}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-mono font-bold text-pink-400">$${item.price.toFixed(0)}</div>
+                                <div class="text-[10px] text-yellow-600 font-bold">⚡ ${item.energy}%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end mt-2">
+                            <div class="flex items-center bg-black/50 rounded-lg border border-white/10">
+                                <button onclick="changeQty('${item.id}', -1)" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 rounded-l-lg transition font-bold">-</button>
+                                <span class="w-8 text-center font-mono text-sm font-bold text-white" id="qty-${item.id}">${qty}</span>
+                                <button onclick="changeQty('${item.id}', 1)" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 rounded-r-lg transition font-bold">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- CART LOGIC ---
+        function changeQty(id, delta) {
+            if (!cart[id]) cart[id] = 0;
+            cart[id] += delta;
+            if (cart[id] <= 0) delete cart[id];
+
+            const el = document.getElementById(`qty-${id}`);
+            if (el) {
+                el.innerText = cart[id] || 0;
+                const card = el.closest('.menu-card');
+                if (cart[id]) {
+                    card.classList.remove('border-white/5', 'bg-white/5');
+                    card.classList.add('border-pink-500', 'bg-pink-500/5');
+                } else {
+                    card.classList.add('border-white/5', 'bg-white/5');
+                    card.classList.remove('border-pink-500', 'bg-pink-500/5');
+                }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            let total = 0;
+            let count = 0;
+            let itemsHtml = "";
+
             for (const [id, qty] of Object.entries(cart)) {
-                for(let i=0; i<qty; i++) itemIds.push(id);
+                const item = menuData.find(i => i.id === id);
+                if (item) {
+                    total += item.price * qty;
+                    count += qty;
+                    itemsHtml += `
+                    <div class="flex justify-between items-center text-sm py-1 border-b border-white/5 last:border-0">
+                        <div class="text-gray-300">${qty}x ${item.name}</div>
+                        <div class="font-mono text-white">$${(item.price * qty).toFixed(2)}</div>
+                    </div>`;
+                }
             }
 
-            const btn = document.getElementById('btn-eat');
-            btn.disabled = true;
-            btn.innerText = "Mampf...";
+            // Desktop Sidebar
+            const dList = document.getElementById('desktop-cart-list');
+            if (dList) dList.innerHTML = count > 0 ? itemsHtml : '<div class="text-sm text-gray-500 text-center py-4">Wähle Gerichte aus.</div>';
+            const dTotal = document.getElementById('desktop-cart-total');
+            if (dTotal) dTotal.innerText = '$ ' + total.toLocaleString('de-DE', { minimumFractionDigits: 2 });
+            const dBtn = document.getElementById('desktop-order-btn');
+            if (dBtn) dBtn.disabled = count === 0;
+
+            // Mobile Bar
+            const mBar = document.getElementById('mobile-cart');
+            const mTotal = document.getElementById('mobile-cart-total');
+            const mCount = document.getElementById('mobile-cart-count');
+
+            if (mTotal) mTotal.innerText = '$ ' + total.toLocaleString('de-DE', { minimumFractionDigits: 2 });
+            if (mCount) mCount.innerText = count;
+
+            if (mBar) {
+                if (count > 0) mBar.classList.remove('translate-y-full');
+                else mBar.classList.add('translate-y-full');
+            }
+        }
+
+        async function placeOrder() {
+            let itemIds = [];
+            for (const [id, qty] of Object.entries(cart)) {
+                for (let i = 0; i < qty; i++) itemIds.push(id);
+            }
+
+            const btns = [document.getElementById('desktop-order-btn'), document.getElementById('mobile-order-btn')];
+            btns.forEach(b => { if (b) { b.disabled = true; b.innerText = "Sende..."; } });
 
             try {
-                // Auch hier fetchWithAuth nutzen!
-                const res = await fetchWithAuth(`${API_BASE}/restaurant/order`, {
-                    method: 'POST',
-                    body: JSON.stringify({ itemIds })
+                const res = await fetch(`${API_URL}/api/restaurant/order`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ itemIds }), credentials: 'include'
                 });
-                
-                const data = await res.json();
+                const d = await res.json();
 
                 if (res.ok) {
-                    showToast(data.message);
+                    alert(d.message);
                     cart = {};
-                    updateUI();
-                    await fetchStatus();
-                    await fetchHistory();
-                } else {
-                    showToast("Fehler: " + (data.error || "Unbekannt"));
+                    renderMenu(document.querySelector('.cat-btn.active-tab').innerText === 'Alle' ? 'all' : 'burger');
+                    updateCartUI();
+                    loadStatus();
+                } else { alert(d.error); }
+            } catch (e) { alert("Verbindungsfehler"); }
+
+            btns.forEach(b => {
+                if (b) {
+                    b.disabled = false;
+                    if (b.id === 'mobile-order-btn') b.innerHTML = 'BESTELLEN (<span id="mobile-cart-count">0</span>)';
+                    else b.innerText = "KOSTENPFLICHTIG BESTELLEN";
                 }
-            } catch (e) {
-                showToast("Verbindungsfehler");
-            } finally {
-                btn.disabled = false;
-                updateUI();
-            }
+            });
+            updateCartUI();
         }
-
-        function showToast(text) {
-            const x = document.getElementById("toast");
-            x.innerText = text;
-            x.className = "show";
-            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-        }
-
-        // Starten
-        init();
-        
-        // Auto-Refresh
-        setInterval(fetchStatus, 10000);
-
     </script>
 </body>
+
 </html>

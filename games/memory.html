@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory - Limo Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background: #0a0a0c; 
+            color: white; 
+            font-family: 'Outfit', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0;
+            overflow: hidden;
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 12px; 
+            max-width: 450px; 
+            width: 95%;
+            padding: 20px;
+            perspective: 1000px;
+        }
+        .card { 
+            aspect-ratio: 1/1;
+            background: #1a1a1f; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2.5rem; 
+            border-radius: 16px; 
+            cursor: pointer; 
+            border: 2px solid #222; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        .card:hover { border-color: #3b82f6; transform: scale(1.02); }
+        .card.flipped { transform: rotateY(180deg); background: #3b82f6; border-color: #60a5fa; }
+        .card.matched { background: #10b981; border-color: #34d399; cursor: default; transform: rotateY(180deg) scale(0.95); opacity: 0.8; }
+        
+        .card-inner { position: absolute; pointer-events: none; }
+        
+        #score-display { font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        
+        .btn-limo {
+            background: #3b82f6;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s;
+        }
+        .btn-limo:hover { background: #2563eb; transform: translateY(-2px); }
+        .btn-limo:active { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-black mb-1 italic tracking-tighter uppercase">Memory <span class="text-blue-500">Master</span></h1>
+        <div class="flex justify-center gap-6 items-baseline">
+            <div class="text-zinc-500 text-xs font-bold uppercase tracking-widest">Punkte: <span id="score" class="text-white text-xl ml-1">1000</span></div>
+            <div class="text-zinc-500 text-xs font-bold uppercase tracking-widest">Matches: <span id="matches" class="text-white text-xl ml-1">0/8</span></div>
+        </div>
+    </div>
+
+    <div id="gameGrid" class="grid">
+        </div>
+
+    <div class="mt-8 flex flex-col gap-4 w-64">
+        <button id="startBtn" onclick="startGame()" class="btn-limo py-4 rounded-2xl font-bold text-lg transition uppercase tracking-widest">
+            Spiel Starten
+        </button>
+        <button onclick="window.location.href='../themes/games.html'" class="text-zinc-600 text-sm font-bold hover:text-zinc-400 transition">
+            ZURÜCK ZUR ARCADE
+        </button>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.limazon.v6.rocks/api';
+        const icons = ['🚀', '💎', '🍔', '🍕', '🚗', '🐱', '🎮', '⚡'];
+        let cards = [], flipped = [], matches = 0, score = 1000, timer = null, isProcessing = false;
+
+        async function startGame() {
+            try {
+                // 1. Check Login
+                const authCheck = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
+                if (!authCheck.ok) {
+                    alert("Du bist nicht eingeloggt!");
+                    window.location.href = '../themes/games.html';
+                    return;
+                }
+
+                // 2. Start Session (Token Abzug)
+                const res = await fetch(`${API_BASE}/games/start`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ gameId: 'memory' }), 
+                    credentials: 'include' 
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    alert(err.error || "Nicht genug Tokens!");
+                    return;
+                }
+
+                // 3. UI Reset
+                document.getElementById('startBtn').classList.add('hidden');
+                matches = 0; score = 1000; flipped = [];
+                document.getElementById('score').innerText = score;
+                document.getElementById('matches').innerText = '0/8';
+                
+                // 4. Karten mischen
+                let pairIcons = [...icons, ...icons].sort(() => Math.random() - 0.5);
+                const grid = document.getElementById('gameGrid');
+                grid.innerHTML = '';
+                
+                pairIcons.forEach((ico) => {
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.innerHTML = `<div class="card-inner hidden">${ico}</div>`;
+                    div.onclick = () => reveal(div, ico);
+                    grid.appendChild(div);
+                });
+
+                // 5. Timer starten (Punkte sinken)
+                clearInterval(timer);
+                timer = setInterval(() => {
+                    if (score > 10) {
+                        score--;
+                        document.getElementById('score').innerText = score;
+                    }
+                }, 150);
+
+            } catch (e) {
+                alert("Verbindungsfehler!");
+            }
+        }
+
+        function reveal(div, icon) {
+            if (isProcessing || flipped.length >= 2 || div.classList.contains('flipped') || div.classList.contains('matched')) return;
+            
+            div.querySelector('.card-inner').classList.remove('hidden');
+            div.classList.add('flipped');
+            flipped.push({ div, icon });
+
+            if (flipped.length === 2) {
+                isProcessing = true;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [a, b] = flipped;
+            if (a.icon === b.icon) {
+                // Treffer
+                setTimeout(() => {
+                    a.div.classList.add('matched');
+                    b.div.classList.add('matched');
+                    matches++;
+                    document.getElementById('matches').innerText = `${matches}/8`;
+                    flipped = [];
+                    isProcessing = false;
+                    if (matches === icons.length) endGame();
+                }, 300);
+            } else {
+                // Kein Treffer -> Zurückdrehen
+                setTimeout(() => {
+                    a.div.classList.remove('flipped');
+                    b.div.classList.remove('flipped');
+                    a.div.querySelector('.card-inner').classList.add('hidden');
+                    b.div.querySelector('.card-inner').classList.add('hidden');
+                    flipped = [];
+                    isProcessing = false;
+                }, 800);
+            }
+        }
+
+        async function endGame() {
+            clearInterval(timer);
+            try {
+                const res = await fetch(`${API_BASE}/games/submit-score`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ gameId: 'memory', score: score }), 
+                    credentials: 'include' 
+                });
+                
+                if (res.ok) {
+                    alert(`Super! Du hast alle Paare gefunden. Score: ${score}`);
+                }
+            } catch (e) {}
+            
+            location.reload();
+        }
+    </script>
+</body>
+</html>

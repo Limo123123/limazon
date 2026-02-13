@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Slots</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0a0a0c; color: white; font-family: 'Space Grotesk', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .slot-container { background: #16161a; border: 2px solid #222; padding: 2rem; border-radius: 2rem; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .reel { background: #000; width: 100px; height: 100px; display: inline-flex; align-items: center; justify-content: center; font-size: 3rem; border-radius: 1rem; border: 1px solid #333; margin: 0.5rem; transition: transform 0.1s; }
+        .spinning { filter: blur(2px); transform: scale(0.9); }
+    </style>
+</head>
+<body>
+    <div class="slot-container">
+        <h1 class="text-3xl font-black mb-8 italic tracking-tighter">LIMO <span class="text-blue-500">SLOTS</span></h1>
+        <div id="reels" class="mb-8">
+            <div class="reel">💎</div><div class="reel">💎</div><div class="reel">💎</div>
+        </div>
+        <button id="spinBtn" onclick="spin()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold text-xl transition transform active:scale-95 shadow-lg shadow-blue-900/40">SPIN (1 Play)</button>
+        <button onclick="window.location.href='/themes/games.html'" class="mt-6 text-zinc-500 text-sm hover:text-zinc-300">Zurück zur Arcade</button>
+    </div>
+
+    <script>
+        const symbols = ['💎', '🍋', '🍒', '🔔', '7️⃣', '🍀'];
+        let isSpinning = false;
+
+        async function spin() {
+            if(isSpinning) return;
+            const btn = document.getElementById('spinBtn');
+            isSpinning = true;
+            btn.disabled = true;
+
+            const res = await fetch('https://api.limazon.v6.rocks/api/games/start', { 
+                method:'POST', headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({gameId:'slots'}), credentials:'include' 
+            });
+
+            if(!res.ok) {
+                alert("Nicht genug Tokens oder nicht eingeloggt!");
+                isSpinning = false; btn.disabled = false;
+                return;
+            }
+
+            const reels = document.querySelectorAll('.reel');
+            let result = [0,0,0].map(() => Math.floor(Math.random() * symbols.length));
+            
+            reels.forEach((r, i) => {
+                r.classList.add('spinning');
+                let count = 0;
+                let interval = setInterval(() => {
+                    r.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                    count++;
+                    if(count > 20 + i * 15) {
+                        clearInterval(interval);
+                        r.classList.remove('spinning');
+                        r.innerText = symbols[result[i]];
+                        if(i === 2) finalize(result);
+                    }
+                }, 50);
+            });
+        }
+
+        async function finalize(res) {
+            let score = 0;
+            if(res[0] === res[1] && res[1] === res[2]) score = 100;
+            else if(res[0] === res[1] || res[1] === res[2] || res[0] === res[2]) score = 10;
+
+            await fetch('https://api.limazon.v6.rocks/api/games/submit-score', { 
+                method:'POST', headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({gameId:'slots', score}), credentials:'include' 
+            });
+
+            setTimeout(() => {
+                alert(score > 0 ? "GEWONNEN! Score: " + score : "Niete. Versuch es nochmal!");
+                isSpinning = false;
+                document.getElementById('spinBtn').disabled = false;
+            }, 500);
+        }
+    </script>
+</body>
+</html>
