@@ -1,0 +1,641 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo Finance Ultimate</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <link href="/assets_offline/1771357355642_dl_asset_famil.css" rel="stylesheet">
+    <script src="/assets_offline/1771357355689_chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #020204;
+            --glass-panel: rgba(20, 20, 25, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.15), transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.15), transparent 40%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* --- GLASS EFFECT --- */
+        .glass {
+            background: var(--glass-panel);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        }
+
+        /* --- TEXT STYLES --- */
+        .glow-green { color: var(--accent-green); text-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+        .glow-red { color: var(--accent-red); text-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+        
+        /* --- NAVIGATION --- */
+        .nav-item {
+            position: relative;
+            color: #6b7280;
+            transition: color 0.3s;
+        }
+        .nav-item.active { color: white; }
+        .nav-item.active::after {
+            content: '';
+            position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 3px;
+            background: var(--accent-blue);
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--accent-blue);
+        }
+
+        /* --- SEARCH INPUT --- */
+        .search-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .search-container:focus-within {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        
+        /* Loader */
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent-blue); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="pb-24">
+
+    <header class="sticky top-0 z-50 glass border-t-0 border-x-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                
+                <div class="flex items-center gap-4">
+                    <button onclick="window.location.href='/'" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition text-gray-400 hover:text-white">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-black tracking-tighter text-white">
+                            LIMO<span class="text-blue-500">EX</span>
+                        </h1>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="relative flex h-2 w-2">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            <span class="text-[10px] text-green-500 font-mono font-bold tracking-widest uppercase">Live Market</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right hidden sm:block">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Gesamtvermögen</div>
+                    <div class="text-3xl font-bold font-mono text-white tracking-tight" id="header-networth">
+                        $ ---
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-8 mt-2 overflow-x-auto pb-3 no-scrollbar">
+                <button onclick="switchTab('market')" id="btn-market" class="nav-item active text-sm font-bold uppercase tracking-wider whitespace-nowrap">Aktienmarkt</button>
+                <button onclick="switchTab('crypto')" id="btn-crypto" class="nav-item text-sm font-bold uppercase tracking-wider whitespace-nowrap">Krypto</button>
+                <button onclick="switchTab('portfolio')" id="btn-portfolio" class="nav-item text-sm font-bold uppercase tracking-wider whitespace-nowrap">Mein Portfolio</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <div id="view-market" class="space-y-6">
+            <div class="search-container rounded-2xl p-2 flex items-center gap-3 sticky top-32 z-40 backdrop-blur-md">
+                <div class="pl-3 text-gray-500">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" id="stock-search" onkeyup="handleSearch()" class="w-full bg-transparent border-none text-white text-lg p-2 focus:outline-none placeholder-gray-600 font-medium" placeholder="Suche nach Apple, Pizza, Gold... (4000+ Assets)">
+            </div>
+
+            <div id="stocks-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="col-span-full py-32 text-center">
+                    <div class="loader mx-auto mb-4"></div>
+                    <p class="text-gray-500 text-sm font-mono animate-pulse">Lade Markt-Daten...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-crypto" class="hidden space-y-6">
+            <h2 class="text-2xl font-bold text-white mb-6">Kryptowährungen</h2>
+            <div id="crypto-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <div id="view-portfolio" class="hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass rounded-3xl p-8 flex flex-col items-center justify-center relative min-h-[350px]">
+                    <h3 class="absolute top-6 left-6 text-xs font-bold text-gray-500 uppercase tracking-widest">Asset Verteilung</h3>
+                    <div class="w-56 h-56 relative">
+                        <canvas id="portfolioChart"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none flex-col">
+                            <span class="text-xs text-gray-500 uppercase">Total</span>
+                            <span class="text-2xl font-bold text-white tracking-tighter" id="pf-chart-total">$$$</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="glass rounded-2xl p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 relative overflow-hidden group">
+                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-green-500/20 rounded-full blur-2xl group-hover:bg-green-500/30 transition"></div>
+                            <div class="relative z-10">
+                                <div class="text-xs text-gray-400 uppercase font-bold mb-1">Verfügbares Bargeld</div>
+                                <div class="text-3xl font-bold text-white font-mono" id="stat-cash">$ 0.00</div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-2xl p-6 bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20 relative overflow-hidden group">
+                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl group-hover:bg-purple-500/30 transition"></div>
+                            <div class="relative z-10">
+                                <div class="text-xs text-gray-400 uppercase font-bold mb-1">Investiertes Kapital</div>
+                                <div class="text-3xl font-bold text-white font-mono" id="stat-invested">$ 0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-3xl overflow-hidden">
+                        <div class="px-6 py-4 border-b border-white/5 bg-white/5 backdrop-blur-md sticky top-0 z-10">
+                            <h3 class="font-bold text-white text-sm uppercase tracking-wider">Deine Assets</h3>
+                        </div>
+                        <div id="portfolio-list" class="divide-y divide-white/5 max-h-[400px] overflow-y-auto bg-black/20"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="trade-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity opacity-0" id="modal-bg" onclick="closeTradeModal()"></div>
+        
+        <div class="absolute bottom-0 sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-[480px] glass border-t sm:border border-white/10 sm:rounded-3xl p-0 shadow-[0_0_50px_rgba(0,0,0,0.8)] transform translate-y-full sm:translate-y-10 opacity-0 transition-all duration-300" id="modal-content">
+            
+            <div class="p-6 pb-0 flex justify-between items-start">
+                <div class="flex items-center gap-5">
+                    <div id="modal-icon" class="w-16 h-16 rounded-2xl bg-gray-800 shadow-2xl flex items-center justify-center text-3xl overflow-hidden border border-white/10"></div>
+                    <div>
+                        <h3 class="text-2xl font-black text-white leading-none tracking-tight" id="modal-title">-</h3>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span class="text-xs font-bold bg-white/10 px-2 py-0.5 rounded text-gray-300" id="modal-symbol">SYMB</span>
+                            <span class="text-xs text-blue-400 font-mono" id="modal-type">STOCK</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="closeTradeModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/20 transition text-gray-400 hover:text-white">✕</button>
+            </div>
+
+            <div class="h-40 w-full mt-6 relative">
+                <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--glass-panel)] to-transparent z-10"></div>
+                <canvas id="mainChart"></canvas>
+            </div>
+
+            <div class="px-6 relative z-20 -mt-6">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <div class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Aktueller Kurs</div>
+                        <div class="text-4xl font-black text-white font-mono tracking-tighter" id="modal-price">$0.00</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Dein Besitz</div>
+                        <div class="text-xl font-bold text-white font-mono" id="modal-owned">0</div>
+                    </div>
+                </div>
+
+                <div class="bg-black/40 rounded-2xl p-2 border border-white/10 flex items-center mb-4 ring-1 ring-white/5 focus-within:ring-blue-500/50 transition-all">
+                    <input type="number" id="trade-amount" class="w-full bg-transparent text-white font-mono text-2xl font-bold outline-none p-3 placeholder-gray-700" placeholder="0" oninput="updateTotal()">
+                    <div class="pr-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Menge</div>
+                </div>
+
+                <div class="flex justify-between text-xs font-medium text-gray-400 mb-6 px-2">
+                    <span>Transaktionsvolumen:</span>
+                    <span class="font-mono text-white font-bold" id="trade-total">$0.00</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <button onclick="executeTrade('buy')" class="group relative overflow-hidden bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-green-900/20 active:scale-95">
+                        <span class="relative z-10">KAUFEN</span>
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500"></div>
+                    </button>
+                    <button onclick="executeTrade('sell')" class="group relative overflow-hidden bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-red-900/20 active:scale-95">
+                        <span class="relative z-10">VERKAUFEN</span>
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks'; 
+        let currentTab = 'market';
+        let marketData = { stocks: [], crypto: {} };
+        let portfolioData = null;
+        let selectedAsset = null;
+        let searchTimer = null;
+        let chartInstance = null;
+        let pfChartInstance = null;
+        let isPolling = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Sofort Portfolio laden (Wichtigste Info!)
+            loadPortfolio();
+            // 2. Dann den Rest
+            loadStocks(); 
+            loadCrypto();
+            
+            // Loop starten
+            pollData();
+        });
+
+        async function pollData() {
+            if(isPolling) return;
+            isPolling = true;
+            
+            // Alles nacheinander laden (Fehler bei einem stoppen die anderen nicht)
+            await loadPortfolio();
+            await loadCrypto();
+            
+            // Aktien nur neu laden, wenn wir nicht suchen
+            if(document.getElementById('stock-search').value === "") {
+               // Optional: Hier könnte man auch Aktien refreshen, 
+               // aber wir lassen es, um API Calls zu sparen, da Aktien sich nicht sekündlich ändern.
+            }
+            
+            isPolling = false;
+            setTimeout(pollData, 10000); // 10s Pause
+        }
+
+        // --- DATA LOADERS (Separated for Safety) ---
+
+        async function loadPortfolio() {
+            try {
+                const res = await fetch(`${API_URL}/api/finance/portfolio/full`, { credentials: 'include' });
+                if(res.ok) {
+                    portfolioData = await res.json();
+                    
+                    // HEADER SOFORT UPDATEN
+                    const nw = portfolioData.netWorth || 0;
+                    document.getElementById('header-networth').innerText = '$ ' + nw.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    
+                    if(currentTab === 'portfolio') renderPortfolio();
+                }
+            } catch(e) { console.error("Portfolio Load Error", e); }
+        }
+
+        async function loadCrypto() {
+            try {
+                const res = await fetch(`${API_URL}/api/finance/market`, { credentials: 'include' });
+                if(res.ok) {
+                    const d = await res.json();
+                    marketData.crypto = d.crypto;
+                    if(currentTab === 'crypto') renderCrypto();
+                }
+            } catch(e) { console.error("Crypto Load Error", e); }
+        }
+
+        async function loadStocks(searchQuery = "") {
+            const grid = document.getElementById('stocks-grid');
+            if(searchQuery.length > 0) {
+                grid.innerHTML = '<div class="col-span-full py-32 text-center"><div class="loader mx-auto mb-4"></div><p class="text-blue-400 text-sm font-mono animate-pulse">Suche läuft...</p></div>';
+            }
+
+            try {
+                // Nur Top 50 oder Suche
+                const url = `${API_URL}/api/stocks?limit=50` + (searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : '');
+                const res = await fetch(url, { credentials: 'include' });
+                
+                if(res.ok) {
+                    const data = await res.json();
+                    marketData.stocks = data;
+                    if(currentTab === 'market') renderStocks(marketData.stocks);
+                }
+            } catch(e) { console.error("Stock Load Error", e); }
+        }
+
+        // --- SEARCH ENGINE ---
+        function handleSearch() {
+            clearTimeout(searchTimer);
+            const query = document.getElementById('stock-search').value;
+            
+            if(query.length === 0) {
+                loadStocks(); // Reset auf Top 50
+                return;
+            }
+            // Debounce
+            searchTimer = setTimeout(() => { loadStocks(query); }, 600);
+        }
+
+        // --- RENDERERS ---
+
+        function renderStocks(list) {
+            const grid = document.getElementById('stocks-grid');
+            if(!list || !list.length) {
+                grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-500">Keine Aktien gefunden.</div>';
+                return;
+            }
+
+            grid.innerHTML = list.map(s => {
+                const isUp = s.changePercent >= 0;
+                const colorClass = isUp ? 'glow-green' : 'glow-red';
+                const chartColor = isUp ? '#10b981' : '#ef4444';
+                const sign = isUp ? '+' : '';
+                const histData = JSON.stringify(s.history || []); 
+
+                return `
+                <div class="glass-card rounded-2xl p-4 cursor-pointer group relative overflow-hidden flex flex-col justify-between h-[140px]" 
+                     onclick='openTradeModal("stock", "${s.id}", ${histData})'>
+                    
+                    <div class="flex justify-between items-start relative z-10">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl overflow-hidden shadow-inner">
+                                ${s.image ? `<img src="${s.image}" class="w-full h-full object-cover">` : '📈'}
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="font-bold text-white leading-tight truncate w-28 text-sm">${s.name}</div>
+                                <div class="text-[10px] text-gray-500 font-mono tracking-wider font-bold">${s.symbol}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 mt-auto">
+                        <div class="font-mono font-bold text-white text-xl tracking-tight">$${s.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                        <div class="text-xs font-bold ${colorClass}">${sign}${s.changePercent.toFixed(2)}%</div>
+                    </div>
+
+                    <div class="absolute bottom-0 right-0 w-32 h-16 opacity-30 group-hover:opacity-60 transition-opacity">
+                        <canvas id="chart-stock-${s.id}" data-hist='${histData}' data-color="${chartColor}"></canvas>
+                    </div>
+                </div>`;
+            }).join('');
+
+            requestAnimationFrame(() => {
+                list.forEach(s => initSparkline(`chart-stock-${s.id}`));
+            });
+        }
+
+        function renderCrypto() {
+            const grid = document.getElementById('crypto-grid');
+            const coins = marketData.crypto || {};
+            const keys = Object.keys(coins);
+            
+            grid.innerHTML = keys.map(k => {
+                const c = coins[k];
+                // Safety Checks
+                const price = c.price || 0;
+                const change = c.lastChange || 0;
+                const isUp = change >= 0;
+                const histData = JSON.stringify(c.history || []);
+                const chartColor = isUp ? '#10b981' : '#ef4444';
+
+                return `
+                <div class="glass-card rounded-2xl p-5 flex justify-between items-center cursor-pointer hover:border-blue-500/30 group relative overflow-hidden" 
+                     onclick='openTradeModal("crypto", "${k}", ${histData})'>
+                    
+                    <div class="flex items-center gap-4 relative z-10">
+                        <div class="w-12 h-12 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                            ${c.symbol[0]}
+                        </div>
+                        <div>
+                            <div class="font-bold text-lg text-white">${c.name}</div>
+                            <div class="text-xs text-gray-500 font-mono font-bold">${c.symbol}</div>
+                        </div>
+                    </div>
+                    <div class="text-right relative z-10">
+                        <div class="font-mono text-xl text-white font-bold">$${price.toFixed(2)}</div>
+                        <div class="text-sm ${isUp?'text-green-400':'text-red-400'} font-bold">${isUp?'+':''}${change.toFixed(2)}%</div>
+                    </div>
+
+                    <div class="absolute bottom-0 left-1/2 w-32 h-16 opacity-10 group-hover:opacity-30 transition-opacity">
+                        <canvas id="chart-crypto-${k}" data-hist='${histData}' data-color="${chartColor}"></canvas>
+                    </div>
+                </div>`;
+            }).join('');
+
+            requestAnimationFrame(() => {
+                keys.forEach(k => initSparkline(`chart-crypto-${k}`));
+            });
+        }
+
+        function renderPortfolio() {
+            if(!portfolioData) return;
+            
+            // Stats
+            document.getElementById('stat-cash').innerText = '$ ' + portfolioData.balance.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 0});
+            const invested = portfolioData.netWorth - portfolioData.balance;
+            document.getElementById('stat-invested').innerText = '$ ' + invested.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 0});
+            document.getElementById('pf-chart-total').innerText = '$' + (portfolioData.netWorth / 1000).toFixed(1) + 'k';
+
+            const list = document.getElementById('portfolio-list');
+            let html = "";
+            
+            portfolioData.stocks.forEach(s => html += createAssetRow('📈', s.name, `${s.quantity} Stk.`, s.quantity * s.currentPrice, (s.currentPrice - s.buyPrice)*s.quantity, 'stock', s.id, s.image));
+            portfolioData.crypto.forEach(c => html += createAssetRow('🪙', c.name, `${c.quantity.toFixed(4)}`, c.quantity * c.currentPrice, 0, 'crypto', c.id, null, true));
+            
+            list.innerHTML = html || '<div class="p-8 text-center text-gray-500 text-sm">Dein Portfolio ist leer.</div>';
+            updatePortfolioChart();
+        }
+
+        function createAssetRow(icon, name, sub, val, profit, type, id, img, hideProfit=false) {
+            const isProf = profit >= 0;
+            const imgHtml = img ? `<img src="${img}" class="w-full h-full object-cover">` : icon;
+            // Wir übergeben leere History [] ans Modal, da wir die History für Portfolio-Items nicht immer parat haben
+            return `
+            <div class="flex justify-between items-center p-4 hover:bg-white/5 cursor-pointer transition group" onclick='openTradeModal("${type}", "${id}", [])'>
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-lg overflow-hidden border border-white/5 group-hover:border-white/20 transition-colors">${imgHtml}</div>
+                    <div><div class="font-bold text-white text-sm truncate w-32 md:w-auto">${name}</div><div class="text-xs text-gray-500 font-mono font-bold">${sub}</div></div>
+                </div>
+                <div class="text-right"><div class="font-mono text-white font-bold text-sm">$${val.toLocaleString('de-DE', {minimumFractionDigits: 2})}</div>${hideProfit?'':`<div class="text-[10px] ${isProf?'text-green-400':'text-red-400'} font-bold">${isProf?'+':''}$${profit.toFixed(2)}</div>`}</div>
+            </div>`;
+        }
+
+        // --- CHARTS & MODAL ---
+
+        function initSparkline(id) {
+            const cvs = document.getElementById(id);
+            if(!cvs || Chart.getChart(id)) return;
+            
+            try {
+                const rawHist = JSON.parse(cvs.getAttribute('data-hist'));
+                const color = cvs.getAttribute('data-color');
+                if(!rawHist || rawHist.length < 2) return; 
+
+                new Chart(cvs.getContext('2d'), {
+                    type: 'line',
+                    data: { labels: rawHist.map((_, i) => i), datasets: [{ data: rawHist, borderColor: color, borderWidth: 2, pointRadius: 0, fill: false, tension: 0.4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, tooltip: false }, scales: { x: { display: false }, y: { display: false } }, animation: false, layout: { padding: 0 } }
+                });
+            } catch(e) {}
+        }
+
+        function updatePortfolioChart() {
+            const ctx = document.getElementById('portfolioChart');
+            if(!ctx || !portfolioData) return;
+            
+            const cash = portfolioData.balance || 0;
+            let stocks = 0; if(portfolioData.stocks) portfolioData.stocks.forEach(s => stocks += s.quantity * s.currentPrice);
+            let crypto = 0; if(portfolioData.crypto) portfolioData.crypto.forEach(c => crypto += c.quantity * c.currentPrice);
+            
+            if(pfChartInstance) { pfChartInstance.data.datasets[0].data = [cash, stocks, crypto]; pfChartInstance.update(); }
+            else {
+                pfChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: ['Cash', 'Stocks', 'Crypto'], datasets: [{ data: [cash, stocks, crypto], backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6'], borderWidth: 0 }] },
+                    options: { responsive: true, cutout: '85%', plugins: { legend: false }, animation: { animateScale: true } }
+                });
+            }
+        }
+
+        function openTradeModal(type, id, historyData) {
+            let asset = null;
+            if(type === 'stock') {
+                const s = marketData.stocks.find(x => x.id == id) || (portfolioData?.stocks.find(x => x.id == id));
+                if(s) asset = { id: s.id, type: 'stock', name: s.name, price: s.price || s.currentPrice, symbol: s.symbol || 'STK', img: s.image };
+            } else {
+                const c = marketData.crypto ? marketData.crypto[id] : null;
+                // Fallback: Portfolio Item
+                const pc = portfolioData?.crypto.find(x => x.id == id);
+                
+                if(c) asset = { id: id, type: 'crypto', name: c.name, price: c.price, symbol: c.symbol };
+                else if (pc) asset = { id: id, type: 'crypto', name: pc.name, price: pc.currentPrice, symbol: id.toUpperCase() };
+            }
+
+            if(!asset) return;
+            selectedAsset = asset;
+
+            document.getElementById('modal-title').innerText = asset.name;
+            document.getElementById('modal-symbol').innerText = asset.symbol;
+            document.getElementById('modal-type').innerText = type.toUpperCase();
+            document.getElementById('modal-price').innerText = '$' + (asset.price || 0).toFixed(2);
+            document.getElementById('trade-amount').value = '';
+            document.getElementById('trade-total').innerText = '$0.00';
+            
+            const iconEl = document.getElementById('modal-icon');
+            iconEl.innerHTML = asset.img ? `<img src="${asset.img}" class="w-full h-full object-cover rounded-xl">` : (type==='stock'?'📈':'🪙');
+
+            let owned = 0;
+            if(portfolioData) {
+                const list = type === 'stock' ? portfolioData.stocks : portfolioData.crypto;
+                const item = list.find(x => x.id == id);
+                if(item) owned = item.quantity;
+            }
+            document.getElementById('modal-owned').innerText = owned;
+
+            const modal = document.getElementById('trade-modal');
+            const bg = document.getElementById('modal-bg');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            
+            // Chart
+            if(historyData && historyData.length > 0) renderMainChart(historyData, asset.price);
+            else if(chartInstance) chartInstance.destroy();
+
+            // Anim
+            setTimeout(() => {
+                bg.classList.remove('opacity-0');
+                content.classList.remove('translate-y-full', 'opacity-0');
+                if(window.innerWidth >= 640) content.classList.remove('sm:translate-y-10');
+            }, 10);
+        }
+
+        function renderMainChart(data, currentPrice) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            let chartData = data;
+            const isUp = chartData[chartData.length-1] >= chartData[0];
+            const color = isUp ? '#10b981' : '#ef4444';
+
+            if(chartInstance) chartInstance.destroy();
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 160);
+            gradient.addColorStop(0, isUp ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: chartData.map((_, i) => i), datasets: [{ data: chartData, borderColor: color, borderWidth: 3, backgroundColor: gradient, fill: true, pointRadius: 0, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, tooltip: { enabled: true, mode: 'index', intersect: false } }, scales: { x: { display: false }, y: { display: false } }, interaction: { mode: 'nearest', axis: 'x', intersect: false }, animation: { duration: 800 } }
+            });
+        }
+
+        function closeTradeModal() {
+            const modal = document.getElementById('trade-modal');
+            const bg = document.getElementById('modal-bg');
+            const content = document.getElementById('modal-content');
+            
+            bg.classList.add('opacity-0');
+            content.classList.add('translate-y-full', 'opacity-0');
+            if(window.innerWidth >= 640) content.classList.add('sm:translate-y-10');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                selectedAsset = null;
+            }, 300);
+        }
+
+        function updateTotal() { 
+            if(!selectedAsset) return; 
+            const val = parseFloat(document.getElementById('trade-amount').value) || 0; 
+            document.getElementById('trade-total').innerText = '$' + (val * selectedAsset.price).toLocaleString('de-DE', {minimumFractionDigits: 2}); 
+        }
+
+        async function executeTrade(action) {
+            if(!selectedAsset) return;
+            const qty = parseFloat(document.getElementById('trade-amount').value);
+            if(!qty || qty <= 0) return alert("Ungültige Menge");
+            const endpoint = selectedAsset.type === 'stock' ? `${API_URL}/api/stonks/${action}` : `${API_URL}/api/finance/trade`;
+            const body = selectedAsset.type === 'stock' ? { productId: selectedAsset.id, quantity: qty } : { coinId: selectedAsset.id, amount: qty, type: action };
+            try {
+                const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body), credentials: 'include' });
+                const d = await res.json();
+                if(res.ok) { alert(d.message); closeTradeModal(); loadAllData(); loadPortfolio(); } else { alert(d.error); }
+            } catch(e) { alert("Verbindungsfehler"); }
+        }
+
+        function switchTab(t) {
+            currentTab = t;
+            ['market', 'crypto', 'portfolio'].forEach(x => {
+                document.getElementById(`view-${x}`).classList.add('hidden');
+                document.getElementById(`btn-${x}`).classList.remove('active', 'text-white');
+            });
+            document.getElementById(`view-${t}`).classList.remove('hidden');
+            document.getElementById(`btn-${t}`).classList.add('active', 'text-white');
+            if(t === 'market' && marketData.stocks.length > 0 && document.getElementById('stock-search').value === "") renderStocks(marketData.stocks);
+            if(t === 'portfolio') { renderPortfolio(); }
+            if(t === 'crypto') renderCrypto();
+        }
+    </script>
+
+</body></html>

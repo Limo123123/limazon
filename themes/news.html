@@ -1,0 +1,199 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo News Network</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #f3f4f6;
+        }
+
+        .font-sans {
+            font-family: 'Arial', sans-serif;
+        }
+
+        .newspaper-header {
+            border-bottom: 3px double #333;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .news-card {
+            transition: transform 0.2s;
+        }
+
+        .news-card:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-900">
+
+    <header class="bg-white p-4 shadow-md sticky top-0 z-50 font-sans">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tighter text-red-700">LNN LIVE</h1>
+            <div id="nav-auth">
+                <button onclick="window.location.href='/'" class="text-sm font-bold hover:underline">← Zurück zum
+                    Hub</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4 max-w-4xl mt-6">
+
+        <div class="text-center newspaper-header">
+            <h1 class="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-2">Limo News</h1>
+            <p class="font-sans text-sm text-gray-500 uppercase tracking-widest flex justify-between border-t border-b border-gray-300 py-1 mt-4">
+                <span>Die Wahrheit™</span>
+                <span id="date-display"></span>
+                <span>Unabhängig &amp; KI-Generiert</span>
+            </p>
+        </div>
+
+        <div id="admin-box" class="hidden bg-white p-6 rounded-lg shadow-lg mb-8 font-sans border-l-4 border-red-600">
+            <h3 class="font-bold text-lg mb-4 flex justify-between items-center">
+                Redaktion (Admin)
+                <button onclick="triggerAiNews()" id="btn-ai-trigger" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-1">
+                    <span>🤖</span> AI News generieren
+                </button>
+            </h3>
+            <input type="text" id="admin-headline" placeholder="Schlagzeile" class="w-full p-2 border rounded mb-2">
+            <textarea id="admin-content" placeholder="Artikel Text..." class="w-full p-2 border rounded mb-4 h-24"></textarea>
+            <div class="flex justify-end">
+                <button onclick="postAdminNews()" class="bg-red-700 text-white px-6 py-2 rounded font-bold hover:bg-red-800 transition">Veröffentlichen</button>
+            </div>
+        </div>
+
+        <div id="news-feed" class="grid grid-cols-1 gap-8">
+            <div class="text-center py-20 font-sans text-gray-400">Lade Nachrichten...</div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks';
+        let currentUser = null;
+
+        document.getElementById('date-display').innerText = new Date().toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        checkAuth();
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(API_URL + '/api/auth/me', { credentials: 'include' });
+                if (res.ok) {
+                    currentUser = await res.json();
+                    if (currentUser.isAdmin) document.getElementById('admin-box').classList.remove('hidden');
+                }
+                loadNews();
+            } catch (e) { loadNews(); }
+        }
+
+        async function loadNews() {
+            try {
+                const res = await fetch(API_URL + '/api/news');
+                const data = await res.json();
+                renderNews(data.news);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderNews(news) {
+            const container = document.getElementById('news-feed');
+            container.innerHTML = '';
+
+            if (news.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 font-sans text-gray-500">Noch keine Nachrichten heute. Die Welt schläft.</div>';
+                return;
+            }
+
+            news.forEach((n, index) => {
+                const isMain = index === 0;
+                const date = new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const authorClass = n.category === 'Offiziell' ? 'text-red-600 font-bold' : 'text-gray-500';
+
+                // Admin Delete Button Logik
+                const deleteBtn = (currentUser && currentUser.isAdmin)
+                    ? `<button onclick="deleteNews('${n._id}')" class="text-xs text-red-400 hover:text-red-600 font-bold border border-red-200 px-2 py-1 rounded ml-4">LÖSCHEN 🗑️</button>`
+                    : '';
+
+                const html = `
+                    <article class="bg-white p-6 shadow-sm border border-gray-200 news-card ${isMain ? 'md:p-10 border-b-4 border-black' : ''}">
+                        <div class="flex justify-between items-center mb-2 font-sans text-xs uppercase tracking-wide text-gray-400">
+                            <span>${n.category || 'News'}</span>
+                            <div class="flex items-center">
+                                <span>${date} Uhr</span>
+                                ${deleteBtn} </div>
+                        </div>
+                        <h2 class="${isMain ? 'text-4xl md:text-5xl' : 'text-2xl'} font-bold leading-tight mb-4 text-gray-900">
+                            ${n.headline}
+                        </h2>
+                        <p class="${isMain ? 'text-xl text-gray-700' : 'text-base text-gray-600'} leading-relaxed mb-4">
+                            ${n.content}
+                        </p>
+                        <div class="flex justify-between items-center border-t pt-4 mt-4 font-sans text-sm">
+                            <span class="${authorClass}">Von ${n.author}</span>
+                            <button onclick="likeNews('${n._id}')" class="flex items-center gap-1 text-gray-500 hover:text-red-500 transition cursor-pointer">
+                                ❤️ <span id="likes-${n._id}">${n.likes || 0}</span>
+                            </button>
+                        </div>
+                    </article>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        async function deleteNews(id) {
+            if (!confirm("Diesen Artikel wirklich löschen?")) return;
+            try {
+                const res = await fetch(API_URL + '/api/admin/news/' + id, { method: 'DELETE', credentials: 'include' });
+                if (res.ok) {
+                    loadNews(); // Neu laden
+                } else {
+                    alert("Fehler beim Löschen.");
+                }
+            } catch (e) { alert("Serverfehler."); }
+        }
+
+        async function likeNews(id) {
+            if (!currentUser) return alert("Bitte einloggen.");
+            try {
+                await fetch(API_URL + '/api/news/' + id + '/like', { method: 'POST', credentials: 'include' });
+                const el = document.getElementById('likes-' + id);
+                el.innerText = parseInt(el.innerText) + 1;
+            } catch (e) { }
+        }
+
+        async function postAdminNews() {
+            const h = document.getElementById('admin-headline').value;
+            const c = document.getElementById('admin-content').value;
+            if (!h || !c) return alert("Bitte alles ausfüllen.");
+
+            const res = await fetch(API_URL + '/api/admin/news', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ headline: h, content: c }), credentials: 'include'
+            });
+            if (res.ok) {
+                document.getElementById('admin-headline').value = '';
+                document.getElementById('admin-content').value = '';
+                loadNews();
+            }
+        }
+
+        async function triggerAiNews() {
+            const btn = document.getElementById('btn-ai-trigger');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<span class="animate-spin">⚙️</span>...`;
+            btn.disabled = true;
+            try {
+                const res = await fetch(API_URL + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
+                if (res.ok) loadNews();
+                else alert("Fehler.");
+            } catch (e) { alert("Verbindungsfehler."); }
+            finally { btn.innerHTML = originalText; btn.disabled = false; }
+        }
+    </script>
+
+
+</body></html>

@@ -1,0 +1,1931 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Limazon</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <link href="/assets_offline/1771357355937_all.min.css" rel="stylesheet">
+    <link href="/assets_offline/1771357354691_dl_asset_famil.css" rel="stylesheet">
+    <script src="/assets_offline/1771357355924_jspdf.umd.min.js"></script>
+    <script src="/assets_offline/1771357355987_jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .product {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+
+        .product:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #cart-items,
+        #inventory-content,
+        #order-history-content,
+        #my-token-codes-content {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #checkout-items {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        #checkout-modal .bg-white,
+        #product-detail-modal .bg-white,
+        #order-history-modal .bg-white,
+        #auth-modal .bg-white,
+        #account-modal .bg-white,
+        #sell-product-modal .bg-white,
+        #inventory-modal .bg-white,
+        #generate-token-codes-modal .bg-white,
+        #my-token-codes-modal .bg-white {
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #checkout-modal .bg-white>div:not(.checkout-footer),
+        #product-detail-modal .bg-white>div.flex-grow,
+        #order-history-modal #order-history-content,
+        #auth-modal .modal-content,
+        #account-modal .modal-content,
+        #sell-product-modal .modal-content,
+        #inventory-modal #inventory-content,
+        #generate-token-codes-modal .modal-content,
+        #my-token-codes-modal #my-token-codes-content {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        #checkout-modal .checkout-footer,
+        #product-detail-modal .detail-footer,
+        #auth-modal .modal-footer,
+        #account-modal .modal-footer,
+        #sell-product-modal .modal-footer,
+        #inventory-modal .modal-footer,
+        #generate-token-codes-modal .modal-footer,
+        #my-token-codes-modal .modal-footer {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 0.75rem 1rem;
+            z-index: 10;
+            border-top: 1px solid #eee;
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .stock-status {
+            font-size: 0.9em;
+        }
+
+        .stock-available {
+            color: #10b981;
+        }
+
+        .stock-low {
+            color: #f59e0b;
+        }
+
+        .stock-soldout {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .product img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #e5e7eb;
+            cursor: pointer;
+        }
+
+        .cart-qty-input-exceeds {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        #loading-status.spinning::before,
+        .button-spinner {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s linear infinite;
+            vertical-align: -4px;
+        }
+
+        .button-spinner {
+            border-width: 2px;
+            border-color: rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            height: 16px;
+            width: 16px;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #2d3748;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: translateY(20px);
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-roboto">
+
+    <header class="bg-blue-600 p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="text-white text-2xl font-bold">Limazon</div>
+        <div class="text-white text-lg font-semibold hidden md:block">Buy Your Human Now</div>
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <div id="user-info" class="text-white text-sm md:text-base">Hallo, <span id="customer-name" class="font-semibold">Gast</span><span id="user-balance-display" class="ml-2 hidden">(<i class="fas fa-coins text-yellow-300"></i> $<span id="user-balance">0.00</span>)</span></div>
+            <div id="auth-buttons"><button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 md:px-4 md:py-2 rounded text-sm md:text-base" onclick="openAuthModal('login')">Login</button><button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded text-sm md:text-base" onclick="openAuthModal('register')">Registrieren</button></div>
+            <div id="user-actions" class="hidden items-center space-x-1 md:space-x-2">
+                <button class="bg-white text-blue-600 px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm" onclick="openAccountModal()">Konto</button>
+                <button class="bg-teal-400 hover:bg-teal-500 text-black px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm" onclick="showMyInventory()">Inventar</button>
+                <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm" onclick="openAuctionHouse()">Auktionshaus</button>
+                <button class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm" onclick="openStonkMarket()">LimoStonks</button>
+                <!-- NEU: Mein Portfolio Button -->
+                <button class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm" onclick="openMyPortfolio()">Mein Portfolio</button>
+                <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm" onclick="showMyTokenCodes()">Meine Token Codes</button> <!-- NEU -->
+                <button class="bg-yellow-400 hover:bg-yellow-500 text-black px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm" onclick="showOrderHistory()">Bestellungen</button>
+                <button id="admin-reset-stock-button" class="bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 md:px-4 md:py-2 rounded hidden text-xs md:text-sm" onclick="resetProductStock(false)">Lager Reset</button>
+                <button id="admin-zero-stock-button" class="bg-red-700 hover:bg-red-800 text-white px-2 py-1 md:px-4 md:py-2 rounded hidden text-xs md:text-sm" onclick="resetProductStock(true)">Lager Nullen</button>
+                <button id="admin-generate-tokens-button" class="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 md:px-4 md:py-2 rounded hidden text-xs md:text-sm" onclick="openGenerateTokenCodesModal()">Token Codes Gen. (Admin)</button> <!-- NEU -->
+                <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm" onclick="logout()">Logout</button>
+            </div>
+            <button class="relative" onclick="viewCart()"><i class="fas fa-shopping-cart text-white text-2xl"></i><span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">0</span></button>
+        </div>
+    </header>
+
+    <main class="p-4">
+        <h1 class="text-2xl font-bold mb-6 text-center">Produktliste</h1>
+        <div class="w-full max-w-md mb-6 mx-auto text-center"><input id="search" type="text" placeholder="Produkt suchen (Name oder ID)..." class="border rounded p-2 w-full shadow-sm"></div>
+        <div id="loading-status" class="text-center py-10 hidden">
+            <p id="loading-status-message" class="text-lg font-semibold text-blue-600"></p>
+        </div>
+        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        <div id="pagination-controls" class="w-full flex justify-center mt-8"><button id="prev" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mr-2 disabled:opacity-50 disabled:cursor-not-allowed">«
+                Zurück</button><span id="page-info" class="px-4 py-2"></span><button id="next" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded ml-2 disabled:opacity-50 disabled:cursor-not-allowed">Weiter
+                »</button></div>
+        <div class="mt-8 text-center">
+            <button id="add-product-button" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded hidden" onclick="openAddProductModal()">+ Neues Produkt hinzufügen (Admin)</button>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="cart-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[60]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-lg md:max-w-xl">
+            <h2 class="text-xl font-bold mb-4 text-center">Warenkorb</h2>
+            <div id="cart-items" class="mb-4"></div>
+            <div class="text-right font-bold text-lg mb-4">Total: $<span id="cart-total">0.00</span></div>
+            <div class="mt-4 flex justify-between border-t pt-4"><button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded" onclick="closeCart()">Weiter
+                    einkaufen</button><button id="cart-checkout-button" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed" onclick="checkout()">Zur Kasse</button></div>
+        </div>
+    </div>
+    <div id="checkout-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[70]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4 text-center">Checkout</h2>
+            <div id="checkout-items" class="mb-4"></div>
+            <div class="checkout-footer">
+                <div class="text-right font-bold text-lg">Total: $<span id="checkout-total">0.00</span></div>
+                <div class="mt-4 flex justify-between"><button class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded" onclick="closeCheckout()">Abbrechen</button><button id="confirm-purchase-button" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center justify-center disabled:opacity-50" onclick="confirmPurchase()"><span class="button-text">Kauf bestätigen</span><span class="button-spinner hidden"></span></button></div>
+            </div>
+        </div>
+    </div>
+    <div id="thank-you-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4 text-center">Danke für deinen Einkauf!</h2>
+            <p id="thank-you-message" class="text-center mb-6">Deine Bestellung wurde erfolgreich bestätigt.</p>
+            <div class="flex justify-center space-x-4"><button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" onclick="generateInvoice()">Rechnung (PDF)</button><button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded" onclick="document.getElementById('thank-you-modal').classList.add('hidden');">Schließen</button>
+            </div>
+        </div>
+    </div>
+    <div id="profile-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[60]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-6 text-center">Profil bearbeiten (Veraltet)</h2>
+            <p class="text-center text-gray-600">Nutze das "Konto"-Menü für Einstellungen.</p>
+            <div class="mt-6 flex justify-center"><button class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded" onclick="closeProfile()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="add-product-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[60]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-6 text-center">Neues Produkt hinzufügen (Admin)</h2>
+            <div class="modal-content"><input id="product-name" type="text" placeholder="Produktname" class="border rounded p-2 w-full mb-3"><input id="product-image" type="text" placeholder="Bild-URL" class="border rounded p-2 w-full mb-3"><input id="product-price" type="text" placeholder="Preis (z.B. $12.99)" class="border rounded p-2 w-full mb-3"><input id="product-stock" type="number" placeholder="Anfangsbestand" class="border rounded p-2 w-full mb-4" value="20" min="0"></div>
+            <div class="modal-footer flex justify-between"><button class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded" onclick="closeAddProductModal()">Abbrechen</button><button id="submit-product-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center disabled:opacity-50" onclick="submitProduct(event)"><span class="button-text">Produkt hinzufügen</span><span class="button-spinner hidden"></span></button></div>
+        </div>
+    </div>
+    <div id="product-detail-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[70]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-3/4 md:w-2/3 lg:w-1/2 relative flex flex-col"><button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl leading-none" onclick="closeProductDetails()">×</button>
+            <div class="flex-grow overflow-y-auto p-2">
+                <h2 id="detail-name" class="text-2xl font-bold mb-4 text-center">Produkt Detail</h2>
+                <div class="md:flex md:space-x-6">
+                    <div class="md:w-1/2 mb-4 md:mb-0 flex justify-center items-center"><img id="detail-image" src="/assets_offline/1771357361037_400x300.png_textP" alt="Produktbild" class="w-full h-auto object-contain rounded max-h-96"></div>
+                    <div class="md:w-1/2 flex flex-col">
+                        <p class="text-sm text-gray-500 mb-2">ID: <span id="detail-id">N/A</span></p>
+                        <p id="detail-price" class="text-3xl font-bold text-blue-600 mb-4">$?.??</p>
+                        <div class="text-sm mb-4">
+                            <p class="font-semibold">Verfügbarkeit:</p>
+                            <p id="detail-stock-available">?</p>
+                            <p id="detail-stock-cart" class="text-xs text-blue-500">(0 bereits in Ihrem Warenkorb)</p>
+                        </div>
+                        <div class="mt-auto">
+                            <div class="flex items-center space-x-2 mb-4"><label for="detail-qty" class="text-sm font-medium">Menge:</label><input id="detail-qty" type="number" min="1" value="1" class="border rounded p-1 w-16 text-center"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-footer flex space-x-2 mt-4"><button id="detail-add-to-cart" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex-1 disabled:opacity-50" onclick="">In Korb</button><button id="detail-buy-now" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex-1 disabled:opacity-50" onclick="">Direkt Kaufen</button></div>
+        </div>
+    </div>
+    <div id="order-history-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-3/4 md:w-2/3 lg:w-3/4 relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeOrderHistory()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Meine Bestellungen</h2>
+            <div id="order-history-content" class="overflow-y-auto flex-grow" style="max-height: calc(80vh - 120px);">
+                <p class="text-center text-gray-500 py-4">Noch keine Bestellungen vorhanden.</p>
+            </div>
+            <div class="modal-footer text-right mt-4 flex-shrink-0 border-t pt-2"><button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm" onclick="clearOrderHistory()">Verlauf löschen</button><button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded ml-2" onclick="closeOrderHistory()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="account-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[60]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative"><button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeAccountModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Kontoeinstellungen</h2>
+            <div class="modal-content">
+                <div class="mb-4">
+                    <p><strong>Benutzername:</strong> <span id="account-username"></span></p>
+                    <p><strong>Guthaben (Dollar):</strong> $<span id="account-balance"></span></p>
+                    <p><strong>Guthaben (Tokens):</strong> <i class="fas fa-coins text-yellow-400"></i> <span id="account-tokens">0</span> Tokens</p>
+                </div>
+
+                <div class="mb-6 border-t pt-4">
+                    <label id="infinity-money-label" class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" id="account-infinity-money" onchange="updateAccountSettings()" class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                        <span class="text-gray-700">"Infinity Money"-Modus</span>
+                    </label>
+                    <p id="infinity-money-unlock-info" class="text-xs text-gray-500 mt-1 hidden">Kaufe das teuerste
+                        Produkt im Shop, um dies freizuschalten!</p>
+                </div>
+
+                <div class="mb-6 border-t pt-4">
+                    <h3 class="text-lg font-semibold mb-2">Token Management</h3>
+
+                    <div class="mb-4">
+                        <label for="redeem-token-code" class="block text-sm font-medium text-gray-700 mb-1">Token-Code
+                            einlösen:</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="redeem-token-code" placeholder="LMTKN-ABCDE-FGHIJ" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                            <button onclick="redeemTokenCode()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded">Einlösen</button>
+                        </div>
+                        <p id="redeem-message" class="text-sm mt-1"></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="dollars-to-tokens-amount" class="block text-sm font-medium text-gray-700 mb-1">Dollar in Tokens umwandeln:</label>
+                        <div class="flex space-x-2">
+                            <input type="number" id="dollars-to-tokens-amount" placeholder="Dollar Betrag" min="1" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                            <button onclick="convertDollarsToTokens()" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded">Umwandeln</button>
+                        </div>
+                        <p id="dollars-to-tokens-message" class="text-sm mt-1"></p>
+                    </div>
+
+                    <div>
+                        <label for="tokens-to-dollars-amount" class="block text-sm font-medium text-gray-700 mb-1">Tokens in Dollar umwandeln:</label>
+                        <div class="flex space-x-2">
+                            <input type="number" id="tokens-to-dollars-amount" placeholder="Token Anzahl" min="1" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                            <button onclick="convertTokensToDollars()" class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded">Umwandeln</button>
+                        </div>
+                        <p id="tokens-to-dollars-message" class="text-sm mt-1"></p>
+                    </div>
+                </div>
+
+                <p id="account-message" class="text-green-600 text-sm mb-4 hidden"></p>
+            </div>
+            <div class="modal-footer flex justify-end"><button class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onclick="closeAccountModal()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="auth-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm relative"><button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeAuthModal()">×</button>
+            <h2 id="auth-modal-title" class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <div class="modal-content">
+                <form id="auth-form" onsubmit="handleAuthFormSubmit(event)">
+                    <div class="mb-4"><label for="auth-username" class="block text-sm font-medium text-gray-700 mb-1">Benutzername (min 3)</label><input type="text" id="auth-username" name="username" required="" minlength="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="mb-6"><label for="auth-password" class="block text-sm font-medium text-gray-700 mb-1">Passwort (min 6)</label><input type="password" id="auth-password" name="password" required="" minlength="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="mb-4"><label class="flex items-center"><input type="checkbox" id="auth-remember-me" name="rememberMe" class="form-checkbox h-4 w-4 text-blue-600 rounded"><span class="ml-2 text-sm text-gray-600">Angemeldet bleiben</span></label></div>
+                    <p id="auth-error-message" class="text-red-500 text-sm mb-4 hidden"></p><button id="auth-submit-button" type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center disabled:opacity-50"><span class="button-text">Login</span><span class="button-spinner hidden"></span></button>
+                </form>
+                <p class="text-sm text-center mt-4"><span id="auth-switch-text">Noch kein Konto?</span> <button id="auth-switch-button" type="button" class="font-medium text-blue-600 hover:text-blue-500" onclick="switchAuthMode()">Jetzt registrieren</button></p>
+            </div>
+        </div>
+    </div>
+    <div id="inventory-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-3/4 md:w-2/3 lg:w-3/4 relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeMyInventory()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Mein Inventar (Gegenstände)</h2>
+            <div id="inventory-content" class="overflow-y-auto flex-grow" style="max-height: calc(80vh - 80px);">
+                <p class="text-center text-gray-500 py-4">Dein Inventar ist leer.</p>
+            </div>
+            <div class="modal-footer flex justify-end"><button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded" onclick="closeMyInventory()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="sell-product-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative"><button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeSellProductModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Produkt Verkaufen</h2>
+            <div class="modal-content">
+                <div class="mb-4">
+                    <p>Produkt: <strong id="sell-product-name"></strong></p>
+                    <p class="text-sm">Aktueller Shop-Preis: <span id="sell-product-original-price"></span></p>
+                    <p class="text-sm">Dein Bestand: <span id="sell-product-user-stock">0</span> Stk.</p>
+                </div>
+                <div class="mb-4"><label for="sell-quantity" class="block text-sm font-medium text-gray-700 mb-1">Menge
+                        zu verkaufen:</label><input type="number" id="sell-quantity" value="1" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></div>
+                <div class="mb-4"><label for="sell-price" class="block text-sm font-medium text-gray-700 mb-1">Dein
+                        Verkaufspreis pro Stück ($)</label><input type="number" id="sell-price" step="0.01" min="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></div>
+                <div class="mb-2 text-sm text-center">Geschätzte Verkaufschance: <span id="sell-probability" class="font-semibold">?%</span></div>
+                <p id="sell-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
+                <p id="sell-cooldown-message" class="text-blue-500 text-sm mb-4 hidden"></p>
+            </div>
+            <div class="modal-footer flex justify-between"><button class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded" onclick="closeSellProductModal()">Abbrechen</button><button id="confirm-sell-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center disabled:opacity-50"><span class="button-text">Verkaufen</span><span class="button-spinner hidden"></span></button></div>
+        </div>
+    </div>
+
+    <!-- NEU: Auction House Modal -->
+    <div id="auction-house-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-4xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeAuctionHouse()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Auktionshaus</h2>
+            <div id="auction-house-content" class="overflow-y-auto flex-grow grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
+                <p class="text-center text-gray-500 py-4 col-span-full">Lade Auktionen...</p>
+            </div>
+            <div class="modal-footer flex justify-end">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded" onclick="closeAuctionHouse()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Auction Detail Modal -->
+    <div id="auction-detail-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-2xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="document.getElementById('auction-detail-modal').classList.add('hidden')">×</button>
+            <h2 id="auction-detail-name" class="text-2xl font-bold mb-4 text-center flex-shrink-0">Auktion Details</h2>
+
+            <div class="flex-grow overflow-y-auto p-2">
+                <div class="md:flex md:space-x-6">
+                    <!-- Linke Seite: Bild & Infos -->
+                    <div class="md:w-1/2 mb-4 md:mb-0">
+                        <img id="auction-detail-image" src="" alt="Produktbild" class="w-full h-64 object-cover rounded mx-auto mb-2">
+                        <p class="text-sm text-gray-500">Verkäufer: <span id="auction-detail-seller" class="font-semibold"></span></p>
+                        <p class="text-sm text-gray-500">Verbleibende Zeit: <span id="auction-detail-time" class="font-semibold"></span></p>
+                        <hr class="my-3">
+                        <p class="text-2xl font-bold text-blue-600">Aktuelles Gebot: $<span id="auction-detail-bid"></span></p>
+                        <p class="text-sm text-gray-600">Höchstbietender: <span id="auction-detail-highest-bidder" class="font-semibold"></span></p>
+                    </div>
+
+                    <!-- Rechte Seite: Gebot abgeben & Historie -->
+                    <div class="md:w-1/2 flex flex-col">
+                        <div class="bg-gray-100 p-3 rounded-lg border">
+                            <h3 class="text-lg font-semibold mb-2">Dein Gebot abgeben</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-lg font-semibold">$</span>
+                                <input type="number" id="bid-amount" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" placeholder="z.B. 5500.00">
+                            </div>
+                            <button id="confirm-bid-button" class="mt-2 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
+                                <span class="button-text">Bieten</span>
+                                <span class="button-spinner hidden"></span>
+                            </button>
+                            <p id="auction-detail-error" class="text-red-500 text-sm mt-2 text-center"></p>
+                        </div>
+
+                        <h4 class="font-semibold mt-4 mb-2">Gebotshistorie</h4>
+                        <div id="auction-bid-history" class="text-xs overflow-y-auto border rounded bg-gray-50 p-2 flex-grow min-h-[100px]">
+                            <p class="text-gray-500">Noch keine Gebote.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: LimoStonks Market Modal -->
+    <div id="stonks-market-modal" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center hidden z-[85]">
+        <div class="bg-gray-100 p-4 rounded-lg shadow-2xl w-full max-w-6xl relative max-h-[90vh] flex flex-col">
+
+            <!-- Header Container -->
+            <div class="flex justify-between items-center mb-4 border-b border-gray-300 pb-3 relative">
+                <h2 class="text-3xl font-bold text-gray-800">LimoStonks Börse</h2>
+                <div id="stonks-next-update-timer" class="text-sm text-gray-600 bg-white px-3 py-1 rounded-full shadow">
+                    Nächstes Preis-Update in: <span class="font-bold">--:--</span>
+                </div>
+                <button class="absolute -top-2 -right-2 text-gray-500 hover:text-red-600 text-3xl" onclick="closeStonkMarket()">×</button>
+            </div>
+
+            <!-- NEU: Such- und Filter-Leiste -->
+            <div class="my-2 p-2 bg-white rounded shadow flex items-center space-x-4">
+                <input type="text" id="stonk-search-input" class="w-full px-3 py-1 border border-gray-300 rounded-full" placeholder="Aktie suchen (Name oder ID)...">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-semibold">Sortieren:</span>
+                    <button id="sort-stonk-name" class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Name</button>
+                    <button id="sort-stonk-price" class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Preis</button>
+                    <button id="sort-stonk-change" class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Änderung</button>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div id="stonks-market-content" class="overflow-y-auto flex-grow grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2 bg-white rounded shadow-inner">
+                <p class="text-center text-gray-500 py-4 col-span-full">Lade Aktienkurse...</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer flex justify-end mt-4">
+                <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded" onclick="closeStonkMarket()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Stonk Detail/Trade Modal -->
+    <div id="stonk-detail-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[95]">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-xl relative">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="document.getElementById('stonk-detail-modal').classList.add('hidden')">×</button>
+            <h2 id="stonk-detail-name" class="text-2xl font-bold mb-4 text-center">Aktien Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Linke Seite: Infos & Portfolio -->
+                <div>
+                    <img id="stonk-detail-image" src="" class="w-full h-40 object-cover rounded-lg mb-4 shadow">
+                    <p class="text-3xl font-bold text-blue-600">$<span id="stonk-detail-price">--.--</span></p>
+                    <p class="text-sm text-gray-500 mb-4">Aktueller Marktpreis</p>
+
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <h4 class="font-semibold text-blue-800">Dein Portfolio</h4>
+                        <p class="text-sm">Anteile im Besitz: <strong id="stonk-portfolio-quantity" class="text-lg">0</strong></p>
+                        <p class="text-sm">Ø Einkaufspreis: <strong id="stonk-portfolio-avg-price">$0.00</strong></p>
+                        <p class="text-sm">Gesamtwert: <strong id="stonk-portfolio-total-value">$0.00</strong></p>
+                    </div>
+                </div>
+                <!-- Rechte Seite: Handeln -->
+                <div>
+                    <!-- NACHHER: Überarbeitetes Handels-Panel mit besserem Layout -->
+                    <div id="stonk-trade-panel" class="p-4 rounded-lg bg-gray-50 border">
+                        <h3 class="text-lg font-semibold mb-3 text-center">Handeln</h3>
+
+                        <!-- Flex-Container für die Handels-Aktionen -->
+                        <div class="flex items-center space-x-2">
+                            <!-- Input-Feld (nimmt jetzt weniger Platz ein) -->
+                            <input type="number" id="stonk-trade-quantity" min="1" class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black text-center" placeholder="Menge">
+
+                            <!-- Container für die beiden Buttons -->
+                            <div class="flex-grow flex flex-col space-y-2">
+                                <button id="stonk-buy-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded w-full">Kaufen</button>
+                                <button id="stonk-sell-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded w-full">Verkaufen</button>
+                            </div>
+                        </div>
+
+                        <p class="text-center text-sm mt-2">Geschätzter Wert: <strong id="stonk-trade-estimated-value">$0.00</strong></p>
+                        <p id="stonk-trade-error" class="text-red-500 text-sm mt-3 text-center h-4"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: My Portfolio Modal -->
+    <div id="my-portfolio-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[87]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-4xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeMyPortfolio()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Mein Aktien-Portfolio</h2>
+            <div class="overflow-y-auto flex-grow">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                        <tr>
+                            <th scope="col" class="px-4 py-3">Aktie</th>
+                            <th scope="col" class="px-4 py-3 text-right">Anteile</th>
+                            <th scope="col" class="px-4 py-3 text-right">Ø Kaufpreis</th>
+                            <th scope="col" class="px-4 py-3 text-right">Akt. Marktpreis</th>
+                            <th scope="col" class="px-4 py-3 text-right">Gesamtwert</th>
+                            <th scope="col" class="px-4 py-3 text-right">Gewinn / Verlust</th>
+                            <th scope="col" class="px-4 py-3 text-center">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="my-portfolio-content">
+                        <!-- Inhalt wird per JS geladen -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="my-portfolio-footer" class="modal-footer flex justify-between items-center mt-4 border-t pt-2">
+                <p class="text-lg">Gesamtwert Portfolio: <strong id="portfolio-total-value" class="text-blue-600">$0.00</strong></p>
+                <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded" onclick="closeMyPortfolio()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Create Auction Modal -->
+    <div id="create-auction-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[95]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeCreateAuctionModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Item Versteigern</h2>
+            <div class="modal-content">
+                <div class="mb-4 text-center">
+                    <img id="create-auction-product-image" src="" class="w-24 h-24 object-cover rounded mx-auto mb-2">
+                    <p>Produkt: <strong id="create-auction-product-name"></strong></p>
+                    <p class="text-sm">Dein Bestand: <span id="create-auction-user-stock">0</span> Stk.</p>
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-quantity" class="block text-sm font-medium text-gray-700 mb-1">Menge zu
+                        versteigern:</label>
+                    <input type="number" id="create-auction-quantity" value="1" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-start-bid" class="block text-sm font-medium text-gray-700 mb-1">Startgebot ($):</label>
+                    <input type="number" id="create-auction-start-bid" step="0.01" min="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-duration" class="block text-sm font-medium text-gray-700 mb-1">Auktionsdauer:</label>
+                    <select id="create-auction-duration" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        <option value="12">12 Stunden</option>
+                        <option value="24" selected="">24 Stunden</option>
+                        <option value="48">48 Stunden</option>
+                    </select>
+                </div>
+                <p id="create-auction-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
+            </div>
+            <div class="modal-footer flex justify-between">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded" onclick="closeCreateAuctionModal()">Abbrechen</button>
+                <button id="confirm-create-auction-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
+                    <span class="button-text">Auktion starten</span>
+                    <span class="button-spinner hidden"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Token Code Generation Modal -->
+    <div id="generate-token-codes-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative"><button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeGenerateTokenCodesModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Token Codes generieren (Admin)</h2>
+            <div class="modal-content">
+                <div class="mb-4">
+                    <label for="generate-token-amount" class="block text-sm font-medium text-gray-700 mb-1">Token-Wert
+                        pro Code:</label>
+                    <input type="number" id="generate-token-amount" value="100" min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="generate-token-count" class="block text-sm font-medium text-gray-700 mb-1">Anzahl der
+                        Codes:</label>
+                    <input type="number" id="generate-token-count" value="1" min="1" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <p id="generate-token-codes-message" class="text-sm mt-1 mb-3"></p>
+                <div id="generated-codes-display" class="text-xs bg-gray-100 p-2 rounded max-h-32 overflow-y-auto">
+                    <!-- Hier werden generierte Codes angezeigt -->
+                </div>
+            </div>
+            <div class="modal-footer flex justify-between mt-4">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded" onclick="closeGenerateTokenCodesModal()">Abbrechen</button>
+                <button id="confirm-generate-token-codes-button" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center disabled:opacity-50" onclick="handleGenerateTokenCodes()">
+                    <span class="button-text">Codes generieren</span>
+                    <span class="button-spinner hidden"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User's Purchased Token Codes Modal -->
+    <div id="my-token-codes-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[85]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-3/4 md:w-2/3 lg:w-1/2 relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl" onclick="closeMyTokenCodesModal()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Meine Token Guthaben Codes</h2>
+            <p class="text-xs text-center text-gray-500 mb-3">Diese Codes kannst du selbst einlösen (im Konto-Menü) oder
+                an Freunde weitergeben.</p>
+            <div id="my-token-codes-content" class="overflow-y-auto flex-grow" style="max-height: calc(80vh - 120px);">
+                <p class="text-center text-gray-500 py-4">Du hast keine unbenutzten Token Codes.</p>
+            </div>
+            <!-- START: New Merge Section -->
+            <div class="border-t pt-4 mt-4">
+                <h3 class="text-lg font-semibold mb-2 text-center">Token Codes zusammenführen</h3>
+                <div class="flex items-center justify-center space-x-2">
+                    <select id="merge-token-value" class="border rounded p-2">
+                        <option value="10">10 Tokens</option>
+                        <option value="50">50 Tokens</option>
+                        <option value="100">100 Tokens</option>
+                        <option value="500">500 Tokens</option>
+                        <option value="1000">1000 Tokens</option>
+                    </select>
+                    <input id="merge-token-count" type="number" placeholder="Anzahl" min="2" class="border rounded p-2 w-24 text-center">
+                    <button id="merge-token-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center" onclick="mergeTokenCodes()">
+                        <span class="button-text">Zusammenführen</span>
+                        <span class="button-spinner hidden"></span>
+                    </button>
+                </div>
+                <p id="merge-token-message" class="text-sm mt-2 text-center"></p>
+            </div>
+            <!-- END: New Merge Section -->
+            <div class="modal-footer flex justify-end">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded" onclick="closeMyTokenCodesModal()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="mt-12 text-center text-gray-500 text-sm">
+        © 2025 Limazon Universe
+    </footer>
+
+    <script>
+        // --- Globale Variablen ---
+        const LOG_PREFIX = "[Limazon FE]";
+        let products = [];
+        let filteredProducts = [];
+        let currentPage = 1;
+        const itemsPerPage = 8;
+        let cart = [];
+        let lastPurchasedCart = [];
+        let previousSearchTerm = "";
+        let isInitialLoad = true;
+        let isServerStarting = false;
+        let serverStartTimeoutId = null;
+        let serverRetryCount = 0;
+        const MAX_SERVER_RETRIES = 12;
+        const SERVER_RETRY_DELAY = 5000;
+
+        // NEU: Polling Timer Variable
+        let pollingTimer = null;
+        // NEU: Schnelleres Intervall (3 Sekunden), da der Check winzig ist
+        const pollingInterval = 3000;
+
+        // NEU: Speichert den lokalen Zeitstempel der Daten
+        let localDataVersions = { products: 0, chat: 0, news: 0, stonks: 0 };
+
+        let detailModalProductId = null;
+        let loggedInUser = null;
+        let currentSellProductId = null;
+        let sellCooldownIntervalId = null;
+
+        const getApiUrl = () => 'https://api.limazon.v6.rocks/api';
+        const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%239ca3af'%3EBild nicht verfügbar%3C/text%3E%3C/svg%3E";
+
+        // --- Hilfsfunktionen ---
+        const filterValidProducts = (productList) => {
+            const valid = productList.filter(p => p && typeof p.id === 'number' && Number.isInteger(p.id) && (p.id >= 100000 || (p.isTokenCard && p.id > 900000)));
+            return valid;
+        };
+
+        function showLoadingStatus(message, showSpinner = false, hideProductList = true) {
+            const statusDiv = document.getElementById('loading-status');
+            const messageEl = document.getElementById('loading-status-message');
+            const productListDiv = document.getElementById('product-list');
+            const paginationDiv = document.getElementById('pagination-controls');
+            if (!statusDiv || !messageEl || !productListDiv || !paginationDiv) {
+                console.error(`${LOG_PREFIX} UI-Elemente für Ladezustand nicht im DOM!`);
+                return;
+            }
+            if (message) {
+                messageEl.textContent = message; statusDiv.classList.remove('hidden');
+                if (hideProductList) { productListDiv.classList.add('hidden'); paginationDiv.classList.add('hidden'); }
+                if (showSpinner) statusDiv.classList.add('spinning'); else statusDiv.classList.remove('spinning');
+            } else {
+                statusDiv.classList.add('hidden'); statusDiv.classList.remove('spinning');
+                productListDiv.classList.remove('hidden'); paginationDiv.classList.remove('hidden');
+                messageEl.textContent = '';
+            }
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout); timeout = setTimeout(later, wait);
+            };
+        }
+
+        function showToast(message, duration = 3000) {
+            console.log(`${LOG_PREFIX} showToast: "${message}", Dauer: ${duration}ms`);
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.textContent = message; document.body.appendChild(toast);
+            requestAnimationFrame(() => { requestAnimationFrame(() => { toast.classList.add('show'); }); });
+            setTimeout(() => { toast.classList.remove('show'); toast.addEventListener('transitionend', () => toast.remove()); }, duration);
+        }
+
+        function getStockDisplayInfo(serverStock, quantityInCart, isTokenCard = false) {
+            if (isTokenCard) { return { text: `Verfügbar: <span class="text-green-600">Digitaler Code</span>`, cssClass: "stock-available", canAddMore: true, availableToAdd: 999 }; }
+            const virtualPersonalStockAvailableToAdd = Math.max(0, serverStock - quantityInCart);
+            const canAddMore = virtualPersonalStockAvailableToAdd > 0; let displayText = ""; let cssClass = "stock-soldout";
+            if (serverStock === 0) { displayText = "Ausverkauft"; }
+            else if (quantityInCart > 0) { displayText = `Noch <span class="${canAddMore ? 'text-green-600' : 'text-orange-500 font-bold'}">${virtualPersonalStockAvailableToAdd}</span> Stk. hinzufügbar (von ${serverStock} gesamt)`; if (canAddMore) cssClass = "stock-available"; else cssClass = "stock-low"; }
+            else { displayText = `Verfügbar: <span class="text-green-600">${serverStock}</span> Stk.`; cssClass = "stock-available"; }
+            return { text: displayText, cssClass: cssClass, canAddMore: canAddMore, availableToAdd: virtualPersonalStockAvailableToAdd };
+        }
+
+        function copyToClipboard(text, buttonElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                console.log(`${LOG_PREFIX} Code "${text}" in Zwischenablage kopiert.`);
+                showToast(`Code "${text.substring(0, 15)}..." kopiert!`, 2000);
+                if (buttonElement) { const originalText = buttonElement.textContent; buttonElement.textContent = 'Kopiert!'; buttonElement.classList.replace('bg-blue-500', 'bg-green-500'); setTimeout(() => { buttonElement.textContent = originalText; buttonElement.classList.replace('bg-green-500', 'bg-blue-500'); }, 2000); }
+            }).catch(err => { console.error(`${LOG_PREFIX} Fehler beim Kopieren: `, err); showToast('Fehler beim Kopieren.', 3000); });
+        }
+
+        // --- SMART POLLING CHECK ---
+        async function checkForUpdates() {
+            try {
+                // Wir fragen nur den winzigen Version-Endpoint (ca. 200 Bytes)
+                const res = await fetch(`${getApiUrl()}/status/versions`);
+                if (!res.ok) return;
+
+                const serverVersions = await res.json();
+
+                // 1. PRODUKTE CHECK
+                // Wenn Server-Zeitstempel neuer ist als unserer -> Laden!
+                if (serverVersions.products > localDataVersions.products) {
+                    console.log(`${LOG_PREFIX} Smart-Polling: Neue Produktdaten erkannt (Server: ${serverVersions.products}, Local: ${localDataVersions.products}).`);
+
+                    // Wir speichern die vorherigen Bestände für den Vergleich
+                    const prevStocks = products.reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {});
+
+                    await loadProducts('polling');
+
+                    // UI Updates nach dem Laden (nur wenn nötig)
+                    if (!isServerStarting) {
+                        let changed = false;
+                        // Einfache Logik: Haben sich Bestände geändert?
+                        for (const curP of products) {
+                            if (!curP.isTokenCard && (prevStocks[curP.id] === undefined || prevStocks[curP.id] !== curP.stock)) {
+                                changed = true;
+                                break;
+                            }
+                        }
+
+                        if (changed) {
+                            if (!document.getElementById('cart-modal').classList.contains('hidden')) viewCart();
+                            if (detailModalProductId !== null) showProductDetails(detailModalProductId);
+                            if (!document.getElementById('inventory-modal').classList.contains('hidden') && loggedInUser) showMyInventory();
+                        }
+                    }
+
+                    // Aktualisiere unsere lokale Version
+                    localDataVersions.products = serverVersions.products;
+                }
+
+                // 2. STONKS CHECK (Optional, falls Börse offen ist)
+                const stonkModal = document.getElementById('stonks-market-modal');
+                if (stonkModal && !stonkModal.classList.contains('hidden')) {
+                    if (serverVersions.stonks > localDataVersions.stonks) {
+                        console.log(`${LOG_PREFIX} Smart-Polling: Neue Börsendaten.`);
+                        renderStonkMarket();
+                        localDataVersions.stonks = serverVersions.stonks;
+                    }
+                }
+
+            } catch (e) {
+                console.warn("Smart Polling Fehler (ignoriert):", e);
+            }
+        }
+
+        // --- Kernfunktionen (Laden, Rendern) ---
+        async function loadProducts(triggeredBy = 'initial') {
+            console.log(`${LOG_PREFIX} loadProducts. Trigger: ${triggeredBy}, ServerStart: ${isServerStarting}, TimeoutID: ${serverStartTimeoutId !== null}`);
+            if (triggeredBy !== 'retry' && serverStartTimeoutId) { console.log(`${LOG_PREFIX} loadProducts (${triggeredBy}): Ignoriert (Retry geplant).`); return; }
+            if (triggeredBy === 'polling' && isServerStarting) { console.log(`${LOG_PREFIX} loadProducts (${triggeredBy}): Ignoriert (Server startet).`); return; }
+
+            if (triggeredBy === 'initial' || triggeredBy === 'retry') { showLoadingStatus("Lade Produkte...", true, true); if (triggeredBy === 'initial') isServerStarting = true; }
+            if (triggeredBy !== 'retry') serverRetryCount = 0;
+
+            try {
+                const res = await fetch(`${getApiUrl()}/products`);
+                const contentType = res.headers.get("content-type");
+
+                if (!res.ok || !contentType || !contentType.includes("application/json")) {
+                    console.warn(`${LOG_PREFIX} loadProducts: Nicht OK (${res.status}) oder kein JSON (${contentType}). Server startet?`);
+                    isServerStarting = true; serverRetryCount++;
+                    if (serverRetryCount > MAX_SERVER_RETRIES) { console.error(`${LOG_PREFIX} loadProducts: Serverstart Timeout.`); showLoadingStatus(`Server antwortet nicht. Timeout.`, false, true); isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; return; }
+                    const waitTime = SERVER_RETRY_DELAY / 1000; showLoadingStatus(`Server startet... (Versuch ${serverRetryCount}/${MAX_SERVER_RETRIES}, +${waitTime}s)`, true, true);
+                    if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = setTimeout(() => { serverStartTimeoutId = null; loadProducts('retry'); }, SERVER_RETRY_DELAY); return;
+                }
+
+                const wasStarting = isServerStarting; isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) { clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; }
+                if (wasStarting) console.log(`${LOG_PREFIX} loadProducts: Server scheint gestartet.`);
+                if (wasStarting || triggeredBy === 'initial' || triggeredBy === 'retry') showLoadingStatus(null);
+
+                const { products: data } = await res.json();
+                products = Array.isArray(data) ? filterValidProducts(data).sort((a, b) => a.id - b.id) : [];
+
+                // NEU: Lokale Version synchronisieren, damit Polling nicht doppelt lädt
+                // Wir setzen es einfach auf "jetzt", das verhindert einen sofortigen Reload
+                if (triggeredBy !== 'polling') {
+                    localDataVersions.products = Date.now();
+                }
+
+                console.log(`${LOG_PREFIX} Produkte geladen: ${products.length}`);
+                applySearchFilter();
+                if (triggeredBy === 'initial') isInitialLoad = false;
+
+            } catch (error) {
+                console.error(`${LOG_PREFIX} Fehler Laden Produkte (${triggeredBy}):`, error);
+                if (triggeredBy === 'initial' || !isServerStarting) showLoadingStatus(`Fehler Laden Produkte: ${error.message}.`, false, true);
+                if (serverRetryCount >= MAX_SERVER_RETRIES || (triggeredBy === 'initial' && !serverStartTimeoutId)) isServerStarting = false;
+
+                // UI Disable Logik bei Fehler
+                const pageInfoEl = document.getElementById('page-info'); if (pageInfoEl) pageInfoEl.textContent = 'Fehler';
+                const prevBtn = document.getElementById('prev'); if (prevBtn) prevBtn.disabled = true;
+                const nextBtn = document.getElementById('next'); if (nextBtn) nextBtn.disabled = true;
+                const pDiv = document.getElementById('pagination-controls'); if (pDiv) pDiv.classList.add('hidden');
+            }
+        }
+
+        function applySearchFilter() {
+            const term = document.getElementById('search').value.toLowerCase();
+            filteredProducts = products.filter(p => p && ((p.name && p.name.toLowerCase().includes(term)) || (p.id && String(p.id).includes(term))));
+            currentPage = 1; renderProducts();
+        }
+
+        function renderProducts() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = '';
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const chunk = filteredProducts.slice(start, start + itemsPerPage);
+
+            if (chunk.length === 0) {
+                list.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">Keine Produkte gefunden.</p>';
+                return;
+            }
+
+            chunk.forEach(p => {
+                // 1. SICHERHEITS-LOGIK FÜR BILDER
+                let imgUrl = p.image_url;
+                if (!imgUrl || imgUrl.includes('placehold.co') || imgUrl.includes('via.placeholder')) {
+                    imgUrl = PLACEHOLDER_IMG;
+                }
+
+                // 2. LAGER & WARENKORB LOGIK
+                const sStock = p.isTokenCard ? 99999 : (p.stock || 0);
+                const itemInCart = cart.find(i => i.id === p.id);
+                const qCart = itemInCart ? itemInCart.quantity : 0; // Wie viele habe ich schon?
+
+                const availableToAdd = Math.max(0, sStock - qCart);
+                const canAdd = availableToAdd > 0;
+
+                // Lager Text & Farbe bestimmen
+                let stockText = `Verfügbar: ${sStock}`;
+                let stockClass = "text-green-600";
+
+                if (sStock === 0) {
+                    stockText = "Ausverkauft";
+                    stockClass = "text-red-600 font-bold";
+                } else if (qCart > 0) {
+                    // Wenn schon was im Korb ist, zeigen wir an, wie viel NOCH geht
+                    stockText = `Noch ${availableToAdd} verfügbar`;
+                    stockClass = "text-orange-500";
+                }
+
+                // 3. HTML ZUSAMMENBAUEN
+                const div = document.createElement('div');
+                div.className = 'product bg-white rounded-lg shadow-md flex flex-col overflow-hidden';
+
+                div.innerHTML = `
+                    <img src="${imgUrl}" 
+                         class="w-full h-40 object-cover bg-gray-200"
+                         onerror="this.src='${PLACEHOLDER_IMG}'" 
+                         onclick="openDetail(${p.id})">
+                         
+                    <div class="p-4 flex flex-col flex-grow">
+                        <div class="mb-2">
+                            <strong class="text-lg block leading-tight">${p.name}</strong>
+                            <span class="text-xs text-gray-500">ID: ${p.id}</span>
+                        </div>
+                        
+                        <span class="text-xl font-bold text-blue-600 mb-2">${p.price}</span>
+                        
+                        <div class="text-sm mb-3">
+                            <span class="${stockClass}">${stockText}</span>
+                            
+                            ${qCart > 0 ? `<span class="block text-xs text-blue-500 font-semibold mt-1">(${qCart} im Korb)</span>` : ''}
+                            
+                            ${p.isTokenCard ? '<span class="text-xs text-purple-600 block mt-1">(Token Code)</span>' : ''}
+                        </div>
+
+                        <div class="mt-auto flex items-center space-x-2">
+                            <input id="qty-${p.id}" type="number" min="1" value="1" max="${availableToAdd > 0 ? availableToAdd : 1}" 
+                                   class="border rounded p-1 w-12 text-center text-sm" 
+                                   ${!canAdd ? 'disabled' : ''}>
+                            
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm flex-1 disabled:opacity-50" 
+                                    onclick="addToCart(${p.id}, document.getElementById('qty-${p.id}').value)"
+                                    ${!canAdd ? 'disabled' : ''}>
+                                In Korb
+                            </button>
+                            
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-sm flex-1 disabled:opacity-50" 
+                                    onclick="buyNow(${p.id}, document.getElementById('qty-${p.id}').value)"
+                                    ${!canAdd ? 'disabled' : ''}>
+                                Kaufen
+                            </button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            // Update Page Info
+            const maxPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+            document.getElementById('page-info').textContent = `Seite ${currentPage} von ${maxPages}`;
+
+            // Buttons deaktivieren wenn am Ende/Anfang
+            document.getElementById('prev').disabled = currentPage <= 1;
+            document.getElementById('next').disabled = currentPage >= maxPages;
+        }
+
+        // Hilfsfunktion für "Direkt Kaufen", falls sie fehlt
+        function buyNow(id, qty) {
+            addToCart(id, qty);
+            viewCart();
+        }
+        const debouncedApplySearchFilter = debounce(() => { applySearchFilter(); }, 300);
+        document.getElementById('search').addEventListener('input', debouncedApplySearchFilter);
+        document.getElementById('search').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); applySearchFilter(); } });
+        document.getElementById('prev').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderProducts(); } });
+        document.getElementById('next').addEventListener('click', () => { const tp = Math.ceil(filteredProducts.length / itemsPerPage) || 1; if (currentPage < tp) { currentPage++; renderProducts(); } });
+
+        // --- Warenkorb-Funktionen ---
+        function addToCart(id, qtyInput) { const qty = parseInt(qtyInput, 10); if (isNaN(qty) || qty < 1) { showToast('Fehler: Menge.'); return; } const p = products.find(pr => pr.id === id); if (!p) { showToast('Fehler: Produkt?'); return; } const sStock = p.isTokenCard ? 99999 : (p.stock || 0); const item = cart.find(i => i.id === id); const qCart = item ? item.quantity : 0; const canAdd = Math.max(0, sStock - qCart); if (qty > canAdd && !p.isTokenCard) { showToast(`Max noch ${canAdd} Stk.`); const field = document.getElementById(`qty-${id}`) || document.getElementById(`detail-qty`); if (field) field.value = canAdd > 0 ? canAdd : 1; return; } if (item) item.quantity += qty; else { const price = parseFloat((p.price || "").replace(/[^0-9.]/g, '')) || 0; cart.push({ id: p.id, name: p.name, price: price, quantity: qty, isTokenCard: !!p.isTokenCard }); } updateCartCount(); saveCartToCookies(); renderProducts(); if (!document.getElementById('cart-modal').classList.contains('hidden')) viewCart(); if (detailModalProductId === id) showProductDetails(id); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); showToast(`${qty} x ${p.name} hinzugefügt.`); }
+        function buyNow(id, qty) { addToCart(id, qty); const item = cart.find(i => i.id === id); if (item) viewCart(); }
+        function viewCart() { cart = cart.filter(i => i && i.id && i.quantity > 0 && typeof i.price === 'number' && i.name); saveCartToCookies(); const modal = document.getElementById('cart-modal'); const itemsEl = document.getElementById('cart-items'); const totalEl = document.getElementById('cart-total'); const checkoutBtn = document.getElementById('cart-checkout-button'); if (cart.length === 0) { itemsEl.innerHTML = `<div class="text-center text-gray-500 py-4"><i class="fas fa-shopping-cart fa-2x mb-2"></i><br>Korb leer.</div>`; totalEl.textContent = '0.00'; if (checkoutBtn) checkoutBtn.disabled = true; modal.classList.remove('hidden'); return; } itemsEl.innerHTML = ''; let total = 0; const pMap = new Map(products.map(p => [p.id, p])); cart.forEach((it, i) => { const pInfo = pMap.get(it.id); const sStock = pInfo ? (pInfo.isTokenCard ? 99999 : (pInfo.stock || 0)) : 0; const maxQ = sStock; const plusD = it.quantity >= sStock && !pInfo.isTokenCard; const exc = it.quantity > sStock && !pInfo.isTokenCard; const line = document.createElement('div'); line.className = `flex justify-between items-center mb-2 ${exc ? 'text-red-600 font-bold' : ''}`; total += it.price * it.quantity; line.innerHTML = `<span>${it.name} (x${it.quantity})${exc ? `<span class="text-red-600 text-xs">(Nur ${sStock}!)</span>` : ''} ${it.isTokenCard ? '<span class="text-xs text-purple-600">(Token-Code)</span>' : ''}</span><span>$${(it.price * it.quantity).toFixed(2)}</span><div class="flex space-x-1 items-center"><button class="bg-gray-300 px-2 py-0.5 rounded text-sm" onclick="changeQty(${i},-1)">-</button><input type="number" class="border rounded w-12 text-center text-sm ${exc ? 'cart-qty-input-exceeds' : ''}" value="${it.quantity}" onchange="updateQty(${i},this.value)" min="1" max="${maxQ}"/><button class="bg-gray-300 px-2 py-0.5 rounded text-sm ${plusD ? 'opacity-50 cursor-not-allowed' : ''}" onclick="changeQty(${i},1)" ${plusD ? 'disabled' : ''}>+</button><button class="text-red-600 text-lg leading-none" onclick="removeFromCart(${i})">x</button></div>`; itemsEl.appendChild(line); }); totalEl.textContent = total.toFixed(2); const hasIssues = cart.some(item => { const p = pMap.get(item.id); return !item.isTokenCard && item.quantity > (p ? (p.stock || 0) : 0); }); checkoutBtn.disabled = hasIssues; checkoutBtn.classList.toggle('opacity-50', hasIssues); checkoutBtn.classList.toggle('cursor-not-allowed', hasIssues); let warnEl = document.getElementById('cart-stock-warning'); if (hasIssues) { if (!warnEl) { warnEl = document.createElement('p'); warnEl.id = 'cart-stock-warning'; warnEl.className = 'text-red-600 text-center mt-2 text-sm'; if (itemsEl.parentNode) itemsEl.parentNode.insertBefore(warnEl, itemsEl.nextSibling); } warnEl.textContent = 'Mengen regulärer Produkte überschreiten Bestand.'; } else if (warnEl) warnEl.remove(); modal.classList.remove('hidden'); }
+        function closeCart() { document.getElementById('cart-modal').classList.add('hidden'); }
+        function updateCartCount() { document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + i.quantity, 0); }
+        function saveCartToCookies() { try { document.cookie = `cart=${encodeURIComponent(JSON.stringify(cart))}; path=/; SameSite=Lax; Secure; max-age=${60 * 60 * 24 * 7}`; } catch (e) { console.error(`${LOG_PREFIX} Cookie Error:`, e); } }
+        function loadCartFromCookies() { const c = document.cookie.split(';').find(r => r.trim().startsWith("cart=")); if (c) { try { const p = JSON.parse(decodeURIComponent(c.split('=')[1])); if (Array.isArray(p)) cart = p.filter(i => i && typeof i.id === 'number' && i.quantity > 0 && typeof i.price === 'number' && typeof i.name === 'string'); } catch (e) { cart = []; } } updateCartCount(); }
+        function changeQty(i, d) { const item = cart[i]; if (!item) return; const p = products.find(pr => pr.id === item.id); if (!p) { loadProducts(); return; } let nQ = item.quantity + d; const s = p.isTokenCard ? 99999 : (p.stock || 0); if (nQ < 1) { if (confirm(`"${item.name}" entfernen?`)) removeFromCart(i); else viewCart(); return; } if (nQ > s && !p.isTokenCard) { showToast(`Max ${s} Stk.`); nQ = s; } if (nQ === item.quantity && d > 0 && !p.isTokenCard) { viewCart(); return; } item.quantity = nQ; saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); if (detailModalProductId === item.id) showProductDetails(item.id); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); }
+        function updateQty(i, v) { const item = cart[i]; if (!item) return; const p = products.find(pr => pr.id === item.id); if (!p) { loadProducts(); return; } let nQ = parseInt(v, 10); const s = p.isTokenCard ? 99999 : (p.stock || 0); if (isNaN(nQ) || nQ < 0) { showToast("Ungültige Menge."); viewCart(); return; } if (nQ === 0) { if (confirm(`"${item.name}" entfernen?`)) removeFromCart(i); else viewCart(); return; } if (nQ === item.quantity) { viewCart(); return; } if (nQ > s && !p.isTokenCard) { showToast(`Max ${s} Stk.`); nQ = s; } item.quantity = nQ; saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); if (detailModalProductId === item.id) showProductDetails(item.id); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); }
+        function removeFromCart(i) { if (i < 0 || i >= cart.length) return; const item = cart[i]; const name = item.name; const id = item.id; cart.splice(i, 1); saveCartToCookies(); updateCartCount(); renderProducts(); viewCart(); if (detailModalProductId === id) showProductDetails(id); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); showToast(`${name} entfernt.`); }
+
+        // --- Checkout & Kaufabschluss ---
+        function checkout() { if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen.", 4000); return; } cart = cart.filter(i => i && i.id && i.quantity > 0 && typeof i.price === 'number' && i.name); saveCartToCookies(); if (cart.length === 0) { showToast('Korb leer.'); closeCheckout(); return; } const pMap = new Map(products.map(p => [p.id, p])); let hasIssues = false; cart.forEach(item => { if (!item.isTokenCard) { const pInfo = pMap.get(item.id); if (item.quantity > (pInfo ? (pInfo.stock || 0) : 0)) hasIssues = true; } }); if (hasIssues) { showToast("Mengenproblem!", 5000); viewCart(); return; } closeCart(); const modal = document.getElementById('checkout-modal'); const itemsEl = document.getElementById('checkout-items'); const totalEl = document.getElementById('checkout-total'); itemsEl.innerHTML = ''; let total = 0; cart.forEach(it => { const div = document.createElement('div'); div.className = 'flex justify-between mb-2'; div.innerHTML = `<span>${it.name} (x${it.quantity}) ${it.isTokenCard ? '<span class="text-xs text-purple-600">(Token-Code)</span>' : ''}</span><span>$${(it.price * it.quantity).toFixed(2)}</span>`; itemsEl.appendChild(div); total += it.price * it.quantity; }); totalEl.textContent = total.toFixed(2); const confirmBtn = document.getElementById('confirm-purchase-button'); if (confirmBtn) { const btnTxt = confirmBtn.querySelector('.button-text'); const spinner = confirmBtn.querySelector('.button-spinner'); confirmBtn.disabled = false; if (btnTxt) btnTxt.textContent = 'Kauf bestätigen'; if (spinner) spinner.classList.add('hidden'); } modal.classList.remove('hidden'); }
+        function closeCheckout() { document.getElementById('checkout-modal').classList.add('hidden'); }
+        async function confirmPurchase() {
+            if (!loggedInUser) { showToast("Sitzung abgelaufen?", 5000); logout(); return; }
+            const confirmButton = document.getElementById('confirm-purchase-button'); const btnTxt = confirmButton.querySelector('.button-text'); const spinner = confirmButton.querySelector('.button-spinner');
+            confirmButton.disabled = true; if (btnTxt) btnTxt.textContent = 'Verarbeite...'; if (spinner) spinner.classList.remove('hidden');
+            cart = cart.filter(i => i && i.id && i.quantity > 0 && typeof i.price === 'number' && i.name); saveCartToCookies();
+            if (cart.length === 0) { showToast("Korb leer."); closeCheckout(); confirmButton.disabled = false; if (btnTxt) btnTxt.textContent = 'Kauf bestätigen'; if (spinner) spinner.classList.add('hidden'); return; }
+            const pMap = new Map(products.map(p => [p.id, p])); let hasIssues = false; cart.forEach(item => { if (!item.isTokenCard) { const pInfo = pMap.get(item.id); if (item.quantity > (pInfo ? (pInfo.stock || 0) : 0)) hasIssues = true; } });
+            if (hasIssues) { showToast("Bestandsprobleme!", 5000); confirmButton.disabled = false; if (btnTxt) btnTxt.textContent = 'Kauf bestätigen'; if (spinner) spinner.classList.add('hidden'); closeCheckout(); viewCart(); loadProducts('initial'); return; }
+            console.log(`${LOG_PREFIX} Sende Kaufanfrage:`, JSON.stringify(cart)); const api = getApiUrl(); let success = false; let errorResult = { message: 'Unbek. Fehler.' };
+            try {
+                const response = await fetch(`${api}/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cart: cart }), credentials: 'include' });
+                let result; try { result = await response.json(); } catch (e) { const txt = await response.text().catch(() => response.statusText); result = { error: `Server ${response.status}. Kein JSON.`, details: txt.substring(0, 200) }; }
+                console.log(`${LOG_PREFIX} API Antwort /purchase: St ${response.status}, Erg:`, result);
+                if (!response.ok) { errorResult = result; showToast(`Kauf fehlgeschlagen: ${errorResult.error || errorResult.message || 'Fehler.'}`, 5000); }
+                else {
+                    lastPurchasedCart = JSON.parse(JSON.stringify(cart));
+                    try { let history = JSON.parse(localStorage.getItem('orderHistory') || '[]'); const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0); const order = { orderId: `LIM-${Date.now()}`, date: new Date().toISOString(), items: JSON.parse(JSON.stringify(cart.map(cItem => ({ ...cItem, name: products.find(p => p.id === cItem.id)?.name || cItem.name })))), total: total }; history.unshift(order); if (history.length > 50) history = history.slice(0, 50); localStorage.setItem('orderHistory', JSON.stringify(history)); } catch (storageError) { console.error(`${LOG_PREFIX} Fehler Speicher Historie:`, storageError); }
+                    const thankYouMsgEl = document.getElementById('thank-you-message'); if (thankYouMsgEl) thankYouMsgEl.textContent = result.message || "Bestellung bestätigt.";
+                    document.getElementById('thank-you-modal').classList.remove('hidden');
+                    cart = []; saveCartToCookies(); updateCartCount();
+                    if (result.user) await updateUserInfo(result.user); else await updateUserInfo();
+                    await loadProducts('purchase_success'); success = true;
+                }
+            } catch (error) { console.error(`${LOG_PREFIX} confirmPurchase Netzwerk-/JS-Fehler:`, error); errorResult.message = 'Fehler Senden.'; showToast(errorResult.message, 5000); }
+            finally { if (!success) { confirmButton.disabled = false; if (btnTxt) btnTxt.textContent = 'Kauf bestätigen'; if (spinner) spinner.classList.add('hidden'); closeCheckout(); } else { closeCheckout(); } }
+        }
+
+        // --- Produktdetail-Ansicht ---
+        function showProductDetails(productId) { detailModalProductId = productId; const product = products.find(p => p.id === productId); if (!product) { console.error(`${LOG_PREFIX} Detail: Produkt ${productId} nicht gefunden.`); detailModalProductId = null; return; } const itemInCart = cart.find(item => item.id === productId); const quantityInCart = itemInCart ? itemInCart.quantity : 0; const serverStock = product.isTokenCard ? 99999 : (product.stock || 0); const stockInfo = getStockDisplayInfo(serverStock, quantityInCart, product.isTokenCard); try { document.getElementById('detail-name').textContent = product.name || 'Unbekannt'; document.getElementById('detail-image').src = product.image_url || `https://placehold.co/400x300.png?text=${encodeURIComponent(product.name || 'Bild')}`; document.getElementById('detail-image').alt = product.name || 'Bild'; document.getElementById('detail-id').textContent = product.id; document.getElementById('detail-price').textContent = product.price || '$?.??'; document.getElementById('detail-stock-available').innerHTML = stockInfo.text; document.getElementById('detail-stock-cart').textContent = `${quantityInCart} im Korb`; const qtyInput = document.getElementById('detail-qty'); qtyInput.value = 1; qtyInput.max = stockInfo.availableToAdd > 0 ? stockInfo.availableToAdd : 1; qtyInput.disabled = !stockInfo.canAddMore; const addButton = document.getElementById('detail-add-to-cart'); const buyButton = document.getElementById('detail-buy-now'); addButton.disabled = !stockInfo.canAddMore; buyButton.disabled = !stockInfo.canAddMore; addButton.onclick = () => addToCart(productId, document.getElementById('detail-qty').value); buyButton.onclick = () => buyNow(productId, document.getElementById('detail-qty').value); buyButton.textContent = product.isTokenCard ? 'Code kaufen' : 'Direkt Kaufen'; const modal = document.getElementById('product-detail-modal'); if (modal.classList.contains('hidden')) modal.classList.remove('hidden'); } catch (domError) { console.error(`${LOG_PREFIX} Fehler DOM-Update Detail:`, domError); closeProductDetails(); } }
+        function closeProductDetails() { document.getElementById('product-detail-modal').classList.add('hidden'); detailModalProductId = null; }
+
+        // --- Inventar & Verkauf ---
+        async function showMyInventory() {
+            if (!loggedInUser) {
+                openAuthModal('login');
+                showToast("Bitte einloggen.");
+                return;
+            }
+            const modal = document.getElementById('inventory-modal');
+            const contentDiv = document.getElementById('inventory-content');
+            contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Lade Inventar...</p>';
+            modal.classList.remove('hidden');
+            try {
+                const response = await fetch(`${getApiUrl()}/inventory`, {
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({
+                        error: "Unbek. Fehler"
+                    }));
+                    throw new Error(errData.error || `Fehler ${response.status}`);
+                }
+                const {
+                    inventory
+                } = await response.json();
+                if (!inventory || inventory.length === 0) {
+                    contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Inventar leer.</p>';
+                    return;
+                }
+                contentDiv.innerHTML = '';
+                inventory.forEach(item => {
+                    const productDetails = item.productDetails || {};
+                    const invDiv = document.createElement('div');
+                    invDiv.className = 'flex items-center justify-between mb-3 p-3 border rounded shadow-sm';
+
+                    const disabledState = item.quantityOwned <= 0 ? "opacity-50 cursor-not-allowed" : "";
+                    const disabledAttr = item.quantityOwned <= 0 ? "disabled" : "";
+
+                    invDiv.innerHTML = `<div class="flex items-center">
+                    <img src="${productDetails.image_url || `https://placehold.co/50x50.png?text=${encodeURIComponent(productDetails.name || 'P')}`}" alt="${productDetails.name}" class="w-12 h-12 object-cover rounded mr-3">
+                    <div>
+                        <p class="font-semibold">${productDetails.name || `Produkt ID: ${item.productId}`}</p>
+                        <p class="text-sm text-gray-600">Menge: ${item.quantityOwned}</p>
+                    </div>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <button class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded ${disabledState}" onclick="openSellProductModalFromInventory(${item.productId},${item.quantityOwned})" ${disabledAttr}>Verkaufen</button>
+                    <button class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1 rounded ${disabledState}" onclick="openCreateAuctionModal(${item.productId}, '${productDetails.name}', ${item.quantityOwned}, '${productDetails.image_url}')" ${disabledAttr}>Versteigern</button>
+                </div>`;
+
+                    contentDiv.appendChild(invDiv);
+                });
+            } catch (error) {
+                console.error(`${LOG_PREFIX} Fehler Laden Inventar:`, error);
+                contentDiv.innerHTML = `<p class="text-center text-red-500 py-4">Fehler: ${error.message}</p>`;
+            }
+        }
+        function closeMyInventory() { document.getElementById('inventory-modal').classList.add('hidden'); }
+        function openSellProductModalFromInventory(productId, quantityUserOwns) { if (!loggedInUser) { openAuthModal('login'); return; } const product = products.find(p => p.id === productId); if (!product) { showToast("Produkt nicht im Katalog."); return; } if (quantityUserOwns <= 0) { showToast("Produkt nicht im Bestand."); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); return; } currentSellProductId = productId; document.getElementById('sell-product-name').textContent = product.name; document.getElementById('sell-product-original-price').textContent = product.price; document.getElementById('sell-product-user-stock').textContent = `${quantityUserOwns} Stk.`; const sellQtyInput = document.getElementById('sell-quantity'); sellQtyInput.value = 1; sellQtyInput.max = quantityUserOwns; const sellPriceInput = document.getElementById('sell-price'); const origPriceNum = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; sellPriceInput.value = origPriceNum.toFixed(2); document.getElementById('sell-error-message').classList.add('hidden'); document.getElementById('sell-cooldown-message').classList.add('hidden'); updateSellProbability(); const confirmSellBtn = document.getElementById('confirm-sell-button'); confirmSellBtn.onclick = () => handleSellProduct(); confirmSellBtn.disabled = false; confirmSellBtn.querySelector('.button-text').textContent = 'Verkaufen'; confirmSellBtn.querySelector('.button-spinner').classList.add('hidden'); checkSellCooldown(productId); document.getElementById('sell-product-modal').classList.remove('hidden'); }
+        function closeSellProductModal() { document.getElementById('sell-product-modal').classList.add('hidden'); currentSellProductId = null; if (sellCooldownIntervalId) { clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; } }
+        function updateSellProbability() { if (!currentSellProductId) return; const product = products.find(p => p.id === currentSellProductId); if (!product) return; const sellPriceInput = document.getElementById('sell-price'); const probabilityEl = document.getElementById('sell-probability'); if (!sellPriceInput || !probabilityEl) return; const sellPrice = parseFloat(sellPriceInput.value); const originalPriceNumeric = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; let probability = 1.0; if (isNaN(sellPrice) || sellPrice <= 0) { probabilityEl.textContent = "?%"; return; } if (sellPrice > originalPriceNumeric) { probability = originalPriceNumeric / sellPrice; probability = Math.max(0.05, Math.min(1.0, probability)); } else if (sellPrice < originalPriceNumeric * 0.5) { probability = 1.0; } const serverStock = product.stock || 0; const defaultStockVal = product.default_stock || 20; if (serverStock > defaultStockVal * 2.5) probability *= 0.2; else if (serverStock > defaultStockVal * 1.8) probability *= 0.5; else if (serverStock > defaultStockVal * 1.2) probability *= 0.8; probability = Math.max(0.01, Math.min(1.0, probability)); probabilityEl.textContent = `${(probability * 100).toFixed(0)}%`; }
+        function checkSellCooldown(productId) { const confirmSellButton = document.getElementById('confirm-sell-button'); const cooldownMsgEl = document.getElementById('sell-cooldown-message'); if (!confirmSellButton || !cooldownMsgEl) return; cooldownMsgEl.classList.add('hidden'); if (sellCooldownIntervalId) clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; confirmSellButton.disabled = false; if (loggedInUser && loggedInUser.productSellCooldowns && loggedInUser.productSellCooldowns[productId.toString()]) { const cooldownEndTimeISO = loggedInUser.productSellCooldowns[productId.toString()]; const cooldownEndTime = new Date(cooldownEndTimeISO).getTime(); const updateTimer = () => { const now = Date.now(); const timeLeftSeconds = Math.ceil((cooldownEndTime - now) / 1000); if (timeLeftSeconds > 0) { confirmSellButton.disabled = true; cooldownMsgEl.textContent = `Cooldown: ${timeLeftSeconds}s`; cooldownMsgEl.classList.remove('hidden'); } else { confirmSellButton.disabled = false; cooldownMsgEl.classList.add('hidden'); clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; if (loggedInUser.productSellCooldowns) delete loggedInUser.productSellCooldowns[productId.toString()]; } }; if (Date.now() < cooldownEndTime) { updateTimer(); sellCooldownIntervalId = setInterval(updateTimer, 1000); } else { if (loggedInUser.productSellCooldowns) delete loggedInUser.productSellCooldowns[productId.toString()]; } } }
+        async function handleSellProduct() {
+            if (!currentSellProductId || !loggedInUser) return;
+            const qtyInput = document.getElementById('sell-quantity');
+            const priceInput = document.getElementById('sell-price');
+            const errEl = document.getElementById('sell-error-message');
+            const confirmBtn = document.getElementById('confirm-sell-button');
+            const btnTxt = confirmBtn.querySelector('.button-text');
+            const spinner = confirmBtn.querySelector('.button-spinner');
+
+            const qty = parseInt(qtyInput.value, 10); // Deine Variable für die Menge heißt 'qty'
+            const sellPrice = parseFloat(priceInput.value);
+
+            errEl.classList.add('hidden');
+            errEl.textContent = '';
+
+            if (isNaN(qty) || qty <= 0 || qty > parseInt(qtyInput.max, 10)) {
+                errEl.textContent = `Ungültige Menge (1-${qtyInput.max}).`;
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (isNaN(sellPrice) || sellPrice <= 0) {
+                errEl.textContent = "Ungültiger Preis.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            confirmBtn.disabled = true;
+            btnTxt.textContent = 'Verkaufe...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/products/sell`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    // KORRIGIERTE STELLE:
+                    // Das Backend erwartet ein Feld 'quantity',
+                    // der Wert dafür kommt aus deiner Variable 'qty'.
+                    body: JSON.stringify({
+                        productId: currentSellProductId,
+                        sellPrice, // Dies ist eine Kurzschreibweise für sellPrice: sellPrice
+                        quantity: qty // Hier wird das Feld 'quantity' mit dem Wert der Variable 'qty' befüllt
+                    }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    errEl.textContent = result.error || `Fehler (${response.status}).`;
+                    errEl.classList.remove('hidden');
+                    if (result.productSellCooldowns && loggedInUser) {
+                        loggedInUser.productSellCooldowns = result.productSellCooldowns;
+                    } else if (result.cooldownActiveForProduct && result.cooldownEndsAt && loggedInUser) {
+                        if (!loggedInUser.productSellCooldowns) loggedInUser.productSellCooldowns = {};
+                        loggedInUser.productSellCooldowns[result.cooldownActiveForProduct.toString()] = result.cooldownEndsAt;
+                    }
+                    checkSellCooldown(currentSellProductId);
+                } else {
+                    showToast(result.message || "Verkauf ok!");
+                    if (result.user) await updateUserInfo(result.user);
+                    else await updateUserInfo();
+                    await loadProducts('initial');
+                    if (!document.getElementById('inventory-modal').classList.contains('hidden')) {
+                        showMyInventory();
+                    }
+                    closeSellProductModal();
+                }
+            } catch (error) {
+                console.error(`${LOG_PREFIX} Fehler handleSellProduct:`, error); // Beachte, dass LOG_PREFIX hier definiert sein muss
+                errEl.textContent = "Netzwerkfehler.";
+                errEl.classList.remove('hidden');
+            } finally {
+                if (!document.getElementById('sell-product-modal').classList.contains('hidden')) {
+                    confirmBtn.disabled = false;
+                    btnTxt.textContent = 'Verkaufen';
+                    spinner.classList.add('hidden');
+                    checkSellCooldown(currentSellProductId);
+                }
+            }
+        }
+
+        // --- Bestellhistorie (Anzeige) ---
+        function showOrderHistory() { if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; } const modal = document.getElementById('order-history-modal'); const contentDiv = document.getElementById('order-history-content'); contentDiv.innerHTML = ''; try { const history = JSON.parse(localStorage.getItem('orderHistory') || '[]'); if (history.length === 0) { contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Keine Bestellungen.</p>'; } else { history.forEach(order => { const orderDiv = document.createElement('div'); orderDiv.className = 'mb-6 p-4 border rounded shadow-sm'; const orderDate = new Date(order.date); const fmtDate = orderDate.toLocaleDateString('de-DE', { year: 'numeric', month: '2-digit', day: '2-digit' }); const fmtTime = orderDate.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); let itemsHtml = '<ul class="list-disc list-inside text-sm mb-2">'; (order.items || []).forEach(item => { itemsHtml += `<li>${item.quantity} x ${item.name} (@ $${(item.price || 0).toFixed(2)})${item.isTokenCardPurchase ? ' <span class="text-xs text-purple-500">(Token-Code)</span>' : ''}</li>`; }); itemsHtml += '</ul>'; orderDiv.innerHTML = `<div class="flex justify-between items-center mb-2"><p class="font-semibold">Best. ${fmtDate}, ${fmtTime} Uhr</p>${order.orderId ? `<p class="text-xs text-gray-500">ID: ${order.orderId}</p>` : ''}</div>${itemsHtml}<p class="text-right font-bold mt-2 border-t pt-2">Gesamt: $${(order.total || 0).toFixed(2)}</p>`; contentDiv.appendChild(orderDiv); }); } } catch (e) { contentDiv.innerHTML = '<p class="text-center text-red-500 py-4">Fehler Laden Historie.</p>'; } modal.classList.remove('hidden'); }
+        function closeOrderHistory() { document.getElementById('order-history-modal').classList.add('hidden'); }
+        function clearOrderHistory() { if (confirm("Lokale Bestellhistorie löschen?")) { try { localStorage.removeItem('orderHistory'); const contentDiv = document.getElementById('order-history-content'); if (contentDiv) contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Historie gelöscht.</p>'; showToast("Historie gelöscht."); } catch (e) { showToast("Fehler Löschen.", 4000); } } }
+
+        // --- Admin / Profil / Produkt Management ---
+        function generateInvoice() { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFontSize(18); doc.text('Limazon Rechnung', 105, 20, null, null, 'center'); doc.setFontSize(12); doc.text(`Kunde: ${loggedInUser ? loggedInUser.username : 'Gast'}`, 20, 40); doc.text(`Datum: ${new Date().toLocaleDateString('de-DE')}`, 20, 50); doc.text(`Uhrzeit: ${new Date().toLocaleTimeString('de-DE')}`, 20, 60); const validItems = lastPurchasedCart.filter(it => it && it.id && it.quantity && typeof it.price === 'number' && it.name); if (validItems.length === 0) doc.text('Keine Artikel.', 20, 80); else doc.autoTable({ startY: 70, head: [['Artikel', 'Menge', 'Preis', 'Gesamt']], body: validItems.map(i => [i.name, i.quantity, `$${i.price.toFixed(2)}`, `$${(i.price * i.quantity).toFixed(2)}`]), theme: 'grid' }); const total = validItems.reduce((s, i) => s + i.price * i.quantity, 0); const finalY = doc.lastAutoTable ? (doc.lastAutoTable.finalY || 70) : 70; if (validItems.length > 0) { const txt = `Gesamt: $${total.toFixed(2)}`, tw = doc.getTextWidth(txt); doc.setFontSize(14).text(txt, doc.internal.pageSize.width - tw - 20, finalY + 10); } doc.save('rechnung.pdf'); document.getElementById('thank-you-modal').classList.add('hidden'); }
+        function checkAdminFeatures() { const rBtn = document.getElementById('admin-reset-stock-button'); const zBtn = document.getElementById('admin-zero-stock-button'); const addPBtn = document.getElementById('add-product-button'); const genTknBtn = document.getElementById('admin-generate-tokens-button'); const isAdmin = loggedInUser && loggedInUser.isAdmin; if (rBtn) rBtn.classList.toggle('hidden', !isAdmin); if (zBtn) zBtn.classList.toggle('hidden', !isAdmin); if (addPBtn) addPBtn.classList.toggle('hidden', !isAdmin); if (genTknBtn) genTknBtn.classList.toggle('hidden', !isAdmin); }
+        async function resetProductStock(setToZero = false) { if (!loggedInUser || !loggedInUser.isAdmin) { showToast("Nur für Admins."); return; } const action = setToZero ? "auf 0 setzen" : "auf Standard zurücksetzen"; const endpoint = setToZero ? '/admin/zero-stock' : '/products/reset'; if (!confirm(`Lager ${action}?`)) return; const btn = setToZero ? document.getElementById('admin-zero-stock-button') : document.getElementById('admin-reset-stock-button'); const origTxt = btn.innerText; btn.innerHTML = '<span class="button-spinner mr-2"></span>...'; btn.disabled = true; try { const response = await fetch(`${getApiUrl()}${endpoint}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include' }); let result = { message: response.statusText }; try { result = await response.json(); } catch (e) { } if (!response.ok) throw new Error(`Fehler ${response.status}: ${result.message || result.error || response.statusText}`); showToast(result.message || "Aktion ok!"); await loadProducts('initial'); if (!document.getElementById('cart-modal').classList.contains('hidden')) viewCart(); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); } catch (error) { console.error(`${LOG_PREFIX} Fehler Admin Reset:`, error); showToast(`Fehler: ${error.message}`, 5000); } finally { btn.innerHTML = origTxt; btn.disabled = false; } }
+        function editProfile() { openAccountModal(); }
+        function closeProfile() { document.getElementById('profile-modal').classList.add('hidden'); }
+        function openAddProductModal() { if (!loggedInUser || !loggedInUser.isAdmin) { showToast("Nur Admins."); return; } document.getElementById('product-name').value = ''; document.getElementById('product-image').value = ''; document.getElementById('product-price').value = ''; document.getElementById('product-stock').value = '20'; const btn = document.getElementById('submit-product-button'); if (btn) { const btnTxt = btn.querySelector('.button-text'); const spinner = btn.querySelector('.button-spinner'); btn.disabled = false; if (btnTxt) btnTxt.textContent = 'Produkt hinzufügen'; if (spinner) spinner.classList.add('hidden'); } document.getElementById('add-product-modal').classList.remove('hidden'); }
+        function closeAddProductModal() { document.getElementById('add-product-modal').classList.add('hidden'); }
+        async function submitProduct(event) { if (!loggedInUser || !loggedInUser.isAdmin) { showToast("Nur Admins."); return; } event.preventDefault(); const name = document.getElementById('product-name').value.trim(); const url = document.getElementById('product-image').value.trim(); let priceStr = document.getElementById('product-price').value.trim(); const stock = parseInt(document.getElementById('product-stock').value.trim(), 10); if (!name || !url || !priceStr || isNaN(stock) || stock < 0) { showToast('Fehler: Felder prüfen!', 4000); return; } if (!priceStr.startsWith('$')) priceStr = `$${priceStr}`; if (isNaN(parseFloat(priceStr.replace(/[^0-9.]/g, '')))) { showToast('Fehler: Preisformat!', 4000); return; } const btn = document.getElementById('submit-product-button'); const btnTxt = btn.querySelector('.button-text'); const spinner = btn.querySelector('.button-spinner'); btn.disabled = true; if (btnTxt) btnTxt.textContent = 'Sende...'; if (spinner) spinner.classList.remove('hidden'); try { const res = await fetch(`${getApiUrl()}/products`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, image_url: url, price: priceStr, stock }), credentials: 'include' }); const result = await res.json(); if (!res.ok) showToast(`Fehler: ${result.error || 'Serverfehler'}`, 5000); else { showToast(result.message || "Produkt hinzugefügt."); closeAddProductModal(); loadProducts('initial'); } } catch (e) { console.error(`${LOG_PREFIX} Fehler submitProduct:`, e); showToast('Fehler Senden.', 5000); } finally { btn.disabled = false; if (btnTxt) btnTxt.textContent = 'Produkt hinzufügen'; if (spinner) spinner.classList.add('hidden'); } }
+
+        // --- Authentifizierungs- & Account-Funktionen ---
+        let currentAuthMode = 'login';
+        function openAuthModal(mode = 'login') { currentAuthMode = mode; const modal = document.getElementById('auth-modal'); const title = document.getElementById('auth-modal-title'); const submitBtn = document.getElementById('auth-submit-button'); const submitBtnTxt = submitBtn.querySelector('.button-text'); const switchTxt = document.getElementById('auth-switch-text'); const switchBtn = document.getElementById('auth-switch-button'); const errorMsg = document.getElementById('auth-error-message'); document.getElementById('auth-username').value = ''; document.getElementById('auth-password').value = ''; document.getElementById('auth-remember-me').checked = false; errorMsg.classList.add('hidden'); errorMsg.textContent = ''; submitBtn.disabled = false; if (submitBtn.querySelector('.button-spinner')) submitBtn.querySelector('.button-spinner').classList.add('hidden'); if (mode === 'login') { title.textContent = 'Login'; submitBtnTxt.textContent = 'Login'; switchTxt.textContent = 'Noch kein Konto? '; switchBtn.textContent = 'Jetzt registrieren'; } else { title.textContent = 'Registrieren'; submitBtnTxt.textContent = 'Registrieren'; switchTxt.textContent = 'Bereits ein Konto? '; switchBtn.textContent = 'Jetzt einloggen'; } modal.classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+        function switchAuthMode() { openAuthModal(currentAuthMode === 'login' ? 'register' : 'login'); }
+        async function handleAuthFormSubmit(event) { event.preventDefault(); const form = event.target; const username = form.username.value; const password = form.password.value; const rememberMe = form.rememberMe.checked; const endpoint = currentAuthMode === 'login' ? 'login' : 'register'; const submitBtn = document.getElementById('auth-submit-button'); const btnTxt = submitBtn.querySelector('.button-text'); const spinner = submitBtn.querySelector('.button-spinner'); const errorMsg = document.getElementById('auth-error-message'); submitBtn.disabled = true; btnTxt.textContent = 'Sende...'; spinner.classList.remove('hidden'); errorMsg.classList.add('hidden'); try { const response = await fetch(`${getApiUrl()}/auth/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, rememberMe }), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || `Fehler (${response.status})`); showToast(result.message || `${currentAuthMode === 'login' ? 'Login' : 'Registrierung'} ok!`); closeAuthModal(); if (currentAuthMode === 'login') await updateUserInfo(result.user); else openAuthModal('login'); } catch (error) { errorMsg.textContent = error.message || 'Fehler.'; errorMsg.classList.remove('hidden'); } finally { submitBtn.disabled = false; btnTxt.textContent = currentAuthMode === 'login' ? 'Login' : 'Registrieren'; spinner.classList.add('hidden'); } }
+        function updateLoginStatusUI() { const nameSpan = document.getElementById('customer-name'); const balDisp = document.getElementById('user-balance-display'); const balSpan = document.getElementById('user-balance'); const authBtns = document.getElementById('auth-buttons'); const userActs = document.getElementById('user-actions'); const accTokenSpan = document.getElementById('account-tokens'); if (loggedInUser) { nameSpan.textContent = loggedInUser.username; balSpan.textContent = (loggedInUser.balance || 0).toFixed(2); if (accTokenSpan) accTokenSpan.textContent = loggedInUser.tokens || 0; balDisp.classList.remove('hidden'); authBtns.classList.add('hidden'); userActs.classList.remove('hidden'); } else { nameSpan.textContent = 'Gast'; if (accTokenSpan) accTokenSpan.textContent = '0'; balDisp.classList.add('hidden'); authBtns.classList.remove('hidden'); userActs.classList.add('hidden'); } checkAdminFeatures(); }
+        async function checkLoginStatus() { try { console.log(`${LOG_PREFIX} checkLoginStatus: Prüfe Session.`); const response = await fetch(`${getApiUrl()}/auth/me`, { credentials: 'include' }); if (response.ok) { const user = await response.json(); console.log(`${LOG_PREFIX} checkLoginStatus: Session aktiv für:`, user.username); await updateUserInfo(user); } else { const errTxt = await response.text().catch(() => ""); console.warn(`${LOG_PREFIX} checkLoginStatus: Keine Session (Status ${response.status}). Body: ${errTxt.substring(0, 100)}`); logoutCleanup(); } } catch (error) { console.error(`${LOG_PREFIX} Fehler checkLoginStatus:`, error); logoutCleanup(); } }
+        async function updateUserInfo(userData = null) { if (userData) loggedInUser = userData; else { const hasSessCookie = document.cookie.split(';').some(c => c.trim().startsWith("connect.sid=")); if (!loggedInUser && !hasSessCookie) { logoutCleanup(); return; } try { const response = await fetch(`${getApiUrl()}/auth/me`, { credentials: 'include' }); if (response.ok) loggedInUser = await response.json(); else loggedInUser = null; } catch (e) { console.error(`${LOG_PREFIX} updateUserInfo Fetch-Fehler:`, e); loggedInUser = null; } } updateLoginStatusUI(); if (!document.getElementById('inventory-modal').classList.contains('hidden')) { if (loggedInUser) showMyInventory(); else closeMyInventory(); } if (!document.getElementById('my-token-codes-modal').classList.contains('hidden')) { if (loggedInUser) showMyTokenCodes(); else closeMyTokenCodesModal(); } }
+        function logoutCleanup() { console.log(`${LOG_PREFIX} logoutCleanup.`); loggedInUser = null; cart = []; updateCartCount(); saveCartToCookies(); updateLoginStatusUI(); detailModalProductId = null; currentSellProductId = null; if (sellCooldownIntervalId) clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; }
+        async function logout() { console.log(`${LOG_PREFIX} logout.`); try { const response = await fetch(`${getApiUrl()}/auth/logout`, { method: 'POST', credentials: 'include' }); const result = await response.json(); if (!response.ok) showToast(`Logout fehlgeschlagen: ${result.error || 'Serverfehler'}`, 4000); else showToast(result.message || "Logout ok!"); } catch (error) { showToast("Netzwerkfehler Logout.", 4000); } finally { logoutCleanup(); } }
+        function openAccountModal() { if (!loggedInUser) { openAuthModal('login'); return; } document.getElementById('account-username').textContent = loggedInUser.username; document.getElementById('account-balance').textContent = (loggedInUser.balance || 0).toFixed(2); document.getElementById('account-tokens').textContent = loggedInUser.tokens || 0; const redeemCodeInput = document.getElementById('redeem-token-code'); if (redeemCodeInput) redeemCodeInput.value = ''; const redeemMsg = document.getElementById('redeem-message'); if (redeemMsg) { redeemMsg.textContent = ''; redeemMsg.className = 'text-sm mt-1'; } const dollarsToTokensInput = document.getElementById('dollars-to-tokens-amount'); if (dollarsToTokensInput) dollarsToTokensInput.value = ''; const dollarsToTokensMsg = document.getElementById('dollars-to-tokens-message'); if (dollarsToTokensMsg) { dollarsToTokensMsg.textContent = ''; dollarsToTokensMsg.className = 'text-sm mt-1'; } const tokensToDollarsInput = document.getElementById('tokens-to-dollars-amount'); if (tokensToDollarsInput) tokensToDollarsInput.value = ''; const tokensToDollarsMsg = document.getElementById('tokens-to-dollars-message'); if (tokensToDollarsMsg) { tokensToDollarsMsg.textContent = ''; tokensToDollarsMsg.className = 'text-sm mt-1'; } const infCheckbox = document.getElementById('account-infinity-money'); const infLabel = infCheckbox.parentElement; const unlockInfo = document.getElementById('infinity-money-unlock-info'); if (loggedInUser.isAdmin) { infCheckbox.checked = true; infCheckbox.disabled = true; infLabel.title = "Admins haben immer Infinity Money."; infLabel.classList.add('opacity-75', 'cursor-not-allowed'); unlockInfo.classList.add('hidden'); } else if (loggedInUser.unlockedInfinityMoney) { infCheckbox.checked = loggedInUser.infinityMoney; infCheckbox.disabled = false; infLabel.title = ""; infLabel.classList.remove('opacity-75', 'cursor-not-allowed'); unlockInfo.classList.add('hidden'); } else { infCheckbox.checked = false; infCheckbox.disabled = true; infLabel.title = ""; infLabel.classList.add('opacity-75', 'cursor-not-allowed'); unlockInfo.classList.remove('hidden'); } document.getElementById('account-message').classList.add('hidden'); document.getElementById('account-modal').classList.remove('hidden'); }
+        function closeAccountModal() { document.getElementById('account-modal').classList.add('hidden'); }
+        async function updateAccountSettings() { if (!loggedInUser || loggedInUser.isAdmin) return; const infCheckbox = document.getElementById('account-infinity-money'); if (infCheckbox.disabled) return; const newSettings = { infinityMoney: infCheckbox.checked }; const msgEl = document.getElementById('account-message'); msgEl.classList.add('hidden'); try { const response = await fetch(`${getApiUrl()}/account/settings`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newSettings), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Fehler."); if (result.user) await updateUserInfo(result.user); else { loggedInUser.infinityMoney = newSettings.infinityMoney; updateLoginStatusUI(); } msgEl.textContent = result.message || "Gespeichert!"; msgEl.classList.replace('text-red-500', 'text-green-600'); msgEl.classList.remove('hidden'); showToast("Einstellungen gespeichert."); } catch (error) { msgEl.textContent = `Fehler: ${error.message}`; msgEl.classList.replace('text-green-600', 'text-red-500'); msgEl.classList.remove('hidden'); infCheckbox.checked = loggedInUser.infinityMoney; showToast("Fehler Speichern.", 4000); } }
+
+        // --- Token Management & Gekaufte Codes Anzeigen ---
+        async function redeemTokenCode() { const codeInput = document.getElementById('redeem-token-code'); const msgEl = document.getElementById('redeem-message'); if (!codeInput || !msgEl) { showToast("Fehler: UI Code-Eingabe fehlt.", 5000); return; } const code = codeInput.value.trim(); if (!code) { msgEl.textContent = "Code eingeben."; msgEl.className = 'text-sm mt-1 text-red-500'; return; } msgEl.textContent = "Verarbeite..."; msgEl.className = 'text-sm mt-1 text-blue-500'; try { const response = await fetch(`${getApiUrl()}/tokens/redeem`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || `Fehler (${response.status})`); msgEl.textContent = result.message || "Code eingelöst!"; msgEl.className = 'text-sm mt-1 text-green-500'; codeInput.value = ''; if (result.user) await updateUserInfo(result.user); } catch (error) { console.error(`${LOG_PREFIX} Fehler Token-Code Einlösen:`, error); msgEl.textContent = error.message; msgEl.className = 'text-sm mt-1 text-red-500'; } }
+        async function convertDollarsToTokens() { const amountInput = document.getElementById('dollars-to-tokens-amount'); const msgEl = document.getElementById('dollars-to-tokens-message'); if (!amountInput || !msgEl) { showToast("Fehler: UI Dollar-Eingabe fehlt.", 5000); return; } const dollarAmount = parseFloat(amountInput.value); if (isNaN(dollarAmount) || dollarAmount <= 0) { msgEl.textContent = "Gültigen Betrag > 0 eingeben."; msgEl.className = 'text-sm mt-1 text-red-500'; return; } msgEl.textContent = "Umwandlung..."; msgEl.className = 'text-sm mt-1 text-blue-500'; try { const response = await fetch(`${getApiUrl()}/tokens/convert-dollars-to-tokens`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dollarAmount }), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || `Fehler (${response.status})`); msgEl.textContent = result.message || "Umgewandelt!"; msgEl.className = 'text-sm mt-1 text-green-500'; amountInput.value = ''; if (result.user) await updateUserInfo(result.user); } catch (error) { console.error(`${LOG_PREFIX} Fehler Dollar zu Token:`, error); msgEl.textContent = error.message; msgEl.className = 'text-sm mt-1 text-red-500'; } }
+        async function convertTokensToDollars() { const amountInput = document.getElementById('tokens-to-dollars-amount'); const msgEl = document.getElementById('tokens-to-dollars-message'); if (!amountInput || !msgEl) { showToast("Fehler: UI Token-Eingabe fehlt.", 5000); return; } const tokenAmount = parseInt(amountInput.value, 10); if (isNaN(tokenAmount) || tokenAmount <= 0) { msgEl.textContent = "Gültige Token-Anzahl > 0 eingeben."; msgEl.className = 'text-sm mt-1 text-red-500'; return; } msgEl.textContent = "Umwandlung..."; msgEl.className = 'text-sm mt-1 text-blue-500'; try { const response = await fetch(`${getApiUrl()}/tokens/convert-tokens-to-dollars`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tokenAmount }), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || `Fehler (${response.status})`); msgEl.textContent = result.message || "Umgewandelt!"; msgEl.className = 'text-sm mt-1 text-green-500'; amountInput.value = ''; if (result.user) await updateUserInfo(result.user); } catch (error) { console.error(`${LOG_PREFIX} Fehler Token zu Dollar:`, error); msgEl.textContent = error.message; msgEl.className = 'text-sm mt-1 text-red-500'; } }
+
+        function openGenerateTokenCodesModal() { if (!loggedInUser || !loggedInUser.isAdmin) { showToast("Nur Admins."); return; } const amtIn = document.getElementById('generate-token-amount'); if (amtIn) amtIn.value = '100'; const cntIn = document.getElementById('generate-token-count'); if (cntIn) cntIn.value = '1'; const msgEl = document.getElementById('generate-token-codes-message'); if (msgEl) { msgEl.textContent = ''; msgEl.className = 'text-sm mt-1 mb-3'; } const codesDispEl = document.getElementById('generated-codes-display'); if (codesDispEl) codesDispEl.innerHTML = ''; const genBtn = document.getElementById('confirm-generate-token-codes-button'); if (genBtn) { genBtn.disabled = false; const btnTxt = genBtn.querySelector('.button-text'); if (btnTxt) btnTxt.textContent = 'Codes generieren'; const spinner = genBtn.querySelector('.button-spinner'); if (spinner) spinner.classList.add('hidden'); } const modal = document.getElementById('generate-token-codes-modal'); if (modal) modal.classList.remove('hidden'); }
+        function closeGenerateTokenCodesModal() { const modal = document.getElementById('generate-token-codes-modal'); if (modal) modal.classList.add('hidden'); }
+        async function handleGenerateTokenCodes() { if (!loggedInUser || !loggedInUser.isAdmin) { showToast("Nur Admins."); return; } const amtIn = document.getElementById('generate-token-amount'); const cntIn = document.getElementById('generate-token-count'); const msgEl = document.getElementById('generate-token-codes-message'); const codesDispEl = document.getElementById('generated-codes-display'); const genBtn = document.getElementById('confirm-generate-token-codes-button'); if (!amtIn || !cntIn || !msgEl || !codesDispEl || !genBtn) { showToast("Fehler: UI Elemente fehlen.", 5000); return; } const btnTxt = genBtn.querySelector('.button-text'); const spinner = genBtn.querySelector('.button-spinner'); const tokenAmount = parseInt(amtIn.value, 10); const count = parseInt(cntIn.value, 10); msgEl.textContent = ''; if (isNaN(tokenAmount) || tokenAmount <= 0) { msgEl.textContent = "Ungültiger Token-Betrag (>0)."; msgEl.className = 'text-sm mt-1 mb-3 text-red-500'; return; } if (isNaN(count) || count <= 0 || count > 100) { msgEl.textContent = "Ungültige Anzahl (1-100)."; msgEl.className = 'text-sm mt-1 mb-3 text-red-500'; return; } msgEl.textContent = 'Generiere Codes...'; msgEl.className = 'text-sm mt-1 mb-3 text-blue-500'; codesDispEl.innerHTML = ''; genBtn.disabled = true; if (btnTxt) btnTxt.textContent = 'Generiere...'; if (spinner) spinner.classList.remove('hidden'); try { const response = await fetch(`${getApiUrl()}/admin/generate-token-code`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tokenAmount, count }), credentials: 'include' }); const result = await response.json(); if (!response.ok) throw new Error(result.error || `Fehler (${response.status})`); msgEl.textContent = result.message || `${count} Code(s) generiert!`; msgEl.className = 'text-sm mt-1 mb-3 text-green-500'; if (result.codes && result.codes.length > 0) { let codesHtml = '<p class="font-semibold mb-1">Generierte Codes:</p><ul class="list-disc list-inside">'; result.codes.forEach(c => { const sanCode = c.code.replace(/</g, "<").replace(/>/g, ">"); const sanAmt = parseInt(c.amount); codesHtml += `<li class="font-mono">${sanCode} (Wert: ${sanAmt})</li>`; }); codesHtml += '</ul>'; codesDispEl.innerHTML = codesHtml; } else codesDispEl.innerHTML = 'Keine Codes in Antwort.'; } catch (error) { console.error(`${LOG_PREFIX} Fehler Generieren Token Codes:`, error); msgEl.textContent = error.message; msgEl.className = 'text-sm mt-1 mb-3 text-red-500'; codesDispEl.innerHTML = ''; } finally { genBtn.disabled = false; if (btnTxt) btnTxt.textContent = 'Codes generieren'; if (spinner) spinner.classList.add('hidden'); } }
+
+        function openMyTokenCodesModal() { document.getElementById('my-token-codes-modal').classList.remove('hidden'); }
+        function closeMyTokenCodesModal() { document.getElementById('my-token-codes-modal').classList.add('hidden'); }
+        async function showMyTokenCodes() { if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; } openMyTokenCodesModal(); const contentDiv = document.getElementById('my-token-codes-content'); contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Lade Codes...</p>'; try { const response = await fetch(`${getApiUrl()}/tokens/my-codes`, { credentials: 'include' }); if (!response.ok) { const errData = await response.json().catch(() => ({ error: "Unbek. Fehler Laden Codes" })); throw new Error(errData.error || `Fehler ${response.status}`); } const { codes } = await response.json(); if (!codes || codes.length === 0) { contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Keine unbenutzten Token Codes.</p>'; return; } contentDiv.innerHTML = ''; codes.forEach(tokenCode => { const codeDiv = document.createElement('div'); codeDiv.className = 'mb-3 p-3 border rounded shadow-sm bg-gray-50'; const purDate = new Date(tokenCode.createdAt).toLocaleDateString('de-DE', { year: 'numeric', month: 'short', day: 'numeric' }); codeDiv.innerHTML = `<div class="flex justify-between items-center"><div><p class="font-semibold text-green-600 font-mono break-all">${tokenCode.code}</p><p class="text-sm text-gray-700">Wert: ${tokenCode.tokenAmount} Tokens</p><p class="text-xs text-gray-500">Gekauft als: "${tokenCode.productName || 'Token Guthaben'}" am ${purDate}</p></div><button class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded" onclick="copyToClipboard('${tokenCode.code}',this)">Kopieren</button></div>`; contentDiv.appendChild(codeDiv); }); } catch (error) { console.error(`${LOG_PREFIX} Fehler Laden meiner Token Codes:`, error); contentDiv.innerHTML = `<p class="text-center text-red-500 py-4">Fehler Laden: ${error.message}</p>`; } }
+
+        // --- Polling ---
+        function startPolling() {
+            if (pollingTimer) clearInterval(pollingTimer);
+
+            // Wir rufen jetzt checkForUpdates auf
+            pollingTimer = setInterval(async () => {
+                if (!isServerStarting && !serverStartTimeoutId) {
+                    await checkForUpdates();
+                }
+            }, pollingInterval); // Alle 3 Sekunden (Definiert in Variable oben)
+        }
+
+        // --- START: New Function for merging tokens ---
+        async function mergeTokenCodes() {
+            const valueSelect = document.getElementById('merge-token-value');
+            const countInput = document.getElementById('merge-token-count');
+            const messageEl = document.getElementById('merge-token-message');
+            const mergeButton = document.getElementById('merge-token-button');
+            const btnText = mergeButton.querySelector('.button-text');
+            const spinner = mergeButton.querySelector('.button-spinner');
+
+            const tokenValue = parseInt(valueSelect.value, 10);
+            const count = parseInt(countInput.value, 10);
+
+            messageEl.textContent = '';
+            if (isNaN(count) || count < 2) {
+                messageEl.textContent = 'Anzahl muss mindestens 2 sein.';
+                messageEl.className = 'text-sm mt-2 text-center text-red-500';
+                return;
+            }
+
+            mergeButton.disabled = true;
+            btnText.textContent = 'Führe zusammen...';
+            spinner.classList.remove('hidden');
+            messageEl.className = 'text-sm mt-2 text-center text-blue-500';
+            messageEl.textContent = 'Verarbeite...';
+
+            try {
+                const response = await fetch(`${getApiUrl()}/tokens/merge`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tokenValue, count }),
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || `Serverfehler (${response.status})`);
+                }
+
+                messageEl.className = 'text-sm mt-2 text-center text-green-500';
+                messageEl.textContent = result.message || 'Erfolgreich!';
+                countInput.value = '';
+                showToast("Codes erfolgreich zusammengeführt!");
+                await showMyTokenCodes(); // Refresh the list of codes
+
+            } catch (error) {
+                console.error(`${LOG_PREFIX} Fehler beim Zusammenführen der Token Codes:`, error);
+                messageEl.className = 'text-sm mt-2 text-center text-red-500';
+                messageEl.textContent = error.message;
+            } finally {
+                mergeButton.disabled = false;
+                btnText.textContent = 'Zusammenführen';
+                spinner.classList.add('hidden');
+            }
+        }
+        // --- END: New Function for merging tokens ---
+
+        // --- NEUE FUNKTIONEN FÜR DAS AUKTIONSHAUS ---
+
+        let auctionUpdateInterval = null;
+
+        function formatTimeRemaining(endTime) {
+            const now = new Date();
+            const end = new Date(endTime);
+            const diff = end - now;
+
+            if (diff <= 0) {
+                return '<span class="text-red-600 font-bold">Beendet</span>';
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            let timeString = '';
+            if (days > 0) timeString += `${days}T `;
+            if (hours > 0 || days > 0) timeString += `${hours.toString().padStart(2, '0')}h `;
+            timeString += `${minutes.toString().padStart(2, '0')}m `;
+            timeString += `${seconds.toString().padStart(2, '0')}s`;
+
+            return `<span class="text-gray-800">${timeString.trim()}</span>`;
+        }
+
+        function openAuctionHouse() {
+            if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; }
+            document.getElementById('auction-house-modal').classList.remove('hidden');
+            renderAuctions();
+        }
+
+        function closeAuctionHouse() {
+            document.getElementById('auction-house-modal').classList.add('hidden');
+            if (auctionUpdateInterval) {
+                clearInterval(auctionUpdateInterval);
+                auctionUpdateInterval = null;
+            }
+        }
+
+        async function renderAuctions() {
+            const contentDiv = document.getElementById('auction-house-content');
+            contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4 col-span-full">Lade Auktionen...</p>';
+
+            if (auctionUpdateInterval) clearInterval(auctionUpdateInterval);
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auctions`);
+                if (!response.ok) throw new Error("Auktionen konnten nicht geladen werden.");
+                const { auctions } = await response.json();
+
+                if (!auctions || auctions.length === 0) {
+                    contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4 col-span-full">Aktuell keine Auktionen verfügbar.</p>';
+                    return;
+                }
+
+                contentDiv.innerHTML = '';
+                auctions.forEach(auction => {
+
+                    const auctionCard = document.createElement('div');
+                    auctionCard.className = 'product bg-white rounded-lg shadow-md flex flex-col overflow-hidden p-2 cursor-pointer hover:shadow-xl transition-shadow'; // Klassen für Hover-Effekt hinzugefügt
+                    auctionCard.dataset.endTime = auction.endTime;
+                    auctionCard.onclick = () => openAuctionDetail(auction._id); // ONCLICK HINZUGEFÜGT
+
+                    const highestBidderText = auction.highestBidderUsername ? auction.highestBidderUsername : 'Niemand';
+
+                    auctionCard.innerHTML = `
+                        <img src="${auction.productImageUrl}" alt="${auction.productName}" class="w-full h-32 object-cover rounded mb-2">
+                        <strong class="text-md mb-1 truncate">${auction.productName}</strong>
+                        <p class="text-xs text-gray-500 mb-2">Verkäufer: ${auction.sellerUsername}</p>
+                        <p class="text-lg font-bold text-blue-600 mb-1">$${auction.currentBid.toFixed(2)}</p>
+                        <p class="text-xs text-gray-600 mb-2">Höchstbietender: ${highestBidderText}</p>
+                        <div class="mt-auto text-center border-t pt-2">
+                            <p class="text-sm font-semibold time-remaining">${formatTimeRemaining(auction.endTime)}</p>
+                        </div>
+                    `;
+                    contentDiv.appendChild(auctionCard);
+                });
+
+                auctionUpdateInterval = setInterval(() => {
+                    document.querySelectorAll('#auction-house-content .product').forEach(card => {
+                        const timeRemainingEl = card.querySelector('.time-remaining');
+                        if (timeRemainingEl) {
+                            timeRemainingEl.innerHTML = formatTimeRemaining(card.dataset.endTime);
+                        }
+                    });
+                }, 1000);
+
+            } catch (error) {
+                contentDiv.innerHTML = `<p class="text-center text-red-500 py-4 col-span-full">Fehler: ${error.message}</p>`;
+            }
+        }
+
+        async function openAuctionDetail(auctionId) {
+            const modal = document.getElementById('auction-detail-modal');
+            modal.classList.remove('hidden');
+
+            // Reset state
+            document.getElementById('auction-detail-name').textContent = 'Lade Auktion...';
+            document.getElementById('auction-detail-image').src = '';
+            document.getElementById('auction-bid-history').innerHTML = '<p class="text-gray-500">Lade Historie...</p>';
+            document.getElementById('auction-detail-error').textContent = '';
+            document.getElementById('bid-amount').value = '';
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auctions/${auctionId}`);
+                if (!response.ok) throw new Error("Details konnten nicht geladen werden.");
+                const { auction } = await response.json();
+
+                // Populate modal with data
+                document.getElementById('auction-detail-name').textContent = auction.productName;
+                document.getElementById('auction-detail-image').src = auction.productImageUrl;
+                document.getElementById('auction-detail-seller').textContent = auction.sellerUsername;
+                document.getElementById('auction-detail-time').textContent = formatTimeRemaining(auction.endTime).replace(/<[^>]+>/g, ''); // strip html tags
+                document.getElementById('auction-detail-bid').textContent = auction.currentBid.toFixed(2);
+                document.getElementById('auction-detail-highest-bidder').textContent = auction.highestBidderUsername || 'Niemand';
+
+                // Populate bid history
+                const historyDiv = document.getElementById('auction-bid-history');
+                if (auction.bids && auction.bids.length > 0) {
+                    historyDiv.innerHTML = auction.bids.map(bid =>
+                        `<div class="flex justify-between border-b last:border-b-0 py-1">
+                            <span><strong>$${bid.amount.toFixed(2)}</strong> von ${bid.bidderUsername}</span>
+                            <span class="text-gray-500">${new Date(bid.timestamp).toLocaleTimeString('de-DE')}</span>
+                        </div>`
+                    ).join('');
+                } else {
+                    historyDiv.innerHTML = '<p class="text-gray-500">Noch keine Gebote.</p>';
+                }
+
+                // Set up bid button
+                const confirmBtn = document.getElementById('confirm-bid-button');
+                confirmBtn.onclick = () => handleBid(auction._id);
+                // Disable button if user is seller
+                if (loggedInUser && loggedInUser.userId === auction.sellerId) {
+                    confirmBtn.disabled = true;
+                    document.getElementById('bid-amount').disabled = true;
+                    document.getElementById('auction-detail-error').textContent = "Du kannst nicht auf deine eigene Auktion bieten.";
+                } else {
+                    confirmBtn.disabled = false;
+                    document.getElementById('bid-amount').disabled = false;
+                }
+
+            } catch (error) {
+                document.getElementById('auction-detail-error').textContent = error.message;
+            }
+        }
+
+        async function handleBid(auctionId) {
+            const bidAmount = parseFloat(document.getElementById('bid-amount').value);
+            const errorEl = document.getElementById('auction-detail-error');
+            const confirmBtn = document.getElementById('confirm-bid-button');
+            const btnText = confirmBtn.querySelector('.button-text');
+            const spinner = confirmBtn.querySelector('.button-spinner');
+
+            errorEl.textContent = '';
+            if (isNaN(bidAmount) || bidAmount <= 0) {
+                errorEl.textContent = "Bitte gib ein gültiges Gebot ein.";
+                return;
+            }
+
+            confirmBtn.disabled = true;
+            btnText.textContent = 'Biete...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auctions/${auctionId}/bid`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bidAmount }),
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                showToast("Gebot erfolgreich abgegeben!");
+                document.getElementById('auction-detail-modal').classList.add('hidden');
+                renderAuctions(); // Refresh the main auction list to show the new bid
+                updateUserInfo(); // Refresh user balance in header
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+            } finally {
+                confirmBtn.disabled = false;
+                btnText.textContent = 'Bieten';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        let currentAuctionProductId = null;
+
+        function openCreateAuctionModal(productId, productName, userStock, imageUrl) {
+            currentAuctionProductId = productId;
+            document.getElementById('create-auction-product-name').textContent = productName;
+            document.getElementById('create-auction-user-stock').textContent = `${userStock} Stk.`;
+            document.getElementById('create-auction-product-image').src = imageUrl;
+
+            const qtyInput = document.getElementById('create-auction-quantity');
+            qtyInput.max = userStock;
+            qtyInput.value = 1;
+
+            document.getElementById('create-auction-start-bid').value = '';
+            document.getElementById('create-auction-duration').value = '24';
+            document.getElementById('create-auction-error-message').classList.add('hidden');
+
+            const confirmBtn = document.getElementById('confirm-create-auction-button');
+            confirmBtn.onclick = handleCreateAuction; // Set onclick handler
+
+            document.getElementById('create-auction-modal').classList.remove('hidden');
+        }
+
+        function closeCreateAuctionModal() {
+            document.getElementById('create-auction-modal').classList.add('hidden');
+            currentAuctionProductId = null;
+        }
+
+        async function handleCreateAuction() {
+            const quantity = parseInt(document.getElementById('create-auction-quantity').value, 10);
+            const startingBid = parseFloat(document.getElementById('create-auction-start-bid').value);
+            const durationInHours = parseInt(document.getElementById('create-auction-duration').value, 10);
+            const errorEl = document.getElementById('create-auction-error-message');
+            const confirmBtn = document.getElementById('confirm-create-auction-button');
+            const btnText = confirmBtn.querySelector('.button-text');
+            const spinner = confirmBtn.querySelector('.button-spinner');
+
+            errorEl.classList.add('hidden');
+            if (isNaN(quantity) || quantity <= 0 || isNaN(startingBid) || startingBid <= 0) {
+                errorEl.textContent = "Bitte geben Sie eine gültige Menge und ein gültiges Startgebot an.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            confirmBtn.disabled = true;
+            btnText.textContent = 'Starte...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auctions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productId: currentAuctionProductId,
+                        quantity,
+                        startingBid,
+                        durationInHours
+                    }),
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                showToast("Auktion erfolgreich gestartet!");
+                closeCreateAuctionModal();
+                showMyInventory(); // Refresh inventory to show decreased stock
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.classList.remove('hidden');
+            } finally {
+                confirmBtn.disabled = false;
+                btnText.textContent = 'Auktion starten';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        // --- NEUE FUNKTIONEN FÜR LIMOSTONKS BÖRSE ---
+
+        let stonkUpdateInterval = null;
+        let userPortfolios = [];
+        const STONKS_PRICE_UPDATE_INTERVAL = 5 * 60 * 1000; // 5 Minuten in ms
+
+        function openStonkMarket() {
+            if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; }
+            document.getElementById('stonks-market-modal').classList.remove('hidden');
+            renderStonkMarket();
+            startStonkUpdateTimer();
+        }
+
+        function closeStonkMarket() {
+            document.getElementById('stonks-market-modal').classList.add('hidden');
+            if (stonkUpdateInterval) {
+                clearInterval(stonkUpdateInterval);
+                stonkUpdateInterval = null;
+            }
+        }
+
+        function startStonkUpdateTimer() {
+            if (stonkUpdateInterval) clearInterval(stonkUpdateInterval);
+
+            const timerSpan = document.querySelector('#stonks-next-update-timer span');
+
+            const updateTimer = () => {
+                const now = Date.now();
+                const timeSinceLastUpdate = now % STONKS_PRICE_UPDATE_INTERVAL;
+                const timeToNextUpdate = STONKS_PRICE_UPDATE_INTERVAL - timeSinceLastUpdate;
+
+                const minutes = Math.floor(timeToNextUpdate / 60000);
+                const seconds = Math.floor((timeToNextUpdate % 60000) / 1000);
+
+                timerSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                // Reload market when timer hits zero
+                if (minutes === 0 && seconds === 0) {
+                    showToast("Marktpreise werden aktualisiert...");
+                    setTimeout(renderStonkMarket, 2000); // Wait 2s for server to finish
+                }
+            };
+
+            updateTimer();
+            stonkUpdateInterval = setInterval(updateTimer, 1000);
+        }
+
+        async function renderStonkMarket() {
+            const contentDiv = document.getElementById('stonks-market-content');
+            contentDiv.innerHTML = '<p class.text-center text-gray-500 py-4 col-span-full">Lade Aktienkurse...</p>';
+
+            try {
+                // Lade Aktienkurse und das persönliche Portfolio gleichzeitig
+                const [productsResponse, portfolioResponse] = await Promise.all([
+                    fetch(`${getApiUrl()}/products`),
+                    fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' })
+                ]);
+
+                if (!productsResponse.ok) throw new Error("Aktienkurse konnten nicht geladen werden.");
+                if (!portfolioResponse.ok) throw new Error("Portfolio konnte nicht geladen werden.");
+
+                const { products: allProducts } = await productsResponse.json();
+                const { portfolio } = await portfolioResponse.json();
+
+                let stocks = allProducts.filter(p => !p.isTokenCard && p.hasOwnProperty('currentPrice'));
+
+                // Eine Map für schnellen Zugriff auf Portfolio-Daten erstellen
+                const portfolioMap = new Map(portfolio.map(item => [item.productId, item]));
+
+                // ... (Der Rest der Funktion für Suche und Sortierung bleibt gleich, aber die renderStockCards-Funktion darin wird angepasst)
+
+                const renderStockCards = (stocksToRender) => {
+                    contentDiv.innerHTML = '';
+                    if (stocksToRender.length === 0) {
+                        contentDiv.innerHTML = '<p class="text-center text-gray-500 py-4 col-span-full">Keine Aktien für deine Suche gefunden.</p>';
+                        return;
+                    }
+                    stocksToRender.forEach(stock => {
+                        let priceChangeHtml = '';
+                        const portfolioItem = portfolioMap.get(stock.id);
+
+                        // ** NEUE LOGIK: Entscheiden, welche Info angezeigt wird **
+                        if (portfolioItem) {
+                            // Der Nutzer besitzt diese Aktie -> Persönlichen G/V anzeigen
+                            const totalValue = portfolioItem.quantityShares * stock.currentPrice;
+                            const totalCost = portfolioItem.quantityShares * portfolioItem.averageBuyPrice;
+                            const profit = totalValue - totalCost;
+                            const profitPercent = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+                            const profitClass = profit > 0 ? 'text-green-600' : (profit < 0 ? 'text-red-500' : 'text-gray-600');
+                            priceChangeHtml = `<p class="text-xs ${profitClass} font-bold">Mein G/V: ${profit.toFixed(2)} (${profitPercent.toFixed(2)}%)</p>`;
+                        } else {
+                            // Der Nutzer besitzt die Aktie nicht -> Allgemeine Markt-Änderung anzeigen
+                            const priceHistory = stock.priceHistory || [];
+                            const lastPrice = stock.currentPrice;
+                            const previousPrice = priceHistory.length > 1 ? priceHistory[priceHistory.length - 2].price : lastPrice;
+                            const priceChange = lastPrice - previousPrice;
+                            const percentChange = previousPrice > 0 ? (priceChange / lastPrice) * 100 : 0;
+                            const changeClass = priceChange > 0 ? 'text-green-500' : (priceChange < 0 ? 'text-red-500' : 'text-gray-500');
+                            const changeSign = priceChange > 0 ? '▲' : (priceChange < 0 ? '▼' : '');
+                            priceChangeHtml = `<p class="text-xs ${changeClass}">Markt: ${changeSign} ${Math.abs(priceChange).toFixed(2)} (${percentChange.toFixed(2)}%)</p>`;
+                        }
+
+                        const stockCard = document.createElement('div');
+                        // Wenn der User die Aktie besitzt, bekommt sie einen blauen Rand
+                        const ownedClass = portfolioItem ? 'border-blue-500' : 'border-transparent';
+                        stockCard.className = `p-3 bg-white rounded-lg shadow-md flex flex-col cursor-pointer hover:shadow-lg border-2 ${ownedClass} transition-all`;
+                        stockCard.onclick = () => openStonkDetail(stock.id);
+                        stockCard.innerHTML = `
+                            <img src="${stock.image_url}" alt="${stock.name}" class="w-full h-24 object-cover rounded mb-2">
+                            <strong class="text-sm mb-1 truncate">${stock.name}</strong>
+                            <div class="mt-auto">
+                                <p class="text-xl font-bold text-gray-800">$${stock.currentPrice.toFixed(2)}</p>
+                                ${priceChangeHtml}
+                            </div>
+                        `;
+                        contentDiv.appendChild(stockCard);
+                    });
+                };
+
+                // Hier kommt der Rest der renderStonkMarket-Funktion hin (Filter/Sortierung und der Aufruf von applyFiltersAndSort)
+                // Es ist wichtig, dass die renderStockCards-Subfunktion durch die obige ersetzt wird.
+
+                // --- Temporär, um es einfach zu halten, hier der Rest der Funktion ---
+                let currentSort = { key: 'name', direction: 'asc' };
+                const applyFiltersAndSort = () => {
+                    const searchTerm = document.getElementById('stonk-search-input').value.toLowerCase();
+                    let filteredStocks = stocks;
+                    if (searchTerm) {
+                        filteredStocks = stocks.filter(stock => stock.name.toLowerCase().includes(searchTerm) || String(stock.id).includes(searchTerm));
+                    }
+                    // Sortierlogik bleibt hier unverändert...
+                    renderStockCards(filteredStocks);
+                };
+                document.getElementById('stonk-search-input').addEventListener('input', applyFiltersAndSort);
+                // Sortier-Buttons setup bleibt unverändert...
+                applyFiltersAndSort();
+
+            } catch (error) {
+                contentDiv.innerHTML = `<p class="text-center text-red-500 py-4 col-span-full">Fehler: ${error.message}</p>`;
+            }
+        }
+        async function openStonkDetail(productId) {
+            const modal = document.getElementById('stonk-detail-modal');
+            modal.classList.remove('hidden');
+
+            // Reset UI with loading states
+            document.getElementById('stonk-detail-name').textContent = 'Lade Aktie...';
+            document.getElementById('stonk-detail-price').textContent = '--.--';
+            document.getElementById('stonk-trade-error').textContent = '';
+            document.getElementById('stonk-trade-quantity').value = '';
+            document.getElementById('stonk-trade-estimated-value').textContent = '$0.00';
+            document.getElementById('stonk-portfolio-quantity').textContent = '...';
+            document.getElementById('stonk-portfolio-avg-price').textContent = '...';
+            document.getElementById('stonk-portfolio-total-value').textContent = '...';
+
+            try {
+                // Fetch product list and user portfolio simultaneously for efficiency
+                const [productsResponse, portfolioResponse] = await Promise.all([
+                    fetch(`${getApiUrl()}/products`),
+                    fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' })
+                ]);
+
+                if (!productsResponse.ok) throw new Error("Aktienkurse konnten nicht geladen werden.");
+                if (!portfolioResponse.ok) throw new Error("Portfolio konnte nicht geladen werden.");
+
+                const { products: allProducts } = await productsResponse.json();
+                const { portfolio } = await portfolioResponse.json();
+
+                const stock = allProducts.find(p => p.id === productId);
+                if (!stock) throw new Error("Aktie nicht im Markt gefunden.");
+
+                // --- Populate Modal with correct data ---
+
+                // 1. Stock Info
+                document.getElementById('stonk-detail-name').textContent = stock.name;
+                document.getElementById('stonk-detail-image').src = stock.image_url;
+                document.getElementById('stonk-detail-price').textContent = stock.currentPrice.toFixed(2);
+
+                // 2. User's Portfolio Info for THIS stock
+                const portfolioItem = portfolio.find(item => item.productId === productId);
+
+                if (portfolioItem && portfolioItem.quantityShares > 0) {
+                    const totalValue = portfolioItem.quantityShares * stock.currentPrice;
+                    document.getElementById('stonk-portfolio-quantity').textContent = portfolioItem.quantityShares;
+                    document.getElementById('stonk-portfolio-avg-price').textContent = `$${portfolioItem.averageBuyPrice.toFixed(2)}`;
+                    document.getElementById('stonk-portfolio-total-value').textContent = `$${totalValue.toFixed(2)}`;
+                } else {
+                    document.getElementById('stonk-portfolio-quantity').textContent = '0';
+                    document.getElementById('stonk-portfolio-avg-price').textContent = '$0.00';
+                    document.getElementById('stonk-portfolio-total-value').textContent = '$0.00';
+                }
+
+                // 3. Setup Event Listeners
+                const qtyInput = document.getElementById('stonk-trade-quantity');
+                const estimatedValueEl = document.getElementById('stonk-trade-estimated-value');
+
+                const updateEstimatedValue = () => {
+                    const qty = parseInt(qtyInput.value, 10) || 0;
+                    estimatedValueEl.textContent = `$${(qty * stock.currentPrice).toFixed(2)}`;
+                };
+                qtyInput.oninput = updateEstimatedValue;
+
+                document.getElementById('stonk-buy-button').onclick = () => handleStonkTrade(productId, 'buy');
+                document.getElementById('stonk-sell-button').onclick = () => handleStonkTrade(productId, 'sell');
+
+            } catch (error) {
+                document.getElementById('stonk-trade-error').textContent = error.message;
+            }
+        }
+
+        async function handleStonkTrade(productId, type) {
+            const quantity = parseInt(document.getElementById('stonk-trade-quantity').value, 10);
+            const errorEl = document.getElementById('stonk-trade-error');
+            const tradePanel = document.getElementById('stonk-trade-panel');
+
+            errorEl.textContent = '';
+            if (isNaN(quantity) || quantity <= 0) {
+                errorEl.textContent = "Bitte gib eine gültige Menge an.";
+                return;
+            }
+
+            tradePanel.classList.add('opacity-50', 'pointer-events-none');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/stonks/${type}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, quantity }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+
+                showToast(result.message);
+                document.getElementById('stonk-detail-modal').classList.add('hidden');
+                updateUserInfo(); // Update balance in header
+                renderStonkMarket(); // Refresh market view
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+            } finally {
+                tradePanel.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        function openMyPortfolio() {
+            if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; }
+            document.getElementById('my-portfolio-modal').classList.remove('hidden');
+            renderMyPortfolio();
+        }
+
+        function closeMyPortfolio() {
+            document.getElementById('my-portfolio-modal').classList.add('hidden');
+        }
+
+        async function renderMyPortfolio() {
+            const contentTbody = document.getElementById('my-portfolio-content');
+            contentTbody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Lade Portfolio...</td></tr>';
+
+            try {
+                const response = await fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' });
+                if (!response.ok) throw new Error("Portfolio konnte nicht geladen werden.");
+                const { portfolio } = await response.json();
+
+                if (!portfolio || portfolio.length === 0) {
+                    contentTbody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Du besitzt keine Aktien.</td></tr>';
+                    document.getElementById('portfolio-total-value').textContent = '$0.00';
+                    return;
+                }
+
+                let totalPortfolioValue = 0;
+                contentTbody.innerHTML = ''; // Clear loading state
+
+                portfolio.forEach(item => {
+                    const totalValue = item.quantityShares * item.currentPrice;
+                    const totalCost = item.quantityShares * item.averageBuyPrice;
+                    const profit = totalValue - totalCost;
+                    const profitPercent = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+
+                    const profitClass = profit > 0 ? 'text-green-600' : (profit < 0 ? 'text-red-600' : 'text-gray-600');
+
+                    totalPortfolioValue += totalValue;
+
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-4 py-2 font-medium text-gray-900 flex items-center space-x-2">
+                            <img src="${item.imageUrl}" class="w-8 h-8 object-cover rounded">
+                            <span>${item.name}</span>
+                        </td>
+                        <td class="px-4 py-2 text-right">${item.quantityShares}</td>
+                        <td class="px-4 py-2 text-right">$${item.averageBuyPrice.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-right font-semibold">$${item.currentPrice.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-right font-bold text-blue-600">$${totalValue.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-right font-bold ${profitClass}">
+                            $${profit.toFixed(2)} (${profitPercent.toFixed(2)}%)
+                        </td>
+                        <td class="px-4 py-2 text-center">
+                            <button onclick="openStonkDetail(${item.productId})" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded">Verkaufen</button>
+                        </td>
+                    `;
+                    contentTbody.appendChild(row);
+                });
+
+                document.getElementById('portfolio-total-value').textContent = `$${totalPortfolioValue.toFixed(2)}`;
+
+            } catch (error) {
+                contentTbody.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-red-500">Fehler: ${error.message}</td></tr>`;
+            }
+        }
+
+        // --- Initialisierung ---
+        // WICHTIG: DOMContentLoaded feuert sofort, auch wenn Bilder noch laden/blockieren
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log(`${LOG_PREFIX} Start.`);
+
+            // Deine Initialisierungs-Funktionen
+            loadCartFromCookies();
+            await checkLoginStatus();
+            await loadProducts();
+
+            // Event Listeners wieder anhängen
+            document.getElementById('search').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                filteredProducts = products.filter(p => p.name.toLowerCase().includes(term));
+                currentPage = 1; renderProducts();
+            });
+
+            // --- ROBUST PAGINATION FIX ---
+            const prevBtnOriginal = document.getElementById('prev');
+            const nextBtnOriginal = document.getElementById('next');
+
+            if (prevBtnOriginal && nextBtnOriginal) {
+                // Clone nodes to strip ALL existing event listeners (including invisible ones)
+                const prevBtn = prevBtnOriginal.cloneNode(true);
+                const nextBtn = nextBtnOriginal.cloneNode(true);
+
+                // Replace the original buttons in the DOM with the clean clones
+                prevBtnOriginal.parentNode.replaceChild(prevBtn, prevBtnOriginal);
+                nextBtnOriginal.parentNode.replaceChild(nextBtn, nextBtnOriginal);
+
+                // Explicitly remove any inline onclick attributes from the clones
+                prevBtn.removeAttribute('onclick');
+                nextBtn.removeAttribute('onclick');
+
+                // Attach SINGLE, controlled event listeners
+                prevBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // Stop any default form submission or link following
+                    e.stopPropagation(); // Stop event bubbling
+
+                    if (currentPage > 1) {
+                        console.log(`${LOG_PREFIX} Page ${currentPage} -> ${currentPage - 1}`);
+                        currentPage--;
+                        renderProducts();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+
+                nextBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const maxPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+
+                    if (currentPage < maxPages) {
+                        console.log(`${LOG_PREFIX} Page ${currentPage} -> ${currentPage + 1}`);
+                        currentPage++;
+                        renderProducts();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+
+                console.log("[Fix] Pagination buttons completely reset and re-bound.");
+            }
+        });
+        window.onbeforeunload = () => { if (pollingTimer) clearInterval(pollingTimer); if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); console.log(`${LOG_PREFIX} Unload: Polling/Retry gestoppt.`); };
+
+    </script>
+
+
+</body></html>

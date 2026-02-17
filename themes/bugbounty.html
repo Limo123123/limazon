@@ -1,0 +1,258 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bug Bounty &amp; Delta Shop</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <style>
+        body { background-color: #0a0a0a; color: #cfcfcf; font-family: 'Courier New', monospace; }
+        .matrix-text { color: #00ff41; text-shadow: 0 0 5px rgba(0, 255, 65, 0.5); }
+        .delta-coin { color: #00ffff; text-shadow: 0 0 5px rgba(0, 255, 255, 0.5); font-weight: bold; }
+        .shop-card { 
+            background: #111; border: 1px solid #333; transition: all 0.2s; 
+        }
+        .shop-card:hover { border-color: #00ff41; transform: translateY(-2px); box-shadow: 0 0 15px rgba(0, 255, 65, 0.1); }
+        input, textarea { background: #1a1a1a !important; color: #fff !important; border-color: #333 !important; }
+        input:focus, textarea:focus { border-color: #00ff41 !important; outline: none; }
+        
+        /* Admin Styles */
+        .admin-panel { border-top: 2px dashed #ff4444; margin-top: 50px; padding-top: 20px; display: none; }
+        .report-card { background: #1a0505; border: 1px solid #500; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .status-open { color: #ffa500; }
+        .status-resolved { color: #00ff41; }
+        .status-rejected { color: #ff4444; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-6xl mx-auto">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+                <h1 class="text-4xl font-bold mb-2 matrix-text">🐛 BUG REPORTING</h1>
+                <p class="mb-8 text-gray-500">Finde Fehler. Melde sie. Kassiere Delta-Coins.</p>
+
+                <form id="bugForm" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold mb-2 text-green-500">TITEL</label>
+                        <input type="text" id="title" class="w-full border rounded p-3" placeholder="Kurz &amp; Knackig">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold mb-2 text-green-500">BESCHREIBUNG</label>
+                        <textarea id="desc" rows="4" class="w-full border rounded p-3" placeholder="Was ist passiert?"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2 text-green-500">SCHRITTE (OPTIONAL)</label>
+                        <textarea id="steps" rows="2" class="w-full border rounded p-3" placeholder="1... 2..."></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-green-900/50 hover:bg-green-700/50 text-green-400 border border-green-600 font-bold py-3 px-4 rounded transition-all">
+                        REPORT SENDEN
+                    </button>
+                </form>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-end mb-4">
+                    <div>
+                        <h1 class="text-4xl font-bold mb-2 delta-coin">∆ DELTA MARKET</h1>
+                        <p class="text-gray-500">Der Schwarzmarkt für Whistleblower.</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm text-gray-400">DEIN GUTHABEN</span>
+                        <div class="text-3xl delta-coin" id="user-coins">0 ∆</div>
+                    </div>
+                </div>
+
+                <div id="shop-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="text-gray-500 italic">Lade Markt...</div>
+                </div>
+
+                <div class="mt-8 p-4 border border-gray-800 rounded bg-gray-900/50 text-xs text-gray-500">
+                    <p>INFO: 1 bestätigter Bug = 1 Delta Coin (∆).<br>
+                    Genehmigung erfolgt manuell durch Admins.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="admin-area" class="admin-panel">
+            <h2 class="text-2xl font-bold text-red-500 mb-4">🛑 SECRET ADMIN ZONE: EINGEGANGENE REPORTS</h2>
+            <div id="reports-list" class="space-y-4">
+                </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks'; // URL ANPASSEN!
+
+        // --- INIT ---
+        async function init() {
+            loadShop();
+            tryLoadAdminReports(); // Versuch, Admin-Daten zu laden
+        }
+
+        // --- SHOP LADEN ---
+        async function loadShop() {
+            try {
+                const res = await fetch(`${API_URL}/api/bug-bounty/shop`, { credentials: 'include' });
+                const data = await res.json();
+                
+                document.getElementById('user-coins').innerText = `${data.deltaCoins || 0} ∆`;
+
+                const container = document.getElementById('shop-container');
+                if(!data.items) return;
+
+                container.innerHTML = data.items.map(item => `
+                    <div class="shop-card p-4 rounded flex flex-col justify-between h-full relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-cyan-400 text-xs px-2 py-1 rounded-bl">${item.cost} ∆</div>
+                        <div>
+                            <h3 class="font-bold text-white mb-1">${item.name}</h3>
+                            <p class="text-xs text-gray-400 mb-4">${item.desc}</p>
+                        </div>
+                        <button onclick="buyItem('${item.id}')" class="w-full border border-cyan-800 hover:bg-cyan-900/30 text-cyan-500 text-sm py-2 rounded transition-colors">
+                            KAUFEN
+                        </button>
+                    </div>
+                `).join('');
+
+            } catch (e) { console.error(e); }
+        }
+
+        // --- ADMIN: REPORTS LADEN ---
+        async function tryLoadAdminReports() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/bugs`, { credentials: 'include' });
+                
+                // Wenn 401/403, dann ist man kein Admin -> Abbrechen
+                if(!res.ok) return; 
+
+                const data = await res.json();
+                const container = document.getElementById('reports-list');
+                const adminArea = document.getElementById('admin-area');
+                
+                // Admin Bereich sichtbar machen
+                adminArea.style.display = 'block';
+
+                if(!data.reports || data.reports.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Keine Reports vorhanden.</p>';
+                    return;
+                }
+
+                container.innerHTML = data.reports.map(rep => {
+                    const date = new Date(rep.createdAt).toLocaleString();
+                    const statusClass = rep.status === 'resolved' ? 'status-resolved' : (rep.status === 'rejected' ? 'status-rejected' : 'status-open');
+                    
+                    // Buttons nur anzeigen, wenn Status noch 'open' ist
+                    const actions = rep.status === 'open' ? `
+                        <div class="mt-3 flex gap-3">
+                            <button onclick="resolveReport('${rep._id}', 'resolved', true)" class="bg-green-900 text-green-300 px-3 py-1 rounded text-sm hover:bg-green-800">✅ Genehmigen (+1 ∆)</button>
+                            <button onclick="resolveReport('${rep._id}', 'rejected', false)" class="bg-red-900 text-red-300 px-3 py-1 rounded text-sm hover:bg-red-800">❌ Ablehnen</button>
+                        </div>
+                    ` : `<div class="mt-2 text-xs text-gray-500">Bearbeitet.</div>`;
+
+                    return `
+                        <div class="report-card">
+                            <div class="flex justify-between">
+                                <h3 class="font-bold text-white">${rep.title}</h3>
+                                <span class="text-xs uppercase font-bold ${statusClass}">${rep.status}</span>
+                            </div>
+                            <div class="text-xs text-gray-400 mb-2">Von: <b class="text-white">${rep.username}</b> am ${date}</div>
+                            <div class="bg-black p-2 rounded text-sm text-gray-300 mb-2 whitespace-pre-wrap">${rep.description}</div>
+                            ${rep.steps ? `<div class="text-xs text-gray-500 italic">Steps: ${rep.steps}</div>` : ''}
+                            ${actions}
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (e) { console.log("Kein Admin-Zugriff oder Fehler."); }
+        }
+
+        // --- ADMIN: STATUS ÄNDERN ---
+        async function resolveReport(id, status, giveReward) {
+            if(!confirm(`Status wirklich auf ${status.toUpperCase()} setzen?`)) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/bugs/${id}/resolve`, { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify({ status, giveReward })
+                });
+                const json = await res.json();
+                
+                if(res.ok) {
+                    alert(json.message);
+                    tryLoadAdminReports(); // Liste neu laden
+                } else {
+                    alert("Fehler: " + json.error);
+                }
+            } catch(e) { alert("Fehler."); }
+        }
+
+        // --- KAUFEN ---
+        async function buyItem(itemId) {
+            if(!confirm(`Item für Delta-Coins kaufen?`)) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/bug-bounty/buy`, { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify({ itemId })
+                });
+                const json = await res.json();
+
+                if(res.ok) {
+                    alert(json.message);
+                    loadShop(); 
+                } else {
+                    alert("Fehler: " + json.error);
+                }
+            } catch(e) { alert("Serverfehler."); }
+        }
+
+        // --- REPORT SENDEN ---
+        document.getElementById('bugForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = "SENDE DATEN...";
+            btn.disabled = true;
+
+            const payload = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('desc').value,
+                steps: document.getElementById('steps').value
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/api/bugs`, { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                
+                if (res.ok) {
+                    alert(json.message);
+                    e.target.reset();
+                    // Wenn man selbst Admin ist, Liste sofort aktualisieren, damit man seinen eigenen Report sieht
+                    tryLoadAdminReports(); 
+                } else {
+                    alert("Fehler: " + json.error);
+                }
+            } catch (err) {
+                alert("Netzwerkfehler.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        init();
+    </script>
+
+</body></html>

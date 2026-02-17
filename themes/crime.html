@@ -1,0 +1,688 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Underground 💀</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <link href="/assets_offline/1771357355497_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #ccc;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'Courier Prime', monospace;
+        }
+
+        /* Background Grid */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.15;
+            background-image: linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Glass Panels */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 50, 50, 0.15);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Tabs */
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            color: #666;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            color: #ef4444;
+            /* Red for crime */
+            border-color: #ef4444;
+            background: linear-gradient(to top, rgba(239, 68, 68, 0.1), transparent);
+        }
+
+        .tab-btn.active-heist {
+            color: #eab308;
+            /* Yellow for heist */
+            border-color: #eab308;
+            background: linear-gradient(to top, rgba(234, 179, 8, 0.1), transparent);
+        }
+
+        /* Inputs */
+        .cyber-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: #ef4444;
+            font-family: 'Courier Prime', monospace;
+            transition: 0.3s;
+        }
+
+        .cyber-input:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+            outline: none;
+        }
+
+        /* Buttons */
+        .btn-glitch {
+            position: relative;
+            overflow: hidden;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .btn-glitch:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-glitch:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Heist Terminal */
+        .terminal {
+            background: #080808;
+            border: 1px solid #333;
+            padding: 15px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.85rem;
+            color: #22c55e;
+            height: 150px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        .terminal::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Firewall Bar */
+        .fw-bar-container {
+            background: #111;
+            height: 24px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        .fw-bar-fill {
+            height: 100%;
+            background: repeating-linear-gradient(45deg, #b91c1c, #b91c1c 10px, #991b1b 10px, #991b1b 20px);
+            transition: width 0.5s ease;
+        }
+
+        .fw-open .fw-bar-fill {
+            background: #22c55e;
+            box-shadow: 0 0 20px #22c55e;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Geheimer Glitch Effekt für den Zugang */
+        @keyframes secret-shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+                filter: hue-rotate(90deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+                filter: invert(1);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+                filter: hue-rotate(45deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+                filter: invert(0);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .trigger-active {
+            animation: secret-shake 0.2s infinite;
+            cursor: pointer;
+        }
+
+        /* Flash Overlay für den Übergang */
+        #secret-flash {
+            position: fixed;
+            inset: 0;
+            background: red;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center min-h-screen p-4">
+
+    <div class="bg-grid"></div>
+
+    <div class="w-full max-w-2xl flex justify-between items-center mb-8 mt-4">
+        <div class="flex items-center gap-3">
+            <div id="secret-skull" class="w-10 h-10 bg-red-900/20 border border-red-500/50 rounded flex items-center justify-center text-2xl cursor-pointer select-none active:scale-95 transition-transform">
+                💀
+            </div>
+            <div id="secret-flash"></div>
+            <h1 class="text-2xl font-bold text-white tracking-wider">UNDERGROUND</h1>
+            <p class="text-xs text-red-500 font-mono">CONNECTION: ENCRYPTED</p>
+        </div>
+    </div>
+    <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← DASHBOARD</a>
+    
+
+    <div class="glass-panel w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col min-h-[600px]">
+
+        <div class="flex border-b border-white/10 bg-black/40">
+            <button onclick="switchTab('rob')" id="tab-rob-btn" class="tab-btn flex-1 py-4 font-bold text-sm uppercase tracking-widest active">
+                🔫 Überfall
+            </button>
+            <button onclick="switchTab('heist')" id="tab-heist-btn" class="tab-btn flex-1 py-4 font-bold text-sm uppercase tracking-widest">
+                💰 The Heist
+            </button>
+            <button onclick="switchTab('security')" id="tab-security-btn" class="tab-btn flex-1 py-4 font-bold text-sm uppercase tracking-widest">
+                🛡️ Security
+            </button>
+        </div>
+
+        <div id="tab-rob" class="p-8 flex flex-col gap-6 fade-in">
+            <div class="text-center mb-4">
+                <h2 class="text-3xl font-bold text-white mb-2">TARGET ACQUISITION</h2>
+                <p class="text-gray-400 text-sm">PvP Zone. Raube andere User aus.<br>Hohes Risiko, hohe Belohnung.</p>
+            </div>
+
+            <div class="bg-black/30 p-6 rounded-xl border border-white/5">
+                <label class="block text-xs font-mono text-red-400 mb-2 uppercase">Ziel-Benutzername</label>
+                <input type="text" id="target-name" placeholder="Name eingeben..." class="cyber-input w-full p-4 rounded text-lg text-center">
+            </div>
+
+            <button id="btn-start-rob" onclick="commitCrime()" class="btn-glitch w-full py-4 bg-red-600 hover:bg-red-500 text-black rounded font-bold text-lg shadow-lg shadow-red-900/20">
+                EXECUTE ROBBERY
+            </button>
+
+            <div id="rob-result" class="hidden p-4 rounded border text-center animate-pulse">
+            </div>
+        </div>
+
+        <div id="tab-heist" class="p-8 flex flex-col gap-6 hidden">
+            <div class="flex justify-between items-end border-b border-white/10 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-yellow-500">STAATSKASSE</h2>
+                    <p class="text-xs text-gray-500 font-mono">TARGET: CENTRAL BANK</p>
+                </div>
+                <div id="heist-pot" class="text-3xl font-mono text-white font-bold tracking-widest">$---</div>
+            </div>
+
+            <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                    <span id="fw-status-text" class="text-red-400">FIREWALL INTEGRITY</span>
+                    <span id="fw-percent" class="text-white">100%</span>
+                </div>
+                <div id="firewall-container" class="fw-bar-container">
+                    <div id="fw-bar" class="fw-bar-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button id="btn-hack" onclick="doHack()" class="btn-glitch bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white py-6 rounded flex flex-col items-center gap-1">
+                    <span class="text-2xl">💻</span>
+                    <span class="text-xs font-mono">BRUTE FORCE ($500)</span>
+                </button>
+
+                <button id="btn-raid" onclick="doRaid()" disabled="" class="btn-glitch bg-black border border-yellow-600/30 text-yellow-600/50 py-6 rounded flex flex-col items-center gap-1 cursor-not-allowed">
+                    <span class="text-2xl">💣</span>
+                    <span class="text-xs font-mono" id="raid-subtext">LOCKED</span>
+                </button>
+            </div>
+
+            <div class="terminal rounded" id="heist-console">
+                <div class="mb-1 text-gray-500">&gt; System initialized...</div>
+                <div class="mb-1 text-gray-500">&gt; Connected to Limazon Underground Network.</div>
+                <div class="mb-1 text-green-500">&gt; Ready for input_</div>
+            </div>
+        </div>
+
+        <div id="tab-security" class="p-8 flex flex-col gap-6 hidden">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-white">HOME DEFENSE</h2>
+                <p class="text-gray-400 text-sm">Überwache deine Sicherheit.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-900/50 p-4 rounded border border-white/5 text-center">
+                    <div class="text-xs text-gray-500 uppercase mb-1">Risiko-Level</div>
+                    <div id="risk-display" class="text-3xl font-bold text-green-400">0%</div>
+                </div>
+                <div class="bg-slate-900/50 p-4 rounded border border-white/5 text-center flex flex-col justify-center">
+                    <div id="risk-details" class="text-xs text-gray-400">Lade Status...</div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-bold text-white mb-3 uppercase tracking-wider border-b border-white/10 pb-2">
+                    Vorfall-Protokoll</h3>
+                <div id="log-list" class="space-y-2 max-h-[250px] overflow-y-auto pr-2">
+                    <div class="text-center text-gray-600 text-xs py-4">Lade Logs...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks';
+        let heistInterval = null;
+
+        // UI Tabs Logic
+        function switchTab(tabName) {
+            // Hide all content
+            ['rob', 'heist', 'security'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${t}-btn`);
+                btn.classList.remove('active', 'active-heist');
+                btn.style.color = '#666';
+            });
+
+            // Show selected
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}-btn`);
+
+            // Special color for Heist tab
+            if (tabName === 'heist') {
+                activeBtn.classList.add('active-heist');
+                updateHeistData();
+                if (!heistInterval) heistInterval = setInterval(updateHeistData, 5000);
+            } else {
+                activeBtn.classList.add('active');
+                if (heistInterval) { clearInterval(heistInterval); heistInterval = null; }
+            }
+
+            if (tabName === 'security') loadSecurityData();
+        }
+
+        // --- HEIST LOGIC ---
+        function logHeist(msg, type = 'info') {
+            const con = document.getElementById('heist-console');
+            const line = document.createElement('div');
+            let colorClass = 'text-green-500';
+            if (type === 'err') colorClass = 'text-red-500';
+            if (type === 'warn') colorClass = 'text-yellow-500';
+
+            // Timestamp
+            const time = new Date().toLocaleTimeString('de-DE', { hour12: false });
+
+            line.className = `mb-1 ${colorClass} font-mono text-xs`;
+            line.innerHTML = `<span class="opacity-50">[${time}]</span> ${msg}`;
+
+            con.prepend(line);
+            if (con.children.length > 30) con.lastChild.remove();
+        }
+
+        async function updateHeistData() {
+            try {
+                const res = await fetch(`${API_URL}/api/heist/info`, { credentials: 'include' });
+                const data = await res.json();
+
+                // Pot
+                const potEl = document.getElementById('heist-pot');
+                // Kurze Version für die Anzeige
+                potEl.innerText = formatMoneySmart(data.treasuryBalance);
+                // Volle Version als Tooltip (wenn man mit der Maus drauf bleibt)
+                potEl.title = '$' + data.treasuryBalance.toLocaleString('de-DE');
+
+                // Firewall Visuals
+                const integrity = data.integrity.toFixed(1);
+                document.getElementById('fw-percent').innerText = integrity + '%';
+                const bar = document.getElementById('fw-bar');
+                bar.style.width = integrity + '%';
+
+                const fwContainer = document.getElementById('firewall-container');
+                const btnRaid = document.getElementById('btn-raid');
+                const btnHack = document.getElementById('btn-hack');
+                const raidText = document.getElementById('raid-subtext');
+                const fwText = document.getElementById('fw-status-text');
+
+                if (data.isOpen) {
+                    fwContainer.classList.add('fw-open');
+                    fwText.innerText = "SYSTEM EXPOSED";
+                    fwText.className = "text-green-500 animate-pulse";
+                    bar.style.width = '100%'; // Full green
+
+                    btnHack.disabled = true;
+                    btnHack.classList.add('opacity-30');
+
+                    btnRaid.disabled = false;
+                    btnRaid.classList.remove('bg-black', 'text-yellow-600/50', 'border-yellow-600/30', 'cursor-not-allowed');
+                    btnRaid.classList.add('bg-yellow-600', 'text-black', 'hover:bg-yellow-500', 'shadow-yellow-500/50', 'shadow-lg');
+                    raidText.innerText = "COST: $2000 | 60% CHANCE";
+                } else {
+                    fwContainer.classList.remove('fw-open');
+                    fwText.innerText = "FIREWALL INTEGRITY";
+                    fwText.className = "text-red-400";
+
+                    btnHack.disabled = false;
+                    btnHack.classList.remove('opacity-30');
+
+                    // Reset Raid Button Style
+                    btnRaid.disabled = true;
+                    btnRaid.className = "btn-glitch bg-black border border-yellow-600/30 text-yellow-600/50 py-6 rounded flex flex-col items-center gap-1 cursor-not-allowed";
+                    raidText.innerText = "LOCKED (WAIT FOR 0%)";
+                }
+
+            } catch (e) { console.error(e); }
+        }
+
+        async function doHack() {
+            const btn = document.getElementById('btn-hack');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            logHeist("Injecting payload...", "warn");
+
+            try {
+                const res = await fetch(`${API_URL}/api/heist/hack`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                const json = await res.json();
+
+                if (res.ok) {
+                    logHeist("ACCESS GRANTED: " + json.message);
+                    updateHeistData();
+                    startHackCooldown(60);
+                } else {
+                    logHeist("ACCESS DENIED: " + json.error, "err");
+                    if (json.error.includes("überhitzt")) {
+                        setTimeout(() => { btn.disabled = false; btn.classList.remove('opacity-50'); }, 5000);
+                    } else {
+                        btn.disabled = false; btn.classList.remove('opacity-50');
+                    }
+                }
+            } catch (e) {
+                logHeist("Connection lost.", "err");
+                btn.disabled = false; btn.classList.remove('opacity-50');
+            }
+        }
+
+        function startHackCooldown(seconds) {
+            const btn = document.getElementById('btn-hack');
+            const originalHTML = btn.innerHTML;
+            let left = seconds;
+
+            const interval = setInterval(() => {
+                left--;
+                btn.innerHTML = `<span class="text-2xl">⏳</span><span class="text-xs font-mono">COOLDOWN ${left}s</span>`;
+                if (left <= 0) {
+                    clearInterval(interval);
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                }
+            }, 1000);
+        }
+
+        async function doRaid() {
+            if (!confirm("Einsatztrupp losschicken ($2000)?")) return;
+            logHeist("Deploying squad...", "warn");
+            try {
+                const res = await fetch(`${API_URL}/api/heist/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                const json = await res.json();
+                if (res.ok) {
+                    if (json.success) {
+                        logHeist("💰 PAYDAY! " + json.message);
+                        alert("ERFOLG! " + json.message);
+                    } else {
+                        logHeist("💀 BUSTED! " + json.message, "err");
+                        alert("GESCHEITERT! " + json.message);
+                    }
+                    updateHeistData();
+                } else {
+                    logHeist("Error: " + json.error, "err");
+                }
+            } catch (e) { logHeist("Network error", "err"); }
+        }
+
+        // --- ROBBERY LOGIC ---
+        async function commitCrime() {
+            const target = document.getElementById('target-name').value;
+            const btn = document.getElementById('btn-start-rob');
+            const resBox = document.getElementById('rob-result');
+
+            if (!target) return;
+
+            btn.disabled = true;
+            btn.innerText = "CALCULATING...";
+            resBox.className = "hidden";
+
+            try {
+                const response = await fetch(`${API_URL}/api/crime/rob`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ targetUsername: target })
+                });
+
+                const data = await response.json();
+                btn.disabled = false;
+                btn.innerText = "EXECUTE ROBBERY";
+
+                resBox.classList.remove('hidden');
+
+                if (response.ok) {
+                    if (data.success) {
+                        resBox.className = "p-4 rounded border text-center bg-green-900/30 border-green-500 text-green-400";
+                        resBox.innerHTML = `<strong class="text-xl">ERFOLG!</strong><br>${data.message}<br><small class="opacity-70">Chance: ${data.chanceWas}%</small>`;
+                    } else {
+                        resBox.className = "p-4 rounded border text-center bg-red-900/30 border-red-500 text-red-400";
+                        resBox.innerHTML = `<strong class="text-xl">FEHLSCHLAG!</strong><br>${data.message}<br><small class="opacity-70">Chance: ${data.chanceWas}%</small>`;
+                    }
+                } else {
+                    resBox.className = "p-4 rounded border text-center bg-red-900/30 border-red-500 text-red-400";
+                    resBox.innerText = data.error || "Server Fehler.";
+                }
+
+            } catch (e) {
+                btn.disabled = false;
+                alert("Netzwerkfehler");
+            }
+        }
+
+        // --- SECURITY LOGIC ---
+        async function loadSecurityData() {
+            try {
+                const response = await fetch(`${API_URL}/api/crime/security`, { credentials: 'include' });
+                const data = await response.json();
+
+                const riskEl = document.getElementById('risk-display');
+                const detailsEl = document.getElementById('risk-details');
+
+                if (data.isProtected) {
+                    riskEl.innerText = "0%";
+                    riskEl.className = "text-3xl font-bold text-blue-400";
+                    detailsEl.innerText = "Safe Mode aktiv (Admin/Armutsschutz).";
+                } else {
+                    riskEl.innerText = data.riskPercent + "%";
+                    const val = parseFloat(data.riskPercent);
+                    if (val < 20) riskEl.className = "text-3xl font-bold text-green-400";
+                    else if (val < 40) riskEl.className = "text-3xl font-bold text-yellow-400";
+                    else riskEl.className = "text-3xl font-bold text-red-500 animate-pulse";
+
+                    let info = "Basisrisiko";
+                    if (data.hasAlarm) info += " + Alarmanlage (-15% Risiko)";
+                    else info += " (Keine Alarmanlage)";
+                    detailsEl.innerText = info;
+                }
+
+                const list = document.getElementById('log-list');
+                list.innerHTML = "";
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const div = document.createElement('div');
+                        const date = new Date(log.timestamp).toLocaleString();
+
+                        if (log.success) {
+                            div.className = "bg-red-900/20 border-l-4 border-red-500 p-3 rounded text-sm";
+                            div.innerHTML = `<div class="flex justify-between font-bold text-red-300"><span>EINBRUCH!</span> <span>${date}</span></div>
+                                             <div><span class="text-white">${log.attackerName}</span> stahl <span class="text-red-400">$${log.amountLost}</span></div>`;
+                        } else {
+                            div.className = "bg-green-900/20 border-l-4 border-green-500 p-3 rounded text-sm";
+                            div.innerHTML = `<div class="flex justify-between font-bold text-green-300"><span>ABGEWEHRT</span> <span>${date}</span></div>
+                                             <div><span class="text-white">${log.attackerName}</span> ist gescheitert.</div>`;
+                        }
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerHTML = '<div class="text-center text-gray-600 text-xs py-4">Keine Einträge in der Sicherheits-Datenbank.</div>';
+                }
+
+            } catch (e) { console.error(e); }
+        }
+
+        // Hilfsfunktion für große Zahlen (K, Mio, Mrd, Bio)
+        function formatMoneySmart(amount) {
+            if (amount >= 1.0e+12) return '$' + (amount / 1.0e+12).toFixed(2) + ' Bio.'; // Trillion (US) / Billion (DE)
+            if (amount >= 1.0e+9) return '$' + (amount / 1.0e+9).toFixed(2) + ' Mrd.'; // Billion (US) / Milliarde (DE)
+            if (amount >= 1.0e+6) return '$' + (amount / 1.0e+6).toFixed(2) + ' Mio.';
+            if (amount >= 1.0e+3) return '$' + (amount / 1.0e+3).toFixed(2) + ' k';
+            return '$' + amount.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // --- YAKUZA SECRET ACCESS ---
+    const skullBtn = document.getElementById('secret-skull');
+    let skullClicks = 0;
+    let skullTimer = null;
+
+    skullBtn.addEventListener('click', () => {
+        skullClicks++;
+        
+        // Visuelles Feedback: Kurzer Glitch bei jedem Klick
+        skullBtn.classList.add('trigger-active');
+        setTimeout(() => skullBtn.classList.remove('trigger-active'), 200);
+
+        // Reset Timer: Wenn man aufhört zu klicken, setzt sich der Zähler zurück
+        clearTimeout(skullTimer);
+        skullTimer = setTimeout(() => {
+            skullClicks = 0;
+        }, 1000); // Man hat 1 Sekunde Pause erlaubt zwischen Klicks
+
+        // Feedback im Log (zum Testen, kann man später entfernen)
+        console.log("Knock knock...", skullClicks);
+
+        // TRIGGER BEI 7 KLICKS
+        if (skullClicks >= 7) {
+            activateYakuzaMode();
+        }
+    });
+
+    function activateYakuzaMode() {
+        // Zähler stoppen
+        clearTimeout(skullTimer);
+        skullClicks = 0;
+
+        // 1. Visueller Effekt (Roter Blitz)
+        const flash = document.getElementById('secret-flash');
+        flash.style.opacity = '1';
+        
+        // 2. Sound (Optional, falls du einen hast)
+        // let audio = new Audio('glitch_sound.mp3'); audio.play();
+
+        // 3. Weiterleitung nach kurzer Verzögerung
+        setTimeout(() => {
+            // HIER PFAD ZUM SCHWARZMARKT ANPASSEN
+            window.location.href = 'blackmarket.html'; 
+        }, 300);
+    }
+    </script>
+
+
+</body></html>

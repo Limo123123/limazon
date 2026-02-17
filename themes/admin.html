@@ -1,0 +1,616 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Master Admin V2</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <style>
+        body { font-family: sans-serif; background: #1e293b; color: #f8fafc; }
+        .sidebar-link { display: block; padding: 10px 15px; margin-bottom: 5px; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: #94a3b8; font-weight: bold; }
+        .sidebar-link:hover { background: #334155; color: white; }
+        .sidebar-link.active { background: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3); }
+        .content-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .input-dark { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px; rounded: 6px; width: 100%; }
+        .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .btn-primary { background: #4f46e5; color: white; } .btn-primary:hover { background: #4338ca; }
+        .btn-danger { background: #ef4444; color: white; } .btn-danger:hover { background: #dc2626; }
+        .btn-warning { background: #f59e0b; color: white; } .btn-warning:hover { background: #d97706; }
+        .btn-success { background: #10b981; color: white; } .btn-success:hover { background: #059669; }
+        .fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Stat Kacheln */
+        .stat-box { background: #1e293b; border-radius: 8px; padding: 10px; text-align: center; border: 1px solid #334155; }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-value { font-size: 1.25rem; font-weight: bold; color: #fff; margin-top: 4px; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col p-4 shrink-0">
+        <div class="mb-8 flex items-center gap-3 px-2">
+            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white">L</div>
+            <h1 class="text-xl font-bold tracking-tight">Limo Admin</h1>
+        </div>
+        
+        <nav class="flex-grow space-y-1">
+            <a onclick="switchTab('users')" id="nav-users" class="sidebar-link active">👥 Benutzer</a>
+            <a onclick="switchTab('products')" id="nav-products" class="sidebar-link">🛒 Produkte</a>
+            <a onclick="switchTab('human')" id="nav-human" class="sidebar-link">🎓 Human Grades</a>
+            <a onclick="switchTab('system')" id="nav-system" class="sidebar-link text-red-400 hover:text-red-300">⚙️ System &amp; Notfall</a>
+        </nav>
+
+        <div class="mt-auto border-t border-slate-800 pt-4">
+            <a href="/" class="sidebar-link text-sm">← Zurück zum Hub</a>
+        </div>
+    </aside>
+
+    <main class="flex-grow overflow-y-auto p-8 relative">
+        
+        <div id="tab-users" class="space-y-6 fade-in">
+            <div class="flex justify-between items-center">
+                <h2 class="text-3xl font-bold">Benutzerverwaltung</h2>
+                <input type="text" oninput="handleUserSearch(this.value)" placeholder="User suchen..." class="input-dark w-64">
+            </div>
+            
+            <div class="content-card overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-slate-400 uppercase border-b border-slate-700">
+                        <tr><th class="p-3">User</th><th class="p-3">Balance</th><th class="p-3">Tokens</th><th class="p-3">Rolle / Status</th><th class="p-3 text-right">Aktionen</th></tr>
+                    </thead>
+                    <tbody id="user-list"></tbody>
+                </table>
+                <div class="text-center py-4 text-slate-500 hidden" id="user-empty">Keine User gefunden.</div>
+            </div>
+
+            <div id="user-pagination" class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
+                <button onclick="changeUserPage(-1)" id="btn-user-prev" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
+                <span class="text-sm font-bold text-slate-300">Seite <span id="user-page-disp">1</span> / <span id="user-page-total">1</span></span>
+                <button onclick="changeUserPage(1)" id="btn-user-next" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
+            </div>
+        </div>
+
+        <div id="tab-products" class="hidden space-y-6 fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h2 class="text-3xl font-bold">Produkte</h2>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="text" oninput="handleProductSearch(this.value)" placeholder="Produkt suchen..." class="input-dark w-full md:w-64">
+                    <button onclick="editProduct()" class="btn btn-primary whitespace-nowrap">+ Neu</button>
+                </div>
+            </div>
+
+            <div id="product-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+            <div id="product-loader" class="hidden text-center py-20">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+                <p class="text-slate-400">Lade Produkte...</p>
+            </div>
+
+            <div id="product-pagination" class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
+                <button onclick="changeProductPage(-1)" id="btn-prod-prev" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
+                <span class="text-sm font-bold text-slate-300">Seite <span id="prod-page-disp">1</span> / <span id="prod-page-total">1</span></span>
+                <button onclick="changeProductPage(1)" id="btn-prod-next" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
+            </div>
+        </div>
+
+        <div id="tab-human" class="hidden space-y-6 fade-in">
+            <h2 class="text-3xl font-bold">Human Grades DB</h2>
+            <div class="content-card">
+                <h3 class="text-xl font-bold mb-4">Verwaltung</h3>
+                <p class="text-slate-400 mb-4">Für die detaillierte Verwaltung von Lehrern, Personen und Kriterien nutze bitte das Haupt-Interface.</p>
+                <a href="https://tcg.limazon.v6.rocks" class="btn btn-primary inline-block">Zum HG Admin Panel</a>
+            </div>
+        </div>
+
+        <div id="tab-system" class="hidden space-y-6 fade-in">
+            <h2 class="text-3xl font-bold text-red-500">System Konsole</h2>
+            
+            <div class="content-card border-blue-900/50">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-blue-400">📡 Server Status (Pi 5)</h3>
+                    <button onclick="refreshHealth()" class="text-xs bg-slate-800 px-2 py-1 rounded hover:bg-slate-700">Refresh</button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="health-stats">
+                    <div class="stat-box"><div class="stat-label">RAM</div><div class="stat-value text-gray-500">...</div></div>
+                    <div class="stat-box"><div class="stat-label">Uptime</div><div class="stat-value text-gray-500">...</div></div>
+                    <div class="stat-box"><div class="stat-label">DB Status</div><div class="stat-value text-gray-500">...</div></div>
+                    <div class="stat-box"><div class="stat-label">Cache Items</div><div class="stat-value text-gray-500">...</div></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div class="content-card border-orange-900/50">
+                    <h3 class="text-xl font-bold mb-4 text-orange-400">🔧 Reparatur &amp; Wartung</h3>
+                    <div class="space-y-3">
+                        <button onclick="fixImages()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>🖼️ Bilder Fixen (via.placeholder)</span>
+                            <span class="text-xs opacity-50">Auto-Replace</span>
+                        </button>
+                        <button onclick="fixDecimals()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>🔢 Kommastellen Fixen</span>
+                            <span class="text-xs opacity-50">Rundet auf .00</span>
+                        </button>
+                        <button onclick="triggerNormalize()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>💰 Anti-Cheat / Balance Normalize</span>
+                            <span class="text-xs opacity-50">Max 100 Bio.</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="content-card border-red-900/50">
+                    <h3 class="text-xl font-bold mb-4 text-red-400">🚨 Wirtschafts-Notfall</h3>
+                    <div class="space-y-3">
+                        <button onclick="revokeInfinityGlobal()" class="btn bg-red-900/80 text-white w-full hover:bg-red-800 border border-red-700 flex justify-between items-center">
+                            <span>🚫 INFINITY MONEY REVOKE (ALLE)</span>
+                            <span class="text-xs font-bold text-red-200">Anti-Exploit</span>
+                        </button>
+
+                        <button onclick="resetEconomyGlobal()" class="btn bg-red-900/80 text-white w-full hover:bg-red-800 border border-red-700 flex justify-between items-center">
+                            <span>📉 WIRTSCHAFT RESET (&gt;100k)</span>
+                            <span class="text-xs font-bold text-red-200">Reiche -&gt; $5k</span>
+                        </button>
+                        
+                        <div class="border-t border-slate-700 my-4 pt-4">
+                            <h4 class="text-indigo-400 font-bold mb-2 text-sm uppercase">Tools</h4>
+                            <button onclick="triggerAI()" class="btn bg-indigo-600 text-white w-full hover:bg-indigo-700 mb-2">
+                                📰 Breaking News generieren
+                            </button>
+                            <button onclick="resetHumanGrades()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600">
+                                🗑️ Human Grades DB Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card border-purple-900/50">
+                    <h3 class="text-xl font-bold mb-4 text-purple-400">📦 Lager &amp; Steuern</h3>
+                    <div class="space-y-3">
+                        <button onclick="resetStock(false)" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>📦 Lager Reset (Standard)</span>
+                            <span class="text-xs opacity-50">Füllt Regale auf</span>
+                        </button>
+                        <button onclick="resetStock(true)" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>🚫 Lager Nullen</span>
+                            <span class="text-xs opacity-50">Alles auf 0</span>
+                        </button>
+                         <button onclick="forceTax()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>👮 Sofort-Steuer (0,5%)</span>
+                            <span class="text-xs opacity-50">Bei &gt;100M Usern</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modal-user" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
+        <div class="bg-slate-900 p-6 rounded-xl w-96 border border-slate-700 shadow-2xl fade-in">
+            <h3 class="text-xl font-bold mb-4">User bearbeiten</h3>
+            <input type="hidden" id="edit-u-id">
+            <div class="space-y-3">
+                <div><label class="text-xs text-slate-400">Username</label><input id="edit-u-name" class="input-dark" disabled=""></div>
+                <div><label class="text-xs text-slate-400">Balance ($)</label><input id="edit-u-bal" type="number" class="input-dark"></div>
+                <div><label class="text-xs text-slate-400">Tokens</label><input id="edit-u-tok" type="number" class="input-dark"></div>
+                
+                <div class="flex items-center gap-2 p-2 bg-slate-800 rounded">
+                    <input id="edit-u-admin" type="checkbox" class="w-4 h-4">
+                    <label class="text-indigo-400 font-bold select-none cursor-pointer" for="edit-u-admin">Ist Admin</label>
+                </div>
+
+                <div class="flex items-center gap-2 p-2 bg-slate-800 rounded border border-cyan-900/50">
+                    <input id="edit-u-infinity" type="checkbox" class="w-4 h-4 text-cyan-500">
+                    <label class="text-cyan-400 font-bold select-none cursor-pointer" for="edit-u-infinity">∞ Infinity Money</label>
+                </div>
+
+                <hr class="border-slate-700">
+                <div><label class="text-xs text-red-400">Passwort Reset (optional)</label><input id="edit-u-pass" type="text" placeholder="Neues Passwort" class="input-dark border-red-900/50"></div>
+            </div>
+            <div class="mt-6 flex gap-2">
+                <button onclick="closeModal('modal-user')" class="btn bg-slate-700 text-white flex-1">Abbrechen</button>
+                <button onclick="saveUser()" class="btn btn-primary flex-1">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-product" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
+        <div class="bg-slate-900 p-6 rounded-xl w-96 border border-slate-700 shadow-2xl fade-in">
+            <h3 class="text-xl font-bold mb-4">Produkt</h3>
+            <input type="hidden" id="edit-p-oid">
+            <div class="space-y-3">
+                <input id="edit-p-id" placeholder="ID (z.B. apple)" class="input-dark">
+                <input id="edit-p-name" placeholder="Name" class="input-dark">
+                <input id="edit-p-price" type="number" placeholder="Preis" class="input-dark">
+                <input id="edit-p-stock" type="number" placeholder="Lagerbestand" class="input-dark">
+                <input id="edit-p-img" placeholder="Bild URL (optional)" class="input-dark">
+                <textarea id="edit-p-desc" placeholder="Beschreibung" class="input-dark h-20"></textarea>
+            </div>
+            <div class="mt-6 flex gap-2">
+                <button onclick="closeModal('modal-product')" class="btn bg-slate-700 text-white flex-1">Abbrechen</button>
+                <button onclick="saveProduct()" class="btn btn-primary flex-1">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://api.limazon.v6.rocks';
+        
+        let users = [];
+        let products = [];
+        let prodPage = 1, prodPerPage = 12, prodFilter = "";
+        let userPage = 1, userPerPage = 15, userFilter = "";
+
+        // INIT
+        checkAuth();
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(API + '/api/auth/me', { credentials: 'include' });
+                if(res.ok) {
+                    const u = await res.json();
+                    if(!u.isAdmin) return alert("Kein Zutritt!");
+                    loadUsers();
+                    loadProducts();
+                    if(!document.getElementById('tab-system').classList.contains('hidden')) refreshHealth();
+                } else { window.location.href = '/'; }
+            } catch(e) { alert("Verbindungsfehler"); }
+        }
+
+        function switchTab(id) {
+            document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden'));
+            document.getElementById('tab-'+id).classList.remove('hidden');
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById('nav-'+id).classList.add('active');
+            if(id === 'system') refreshHealth();
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // ========================
+        // === USER MANAGEMENT ===
+        // ========================
+        async function loadUsers() {
+            const res = await fetch(API + '/api/admin/users', { credentials: 'include' });
+            const data = await res.json();
+            users = data.users;
+            
+            // Sortieren: Reiche User nach oben (damit man Exploits sieht)
+            users.sort((a,b) => b.balance - a.balance);
+            
+            renderUsers();
+        }
+
+        function handleUserSearch(val) { userFilter = val.toLowerCase(); userPage = 1; renderUsers(); }
+        function changeUserPage(delta) { userPage += delta; renderUsers(); }
+
+        function renderUsers() {
+            const list = document.getElementById('user-list');
+            const empty = document.getElementById('user-empty');
+            const pag = document.getElementById('user-pagination');
+
+            let filtered = users.filter(u => u.username.toLowerCase().includes(userFilter));
+
+            const totalPages = Math.ceil(filtered.length / userPerPage) || 1;
+            if(userPage > totalPages) userPage = totalPages;
+            if(userPage < 1) userPage = 1;
+
+            const start = (userPage - 1) * userPerPage;
+            const end = start + userPerPage;
+            const pageItems = filtered.slice(start, end);
+
+            document.getElementById('user-page-disp').innerText = userPage;
+            document.getElementById('user-page-total').innerText = totalPages;
+            document.getElementById('btn-user-prev').disabled = userPage === 1;
+            document.getElementById('btn-user-next').disabled = userPage === totalPages;
+            
+            pag.classList.toggle('hidden', filtered.length === 0);
+            if(filtered.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+
+            list.innerHTML = pageItems.map(u => {
+                const tok = (u.tokens !== undefined && u.tokens !== null) ? u.tokens.toLocaleString() : "0";
+                const balClass = u.balance < 0 ? "text-red-500 font-bold" : "text-emerald-400";
+                const bal = u.balance ? u.balance.toLocaleString() : "0";
+                
+                let badges = "";
+                if(u.isAdmin) badges += '<span class="bg-indigo-600 text-xs px-2 py-1 rounded mr-1">ADMIN</span>';
+                if(u.infinityMoney || u.unlockedInfinityMoney) badges += '<span class="bg-cyan-900 text-cyan-300 text-xs px-2 py-1 rounded border border-cyan-700">∞</span>';
+                if(badges === "") badges = '<span class="text-slate-500 text-xs">User</span>';
+
+                return `
+                <tr class="border-b border-slate-800 hover:bg-slate-800/50">
+                    <td class="p-3 font-bold">${u.username}</td>
+                    <td class="p-3 ${balClass}">$${bal}</td>
+                    <td class="p-3 text-amber-400">${tok} T</td>
+                    <td class="p-3">${badges}</td>
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <button onclick="fineUser('${u._id}', '${u.username}')" class="text-yellow-500 hover:text-yellow-300 mr-3" title="Strafe">🚓</button>
+                        <button onclick="openEditUser('${u._id}')" class="text-blue-400 hover:text-white mr-3" title="Bearbeiten">✏️</button>
+                        <button onclick="deleteUser('${u._id}')" class="text-red-500 hover:text-white mr-3" title="Löschen">🗑️</button>
+                        <button onclick="banUser('${u._id}', '${u.username}')" class="text-purple-500 hover:text-white font-bold" title="BAN">🔨</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openEditUser(id) {
+            const u = users.find(x => x._id === id);
+            if(!u) return;
+            document.getElementById('edit-u-id').value = id;
+            document.getElementById('edit-u-name').value = u.username;
+            document.getElementById('edit-u-bal').value = u.balance;
+            document.getElementById('edit-u-tok').value = u.tokens || 0;
+            
+            document.getElementById('edit-u-admin').checked = u.isAdmin || false;
+            // Infinity Checkbox setzen
+            document.getElementById('edit-u-infinity').checked = u.infinityMoney || u.unlockedInfinityMoney || false;
+            
+            document.getElementById('edit-u-pass').value = "";
+            document.getElementById('modal-user').classList.remove('hidden');
+        }
+
+        async function saveUser() {
+            const id = document.getElementById('edit-u-id').value;
+            
+            // HIER IST DAS UPDATE FÜR INFINITY MONEY
+            const body = {
+                balance: document.getElementById('edit-u-bal').value,
+                tokens: document.getElementById('edit-u-tok').value,
+                isAdmin: document.getElementById('edit-u-admin').checked,
+                infinityMoney: document.getElementById('edit-u-infinity').checked,
+                unlockedInfinityMoney: document.getElementById('edit-u-infinity').checked // Beides setzen für Konsistenz
+            };
+            
+            // Backend muss PUT für infinityMoney akzeptieren (siehe server.js Änderungen)
+            await fetch(API + '/api/admin/users/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'include' });
+            
+            const pass = document.getElementById('edit-u-pass').value;
+            if(pass) {
+                await fetch(API + '/api/admin/users/' + id + '/reset-pw', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({newPassword: pass}), credentials: 'include' });
+            }
+            closeModal('modal-user');
+            loadUsers();
+        }
+
+        // ========================
+        // === DANGER ZONE ===
+        // ========================
+        async function revokeInfinityGlobal() {
+            if(!confirm("🚨 ALARM: Soll Infinity Money bei ALLEN normalen Usern (Nicht-Admins) entfernt werden?\n\nDies kann nicht rückgängig gemacht werden!")) return;
+            try {
+                const res = await fetch(API + '/api/admin/system/revoke-infinity', { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                alert(d.message || d.error);
+                loadUsers();
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+
+        async function resetEconomyGlobal() {
+            if(!confirm("🚨 TOTAL-RESET: Alle User mit mehr als 100.000$ (außer Admins) werden auf 5.000$ gesetzt.\n\nTokens über 1.000 werden auf 10 gesetzt.\n\nSicher?")) return;
+            try {
+                const res = await fetch(API + '/api/admin/system/reset-rich-users', { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                alert(d.message || d.error);
+                loadUsers();
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+
+        // ========================
+        // === STANDARD ACTIONS ===
+        // ========================
+        async function deleteUser(id) {
+            if(!confirm("User wirklich löschen?")) return;
+            await fetch(API + '/api/admin/users/' + id, { method: 'DELETE', credentials: 'include' });
+            loadUsers();
+        }
+
+        async function fineUser(id, name) {
+            const amountStr = prompt(`👮 Strafe für ${name}: Betrag eingeben`, "500");
+            if(!amountStr) return;
+            const amount = parseFloat(amountStr);
+            if(isNaN(amount) || amount <= 0) return alert("Ungültig.");
+            try {
+                await fetch(API + '/api/admin/users/' + id + '/fine', {
+                    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ amount, reason: "Admin Action" }), credentials: 'include'
+                });
+                loadUsers(); 
+            } catch(e) { alert("Fehler."); }
+        }
+
+        async function banUser(id, name) {
+            if (!confirm(`⛔ BAN: ${name} wirklich löschen und IP sperren?`)) return;
+            try {
+                await fetch(API + '/api/admin/banUser', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ targetUserId: id }), credentials: 'include'
+                });
+                loadUsers(); 
+            } catch (err) { alert("Fehler."); }
+        }
+
+        // ========================
+        // === SYSTEM HEALTH ===
+        // ========================
+        async function refreshHealth() {
+            const container = id => document.getElementById('health-stats').children[id].querySelector('.stat-value');
+            for(let i=0; i<4; i++) container(i).innerText = "...";
+            try {
+                const res = await fetch(API + '/api/admin/health-check', { credentials: 'include' });
+                if(res.ok) {
+                    const data = await res.json();
+                    container(0).innerText = data.memory || "N/A";
+                    container(1).innerText = data.uptime || "N/A";
+                    container(2).innerHTML = data.dbStatus === "Connected ✅" ? '<span class="text-green-400">Online</span>' : '<span class="text-red-500">Offline</span>';
+                    container(3).innerText = data.productCacheSize || "0";
+                }
+            } catch(e) {}
+        }
+
+        // ========================
+        // === SYSTEM TOOLS ===
+        // ========================
+        async function fixImages() {
+            if(!confirm("Bilder fixen?")) return;
+            const res = await fetch(API + '/api/admin/system/fix-images', { method: 'POST', credentials: 'include' });
+            alert((await res.json()).message);
+            loadProducts();
+        }
+        async function fixDecimals() {
+            if(!confirm("Decimals fixen?")) return;
+            const res = await fetch(API + '/api/admin/system/fix-decimals', { method: 'POST', credentials: 'include' });
+            alert((await res.json()).message);
+            loadUsers();
+        }
+        async function triggerNormalize() {
+            if(!confirm("Normalize?")) return;
+            const res = await fetch(API + '/api/admin/system/normalize', { method: 'POST', credentials: 'include' });
+            alert((await res.json()).message);
+            loadUsers();
+        }
+        async function triggerAI() {
+            const res = await fetch(API + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
+            alert((await res.json()).message);
+        }
+        async function resetHumanGrades() {
+            if(!confirm("Human Grades Reset?")) return;
+            await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
+            alert("Done.");
+        }
+
+        // ===========================
+        // === PRODUCT MANAGEMENT ===
+        // ===========================
+        async function loadProducts() {
+            document.getElementById('product-list-container').innerHTML = '';
+            document.getElementById('product-loader').classList.remove('hidden');
+            document.getElementById('product-pagination').classList.add('hidden');
+            try {
+                const res = await fetch(API + '/api/admin/products', { credentials: 'include' });
+                const data = await res.json();
+                products = data.products;
+                renderProducts();
+            } catch(e) { console.error(e); } 
+            finally { document.getElementById('product-loader').classList.add('hidden'); }
+        }
+
+        function handleProductSearch(val) { prodFilter = val.toLowerCase(); prodPage = 1; renderProducts(); }
+        function changeProductPage(delta) { prodPage += delta; renderProducts(); }
+
+        function renderProducts() {
+            const list = document.getElementById('product-list-container');
+            const pag = document.getElementById('product-pagination');
+            let filtered = products.filter(p => (p.name||"").toLowerCase().includes(prodFilter) || String(p.id).toLowerCase().includes(prodFilter));
+            
+            const totalPages = Math.ceil(filtered.length / prodPerPage) || 1;
+            if(prodPage > totalPages) prodPage = totalPages;
+            if(prodPage < 1) prodPage = 1;
+            
+            const start = (prodPage - 1) * prodPerPage;
+            const end = start + prodPerPage;
+            const pageItems = filtered.slice(start, end);
+
+            document.getElementById('prod-page-disp').innerText = prodPage;
+            document.getElementById('prod-page-total').innerText = totalPages;
+            document.getElementById('btn-prod-prev').disabled = prodPage === 1;
+            document.getElementById('btn-prod-next').disabled = prodPage === totalPages;
+            
+            pag.classList.toggle('hidden', filtered.length === 0);
+            if(filtered.length === 0) { list.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">Keine Produkte.</div>`; return; }
+
+            list.innerHTML = pageItems.map(p => {
+                const realPrice = (p.price !== undefined && p.price !== null) ? p.price : p.currentPrice;
+                const priceDisplay = (realPrice === undefined) ? '<span class="text-red-500">ERR</span>' : `$${realPrice}`;
+                return `
+                <div class="content-card flex flex-col justify-between h-full border border-slate-700 hover:border-indigo-500 transition">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-lg text-white truncate pr-2">${p.name || "Unbekannt"}</span>
+                            <span class="text-emerald-400 font-mono whitespace-nowrap">${priceDisplay}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2 font-mono">ID: ${p.id}</p>
+                    </div>
+                    <div class="flex gap-2 border-t border-slate-700 pt-3 mt-auto">
+                        <button onclick="openEditProduct('${p._id}')" class="btn bg-slate-700 text-xs flex-1 hover:bg-slate-600">Edit</button>
+                        <button onclick="deleteProduct('${p._id}')" class="btn btn-danger text-xs hover:bg-red-700">Del</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openEditProduct(id) {
+            if(!id) {
+                document.getElementById('edit-p-oid').value = "";
+                document.getElementById('edit-p-id').value = "";
+                document.getElementById('edit-p-name').value = "";
+                document.getElementById('edit-p-price').value = "";
+                document.getElementById('edit-p-stock').value = "999";
+                document.getElementById('edit-p-img').value = "";
+                document.getElementById('edit-p-desc').value = "";
+            } else {
+                const p = products.find(x => x._id === id);
+                if(!p) return;
+                document.getElementById('edit-p-oid').value = p._id;
+                document.getElementById('edit-p-id').value = p.id || "";
+                document.getElementById('edit-p-name').value = p.name || "";
+                document.getElementById('edit-p-price').value = (p.price !== undefined) ? p.price : p.currentPrice;
+                document.getElementById('edit-p-stock').value = (p.stock !== undefined) ? p.stock : (p.quantity || 999);
+                document.getElementById('edit-p-img').value = p.image || p.image_url || "";
+                document.getElementById('edit-p-desc').value = p.description || "";
+            }
+            document.getElementById('modal-product').classList.remove('hidden');
+        }
+        function editProduct() { openEditProduct(null); }
+
+        async function saveProduct() {
+            const body = {
+                _id: document.getElementById('edit-p-oid').value,
+                id: document.getElementById('edit-p-id').value,
+                name: document.getElementById('edit-p-name').value,
+                price: document.getElementById('edit-p-price').value,
+                stock: document.getElementById('edit-p-stock').value,
+                image: document.getElementById('edit-p-img').value,
+                description: document.getElementById('edit-p-desc').value
+            };
+            await fetch(API + '/api/admin/products', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'include' });
+            closeModal('modal-product');
+            loadProducts();
+        }
+
+        async function deleteProduct(id) {
+            if(!confirm("Produkt löschen?")) return;
+            await fetch(API + '/api/admin/products/' + id, { method: 'DELETE', credentials: 'include' });
+            loadProducts();
+        }
+
+        async function resetStock(zero) {
+            const endpoint = zero ? '/api/admin/zero-stock' : '/api/products/reset';
+            const action = zero ? "auf 0 setzen" : "auffüllen";
+            
+            if(!confirm(`Lager wirklich ${action}?`)) return;
+            
+            try {
+                const res = await fetch(API + endpoint, { method: 'PATCH', credentials: 'include' });
+                const d = await res.json();
+                alert(d.message);
+                loadProducts(); // Liste aktualisieren
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+
+        async function forceTax() {
+            if(!confirm("⚠️ Sofort 0,5% Steuern bei allen Reichen (>100M) einziehen?")) return;
+            
+            try {
+                const res = await fetch(API + '/api/admin/system/force-tax', { method: 'POST', credentials: 'include' });
+                const d = await res.json();
+                
+                if(d.success) {
+                    const det = d.details;
+                    alert(`Erfolg!\n\nEingesammelt: $${det.collected.toLocaleString()}\nBetroffene User: ${det.taxedCount}\nGeschützt: ${det.shieldedCount}`);
+                } else {
+                    alert(d.message);
+                }
+                loadUsers(); // User-Liste aktualisieren (Geld hat sich geändert)
+            } catch(e) { alert("Fehler: " + e.message); }
+        }
+    </script>
+
+</body></html>

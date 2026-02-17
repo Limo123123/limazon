@@ -1,0 +1,295 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideenbox 💡</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <link href="/assets_offline/1771357355847_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Background Glow */
+        .bg-glow {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15), transparent 70%);
+        }
+
+        /* Glass Cards */
+        .glass-panel {
+            background: rgba(20, 25, 30, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        }
+
+        /* Inputs */
+        .input-holo {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: white;
+            transition: all 0.3s;
+        }
+        .input-holo:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+            outline: none;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Idea Card */
+        .idea-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+        .idea-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: bold;
+            padding: 4px 8px; border-radius: 4px; border: 1px solid transparent;
+        }
+        .status-new { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+        .status-in-progress { background: rgba(234, 179, 8, 0.2); color: #facc15; border-color: rgba(234, 179, 8, 0.3); }
+        .status-done { background: rgba(34, 197, 94, 0.2); color: #4ade80; border-color: rgba(34, 197, 94, 0.3); }
+        .status-rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+
+        /* Button */
+        .btn-submit {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white; font-weight: bold; transition: all 0.2s;
+        }
+        .btn-submit:hover {
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="bg-glow"></div>
+
+    <div class="max-w-4xl mx-auto">
+        
+        <header class="text-center mb-12 mt-4">
+            <a href="/" class="text-xs text-blue-400 hover:text-blue-300 tracking-widest mb-4 inline-block uppercase font-bold transition-colors">← Zurück zum Portal</a>
+            <h1 class="text-5xl md:text-7xl font-bold mb-4 tracking-tight text-white drop-shadow-lg">
+                Ideenbox
+            </h1>
+            <p class="text-blue-200/60 text-lg">
+                Gestalte die Zukunft von Limazon. Deine Stimme zählt.
+            </p>
+        </header>
+
+        <div id="submission-container" class="glass-panel p-6 md:p-8 rounded-2xl mb-12">
+            <div id="login-warning" class="hidden text-center py-8">
+                <p class="text-gray-400 mb-4">Du musst eingeloggt sein, um Ideen einzureichen.</p>
+                <a href="../index.html" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">Zum Login</a>
+            </div>
+
+            <form id="idea-form" class="hidden space-y-4">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <span class="text-blue-500">✨</span> Neue Idee einreichen
+                </h3>
+                
+                <div>
+                    <input type="text" id="idea-title" placeholder="Titel (kurz &amp; knackig)" class="input-holo w-full p-4 rounded-xl text-lg font-bold placeholder-gray-600" required="" minlength="5" maxlength="100">
+                </div>
+                
+                <div>
+                    <textarea id="idea-description" rows="4" placeholder="Beschreibe deine Idee. Wie funktioniert sie? Warum ist sie cool?" class="input-holo w-full p-4 rounded-xl placeholder-gray-600 resize-none" required="" minlength="10" maxlength="2000"></textarea>
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <div id="form-msg" class="text-sm font-bold"></div>
+                    <button type="submit" id="btn-submit" class="btn-submit px-8 py-3 rounded-xl uppercase tracking-wider text-sm shadow-lg">
+                        Absenden
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div>
+            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-blue-500 pl-4">Community Vorschläge</h2>
+            
+            <div id="ideas-list" class="space-y-4">
+                <div class="text-center text-gray-600 py-10">Lade Daten...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.limazon.v6.rocks';
+        let currentUser = null;
+
+        // Fetch Helper
+        async function fetchAuth(url, options = {}) {
+            options.credentials = 'include';
+            return fetch(url, options);
+        }
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await loadIdeas();
+        });
+
+        async function checkAuth() {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/auth/me`);
+                if(res.ok) {
+                    currentUser = await res.json();
+                    document.getElementById('idea-form').classList.remove('hidden');
+                } else {
+                    document.getElementById('login-warning').classList.remove('hidden');
+                }
+            } catch(e) {}
+        }
+
+        // --- SUBMIT ---
+        document.getElementById('idea-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            const msg = document.getElementById('form-msg');
+            const title = document.getElementById('idea-title').value;
+            const desc = document.getElementById('idea-description').value;
+
+            btn.disabled = true;
+            btn.innerText = "...";
+            msg.innerText = "";
+
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/ideas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description: desc })
+                });
+                
+                const data = await res.json();
+
+                if(res.ok) {
+                    msg.innerHTML = '<span class="text-green-400">Gesendet! Danke.</span>';
+                    document.getElementById('idea-form').reset();
+                    loadIdeas();
+                } else {
+                    msg.innerHTML = `<span class="text-red-400">${data.error || 'Fehler'}</span>`;
+                }
+            } catch(e) {
+                msg.innerHTML = '<span class="text-red-400">Verbindungsfehler.</span>';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "ABSENDEN";
+                setTimeout(() => { msg.innerText = ""; }, 3000);
+            }
+        });
+
+        // --- LOAD LIST ---
+        async function loadIdeas() {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/ideas`);
+                const data = await res.json();
+                renderList(data.ideas || []);
+            } catch(e) {
+                document.getElementById('ideas-list').innerHTML = '<div class="text-red-500 text-center">Fehler beim Laden.</div>';
+            }
+        }
+
+        function renderList(ideas) {
+            const list = document.getElementById('ideas-list');
+            list.innerHTML = '';
+
+            if(ideas.length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-500 py-10">Noch keine Ideen. Sei der Erste!</div>';
+                return;
+            }
+
+            ideas.forEach(idea => {
+                const date = new Date(idea.createdAt).toLocaleDateString('de-DE');
+                const card = document.createElement('div');
+                card.className = 'idea-card p-6 rounded-xl relative group';
+                
+                // Status Logic
+                let statusClass = 'status-new';
+                let statusText = 'NEU';
+                if(idea.status === 'in-progress') { statusClass = 'status-in-progress'; statusText = 'IN ARBEIT'; }
+                if(idea.status === 'done') { statusClass = 'status-done'; statusText = 'ERLEDIGT'; }
+                if(idea.status === 'rejected') { statusClass = 'status-rejected'; statusText = 'ABGELEHNT'; }
+
+                // Admin Controls
+                let adminHtml = '';
+                if(currentUser && currentUser.isAdmin) {
+                    adminHtml = `
+                        <div class="mt-4 pt-4 border-t border-white/5 flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                            <select onchange="updateStatus('${idea._id}', this.value)" class="bg-black text-xs text-white border border-gray-700 rounded p-1">
+                                <option value="new" ${idea.status==='new'?'selected':''}>Neu</option>
+                                <option value="in-progress" ${idea.status==='in-progress'?'selected':''}>WIP</option>
+                                <option value="done" ${idea.status==='done'?'selected':''}>Fertig</option>
+                                <option value="rejected" ${idea.status==='rejected'?'selected':''}>Abgelehnt</option>
+                            </select>
+                            <button onclick="deleteIdea('${idea._id}')" class="text-xs bg-red-900/50 text-red-400 px-2 py-1 rounded hover:bg-red-900">DEL</button>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-white">${escapeHtml(idea.title)}</h3>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-4">${escapeHtml(idea.description)}</p>
+                    
+                    <div class="flex justify-between items-center text-xs text-gray-500 font-mono">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-full bg-blue-900/50 flex items-center justify-center text-blue-400 font-bold">
+                                ${idea.submitterUsername.charAt(0).toUpperCase()}
+                            </div>
+                            <span>${escapeHtml(idea.submitterUsername)}</span>
+                        </div>
+                        <span>${date}</span>
+                    </div>
+                    ${adminHtml}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // --- ADMIN ACTIONS ---
+        async function updateStatus(id, status) {
+            try {
+                await fetchAuth(`${API_BASE_URL}/api/ideas/${id}/status`, {
+                    method: 'PATCH',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({status})
+                });
+                loadIdeas();
+            } catch(e) { alert("Fehler"); }
+        }
+
+        async function deleteIdea(id) {
+            if(!confirm("Löschen?")) return;
+            try {
+                await fetchAuth(`${API_BASE_URL}/api/ideas/${id}`, { method: 'DELETE' });
+                loadIdeas();
+            } catch(e) { alert("Fehler"); }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+    </script>
+
+</body></html>

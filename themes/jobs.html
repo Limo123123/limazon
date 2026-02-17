@@ -1,0 +1,374 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Job Center</title>
+    <style>
+        /* --- DESIGN --- */
+        body {
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 { text-align: center; color: #38bdf8; margin-bottom: 30px; }
+
+        /* --- CURRENT JOB CARD --- */
+        .my-office {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .job-title-large {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 10px 0;
+        }
+
+        .job-level {
+            display: inline-block;
+            background: #334155;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .btn-work {
+            background: #22c55e; /* Green */
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 4px 0 #15803d; /* 3D Effect */
+        }
+
+        .btn-work:active { transform: translateY(4px); box-shadow: none; }
+        .btn-work:hover:not(:disabled) { background: #16a34a; }
+        
+        .btn-work:disabled { 
+            background: #475569; 
+            box-shadow: none; 
+            cursor: not-allowed; 
+            opacity: 0.7;
+        }
+
+        .cooldown-text {
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: #fca5a5;
+            min-height: 1.5rem;
+        }
+
+        /* --- JOB LIST --- */
+        .section-title { font-size: 1.2rem; color: #94a3b8; margin-bottom: 15px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+
+        .job-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .job-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s;
+        }
+
+        .job-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
+        .job-card.active { border: 2px solid #22c55e; background: rgba(34, 197, 94, 0.05); }
+
+        .job-name { font-weight: bold; font-size: 1.1rem; color: white; }
+        .job-salary { color: #22c55e; font-weight: bold; font-size: 1.2rem; margin: 5px 0; }
+        .job-meta { font-size: 0.85rem; color: #94a3b8; margin-bottom: 15px; line-height: 1.5; }
+
+        .btn-apply {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        .btn-apply:hover { background: #2563eb; }
+        
+        .cost-badge {
+            display: block;
+            text-align: center;
+            font-size: 0.75rem;
+            margin-top: 5px;
+            color: #cbd5e1;
+        }
+
+        .back-link { display: block; text-align: center; margin-top: 40px; color: #64748b; text-decoration: none; }
+        .back-link:hover { color: white; }
+
+        /* Animation für Geldregen */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+        .money-popup {
+            position: absolute;
+            color: #22c55e;
+            font-weight: bold;
+            font-size: 2rem;
+            pointer-events: none;
+            animation: floatUp 1.5s forwards;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>💼 Job Center</h1>
+
+        <div class="my-office" id="office-container">
+            <div id="no-job-msg" style="display:none;">
+                <h2>Du bist arbeitslos.</h2>
+                <p style="color:#94a3b8;">Wähle unten einen Job aus, um Geld zu verdienen!</p>
+            </div>
+
+            <div id="active-job-ui">
+                <span class="job-level">Level <span id="current-level">1</span></span>
+                <div class="job-title-large" id="current-job-title">Lade...</div>
+                <div style="margin-bottom: 20px; color: #94a3b8;">Gehalt: <span id="current-salary" class="text-green-400">---</span></div>
+
+                <button id="btn-work" class="btn-work" onclick="doWork()">ARBEITEN</button>
+                <div id="cooldown-display" class="cooldown-text"></div>
+            </div>
+        </div>
+
+        <div class="section-title">Karriereleiter &amp; Stellenmarkt</div>
+        <div class="job-grid" id="job-list">
+            <div style="color:#64748b;">Lade Angebote...</div>
+        </div>
+
+        <a href="/" class="back-link">← Zurück zum Dashboard</a>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks';
+        
+        let cooldownInterval = null;
+        let myData = null;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', loadJobs);
+
+        async function loadJobs() {
+            try {
+                const res = await fetch(`${API_URL}/api/jobs`, { credentials: 'include' });
+                if (res.status === 401) {
+                    document.body.innerHTML = "<h2 style='text-align:center; color:white;'>Bitte einloggen.</h2>";
+                    return;
+                }
+                const data = await res.json();
+                myData = data; // Speichern für später
+                
+                renderInterface(data);
+                
+                // Falls Cooldown aktiv ist, Timer starten
+                if(data.cooldownLeft > 0) {
+                    startCooldownTimer(data.cooldownLeft);
+                }
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('office-container').innerHTML = "Fehler beim Laden.";
+            }
+        }
+
+        function renderInterface(data) {
+            const office = document.getElementById('active-job-ui');
+            const noJob = document.getElementById('no-job-msg');
+            const list = document.getElementById('job-list');
+
+            // 1. Mein Büro Rendern
+            if (!data.currentJob) {
+                office.style.display = 'none';
+                noJob.style.display = 'block';
+            } else {
+                office.style.display = 'block';
+                noJob.style.display = 'none';
+
+                // Job Details finden
+                const jobDef = data.availableJobs.find(j => j.id === data.currentJob);
+                
+                document.getElementById('current-job-title').innerText = jobDef ? jobDef.title : data.currentJob;
+                document.getElementById('current-level').innerText = data.currentJobLevel;
+                
+                // Gehalt berechnen (Level Bonus anzeigen)
+                const multiplier = 1 + ((data.currentJobLevel - 1) * 0.1);
+                const realSalary = Math.floor((jobDef ? jobDef.salary : 0) * multiplier);
+                document.getElementById('current-salary').innerText = `$${realSalary}`;
+            }
+
+            // 2. Job Liste Rendern
+            list.innerHTML = data.availableJobs.map(job => {
+                const isCurrent = data.currentJob === job.id;
+                const activeClass = isCurrent ? 'active' : '';
+                const btnText = isCurrent ? 'Aktuell' : 'Bewerben';
+                const btnDisabled = isCurrent ? 'disabled' : '';
+                const costText = job.cost > 0 ? `Kosten: $${job.cost.toLocaleString()}` : 'Kostenlos';
+                const btnColor = isCurrent ? 'background:#22c55e;' : ''; // Grün wenn aktiv
+
+                // Zeit formatieren
+                const timeMin = Math.ceil(job.cooldownSeconds / 60);
+                const timeText = timeMin === 1 ? "1 Min" : timeMin + " Min";
+
+                return `
+                <div class="job-card ${activeClass}">
+                    <div>
+                        <div class="job-name">${job.title}</div>
+                        <div class="job-salary">$${job.salary} <span style="font-size:0.8em;color:#64748b;">/ Arbeit</span></div>
+                        <div class="job-meta">
+                            ⏳ Pause: ${timeText}<br>
+                            🎓 Benötigt Level: ${job.reqLevel}
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn-apply" style="${btnColor}" ${btnDisabled} onclick="selectJob('${job.id}', ${job.cost})">
+                            ${btnText}
+                        </button>
+                        ${!isCurrent ? `<span class="cost-badge">${costText}</span>` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function doWork() {
+            const btn = document.getElementById('btn-work');
+            if(btn.disabled) return;
+
+            // UI Feedback sofort
+            btn.disabled = true;
+            btn.innerText = "Arbeite...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/jobs/work`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify({})
+                });
+                
+                const result = await res.json();
+
+                if (res.ok) {
+                    // Success Animation
+                    showMoneyPopup(document.getElementById('office-container'), `+ $${result.newBalance - (result.newBalance - 100 /* Dummy Diff */)}`); // Einfacher: Text aus result
+                    
+                    alert(result.message); // Oder schöneres UI
+                    
+                    // Reload um Cooldown exakt vom Server zu kriegen
+                    loadJobs();
+                } else {
+                    alert(result.error);
+                    loadJobs(); // Reset status
+                }
+
+            } catch (e) {
+                alert("Verbindungsfehler");
+                btn.disabled = false;
+                btn.innerText = "ARBEITEN";
+            }
+        }
+
+        async function selectJob(jobId, cost) {
+            if(cost > 0) {
+                if(!confirm(`Willst du wirklich umschulen? Das kostet dich $${cost}. Dein Job-Level wird auf 1 zurückgesetzt.`)) return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/jobs/select`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
+                    body: JSON.stringify({ jobId })
+                });
+                
+                const data = await res.json();
+                if(res.ok) {
+                    alert(data.message);
+                    loadJobs();
+                } else {
+                    alert(data.error);
+                }
+            } catch(e) { alert("Fehler."); }
+        }
+
+        // --- TIMER LOGIC ---
+        function startCooldownTimer(seconds) {
+            const display = document.getElementById('cooldown-display');
+            const btn = document.getElementById('btn-work');
+            
+            clearInterval(cooldownInterval);
+            let left = seconds;
+
+            const update = () => {
+                if (left <= 0) {
+                    clearInterval(cooldownInterval);
+                    display.innerText = "";
+                    btn.disabled = false;
+                    btn.innerText = "ARBEITEN";
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerText = "PAUSE";
+                
+                // Format MM:SS
+                const m = Math.floor(left / 60).toString().padStart(2, '0');
+                const s = (left % 60).toString().padStart(2, '0');
+                display.innerText = `Nächste Schicht in: ${m}:${s}`;
+                
+                left--;
+            };
+
+            update(); // Sofort einmal ausführen
+            cooldownInterval = setInterval(update, 1000);
+        }
+
+        function showMoneyPopup(element, text) {
+            // Zeigt aber nur an, dass es geklappt hat, Betrag laden wir neu
+            // Einfachheitshalber laden wir die Seite neu (loadJobs), daher ist Popup kurz.
+        }
+
+    </script>
+
+</body></html>

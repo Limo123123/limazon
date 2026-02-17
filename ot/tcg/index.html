@@ -1,0 +1,1011 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUMAN GRADES</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .canvas-container {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Branding Colors */
+        .brand-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        /* Canvas Responsive Fix */
+        #cert-canvas {
+            max-width: 100%;
+            height: auto !important;
+            /* Wichtig für Aspect Ratio */
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+    <link href="/assets_offline/1771357354813_dl_asset_famil.css" rel="stylesheet">
+</head>
+
+<body class="text-slate-800 bg-slate-100 min-h-screen flex flex-col font-sans">
+
+    <nav class="brand-gradient text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showDashboard()">
+                <div class="w-10 h-10 bg-white text-slate-900 rounded-lg flex items-center justify-center text-xl font-bold shadow">
+                    HG</div>
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-tighter">HUMAN GRADES</h1>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Universal Rating System</p>
+                </div>
+            </div>
+
+            <div id="nav-auth" class="space-x-4 hidden flex items-center">
+                <span id="user-display" class="font-semibold bg-white/10 px-3 py-1 rounded text-sm border border-white/10"></span>
+                <button onclick="logout()" class="text-sm text-slate-300 hover:text-white font-medium">Logout</button>
+            </div>
+            <div id="nav-login">
+                <button onclick="showLogin()" class="bg-white text-slate-900 px-5 py-2 rounded-full font-bold shadow hover:bg-slate-100 transition text-sm">Login</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 mt-6 max-w-7xl flex-grow">
+
+        <div id="view-login" class="max-w-md mx-auto bg-white p-10 rounded-3xl shadow-xl hidden mt-10 border border-slate-100 fade-in">
+            <h2 class="text-3xl font-extrabold mb-2 text-center text-slate-900">Identifizierung</h2>
+            <p class="text-center text-slate-500 mb-8">Zugang nur mit verifizierter LimoID.</p>
+            <form onsubmit="login(event)">
+                <div class="mb-5">
+                    <label class="block text-slate-500 text-xs font-bold mb-2 uppercase tracking-wider">Limo ID</label>
+                    <input type="text" id="login-user" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-800 transition" required="">
+                </div>
+                <div class="mb-8">
+                    <label class="block text-slate-500 text-xs font-bold mb-2 uppercase tracking-wider">Passcode</label>
+                    <input type="password" id="login-pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-800 transition" required="">
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="showDashboard()" class="flex-1 bg-slate-100 text-slate-600 p-4 rounded-xl font-bold hover:bg-slate-200 transition">Als
+                        Gast weiter</button>
+                    <button type="submit" class="flex-1 bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-black transition shadow-lg">Verbinden</button>
+                </div>
+            </form>
+            <p id="login-error" class="text-red-500 mt-6 text-center text-sm font-medium"></p>
+        </div>
+
+        <div id="view-dashboard" class="hidden fade-in">
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 sticky top-20 z-40">
+                <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
+
+                    <div id="category-tabs" class="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 scrollbar-hide">
+                    </div>
+
+                    <div class="flex gap-3 w-full lg:w-auto">
+                        <input type="text" id="search-input" oninput="handleSearch()" placeholder="Namen suchen..." class="w-full lg:w-64 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-slate-900 shadow-inner bg-slate-50">
+
+                        <button onclick="generateCategoryCertificate()" class="bg-amber-400 text-slate-900 px-4 py-2 rounded-lg hover:bg-amber-500 transition shadow font-bold text-sm whitespace-nowrap flex items-center gap-2">
+                            <span>📜</span> <span id="btn-group-cert-text">Gesamt-Zeugnis</span>
+                        </button>
+
+                        <button id="admin-btn" onclick="showAdminPanel()" class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-900 transition hidden shadow">⚙️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="human-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            </div>
+
+            <div id="pagination-controls" class="flex justify-center items-center gap-4 hidden bg-white p-3 rounded-xl shadow-sm border border-slate-200 w-fit mx-auto mt-8">
+                <button onclick="changePage(-1)" id="btn-prev" class="text-slate-500 hover:text-slate-900 disabled:opacity-30 font-bold px-4 py-2 rounded hover:bg-slate-100 transition">←
+                    Zurück</button>
+                <span class="text-sm font-bold text-slate-700">Seite <span id="current-page-disp">1</span> / <span id="total-pages">1</span></span>
+                <button onclick="changePage(1)" id="btn-next" class="text-slate-500 hover:text-slate-900 disabled:opacity-30 font-bold px-4 py-2 rounded hover:bg-slate-100 transition">Vor
+                    →</button>
+            </div>
+        </div>
+
+        <div id="view-rate" class="hidden max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-2xl fade-in mt-4 border border-slate-100">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-extrabold text-slate-900">Bewertung</h2>
+                <button onclick="showDashboard()" class="text-sm font-bold text-slate-400 hover:text-slate-900 transition">ABBRECHEN</button>
+            </div>
+
+            <div class="text-center mb-8 bg-slate-50 p-6 rounded-xl border border-slate-100">
+                <div class="w-20 h-20 bg-slate-900 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-3 shadow-lg ring-4 ring-white" id="rate-avatar"></div>
+                <h3 class="text-2xl font-bold text-slate-800" id="rate-human-name"></h3>
+                <span class="text-xs font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded uppercase tracking-widest mt-2 inline-block" id="rate-human-cat"></span>
+            </div>
+
+            <form id="rating-form" onsubmit="submitRating(event)">
+                <input type="hidden" id="rate-human-id">
+                <div class="space-y-3" id="rating-inputs"></div>
+
+                <button type="submit" class="mt-8 w-full bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-black transition shadow-lg text-lg">Bewertung
+                    speichern</button>
+            </form>
+        </div>
+
+        <div id="view-certificate" class="hidden flex flex-col items-center fade-in bg-slate-800/50 p-4 rounded-xl min-h-screen fixed inset-0 z-50 overflow-y-auto">
+            <div class="bg-white p-6 rounded-xl shadow-2xl max-w-4xl w-full my-10">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Zertifikat erstellt</h2>
+                    <button onclick="showDashboard()" class="text-slate-500 hover:text-slate-800 font-bold px-3 py-1 rounded hover:bg-slate-100 transition">✕
+                        Schließen</button>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1 flex justify-center bg-slate-100 p-4 rounded-lg border border-slate-200">
+                        <canvas id="cert-canvas" width="595" height="842" class="bg-white shadow-md max-w-full h-auto"></canvas>
+                    </div>
+
+                    <div class="w-full md:w-64 flex flex-col gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800">
+                            <strong>Fertig!</strong><br>
+                            Wähle dein Format:
+                        </div>
+
+                        <button onclick="downloadPNG()" class="bg-indigo-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-indigo-700 transition shadow flex items-center justify-center gap-2">
+                            <span>🖼️</span> PNG Bild
+                        </button>
+
+                        <button onclick="downloadSVG()" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-bold hover:bg-emerald-700 transition shadow flex items-center justify-center gap-2">
+                            <span>⚡</span> SVG Vektor
+                        </button>
+
+                        <hr class="border-slate-200 my-2">
+                        <p class="text-xs text-slate-400 text-center">Unterschrieben von der Limo Organisation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-admin" class="hidden bg-white p-6 rounded-2xl shadow-xl min-h-[600px] border border-slate-200 fade-in">
+            <div class="flex justify-between mb-6 border-b pb-4">
+                <h2 class="text-2xl font-extrabold text-slate-900">System Verwaltung</h2>
+                <button onclick="showDashboard()" class="text-slate-400 font-bold hover:text-slate-900 bg-slate-100 px-3 py-1 rounded">✕
+                    Schließen</button>
+            </div>
+
+            <div class="flex gap-4 mb-6 border-b pb-4 overflow-x-auto">
+                <button onclick="switchAdminView('humans')" id="adm-btn-humans" class="font-bold text-slate-900 border-b-2 border-slate-900 pb-1 whitespace-nowrap">Menschen</button>
+                <button onclick="switchAdminView('moderation')" id="adm-btn-moderation" class="font-bold text-slate-500 hover:text-slate-900 pb-1 text-red-600 whitespace-nowrap">🛡️
+                    Moderation</button>
+                <button onclick="switchAdminView('criteria')" id="adm-btn-criteria" class="font-bold text-slate-500 hover:text-slate-900 pb-1 whitespace-nowrap">Kriterien</button>
+                <button onclick="switchAdminView('categories')" id="adm-btn-categories" class="font-bold text-slate-500 hover:text-slate-900 pb-1 whitespace-nowrap">Kategorien</button>
+                <button onclick="resetDefaults()" class="font-bold text-red-500 hover:text-red-700 ml-auto whitespace-nowrap text-xs border border-red-200 px-3 py-1 rounded bg-red-50">⚠️
+                    DB Reset</button>
+            </div>
+
+            <div id="admin-content" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks';
+
+        let currentUser = null;
+        let humansData = [];
+        let criteriaData = [];
+        let categoriesData = [];
+
+        // State
+        let currentPage = 1;
+        const itemsPerPage = 12;
+        let activeCategory = "all";
+        let currentFilter = "";
+        let currentAdminView = "humans";
+        let adminRatersCache = [];
+
+        // Export State
+        let currentSvgContent = "";
+        let currentCertFileName = "Zeugnis";
+
+        // *** HELPER FUNCTIONS ***
+        function showView(id) {
+            ['view-login', 'view-dashboard', 'view-rate', 'view-certificate', 'view-admin'].forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(id);
+            if (target) target.classList.remove('hidden');
+        }
+
+        function showDashboard() {
+            showView('view-dashboard');
+            renderHumans();
+        }
+
+        function showLogin() {
+            showView('view-login');
+        }
+
+        function updateUI(isLoggedIn) {
+            const navLogin = document.getElementById('nav-login');
+            const navAuth = document.getElementById('nav-auth');
+            const viewLogin = document.getElementById('view-login');
+            const adminBtn = document.getElementById('admin-btn');
+            const userDisplay = document.getElementById('user-display');
+
+            if (isLoggedIn) {
+                navLogin.classList.add('hidden');
+                navAuth.classList.remove('hidden');
+                viewLogin.classList.add('hidden');
+                userDisplay.innerText = currentUser.username;
+                if (currentUser.isAdmin) adminBtn.classList.remove('hidden');
+
+                // Nur zum Dashboard wechseln, wenn wir nicht schon woanders sind (z.B. Admin)
+                if (document.getElementById('view-dashboard').classList.contains('hidden') &&
+                    document.getElementById('view-admin').classList.contains('hidden')) {
+                    showDashboard();
+                }
+            } else {
+                navLogin.classList.remove('hidden');
+                navAuth.classList.add('hidden');
+                adminBtn.classList.add('hidden');
+                // Wenn wir auf view-login sind, bleiben wir da. Sonst Dashboard (Public Mode)
+                if (!document.getElementById('view-login').classList.contains('hidden')) {
+                    // Do nothing
+                } else {
+                    showDashboard();
+                }
+            }
+        }
+
+        // *** AUTHENTICATION ***
+        async function checkAuth() {
+            try {
+                const res = await fetch(API_URL + '/api/auth/me', { credentials: 'include' });
+                if (res.ok) {
+                    currentUser = await res.json();
+                    updateUI(true);
+                } else {
+                    currentUser = null;
+                    updateUI(false);
+                }
+                // Daten laden (immer)
+                await loadMetaData();
+                loadHumans();
+            } catch (e) {
+                console.error("Auth Check failed", e);
+                currentUser = null;
+                updateUI(false);
+                // Fallback Load
+                loadMetaData();
+                loadHumans();
+            }
+        }
+
+        async function login(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-user').value;
+            const p = document.getElementById('login-pass').value;
+            const err = document.getElementById('login-error');
+
+            try {
+                const res = await fetch(API_URL + '/api/auth/login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p }), credentials: 'include'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    currentUser = data.user;
+                    err.innerText = "";
+                    updateUI(true);
+                    await loadMetaData();
+                    loadHumans();
+                } else {
+                    err.innerText = "Zugriff verweigert.";
+                }
+            } catch (e) { err.innerText = "Netzwerkfehler."; }
+        }
+
+        async function logout() {
+            try { await fetch(API_URL + '/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch (e) { }
+            window.location.reload();
+        }
+
+        // *** DATA LOADING ***
+        async function loadMetaData() {
+            try {
+                const res = await fetch(API_URL + '/api/human/meta', { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    categoriesData = data.categories;
+                    criteriaData = data.criteria;
+                    console.log("Meta geladen:", categoriesData.length, "Cats", criteriaData.length, "Crits");
+                    renderCategoryTabs();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadHumans() {
+            try {
+                const res = await fetch(API_URL + '/api/human/list', { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    humansData = data.humans;
+                    console.log("Humans geladen:", humansData.length);
+                    renderHumans();
+                    // Admin Refresh
+                    if (!document.getElementById('view-admin').classList.contains('hidden')) {
+                        if (currentAdminView === 'humans') renderAdminHumans();
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function resetDefaults() {
+            if (!confirm("ACHTUNG: Dies löscht ALLE Kategorien und Kriterien und lädt die Standard-Daten neu!")) return;
+            const res = await fetch(API_URL + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
+            if (res.ok) { alert("Reset erfolgreich. Seite wird neu geladen."); window.location.reload(); }
+        }
+
+        // *** DASHBOARD LOGIC ***
+        function renderCategoryTabs() {
+            const container = document.getElementById('category-tabs');
+            let html = `<button onclick="filterCategory('all')" class="cat-btn ${activeCategory === 'all' ? 'bg-slate-900 text-white shadow-lg' : 'bg-white text-slate-600 hover:bg-slate-100'} px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition whitespace-nowrap border border-slate-200">Alle</button>`;
+
+            categoriesData.forEach(c => {
+                const isActive = activeCategory === c.id;
+                const cls = isActive ? 'bg-slate-900 text-white shadow-lg' : 'bg-white text-slate-600 hover:bg-slate-100';
+                html += `<button onclick="filterCategory('${c.id}')" class="cat-btn ${cls} px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition whitespace-nowrap border border-slate-200">${c.label}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function filterCategory(catId) {
+            activeCategory = catId;
+            currentPage = 1;
+            renderCategoryTabs();
+            renderHumans();
+
+            let label = "Gesamt-Zeugnis";
+            if (catId !== 'all') {
+                const catObj = categoriesData.find(c => c.id === catId);
+                if (catObj) label = catObj.label + " Gesamt-Zeugnis";
+            }
+            document.getElementById('btn-group-cert-text').innerText = label;
+        }
+
+        function handleSearch() {
+            currentFilter = document.getElementById('search-input').value.toLowerCase();
+            currentPage = 1;
+            renderHumans();
+        }
+
+        function renderHumans() {
+            const list = document.getElementById('human-list');
+            list.innerHTML = '';
+
+            let filtered = humansData.filter(h => {
+                const matchCat = activeCategory === 'all' || h.categoryId === activeCategory;
+                const matchSearch = h.name.toLowerCase().includes(currentFilter);
+                return matchCat && matchSearch;
+            });
+
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            document.getElementById('current-page-disp').innerText = currentPage;
+            document.getElementById('total-pages').innerText = totalPages;
+            document.getElementById('pagination-controls').classList.toggle('hidden', filtered.length === 0);
+
+            const pageItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+            if (pageItems.length === 0) {
+                list.innerHTML = `<div class="col-span-full text-center py-20 text-slate-400 font-bold flex flex-col items-center gap-2"><span class="text-4xl">🔍</span><br>Keine Personen gefunden.</div>`;
+                return;
+            }
+
+            pageItems.forEach(h => {
+                const avg = h.totalAverage ? h.totalAverage.toFixed(2) : '-';
+                const catObj = categoriesData.find(c => c.id === h.categoryId);
+                const catLabel = catObj ? catObj.label : 'Unbekannt';
+
+                let catColor = 'text-slate-500';
+                if (h.categoryId === 'lehrer') catColor = 'text-indigo-500';
+                if (h.categoryId === 'politiker') catColor = 'text-amber-600';
+
+                // Guest Logic
+                const rateAction = currentUser ? `openRate('${h._id}')` : "showLogin()";
+                const rateBtnText = currentUser ? "BEWERTEN" : "LOGIN";
+
+                list.innerHTML += `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-300 transition group flex flex-col h-full hover:shadow-lg relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-20 h-20 bg-slate-50 rounded-bl-full -mr-10 -mt-10 transition group-hover:bg-slate-100"></div>
+                        <div class="flex justify-between items-start mb-4 relative z-10">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-widest ${catColor} mb-1 block">${catLabel}</span>
+                                <h3 class="text-xl font-bold text-slate-900 group-hover:text-amber-500 transition line-clamp-1" title="${h.name}">${h.name}</h3>
+                            </div>
+                            <div class="bg-slate-100 text-slate-900 font-bold px-3 py-1 rounded-lg text-sm border border-slate-200">${avg}</div>
+                        </div>
+                        <div class="flex-grow relative z-10">
+                            <p class="text-xs text-slate-400 font-bold flex items-center gap-1"><span class="text-slate-300">●</span> ${h.ratingCount || 0} Bewertungen</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-6 relative z-10">
+                            <button onclick="${rateAction}" class="bg-slate-900 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-black transition shadow-md">${rateBtnText}</button>
+                            <button onclick="generateCertificate('${h._id}')" class="bg-white border border-slate-200 text-slate-700 py-2.5 rounded-lg text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 transition">ZEUGNIS</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function changePage(d) { currentPage += d; renderHumans(); }
+
+        // *** RATING ***
+        function openRate(id) {
+            if (!currentUser) { showLogin(); return; }
+            const h = humansData.find(x => x._id === id); if (!h) return;
+
+            document.getElementById('rate-human-name').innerText = h.name;
+            document.getElementById('rate-human-id').value = id;
+            document.getElementById('rate-avatar').innerText = h.name.substring(0, 2).toUpperCase();
+
+            const catObj = categoriesData.find(c => c.id === h.categoryId);
+            document.getElementById('rate-human-cat').innerText = catObj ? catObj.label : '';
+
+            const container = document.getElementById('rating-inputs');
+            container.innerHTML = '';
+
+            const myCriteria = criteriaData.filter(c => (h.criteriaIds || []).includes(c.id));
+            if (myCriteria.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-400 py-4">Keine Kriterien für diese Person definiert.</p>';
+            }
+
+            myCriteria.forEach(crit => {
+                // Radio buttons 0-6
+                let radios = `<label class="cursor-pointer mr-3 opacity-60 hover:opacity-100 transition group flex flex-col items-center"><input type="radio" name="${crit.id}" value="0" class="sr-only peer" checked><span class="block w-9 h-9 rounded-lg bg-slate-200 text-slate-500 font-bold flex items-center justify-center peer-checked:bg-slate-300 peer-checked:ring-2 peer-checked:ring-slate-300">✕</span></label>`;
+
+                for (let n = 1; n <= 6; n++) {
+                    radios += `<label class="cursor-pointer"><input type="radio" name="${crit.id}" value="${n}" class="sr-only peer"><span class="block w-9 h-9 rounded-lg bg-white border border-slate-200 text-slate-900 font-bold flex items-center justify-center peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 hover:border-slate-400 transition shadow-sm">${n}</span></label>`;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-slate-50 p-4 rounded-xl flex flex-col md:flex-row justify-between items-center border border-slate-200 gap-3">
+                        <span class="font-bold text-slate-700 w-full md:w-1/3 text-center md:text-left">${crit.label}</span>
+                        <div class="flex gap-1">${radios}</div>
+                    </div>`;
+            });
+
+            showView('view-rate');
+        }
+
+        async function submitRating(e) {
+            e.preventDefault();
+            const hId = document.getElementById('rate-human-id').value;
+            const grades = {};
+            let hasGrade = false;
+            document.querySelectorAll('#rating-inputs input:checked').forEach(i => {
+                const val = parseInt(i.value);
+                if (val > 0) { grades[i.name] = val; hasGrade = true; }
+            });
+
+            if (!hasGrade) return alert("Bitte mindestens eine Note vergeben.");
+
+            const res = await fetch(API_URL + '/api/human/rate', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ humanId: hId, grades }), credentials: 'include'
+            });
+            if (res.ok) { alert("Gespeichert."); showDashboard(); loadHumans(); }
+            else alert("Fehler beim Speichern.");
+        }
+
+        // *** ADMIN PANEL ***
+        function showAdminPanel() { showView('view-admin'); switchAdminView('humans'); }
+
+        function switchAdminView(view) {
+            currentAdminView = view;
+            ['humans', 'criteria', 'categories', 'moderation'].forEach(v => {
+                const btn = document.getElementById('adm-btn-' + v);
+                if (btn) {
+                    if (v === view) btn.className = "font-bold text-slate-900 border-b-2 border-slate-900 pb-1 transition";
+                    else btn.className = "font-bold text-slate-500 hover:text-slate-900 pb-1 transition";
+                }
+            });
+            const content = document.getElementById('admin-content');
+            if (view === 'moderation') content.className = "block";
+            else content.className = "grid grid-cols-1 lg:grid-cols-3 gap-8";
+
+            refreshAdminView();
+        }
+
+        function refreshAdminView() {
+            if (currentAdminView === 'humans') renderAdminHumans();
+            else if (currentAdminView === 'criteria') renderAdminCriteria();
+            else if (currentAdminView === 'categories') renderAdminCategories();
+            else if (currentAdminView === 'moderation') renderAdminModeration();
+        }
+
+        // --- Admin: Humans ---
+        function renderAdminHumans() {
+            const c = document.getElementById('admin-content');
+            // Formular
+            const options = categoriesData.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+
+            const humansList = humansData.map(h => {
+                const catLabel = categoriesData.find(c => c.id === h.categoryId)?.label || h.categoryId;
+                return `
+                <div class="flex justify-between items-center bg-white p-4 border rounded-xl hover:border-indigo-300 transition group shadow-sm">
+                    <div>
+                        <span class="font-bold text-slate-800 block">${h.name}</span>
+                        <span class="text-xs text-slate-400 uppercase tracking-wider">${catLabel}</span>
+                    </div>
+                    <div class="flex gap-2 opacity-100 sm:opacity-60 group-hover:opacity-100 transition">
+                        <button onclick="startEditHuman('${h._id}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-bold">Bearbeiten</button>
+                        <button onclick="deleteHuman('${h._id}')" class="text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-bold">Löschen</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            c.innerHTML = `
+                <div class="lg:col-span-1 bg-slate-50 p-5 rounded-xl h-fit border border-slate-200 sticky top-0">
+                    <h3 class="font-bold mb-4 text-slate-700" id="form-title">Person hinzufügen</h3>
+                    <input type="hidden" id="edit-human-id">
+                    <div class="mb-3"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Name</label><input type="text" id="new-human-name" placeholder="Name" class="w-full p-3 border rounded-lg focus:ring-slate-900 bg-white"></div>
+                    <div class="mb-4"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Kategorie</label><select id="new-human-cat" class="w-full p-3 border rounded-lg bg-white" onchange="renderNewHumanCriteria()"><option value="">Bitte wählen...</option>${options}</select></div>
+                    <div class="mb-2 font-bold text-xs text-slate-400 uppercase tracking-wide">Kriterien:</div>
+                    <div id="criteria-select" class="max-h-48 overflow-y-auto mb-4 bg-white p-3 rounded-lg border border-slate-200 text-sm space-y-1 shadow-inner"><div class="text-slate-400 italic text-center py-2">Erst Kategorie wählen</div></div>
+                    <div class="flex gap-2">
+                        <button onclick="saveHuman()" id="btn-save-human" class="flex-1 bg-slate-900 text-white p-3 rounded-lg font-bold hover:bg-black transition">Erstellen</button>
+                        <button onclick="resetHumanForm()" id="btn-cancel-human" class="hidden px-3 py-3 rounded-lg font-bold text-slate-500 hover:bg-slate-200 transition">✕</button>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 space-y-2 max-h-[600px] overflow-y-auto pr-1">${humansList}</div>
+            `;
+        }
+
+        function renderNewHumanCriteria(preIds = []) {
+            const cat = document.getElementById('new-human-cat').value;
+            const div = document.getElementById('criteria-select');
+            div.innerHTML = '';
+
+            if (!cat) { div.innerHTML = '<div class="text-slate-400 italic text-center py-2">Erst Kategorie wählen</div>'; return; }
+
+            const relevant = criteriaData.filter(c => c.categoryId === cat);
+            if (relevant.length === 0) { div.innerHTML = '<div class="text-slate-400 italic">Keine Kriterien.</div>'; return; }
+
+            relevant.sort((a, b) => (a.type === 'main' ? -1 : 1));
+
+            let html = '';
+            relevant.forEach(c => {
+                const isChecked = preIds.length > 0 ? preIds.includes(c.id) : true;
+                const badge = c.type === 'main' ? '<span class="ml-auto text-[10px] bg-slate-100 text-slate-500 px-1.5 rounded">Haupt</span>' : '';
+                const styleClass = c.type === 'main' ? 'font-bold text-slate-700' : 'text-slate-600';
+
+                html += `<label class="flex items-center gap-3 py-1.5 cursor-pointer hover:bg-slate-50 px-1 rounded transition"><input type="checkbox" value="${c.id}" class="human-crit-check w-4 h-4 text-slate-900 rounded focus:ring-slate-900 border-gray-300" ${isChecked ? 'checked' : ''}> <span class="${styleClass}">${c.label}</span> ${badge}</label>`;
+            });
+            div.innerHTML = html;
+        }
+
+        function startEditHuman(id) {
+            const h = humansData.find(x => x._id === id); if (!h) return;
+            document.getElementById('edit-human-id').value = h._id;
+            document.getElementById('new-human-name').value = h.name;
+            document.getElementById('new-human-cat').value = h.categoryId;
+
+            document.getElementById('form-title').innerText = "Person bearbeiten";
+            const btn = document.getElementById('btn-save-human');
+            btn.innerText = "Speichern";
+            document.getElementById('btn-cancel-human').classList.remove('hidden');
+
+            renderNewHumanCriteria(h.criteriaIds || []);
+        }
+
+        function resetHumanForm() {
+            document.getElementById('edit-human-id').value = '';
+            document.getElementById('new-human-name').value = '';
+            document.getElementById('new-human-cat').value = '';
+            document.getElementById('criteria-select').innerHTML = '<div class="text-slate-400 italic text-center py-2">Erst Kategorie wählen</div>';
+            document.getElementById('form-title').innerText = "Person hinzufügen";
+            document.getElementById('btn-save-human').innerText = "Erstellen";
+            document.getElementById('btn-cancel-human').classList.add('hidden');
+        }
+
+        async function saveHuman() {
+            const id = document.getElementById('edit-human-id').value;
+            const name = document.getElementById('new-human-name').value;
+            const categoryId = document.getElementById('new-human-cat').value;
+            const criteriaIds = Array.from(document.querySelectorAll('.human-crit-check:checked')).map(c => c.value);
+
+            if (!name.trim() || !categoryId) return alert("Daten fehlen.");
+
+            let url = API_URL + '/api/human/admin/humans';
+            let method = 'POST';
+            if (id) { url += '/' + id; method = 'PUT'; }
+
+            try {
+                const res = await fetch(url, {
+                    method: method, headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, categoryId, criteriaIds }), credentials: 'include'
+                });
+                if (res.ok) { resetHumanForm(); loadHumans(); renderAdminHumans(); }
+                else { alert("Fehler beim Speichern."); }
+            } catch (e) { alert("Serverfehler."); }
+        }
+
+        async function deleteHuman(id) {
+            if (!confirm("Löschen?")) return;
+            const res = await fetch(API_URL + '/api/human/admin/humans/' + id, { method: 'DELETE', credentials: 'include' });
+            if (res.ok) { loadHumans(); renderAdminHumans(); }
+        }
+
+        // --- Admin: Criteria/Cats ---
+        function renderAdminCriteria() {
+            const c = document.getElementById('admin-content');
+            const catOpts = categoriesData.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+            const list = criteriaData.map(c => `<div class="bg-white p-3 border rounded flex justify-between"><span>${c.label} <span class="text-xs text-slate-400 uppercase ml-2">${c.categoryId}</span></span></div>`).join('');
+
+            c.innerHTML = `
+                <div class="lg:col-span-1 bg-slate-50 p-4 rounded-xl h-fit border border-slate-200">
+                    <h3 class="font-bold mb-4">Neues Kriterium</h3>
+                    <input type="text" id="new-crit-label" placeholder="Bezeichnung" class="w-full p-2 border rounded mb-2">
+                    <select id="new-crit-cat" class="w-full p-2 border rounded mb-2 bg-white">${catOpts}</select>
+                    <select id="new-crit-type" class="w-full p-2 border rounded mb-4 bg-white"><option value="main">Hauptkriterium</option><option value="sec">Nebenkriterium</option></select>
+                    <button onclick="addCriteria()" class="w-full bg-slate-900 text-white p-2 rounded font-bold">Erstellen</button>
+                </div>
+                <div class="lg:col-span-2 space-y-2 max-h-96 overflow-y-auto">${list}</div>`;
+        }
+
+        async function addCriteria() {
+            const label = document.getElementById('new-crit-label').value;
+            const categoryId = document.getElementById('new-crit-cat').value;
+            const type = document.getElementById('new-crit-type').value;
+            const res = await fetch(API_URL + '/api/human/admin/criteria', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ label, categoryId, type }), credentials: 'include' });
+            if (res.ok) { await loadMetaData(); renderAdminCriteria(); }
+        }
+
+        function renderAdminCategories() {
+            const c = document.getElementById('admin-content');
+            const list = categoriesData.map(c => `<div class="bg-white p-3 border rounded font-bold">${c.label}</div>`).join('');
+            c.innerHTML = `
+                <div class="lg:col-span-1 bg-slate-50 p-4 rounded-xl h-fit">
+                    <h3 class="font-bold mb-4">Neue Kategorie</h3>
+                    <input type="text" id="new-cat-label" placeholder="Name" class="w-full p-2 border rounded mb-4">
+                    <button onclick="addCategory()" class="w-full bg-slate-900 text-white p-2 rounded font-bold">Erstellen</button>
+                </div>
+                <div class="lg:col-span-2 space-y-2">${list}</div>`;
+        }
+
+        async function addCategory() {
+            const label = document.getElementById('new-cat-label').value;
+            const res = await fetch(API_URL + '/api/human/admin/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ label }), credentials: 'include' });
+            if (res.ok) { await loadMetaData(); renderAdminCategories(); renderCategoryTabs(); }
+        }
+
+        // --- Admin: Moderation ---
+        async function renderAdminModeration() {
+            const c = document.getElementById('admin-content');
+            c.innerHTML = '<div class="text-center py-10">Lade User...</div>';
+            try {
+                const res = await fetch(API_URL + '/api/human/admin/raters', { credentials: 'include' });
+                if (res.ok) { const data = await res.json(); adminRatersCache = data.raters; renderModerationList(); }
+                else c.innerHTML = '<p class="text-red-500">Fehler beim Laden.</p>';
+            } catch (e) { c.innerHTML = '<p class="text-red-500">Netzwerkfehler.</p>'; }
+        }
+
+        function renderModerationList(term = "") {
+            const c = document.getElementById('admin-content');
+            const filtered = adminRatersCache.filter(r => (r.username || "").toLowerCase().includes(term.toLowerCase()));
+            let html = `<div class="mb-6 flex gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200"><input type="text" oninput="renderModerationList(this.value)" placeholder="User suchen..." class="w-full lg:w-64 p-2 border rounded bg-white" value="${term}"><div class="text-sm text-slate-500 flex items-center">Zeige ${filtered.length} User</div></div><div class="space-y-2 max-h-[600px] overflow-y-auto">`;
+
+            if (filtered.length === 0) html += '<div class="text-center text-slate-400 py-10">Keine User gefunden.</div>';
+            else {
+                filtered.forEach(r => {
+                    html += `<div class="flex justify-between items-center bg-white p-4 border rounded-xl hover:border-indigo-300 transition cursor-pointer group" onclick="showUserRatings('${r._id}', '${r.username}')"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold">${(r.username || "?").substring(0, 1).toUpperCase()}</div><div><span class="font-bold text-slate-800 block group-hover:text-indigo-600 transition">${r.username || "Unbekannt"}</span><span class="text-xs text-slate-400">Zuletzt aktiv: ${new Date(r.lastActive).toLocaleDateString()}</span></div></div><div class="flex items-center gap-4"><span class="text-sm font-bold bg-slate-100 px-3 py-1 rounded-full text-slate-600">${r.ratingCount} Bewertungen</span><span class="text-slate-300 group-hover:text-indigo-500">&rarr;</span></div></div>`;
+                });
+            }
+            c.innerHTML = html + '</div>';
+        }
+
+        async function showUserRatings(uid, uname) {
+            const c = document.getElementById('admin-content');
+            c.innerHTML = '<div class="text-center py-10">Lade Details...</div>';
+            try {
+                const res = await fetch(API_URL + '/api/human/admin/raters/' + uid, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    let html = `<button onclick="renderAdminModeration()" class="mb-4 text-indigo-600 font-bold flex items-center gap-1 hover:underline">&larr; Zurück</button><h3 class="text-xl font-bold mb-6 border-b pb-2">Bewertungen von <span class="text-indigo-600">${uname}</span></h3><div class="space-y-3 max-h-[600px] overflow-y-auto">`;
+                    if (data.ratings.length === 0) html += '<p>Keine Bewertungen.</p>';
+                    data.ratings.forEach(r => {
+                        let gradesText = '<div class="flex flex-wrap gap-2 mt-2">';
+                        for (const [critId, val] of Object.entries(r.grades)) {
+                            const critLabel = criteriaData.find(cr => cr.id === critId)?.label || critId;
+                            let color = val < 2.5 ? 'bg-green-100 text-green-700' : (val > 4.5 ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700');
+                            gradesText += `<span class="text-xs px-2 py-1 rounded ${color} border border-black/5"><b>${critLabel}:</b> ${val}</span>`;
+                        }
+                        html += `<div class="bg-white p-4 border rounded-xl shadow-sm hover:shadow-md transition"><div class="flex justify-between items-start"><div><span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Bewertete Person</span><h4 class="text-lg font-bold text-slate-800">${r.humanName}</h4><span class="text-xs text-slate-400">${new Date(r.timestamp).toLocaleString()}</span></div><button onclick="deleteUserRating('${r._id}', '${uid}', '${uname}')" class="text-red-500 hover:bg-red-50 px-3 py-1 rounded text-xs font-bold border border-red-100">Löschen 🗑️</button></div>${gradesText}</div></div>`;
+                    });
+                    c.innerHTML = html + '</div>';
+                }
+            } catch (e) { alert("Fehler."); renderAdminModeration(); }
+        }
+
+        async function deleteUserRating(rid, uid, uname) {
+            if (!confirm("Löschen?")) return;
+            const res = await fetch(API_URL + '/api/human/admin/ratings/' + rid, { method: 'DELETE', credentials: 'include' });
+            if (res.ok) showUserRatings(uid, uname);
+        }
+
+        // *** CERTIFICATE GENERATOR ***
+        function generateCertificate(id) {
+            const h = humansData.find(x => x._id === id);
+            const catLabel = categoriesData.find(c => c.id === h.categoryId)?.label || "Mensch";
+            renderCert(h, catLabel + " ZEUGNIS", false);
+        }
+
+        function generateCategoryCertificate() {
+            const targetCat = activeCategory === 'all' ? null : activeCategory;
+            const humansInCat = targetCat ? humansData.filter(h => h.categoryId === targetCat) : humansData;
+            if (humansInCat.length === 0) return alert("Keine Daten.");
+
+            const agg = {}; const counts = {};
+            humansInCat.forEach(h => {
+                if (!h.averages) return;
+                Object.keys(h.averages).forEach(cId => {
+                    if (!agg[cId]) { agg[cId] = 0; counts[cId] = 0; }
+                    agg[cId] += h.averages[cId]; counts[cId]++;
+                });
+            });
+            const finalAvgs = {}; Object.keys(agg).forEach(cId => { if (counts[cId] > 0) finalAvgs[cId] = agg[cId] / counts[cId]; });
+            const catLabel = targetCat ? (categoriesData.find(c => c.id === targetCat)?.label + " GESAMT-ZEUGNIS") : "GLOBALES ZEUGNIS";
+            const fakeObj = { _id: 'global', categoryId: targetCat || 'global', name: targetCat ? "Alle " + categoriesData.find(c => c.id === targetCat).label : "Alle Menschen", averages: finalAvgs, criteriaIds: Object.keys(finalAvgs) };
+            renderCert(fakeObj, catLabel.toUpperCase(), true);
+        }
+
+        function renderCert(data, title, isGlobal) {
+            currentCertFileName = data.name.replace(/[^a-z0-9]/gi, '_');
+
+            const cvs = document.getElementById('cert-canvas');
+            const ctx = cvs.getContext('2d');
+
+            // --- 1. DATEN VORBEREITEN ---
+            const avgs = data.averages || {};
+            const relCriteria = criteriaData.filter(c => (data.criteriaIds || []).includes(c.id));
+            relCriteria.sort((a,b) => (a.type === 'main' ? -1 : 1));
+
+            const isTeacher = data.categoryId === 'lehrer';
+            
+            // --- 2. LAYOUT BERECHNUNG (VOR DEM ZEICHNEN) ---
+            const rowHeight = 35;
+            const spacerHeight = 40;
+            let yContentEnd = 290; // Start Y für Inhalt
+
+            // Wir simulieren das Layout kurz, um die End-Y-Position zu finden
+            if (isTeacher) {
+                const mainCrits = relCriteria.filter(c => c.type === 'main');
+                const secCrits = relCriteria.filter(c => c.type !== 'main');
+                
+                // Hauptfächer (2 Spalten -> halbe Höhe)
+                yContentEnd += Math.ceil(mainCrits.length / 2) * rowHeight;
+
+                if (secCrits.length > 0) {
+                    yContentEnd += spacerHeight; // Header Abstand
+                    yContentEnd += secCrits.length * rowHeight;
+                }
+            } else {
+                let lastType = 'main';
+                relCriteria.forEach(c => {
+                    if (c.type !== lastType) {
+                        yContentEnd += spacerHeight;
+                        lastType = c.type;
+                    }
+                    yContentEnd += rowHeight;
+                });
+            }
+
+            // Footer Position bestimmen (Mindestens bei 760px, sonst unter dem Inhalt)
+            const yFooter = Math.max(760, yContentEnd + 80);
+            
+            // Gesamthöhe bestimmen (Footer Position + Platz für Text & Rand unten)
+            // A4 Standard ist 842px. Wir verlängern, wenn nötig.
+            const h = Math.max(842, yFooter + 100); 
+            const w = 595; 
+
+            // --- 3. CANVAS & SVG SETUP ---
+            const dpr = window.devicePixelRatio || 1;
+            cvs.width = w * dpr;
+            cvs.height = h * dpr;
+            cvs.style.width = w + 'px';
+            cvs.style.height = h + 'px';
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr, dpr);
+
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs><style>@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700&amp;family=Inter:wght@400;600&amp;family=Dancing+Script:wght@700&amp;family=Courier+Prime:wght@700&amp;display=swap');</style></defs><rect width="100%" height="100%" fill="white"/>`;
+
+            // --- 4. HELPER ---
+            const drawText = (text, x, y, size, font, align = "left", color = "#000000", weight="normal") => {
+                ctx.fillStyle = color; ctx.textAlign = align;
+                let fontStack = 'Inter, sans-serif';
+                if(font === 'serif') fontStack = 'Merriweather, serif';
+                if(font === 'mono') fontStack = 'Courier Prime, monospace';
+                if(font === 'script') fontStack = 'Dancing Script, cursive';
+                ctx.font = `${weight} ${size}px ${fontStack}`;
+                ctx.fillText(text, x, y);
+
+                let anchor = "start"; if(align === "center") anchor = "middle"; if(align === "right") anchor = "end";
+                const safeText = text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                svg += `<text x="${x}" y="${y}" font-family="${fontStack}" font-size="${size}" font-weight="${weight}" fill="${color}" text-anchor="${anchor}">${safeText}</text>`;
+            };
+
+            const drawRect = (x, y, w, h, color) => {
+                ctx.fillStyle = color; ctx.fillRect(x, y, w, h);
+                svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`;
+            };
+
+            const drawStrokeRect = (x, y, w, h, color) => {
+                ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+                svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${color}" stroke-width="1"/>`;
+            };
+
+            const drawLine = (x1, y1, x2, y2, color="#000", width=1, dash=[]) => {
+                ctx.beginPath(); ctx.lineWidth = width; ctx.strokeStyle = color; ctx.setLineDash(dash);
+                ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]);
+                const dashAttr = dash.length > 0 ? `stroke-dasharray="${dash.join(',')}"` : "";
+                svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${width}" ${dashAttr} />`;
+            };
+
+            // Hintergrund
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,w,h);
+
+            // --- 5. INHALT ZEICHNEN ---
+
+            // Rahmen (Passt sich jetzt dynamisch an h an)
+            drawStrokeRect(20, 20, w-40, h-40, "#000");
+            drawStrokeRect(24, 24, w-48, h-48, "#666");
+
+            // Header
+            drawText("HUMAN GRADES", w/2, 60, 24, "sans", "center", "#1e293b", "900");
+            drawText("OFFIZIELLE BEWERTUNG", w/2, 78, 10, "sans", "center", "#64748b", "normal");
+
+            const curY = new Date().getFullYear(); 
+            const nextY = (curY+1).toString().substr(2);
+            drawText(`Zeitraum ${curY}/${nextY}`, 60, 100, 12, "sans", "left", "#000");
+            drawText("Datenstand: Aktuell", w-60, 100, 12, "sans", "right", "#000");
+
+            drawText("Gesamtbewertung", w/2, 140, 14, "sans", "center", "#000", "bold");
+            drawText(title, w/2, 175, 32, "serif", "center", "#0f172a", "bold"); 
+            drawText("für", w/2, 200, 16, "serif", "center", "#475569", "italic");
+            drawText(data.name, w/2, 235, 26, "sans", "center", "#000", "bold");
+
+            drawLine(60, 255, w-60, 255, "#0f172a", 2);
+
+            // Noten Layout (Code wie gehabt, nur y-Variable)
+            let y = 290; 
+            const col1X = 70; const col1GradeX = 250;
+            const col2X = 330; const col2GradeX = 510;
+            const colSingleX = 140; const colSingleGradeX = 400;
+
+            const renderRow = (crit, xTxt, xBox, yPos) => {
+                const val = avgs[crit.id] ? avgs[crit.id].toFixed(2) : "---";
+                const hasVal = !!avgs[crit.id];
+                
+                drawText(crit.label, xTxt, yPos, 13, "sans", "left", "#1e293b", crit.type==='main'?"bold":"normal");
+                
+                let boxColor = "#ffffff";
+                if(hasVal) {
+                    const v = avgs[crit.id];
+                    boxColor = v < 2.5 ? "#dcfce7" : (v > 4.5 ? "#fee2e2" : "#f1f5f9");
+                    drawRect(xBox, yPos-14, 60, 20, boxColor);
+                } else {
+                    drawStrokeRect(xBox, yPos-14, 60, 20, "#e2e8f0");
+                }
+                
+                drawText(val, xBox+30, yPos, 13, "mono", "center", "#0f172a", "bold");
+                
+                // Linie (geschätzt)
+                const estimatedTextWidth = crit.label.length * 7; 
+                drawLine(xTxt + estimatedTextWidth + 10, yPos-4, xBox-10, yPos-4, "#cbd5e1", 1, [2, 3]);
+            };
+
+            if (isTeacher) {
+                let yL = y, yR = y;
+                
+                // Hauptfächer
+                const mainCrits = relCriteria.filter(c => c.type === 'main');
+                mainCrits.forEach((crit, i) => {
+                    const isLeft = i % 2 === 0;
+                    if(isLeft) { renderRow(crit, col1X, col1GradeX, yL); yL += rowHeight; } 
+                    else { renderRow(crit, col2X, col2GradeX, yR); yR += rowHeight; }
+                });
+
+                // Wahlfächer
+                const secCrits = relCriteria.filter(c => c.type !== 'main');
+                let ySec = Math.max(yL, yR) + 25;
+                if (secCrits.length > 0) {
+                    drawText("Wahlpflichtfächer / Weitere", 70, ySec, 12, "sans", "left", "#64748b", "bold italic");
+                    ySec += 30;
+                    secCrits.forEach(crit => { 
+                        renderRow(crit, col1X, col1GradeX, ySec); 
+                        ySec += rowHeight; 
+                    });
+                }
+            } else {
+                let lastType = 'main';
+                relCriteria.forEach(crit => {
+                    if (crit.type !== lastType) {
+                        y += 20;
+                        drawText("WEITERE MERKMALE", w/2, y, 11, "sans", "center", "#94a3b8", "italic");
+                        y += 30;
+                        lastType = crit.type;
+                    }
+                    renderRow(crit, colSingleX, colSingleGradeX, y);
+                    y += rowHeight;
+                });
+            }
+
+            // --- 6. FOOTER ZEICHNEN ---
+            // yFooter wurde oben schon berechnet
+            
+            // Left (Date)
+            drawLine(60, yFooter, 260, yFooter, "#000");
+            const date = new Date().toLocaleDateString('de-DE');
+            drawText(date, 160, yFooter - 5, 12, "serif", "center", "#000", "italic");
+            drawText("Ausstellungsdatum", 160, yFooter + 15, 10, "sans", "center", "#64748b");
+
+            // Right (Sig)
+            drawLine(335, yFooter, 535, yFooter, "#000");
+            drawText("Limo Organisation", 435, yFooter - 5, 18, "script", "center", "#000", "bold");
+            drawText("Human Grades Vereinigung", 435, yFooter + 15, 10, "sans", "center", "#64748b");
+
+            // Tech ID (Jetzt sicher innerhalb des Rahmens und weit genug unten)
+            // yFooter + 60 ist sicher unter den Unterschriften und über h-40 (Rahmen unten)
+            drawText(`Generiert am ${new Date().toLocaleString()} | ID: ${data._id}`, w/2, yFooter + 55, 9, "sans", "center", "#94a3b8");
+
+            // Abschluss
+            svg += `</svg>`;
+            currentSvgContent = svg;
+            showView('view-certificate');
+        }
+        
+        // --- DOWNLOAD ---
+        function downloadPNG() {
+            const cvs = document.getElementById('cert-canvas');
+            const link = document.createElement('a');
+            link.download = `HumanGrades_${currentCertFileName}.png`;
+            link.href = cvs.toDataURL("image/png");
+            link.click();
+        }
+        function downloadSVG() {
+            const blob = new Blob([currentSvgContent], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `HumanGrades_${currentCertFileName}.svg`;
+            link.href = url;
+            link.click();
+        }
+
+        checkAuth();
+    </script>
+
+
+
+</body></html>

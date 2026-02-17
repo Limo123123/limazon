@@ -1,0 +1,248 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo ID Profil</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <link href="/assets_offline/1771357355014_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #0f172a; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .badge-locked { filter: grayscale(100%) opacity(0.3); }
+        .badge-unlocked { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* Scrollbar nice machen */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4">
+
+    <nav class="w-full max-w-2xl flex flex-wrap gap-4 justify-between items-center mb-8 p-4 glass rounded-2xl">
+        <div class="flex items-center gap-4">
+            <a href="/" class="text-sm font-bold text-slate-400 hover:text-white transition">← Hub</a>
+            <h1 class="text-xl font-bold">Limo ID</h1>
+        </div>
+        
+        <div class="relative">
+            <input type="text" id="user-search" placeholder="User suchen..." class="bg-slate-800 border border-slate-700 rounded-full py-1 px-4 text-sm focus:outline-none focus:border-indigo-500 w-40 focus:w-56 transition-all" onkeydown="if(event.key === 'Enter') searchUser(this.value)">
+            <span class="absolute right-3 top-1.5 text-xs text-slate-500">🔍</span>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-2xl space-y-6">
+        
+        <div class="glass p-8 rounded-3xl text-center relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-20"></div>
+            
+            <div class="relative z-10">
+                <div class="w-24 h-24 mx-auto bg-slate-800 rounded-full border-4 border-slate-900 flex items-center justify-center text-3xl font-bold shadow-xl mb-4" id="p-avatar">?</div>
+                <h2 class="text-3xl font-bold mb-1" id="p-username">Laden...</h2>
+                <div id="p-badges-mini" class="flex justify-center gap-2 mb-4"></div>
+                <p class="text-slate-400 max-w-md mx-auto italic" id="p-bio">...</p>
+                
+                <button onclick="openEditModal()" id="btn-edit" class="hidden mt-6 bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-full font-bold transition border border-slate-700">
+                    ⚙️ Profil &amp; Einstellungen
+                </button>
+            </div>
+        </div>
+
+        <div class="glass rounded-3xl overflow-hidden">
+            <button onclick="toggleInventory()" class="w-full p-4 flex justify-between items-center bg-slate-800/50 hover:bg-slate-800 transition">
+                <span class="font-bold flex items-center gap-2">📦 Inventar <span id="inv-count" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-300">0</span></span>
+                <span id="inv-arrow" class="transform transition">🔽</span>
+            </button>
+            
+            <div id="inventory-content" class="hidden p-6 bg-slate-900/30 border-t border-slate-800">
+                <div id="inv-private-msg" class="hidden text-center py-8 text-slate-500 italic">
+                    🔒 Dieses Inventar ist privat.
+                </div>
+                
+                <div id="inv-empty-msg" class="hidden text-center py-8 text-slate-500">
+                    Leer. Nichts als Staub.
+                </div>
+
+                <div id="inv-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                    </div>
+            </div>
+        </div>
+
+        <div class="glass p-6 rounded-3xl">
+            <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                <span>🏆</span> Achievements
+                <span class="text-xs bg-indigo-600 px-2 py-1 rounded-full ml-auto" id="achieve-counter">0/0</span>
+            </h3>
+            <div id="achievement-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+        </div>
+
+    </main>
+
+    <div id="edit-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-2xl w-full max-w-sm shadow-2xl">
+            <h3 class="text-lg font-bold mb-4">Profil bearbeiten</h3>
+            
+            <label class="text-xs text-slate-400 uppercase font-bold">Deine Bio</label>
+            <textarea id="edit-bio-input" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500 transition h-24 mb-4 mt-1" placeholder="Schreibe etwas..."></textarea>
+            
+            <div class="bg-slate-800 p-3 rounded-xl flex items-center gap-3 mb-6 border border-slate-700">
+                <input type="checkbox" id="edit-public-inv" class="w-5 h-5 accent-indigo-500">
+                <div class="text-sm">
+                    <span class="block font-bold">Inventar öffentlich?</span>
+                    <span class="text-slate-400 text-xs">Andere können deine Items sehen.</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-bold text-slate-400 hover:bg-slate-800">Abbrechen</button>
+                <button onclick="saveProfile()" class="flex-1 bg-indigo-600 py-3 rounded-xl font-bold text-white hover:bg-indigo-500">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks';
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetUser = urlParams.get('user'); 
+        let currentUser = null;
+
+        init();
+
+        async function init() {
+            try {
+                const res = await fetch(API_URL + '/api/auth/me', { credentials: 'include' });
+                if(res.ok) currentUser = await res.json();
+            } catch(e) {}
+
+            if(!targetUser && currentUser) targetUser = currentUser.username;
+            else if (!targetUser && !currentUser) { window.location.href = '/'; return; }
+
+            loadProfile(targetUser);
+        }
+
+        async function loadProfile(username) {
+            try {
+                const res = await fetch(API_URL + '/api/profile/' + username, { credentials: 'include' });
+                if(!res.ok) return alert("User nicht gefunden");
+                const data = await res.json();
+                renderProfile(data.profile, data.allAchievements, data.isOwner);
+            } catch(e) { console.error(e); }
+        }
+
+        function renderProfile(p, allAchievements, isOwner) {
+            // Header
+            document.getElementById('p-username').innerText = p.username;
+            document.getElementById('p-avatar').innerText = p.username.substring(0,2).toUpperCase();
+            document.getElementById('p-bio').innerText = p.bio || "Keine Beschreibung vorhanden.";
+            
+            // Edit & Settings (nur Owner)
+            if(isOwner) {
+                document.getElementById('btn-edit').classList.remove('hidden');
+                document.getElementById('edit-bio-input').value = p.bio || "";
+                document.getElementById('edit-public-inv').checked = p.isInventoryPublic;
+            }
+
+            // --- INVENTAR LOGIK ---
+            const invGrid = document.getElementById('inv-grid');
+            const invCountBadge = document.getElementById('inv-count');
+            const invPrivMsg = document.getElementById('inv-private-msg');
+            const invEmptyMsg = document.getElementById('inv-empty-msg');
+
+            invGrid.innerHTML = '';
+            invPrivMsg.classList.add('hidden');
+            invEmptyMsg.classList.add('hidden');
+
+            if (p.hideInventory) {
+                // Privat
+                invPrivMsg.classList.remove('hidden');
+                invCountBadge.innerText = "🔒";
+            } else if (!p.inventory || p.inventory.length === 0) {
+                // Leer
+                invEmptyMsg.classList.remove('hidden');
+                invCountBadge.innerText = "0";
+            } else {
+                // Anzeigen
+                let totalItems = 0;
+                p.inventory.forEach(item => {
+                    totalItems += item.quantity;
+                    const imgHtml = item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<span class="text-2xl">📦</span>`;
+                    
+                    invGrid.innerHTML += `
+                        <div class="bg-slate-800 rounded-xl p-2 border border-slate-700 flex flex-col items-center gap-1 relative group" title="${item.name}">
+                            <div class="w-12 h-12 rounded-lg bg-slate-900 overflow-hidden flex items-center justify-center">
+                                ${imgHtml}
+                            </div>
+                            <span class="text-[10px] text-center truncate w-full font-bold">${item.name}</span>
+                            <span class="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] px-1.5 rounded-bl-lg font-bold shadow">${item.quantity}</span>
+                        </div>
+                    `;
+                });
+                invCountBadge.innerText = totalItems;
+            }
+
+            // --- ACHIEVEMENTS ---
+            const grid = document.getElementById('achievement-grid');
+            grid.innerHTML = '';
+            let unlockedCount = 0;
+
+            allAchievements.forEach(ach => {
+                const hasIt = p.achievements.includes(ach.id);
+                if(hasIt) unlockedCount++;
+
+                const statusClass = hasIt ? 'badge-unlocked bg-indigo-600/20 border-indigo-500/50' : 'badge-locked bg-slate-800/50 border-slate-700';
+                const textClass = hasIt ? 'text-white' : 'text-slate-500';
+
+                grid.innerHTML += `
+                    <div class="border ${statusClass} rounded-xl p-4 flex flex-col items-center text-center transition hover:scale-105">
+                        <div class="text-4xl mb-2">${ach.icon}</div>
+                        <h4 class="font-bold text-sm ${textClass}">${ach.title}</h4>
+                        <p class="text-[10px] text-slate-400 mt-1 leading-tight">${ach.desc}</p>
+                    </div>
+                `;
+            });
+
+            document.getElementById('achieve-counter').innerText = `${unlockedCount}/${allAchievements.length}`;
+
+            // Mini Badges
+            const mini = document.getElementById('p-badges-mini');
+            mini.innerHTML = '';
+            if(p.isAdmin) mini.innerHTML += '<span class="bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">Admin</span>';
+            const joined = new Date(p.joinDate).toLocaleDateString();
+            mini.innerHTML += `<span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded">Seit ${joined}</span>`;
+        }
+
+        function toggleInventory() {
+            const content = document.getElementById('inventory-content');
+            const arrow = document.getElementById('inv-arrow');
+            content.classList.toggle('hidden');
+            if(content.classList.contains('hidden')) arrow.style.transform = "rotate(0deg)";
+            else arrow.style.transform = "rotate(180deg)";
+        }
+
+        function searchUser(name) {
+            if(!name) return;
+            window.location.href = `?user=${encodeURIComponent(name)}`;
+        }
+
+        function openEditModal() { document.getElementById('edit-modal').classList.remove('hidden'); }
+
+        async function saveProfile() {
+            const newBio = document.getElementById('edit-bio-input').value;
+            const isPublic = document.getElementById('edit-public-inv').checked;
+            const btn = document.querySelector('#edit-modal button:last-child');
+            btn.innerText = "Speichere...";
+            
+            try {
+                const res = await fetch(API_URL + '/api/profile/edit', {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ bio: newBio, isInventoryPublic: isPublic }), credentials: 'include'
+                });
+                if(res.ok) {
+                    document.getElementById('edit-modal').classList.add('hidden');
+                    loadProfile(targetUser);
+                } else alert("Fehler beim Speichern.");
+            } catch(e) { alert("Verbindungsfehler"); }
+            finally { btn.innerText = "Speichern"; }
+        }
+    </script>
+
+</body></html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Portal</title>
+    <script src="/assets_offline/1771357354199_dl_asset.css"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #e9ebee;
+            /* Ein neutraler Hintergrund */
+        }
+
+        .theme-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-card img {
+            height: 180px;
+            object-fit: cover;
+        }
+    </style>
+    <link href="/assets_offline/1771357354691_dl_asset_famil.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-6">
+
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-gray-800 mb-3">Willkommen im Limazon <portal></portal>!</h1>
+        <p class="text-xl text-gray-600">Wähle dein nächstes Abenteuer:</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
+        <!-- Option 1: Original Limazon (Blau) -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/limazon.html')">
+            <img src="placeholder_limazon_original.png" alt="Original Limazon Theme" class="w-full">
+            <!-- Ersetze placeholder_limazon_original.png mit einem Screenshot deines blauen Themes -->
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Limazon Klassik</h2>
+                <p class="text-gray-600 mb-4 text-sm">Das klassische Einkaufserlebnis. Bewährt und direkt.</p>
+                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    Zum Shop
+                </button>
+            </div>
+        </div>
+
+        <!-- Option 8: New Design -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/limazonsuper.html')">
+            <img src="placeholder_limazon_original.png" alt="Neues Limazon Theme (BETA)" class="w-full">
+            <!-- Ersetze placeholder_limazon_original.png mit einem Screenshot deines blauen Themes -->
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Limazon New</h2>
+                <p class="text-gray-600 mb-4 text-sm">Das neue Einkaufserlebnis. Modern und ansprechend. Nicht zum Normalen Nutzen gedacht</p>
+                <button class="w-full bg-green-800 hover:bg-green-900 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    Zu Limazon
+                </button>
+            </div>
+        </div>
+
+        <!-- Option 2: L-Shop (Orange/Nintendo eShop Stil) -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/l-shop.html')">
+            <img src="placeholder_l_shop.png" alt="L-Shop Theme" class="w-full">
+            <!-- Ersetze placeholder_l_shop.png mit einem Screenshot deines orangen L-Shop Themes -->
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">L-Shop Erlebnis</h2>
+                <p class="text-gray-600 mb-4 text-sm">Inspiriert vom Nintendo eShop. Modern und verspielt. VERALTET</p>
+                <button class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    Zum L-Shop (Veraltet)
+                </button>
+            </div>
+        </div>
+
+        <!-- Option 3: Glücksrad Paradies -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/wheel.html')">
+            <img src="placeholder_wheel_paradise.png" alt="Glücksrad Paradies" class="w-full">
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Glücksrad Paradies</h2>
+                <p class="text-gray-600 mb-4 text-sm">Erstelle, teile und drehe Glücksräder. Teste dein Glück!</p>
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    Zu den Glücksrädern
+                </button>
+            </div>
+        </div>
+
+        <!-- Option 4: Whatslim -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/whatslim.html')">
+            <img src="placeholder_whatslim.png" alt="Whatslim" class="w-full">
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Whatslim</h2>
+                <p class="text-gray-600 mb-4 text-sm">Schreibe anderen Limo ID Nutzern mit Share Codes!</p>
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    Zu Whatslim
+                </button>
+            </div>
+        </div>
+
+        <!-- Option 5: Account -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('account/index.html')">
+            <img src="placeholder_account.png" alt="Account" class="w-full">
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Account</h2>
+                <p class="text-gray-600 mb-4 text-sm">Siehe deine Limo ID ein!</p>
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    Zu Account
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Option 5: Hall of Fame -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/hall-of-fame.html')">
+            <img src="placeholder_hall-of-fame.png" alt="HallOfFame" class="w-full">
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">Hall of Fame</h2>
+                <p class="text-gray-600 mb-4 text-sm">Siehe die Besten User ein!</p>
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                    Zur Hall of Fame
+                </button>
+            </div>
+        </div>
+
+        <!-- Option 6: Ideenbox -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/ideabox.html')">
+            <img src="placeholder_ideabox.png" alt="Ideenbox" class="w-full">
+            <div class="p-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Ideenbox</h2>
+            <p class="text-gray-600 mb-4 text-sm">Gestalte die Zukunft mit! Reiche deine Ideen und Vorschläge ein und sieh, was die Community sich wünscht.</p>
+            <button class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                Zur Ideenbox
+            </button>
+            </div>
+        </div>
+
+        <!-- Option 7: Blame Me -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="window.open('https://tcg.limazon.v6.rocks')">
+            <img src="placeholder_blame_me.png" alt="Don't Blame Me" class="w-full">
+            <div class="p-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Teacher Grades</h2>
+            <p class="text-gray-600 mb-4 text-sm">Bewerte deine Leherer!</p>
+            <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+            Zu Teacher Grades
+            </button>
+            </div>
+        </div>
+
+        <!-- Option 8: Teacher Grades -->
+        <div class="theme-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="navigateToApp('themes/dont-blame-me.html')">
+            <img src="placeholder_teacher_grades.png" alt="Teacher Grades" class="w-full">
+            <div class="p-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Blame Me</h2>
+            <p class="text-gray-600 mb-4 text-sm">ICH HAB NICHTS GETAN</p>
+            <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                Zu Blame Me
+            </button>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="mt-12 text-center text-gray-500 text-sm">
+        © 2025 Limazon Universe
+    </footer>
+
+    <script>
+        function navigateToApp(appUrl) {
+            // Einfache Weiterleitung zur gewählten App/Seite
+            console.log("Navigiere zu: " + appUrl);
+            window.location.href = appUrl;
+
+            // Optional: Wenn du Theme-Präferenzen zwischenspeichern wolltest,
+            // könntest du das hier tun, bevor du weiterleitest.
+            // Für diese Struktur ist es aber wahrscheinlich nicht nötig, da jede "App"
+            // ihr eigenes Theming oder ihre eigene Theme-Auswahl (wie bei wheels.html) haben kann.
+            // localStorage.setItem('lastSelectedApp', appUrl);
+        }
+    </script>
+
+
+
+</body></html>

@@ -1,0 +1,1222 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo Arcade</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #ff9800;
+            --text-main: #fff;
+            --text-sec: #aaa;
+            --modal-bg: rgba(0, 0, 0, 0.9);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Header */
+        header {
+            background: #1f1f1f;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .user-panel {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .badge {
+            background: #333;
+            padding: 5px 10px;
+            border-radius: 15px;
+            border: 1px solid #444;
+            font-weight: bold;
+        }
+
+        /* Grid */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+            outline: none;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* Card */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .card-img {
+            height: 160px;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+        }
+
+        .card-img.flappy {
+            background: linear-gradient(180deg, #70c5ce 60%, #ded895 60%);
+        }
+
+        .card-body {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card h3 {
+            margin: 0 0 5px 0;
+            color: var(--accent);
+        }
+
+        .card p {
+            font-size: 13px;
+            color: var(--text-sec);
+            margin-bottom: 15px;
+            flex: 1;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn-play {
+            background: #4CAF50;
+        }
+
+        .btn-play:hover {
+            background: #388E3C;
+        }
+
+        .btn-play:disabled {
+            background: #444;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        .btn-rank {
+            background: #333;
+            border: 1px solid #555;
+            color: #ddd;
+        }
+
+        .btn-rank:hover {
+            background: #444;
+        }
+
+        /* Game Overlay (Fullscreen) */
+        #gameOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            flex-direction: column;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #111;
+            touch-action: none;
+        }
+
+        /* In-Game UI */
+        .game-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: auto;
+            box-sizing: border-box;
+            z-index: 2010;
+        }
+
+        .close-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border: 2px solid white;
+            backdrop-filter: blur(4px);
+        }
+
+        .ingame-badge {
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Start Screen inside Canvas */
+        #startScreen,
+        #gameOverScreen {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            pointer-events: auto;
+            backdrop-filter: blur(8px);
+            border: 1px solid #444;
+            min-width: 280px;
+        }
+
+        h1.game-title {
+            font-size: 40px;
+            color: #FFD700;
+            text-shadow: 3px 3px 0 #000;
+            margin: 0 0 10px 0;
+            line-height: 1;
+        }
+
+        .tap-msg {
+            position: absolute;
+            bottom: 20%;
+            font-size: 24px;
+            text-shadow: 2px 2px 0 #000;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Snake Settings Buttons */
+        .snake-settings {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .size-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: #aaa;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .size-btn:hover {
+            background: #444;
+        }
+
+        .size-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Modal Styles */
+        #lbModal,
+        #loginModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-box {
+            background: #252525;
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            border-radius: 12px;
+            position: relative;
+            border: 1px solid #444;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lb-list {
+            overflow-y: auto;
+            margin-top: 15px;
+            flex: 1;
+        }
+
+        .lb-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+        }
+
+        .lb-row.gold {
+            color: #FFD700;
+            font-weight: bold;
+            border-bottom: 1px solid #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .lb-row.silver {
+            color: #C0C0C0;
+            font-weight: bold;
+        }
+
+        .lb-row.bronze {
+            color: #CD7F32;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">🎮 Limo Arcade</div>
+        <div class="user-panel" id="userPanel">
+            <button class="btn btn-play" onclick="app.showLogin()" style="padding: 5px 15px;">Login</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Spiel suchen..." onkeyup="app.renderGames()">
+            </div>
+        </div>
+        <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+    <div id="loginModal">
+        <div class="modal-box" style="text-align: center;">
+            <span onclick="document.getElementById('loginModal').style.display='none'" style="position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;">×</span>
+            <h2 style="color:var(--accent); margin-top:0;">Login</h2>
+            <input type="text" id="lUser" placeholder="Benutzername">
+            <input type="password" id="lPass" placeholder="Passwort">
+            <button class="btn btn-play" style="width:100%; margin-top:10px;" onclick="app.login()">Einloggen</button>
+            <p id="lError" style="color:#ff5252; margin-top:10px; font-size:13px;"></p>
+        </div>
+    </div>
+
+    <div id="lbModal">
+        <div class="modal-box">
+            <span onclick="document.getElementById('lbModal').style.display='none'" style="position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;">×</span>
+            <h2 style="color:#2196F3; margin:0;">🏆 Top Spieler</h2>
+            <div style="margin:10px 0;">
+                <input type="text" id="lbSearch" placeholder="Spieler suchen..." onkeyup="app.loadLb(1)" style="padding:8px; font-size:13px;">
+            </div>
+            <div id="lbContent" class="lb-list">Lade...</div>
+            <div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
+                <button class="btn btn-rank" onclick="app.lbPageChange(-1)" style="flex:0; padding:5px 15px;">&lt;</button>
+                <span id="lbPageDisplay" style="align-self:center; font-size:12px; color:#888;">1 / 1</span>
+                <button class="btn btn-rank" onclick="app.lbPageChange(1)" style="flex:0; padding:5px 15px;">&gt;</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameOverlay">
+        <div class="game-header">
+            <div class="close-btn" onclick="app.closeGame()">✕</div>
+            <div class="ingame-badge">Freispiele: <span id="gamePlays">-</span></div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="game-ui" id="gameUI">
+
+            <div id="startScreen">
+                <h1 class="game-title" id="gameTitleDisplay">GAME</h1>
+                <p id="gameSubText" style="margin-bottom: 15px; color:#ddd;">Info...</p>
+
+                <div id="snakeSettings" class="snake-settings" style="display:none;">
+                    <div class="size-btn" onclick="snakeEngine.setSize('small', 1, this)">Klein<br>(x1)</div>
+                    <div class="size-btn active" onclick="snakeEngine.setSize('medium', 1.5, this)">Mittel<br>(x1.5)
+                    </div>
+                    <div class="size-btn" onclick="snakeEngine.setSize('large', 2, this)">Groß<br>(x2)</div>
+                </div>
+
+                <button class="btn btn-play" id="startBtn" style="padding: 12px 30px; font-size: 18px; width:100%;">START</button>
+                <button class="btn btn-rank" id="lbBtn" style="margin-top:10px; width:100%;">🏆 Rangliste</button>
+            </div>
+
+            <div id="gameOverScreen" style="display:none;">
+                <h1 class="game-title" style="color:#ff5252">GAME OVER</h1>
+                <h2 id="finalScore" style="font-size:30px; margin:10px 0;">Score: 0</h2>
+                <button class="btn btn-play" style="padding: 12px 30px; font-size: 18px; width:100%;" onclick="document.getElementById('startBtn').click()">NOCHMAL</button>
+                <button class="btn btn-rank" style="margin-top:10px; width:100%;" onclick="app.closeGame()">BEENDEN</button>
+            </div>
+
+            <div class="tap-msg" id="tapMsg" style="display:none;">TAP TO START</div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://api.limazon.v6.rocks/api';
+
+        const app = {
+            user: null,
+            games: [
+                { id: 'flappy', title: 'Flappy Limo', desc: 'Fliege durch die Röhren.', icon: '🐦', bgClass: 'flappy', isLive: true },
+                { id: 'snake', title: 'Crypto Snake', desc: 'Friss Coins. Großes Feld = Schneller!', icon: '🐍', bgClass: '', isLive: true },
+                { id: 'slots', title: 'Limo Slots', desc: 'Einarmiger Bandit.', icon: '🎰', isLive: true, url: '/games/slots.html' },
+                { id: 'memory', title: 'Card Memory', desc: 'Finde die Paare.', icon: '🎴', isLive: true, url: '/games/memory.html' }
+            ],
+            lbCurrentGame: null,
+            lbPage: 1,
+
+            init: async () => {
+                await app.checkUser();
+                app.renderGames();
+            },
+
+            // --- AUTH ---
+            checkUser: async () => {
+                try {
+                    const res = await fetch(`${API}/auth/me`, { credentials: 'include' });
+                    if (res.ok) {
+                        app.user = await res.json();
+                        app.renderUser();
+                        app.updateGameStats();
+                    } else {
+                        app.user = null;
+                        document.getElementById('userPanel').innerHTML = `<button class="btn btn-play" onclick="app.showLogin()" style="padding:5px 15px;">Login</button>`;
+                    }
+                } catch (e) { }
+            },
+
+            renderUser: () => {
+                if (!app.user) return;
+                document.getElementById('userPanel').innerHTML = `
+                <span style="font-weight:bold; color:var(--accent)">${app.user.username}</span>
+                <div class="badge">🪙 ${app.user.tokens}</div>
+                <button class="logout-btn" style="background:#d32f2f; border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;" onclick="app.logout()">Logout</button>
+            `;
+            },
+
+            updateGameStats: async () => {
+                if (!app.user) return;
+                try {
+                    const res = await fetch(`${API}/games/status`, { credentials: 'include' });
+                    const data = await res.json();
+
+                    const playDisplay = document.getElementById('gamePlays');
+                    // FIX: Fallback, falls undefined
+                    if (playDisplay) playDisplay.innerText = (data.remainingPlays !== undefined) ? data.remainingPlays : '-';
+
+                    if (data.tokens !== undefined) {
+                        app.user.tokens = data.tokens;
+                        app.renderUser();
+                    }
+                } catch (e) {
+                    console.error("Stats Error:", e);
+                    // Fallback bei Fehler
+                    const playDisplay = document.getElementById('gamePlays');
+                    if (playDisplay) playDisplay.innerText = '-';
+                }
+            },
+
+            showLogin: () => document.getElementById('loginModal').style.display = 'flex',
+
+            login: async () => {
+                const u = document.getElementById('lUser').value;
+                const p = document.getElementById('lPass').value;
+                try {
+                    const res = await fetch(`${API}/auth/login`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: u, password: p }), credentials: 'include'
+                    });
+                    if (res.ok) { document.getElementById('loginModal').style.display = 'none'; app.init(); }
+                    else { document.getElementById('lError').innerText = (await res.json()).error; }
+                } catch (e) { }
+            },
+
+            logout: async () => { await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' }); window.location.reload(); },
+
+            // --- DASHBOARD ---
+            renderGames: () => {
+                const grid = document.getElementById('gamesGrid');
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                grid.innerHTML = '';
+                app.games.filter(g => g.title.toLowerCase().includes(search)).forEach(g => {
+                    grid.innerHTML += `
+                <div class="card">
+                    <div class="card-img ${g.bgClass}">${g.icon}</div>
+                    <div class="card-body">
+                        <h3>${g.title}</h3>
+                        <p>${g.desc}</p>
+                        <div class="actions">
+                            <button class="btn btn-rank" onclick="app.showLb('${g.id}')">🏆 Rank</button>
+                            <button class="btn btn-play" onclick="${g.url ? `window.location.href='${g.url}'` : `app.openGame('${g.id}')`}" 
+                                    ${!g.isLive ? 'disabled style="background:#444"' : ''}>
+                                    ${g.isLive ? '▶ SPIELEN' : '🚧 BALD'}
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+                });
+            },
+
+            // --- GAME LOGIC ---
+            openGame: (id) => {
+                if (!app.user) { app.showLogin(); return; }
+                document.getElementById('gameOverlay').style.display = 'flex';
+                document.getElementById('gameUI').style.display = 'flex';
+                document.getElementById('startScreen').style.display = 'block';
+                document.getElementById('gameOverScreen').style.display = 'none';
+                document.getElementById('tapMsg').style.display = 'none';
+
+                const title = document.getElementById('gameTitleDisplay');
+                const sub = document.getElementById('gameSubText');
+                const snakeSet = document.getElementById('snakeSettings');
+                const startBtn = document.getElementById('startBtn');
+                const lbBtn = document.getElementById('lbBtn');
+
+                if (id === 'flappy') {
+                    flappyEngine.init(); // Wichtig: Init resettet Events
+                    title.innerHTML = "FLAPPY<br>LIMO";
+                    sub.innerHTML = "1 Token = 3 Versuche";
+                    snakeSet.style.display = 'none';
+                    startBtn.onclick = () => flappyEngine.start();
+                    lbBtn.onclick = () => app.showLb('flappy');
+                }
+                else if (id === 'snake') {
+                    snakeEngine.init();
+                    title.innerHTML = "CRYPTO<br>SNAKE";
+                    sub.innerHTML = "1 Token = 3 Versuche";
+                    snakeSet.style.display = 'flex';
+                    startBtn.onclick = () => snakeEngine.start();
+                    lbBtn.onclick = () => app.showLb('snake');
+                }
+                app.updateGameStats();
+            },
+
+            closeGame: () => {
+                document.getElementById('gameOverlay').style.display = 'none';
+                flappyEngine.stop(); // Stop Funktion nutzen
+                snakeEngine.running = false;
+                app.updateGameStats();
+            },
+
+            // --- LEADERBOARD ---
+            showLb: (id) => {
+                app.lbCurrentGame = id;
+                app.lbPage = 1;
+                document.getElementById('lbSearch').value = "";
+                document.getElementById('lbModal').style.display = 'flex';
+                app.loadLb(1);
+            },
+
+            loadLb: async (page) => {
+                app.lbPage = page;
+                const div = document.getElementById('lbContent');
+                div.innerHTML = "Lade...";
+                const search = document.getElementById('lbSearch').value;
+
+                try {
+                    const res = await fetch(`${API}/games/leaderboard/${app.lbCurrentGame}?page=${page}&limit=10&search=${encodeURIComponent(search)}`, { credentials: 'include' });
+                    const data = await res.json();
+
+                    if (!data.scores || data.scores.length === 0) {
+                        div.innerHTML = "<p style='text-align:center; color:#888'>Keine Scores.</p>";
+                        document.getElementById('lbPageDisplay').innerText = "1 / 1";
+                        return;
+                    }
+
+                    let html = "";
+                    data.scores.forEach((s, i) => {
+                        const rank = ((page - 1) * 10) + i + 1;
+                        let cls = "", ico = `#${rank}`;
+                        if (rank === 1) { cls = "gold"; ico = "🥇"; }
+                        if (rank === 2) { cls = "silver"; ico = "🥈"; }
+                        if (rank === 3) { cls = "bronze"; ico = "🥉"; }
+                        html += `
+                    <div class="lb-row ${cls}">
+                        <div style="width:40px">${ico}</div>
+                        <div style="flex:1">${s.username}</div>
+                        <div style="font-family:monospace; font-weight:bold;">${s.score}</div>
+                    </div>`;
+                    });
+                    div.innerHTML = html;
+                    document.getElementById('lbPageDisplay').innerText = `${page} / ${data.pagination.totalPages}`;
+                } catch (e) { div.innerHTML = "Fehler."; }
+            },
+
+            lbPageChange: (d) => {
+                if (app.lbPage + d < 1) return;
+                app.loadLb(app.lbPage + d);
+            }
+        };
+
+        // --- SHARED HELPER ---
+        async function startGameSession(gameId) {
+            try {
+                const res = await fetch(`${API}/games/start`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameId }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.error); return false; }
+                document.getElementById('gamePlays').innerText = data.remainingPlays;
+                if (data.message.includes("Token")) app.checkUser();
+                return true;
+            } catch (e) { return false; }
+        }
+
+        async function sendScore(gameId, score) {
+            if (score <= 0) return;
+            await fetch(`${API}/games/submit-score`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameId, score }), credentials: 'include'
+            });
+        }
+
+        // ==========================================
+        // === FLAPPY ENGINE  ===
+        // ==========================================
+        const flappyEngine = {
+            cvs: document.getElementById('gameCanvas'),
+            ctx: document.getElementById('gameCanvas').getContext('2d'),
+            running: false,
+            gameState: 'START',
+            bird: { x: 50, y: 150, v: 0, r: 0 }, // r = rotation
+            pipes: [],
+            score: 0,
+            frame: 0,
+
+            // Skalierungsfaktor für Konsistenz (PC vs Mobile)
+            scale: 1,
+
+            init: () => {
+                flappyEngine.resize();
+                window.addEventListener('resize', flappyEngine.resize);
+                flappyEngine.drawStatic();
+                // Events säubern, damit wir sie sauber neu setzen können
+                flappyEngine.removeEvents();
+            },
+
+            removeEvents: () => {
+                window.removeEventListener('keydown', flappyEngine.handleInput);
+                window.removeEventListener('touchstart', flappyEngine.handleInput);
+                window.removeEventListener('mousedown', flappyEngine.handleInput);
+            },
+
+            stop: () => {
+                flappyEngine.running = false;
+                flappyEngine.removeEvents();
+            },
+
+            resize: () => {
+                flappyEngine.cvs.width = window.innerWidth;
+                flappyEngine.cvs.height = window.innerHeight;
+
+                // WICHTIG: Wir berechnen die Physik basierend auf einer Referenzhöhe (z.B. 800px).
+                // Das sorgt dafür, dass das Spiel auf allen Geräten gleich "schnell" wirkt.
+                flappyEngine.scale = window.innerHeight / 800;
+            },
+
+            reset: () => {
+                const h = flappyEngine.cvs.height;
+                flappyEngine.bird = {
+                    x: window.innerWidth * 0.1, // Vogel immer bei 10% der Breite
+                    y: h / 2,
+                    v: 0,
+                    r: 0
+                };
+                flappyEngine.pipes = [];
+                flappyEngine.score = 0;
+                flappyEngine.frame = 1;
+                flappyEngine.gameState = 'START';
+            },
+
+            start: async () => {
+                if (!await startGameSession('flappy')) return;
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('gameOverScreen').style.display = 'none';
+                document.getElementById('tapMsg').style.display = 'block';
+
+                flappyEngine.resize();
+                flappyEngine.reset();
+                flappyEngine.running = true;
+
+                // Event Listener hinzufügen (nur einmal!)
+                flappyEngine.removeEvents(); // Zur Sicherheit erst entfernen
+                window.addEventListener('keydown', flappyEngine.handleInput);
+                // Passive: false erlaubt uns preventDefault() zu nutzen
+                window.addEventListener('touchstart', flappyEngine.handleInput, { passive: false });
+                window.addEventListener('mousedown', flappyEngine.handleInput);
+
+                flappyEngine.loop();
+            },
+
+            // Einheitliche Input-Behandlung für alle Geräte
+            handleInput: (e) => {
+                // Verhindert Scrollen oder Zoomen bei Touch
+                if (e.type === 'touchstart') e.preventDefault();
+                // Verhindert Key-Repeat (Gedrückthalten fliegt nicht nach unten)
+                if (e.type === 'keydown' && e.repeat) return;
+                // Spacebar Check
+                if (e.type === 'keydown' && e.code !== 'Space') return;
+
+                if (!flappyEngine.running) return;
+
+                // Start aus dem Schweben
+                if (flappyEngine.gameState === 'START') {
+                    flappyEngine.gameState = 'PLAYING';
+                    document.getElementById('tapMsg').style.display = 'none';
+                    // Erster Sprung
+                    flappyEngine.jump();
+                    return;
+                }
+
+                if (flappyEngine.gameState === 'PLAYING') {
+                    flappyEngine.jump();
+                }
+            },
+
+            jump: () => {
+                // Sprungkraft skaliert mit der Höhe!
+                flappyEngine.bird.v = -8 * flappyEngine.scale;
+            },
+
+            loop: () => {
+                if (!flappyEngine.running) return;
+                flappyEngine.update();
+                flappyEngine.draw();
+                requestAnimationFrame(flappyEngine.loop);
+            },
+
+            update: () => {
+                const h = flappyEngine.cvs.height;
+                const s = flappyEngine.scale; // Kurzform für Skalierung
+
+                // Schwebe-Modus
+                if (flappyEngine.gameState === 'START') {
+                    flappyEngine.bird.y = (h / 2) + Math.sin(Date.now() / 300) * (10 * s);
+                    flappyEngine.bird.r = 0;
+                    return;
+                }
+
+                // Physik
+                const gravity = 0.35 * s; // Schwerkraft skaliert
+                flappyEngine.bird.v += gravity;
+                flappyEngine.bird.y += flappyEngine.bird.v;
+
+                // Rotation basierend auf Geschwindigkeit
+                flappyEngine.bird.r = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (flappyEngine.bird.v * 0.1)));
+
+                // Röhren Spawnen (Abstand basiert auf Höhe/Skalierung, nicht Zeit)
+                // Wir spawnen eine Röhre alle X Pixel, die wir uns "bewegt" haben, simuliert durch Frames
+                // Rohrabstand ca alle 1800ms bei 60fps, aber skaliert
+                if (flappyEngine.frame % 100 === 0) {
+                    // Gap ist fest basierend auf Scale, damit es fair bleibt
+                    const gap = 190 * s;
+                    const minPos = 100 * s;
+                    const maxPos = h - minPos - gap;
+
+                    flappyEngine.pipes.push({
+                        x: flappyEngine.cvs.width,
+                        y: Math.random() * (maxPos - minPos) + minPos,
+                        gap: gap,
+                        passed: false
+                    });
+                }
+
+                // Röhren Bewegen & Kollision
+                const birdSize = 25 * s; // Vogelgröße skaliert
+                const pipeSpeed = 5 * s; // Geschwindigkeit skaliert (WICHTIG!)
+                const pipeWidth = 70 * s; // Röhrenbreite skaliert
+
+                flappyEngine.pipes.forEach(p => {
+                    p.x -= pipeSpeed; // Konstante Geschwindigkeit auf allen Geräten!
+
+                    // Hitbox Check (Etwas verzeihender: birdSize * 0.8)
+                    const hitX = flappyEngine.bird.x + birdSize * 0.6 > p.x && flappyEngine.bird.x - birdSize * 0.6 < p.x + pipeWidth;
+                    const hitY = flappyEngine.bird.y - birdSize * 0.6 < p.y || flappyEngine.bird.y + birdSize * 0.6 > p.y + p.gap;
+
+                    if (hitX && hitY) flappyEngine.over();
+
+                    // Score
+                    if (p.x + pipeWidth < flappyEngine.bird.x && !p.passed) {
+                        flappyEngine.score++;
+                        p.passed = true;
+                    }
+                });
+
+                // Boden/Decke Kollision
+                if (flappyEngine.bird.y + birdSize > h || flappyEngine.bird.y - birdSize < 0) flappyEngine.over();
+
+                // Röhren löschen
+                flappyEngine.pipes = flappyEngine.pipes.filter(p => p.x > -pipeWidth * 2);
+
+                flappyEngine.frame++;
+            },
+
+            draw: () => {
+                const ctx = flappyEngine.ctx;
+                const w = flappyEngine.cvs.width;
+                const h = flappyEngine.cvs.height;
+                const s = flappyEngine.scale;
+
+                // Hintergrund
+                ctx.fillStyle = "#70c5ce";
+                ctx.fillRect(0, 0, w, h);
+
+                // Röhren
+                const pipeWidth = 70 * s;
+                ctx.fillStyle = "#2E7D32";
+
+                flappyEngine.pipes.forEach(p => {
+                    // Oberes Rohr
+                    ctx.fillRect(p.x, 0, pipeWidth, p.y);
+                    // Unteres Rohr
+                    ctx.fillRect(p.x, p.y + p.gap, pipeWidth, h);
+
+                    // Kappen (Deko)
+                    const capH = 30 * s;
+                    const capW = pipeWidth + (10 * s);
+                    ctx.fillStyle = "#1B5E20"; // Dunkler Rand
+                    ctx.fillRect(p.x - (5 * s), p.y - capH, capW, capH); // Kappe oben
+                    ctx.fillRect(p.x - (5 * s), p.y + p.gap, capW, capH); // Kappe unten
+
+                    // Highlights
+                    ctx.fillStyle = "#4CAF50"; // Hellere Farbe zurück
+                    ctx.fillRect(p.x + (5 * s), 0, pipeWidth * 0.1, p.y); // Glanz oben
+                    ctx.fillRect(p.x + (5 * s), p.y + p.gap, pipeWidth * 0.1, h); // Glanz unten
+
+                    ctx.fillStyle = "#2E7D32"; // Reset für nächstes Rohr
+                });
+
+                // Boden
+                const groundH = 50 * s;
+                ctx.fillStyle = "#ded895";
+                ctx.fillRect(0, h - groundH, w, groundH);
+                // Graslinie
+                ctx.fillStyle = "#73bf2e";
+                ctx.fillRect(0, h - groundH, w, 10 * s);
+
+                // Vogel
+                ctx.save();
+                ctx.translate(flappyEngine.bird.x, flappyEngine.bird.y);
+                ctx.rotate(flappyEngine.bird.r);
+
+                const bSize = 25 * s;
+
+                // Körper
+                ctx.fillStyle = "#FFD700";
+                ctx.beginPath(); ctx.arc(0, 0, bSize, 0, Math.PI * 2); ctx.fill();
+                // Rand
+                ctx.strokeStyle = "#000";
+                ctx.lineWidth = 2 * s;
+                ctx.stroke();
+
+                // Auge
+                ctx.fillStyle = "#fff";
+                ctx.beginPath(); ctx.arc(bSize * 0.4, -bSize * 0.4, bSize * 0.35, 0, Math.PI * 2); ctx.fill();
+                ctx.stroke(); // Augenrand
+                ctx.fillStyle = "#000";
+                ctx.beginPath(); ctx.arc(bSize * 0.5, -bSize * 0.4, bSize * 0.1, 0, Math.PI * 2); ctx.fill();
+
+                // Schnabel
+                ctx.fillStyle = "#f44336";
+                ctx.beginPath();
+                ctx.moveTo(bSize * 0.5, bSize * 0.1);
+                ctx.lineTo(bSize * 1.2, bSize * 0.4);
+                ctx.lineTo(bSize * 0.4, bSize * 0.7);
+                ctx.fill();
+                ctx.stroke();
+
+                // Flügel (simuliert durch Kreisbogen)
+                ctx.fillStyle = "#FBC02D";
+                ctx.beginPath();
+                ctx.arc(-bSize * 0.2, bSize * 0.1, bSize * 0.5, 0, Math.PI, false);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+
+                // Score
+                ctx.fillStyle = "white";
+                ctx.font = `bold ${60 * s}px 'Segoe UI', sans-serif`;
+                ctx.textAlign = "center";
+                ctx.lineWidth = 4 * s;
+                ctx.strokeStyle = "black";
+                ctx.strokeText(flappyEngine.score, w / 2, 100 * s);
+                ctx.fillText(flappyEngine.score, w / 2, 100 * s);
+            },
+
+            drawStatic: () => {
+                const ctx = flappyEngine.ctx; ctx.fillStyle = "#70c5ce"; ctx.fillRect(0, 0, flappyEngine.cvs.width, flappyEngine.cvs.height);
+            },
+
+            over: () => {
+                flappyEngine.running = false;
+                sendScore('flappy', flappyEngine.score);
+                document.getElementById('gameOverScreen').style.display = 'block';
+                document.getElementById('finalScore').innerText = "Score: " + flappyEngine.score;
+            }
+        };
+
+        // ==========================================
+        // === SNAKE ENGINE ===
+        // ==========================================
+        const snakeEngine = {
+            cvs: document.getElementById('gameCanvas'),
+            ctx: document.getElementById('gameCanvas').getContext('2d'),
+            running: false,
+
+            tileCount: 20,
+            tileSize: 0,
+            gameSpeed: 100,
+            lastRenderTime: 0, // Für den neuen Loop
+
+            snake: [], apple: {}, vel: { x: 0, y: 0 }, score: 0,
+
+            init: () => {
+                snakeEngine.resize();
+                snakeEngine.drawStatic();
+                // Event Listener säubern
+                window.onkeydown = null; window.ontouchstart = null; window.onmousedown = null; window.ontouchmove = null;
+            },
+
+            setSize: (s, m, btn) => {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                if (s === 'small') {
+                    snakeEngine.tileCount = 15;
+                    snakeEngine.gameSpeed = 120;
+                }
+                if (s === 'medium') {
+                    snakeEngine.tileCount = 25;
+                    snakeEngine.gameSpeed = 90;
+                }
+                if (s === 'large') {
+                    snakeEngine.tileCount = 40;
+                    snakeEngine.gameSpeed = 60;
+                }
+            },
+
+            resize: () => {
+                snakeEngine.cvs.width = window.innerWidth;
+                snakeEngine.cvs.height = window.innerHeight;
+                const min = Math.min(snakeEngine.cvs.width, snakeEngine.cvs.height);
+                snakeEngine.tileSize = (min - 20) / snakeEngine.tileCount;
+            },
+
+            reset: () => {
+                const mid = Math.floor(snakeEngine.tileCount / 2);
+                snakeEngine.snake = [{ x: mid, y: mid }, { x: mid - 1, y: mid }, { x: mid - 2, y: mid }];
+                snakeEngine.vel = { x: 0, y: 0 };
+                snakeEngine.score = 0;
+                snakeEngine.placeApple();
+                snakeEngine.lastRenderTime = 0;
+            },
+
+            start: async () => {
+                if (!await startGameSession('snake')) return;
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('gameOverScreen').style.display = 'none';
+
+                const tap = document.getElementById('tapMsg');
+                tap.innerText = "DRÜCKE PFEILTASTE\nODER WISCHE";
+                tap.style.display = 'block';
+
+                snakeEngine.reset();
+                snakeEngine.resize();
+                snakeEngine.running = true;
+                snakeEngine.inputs();
+                // Start des Loops
+                window.requestAnimationFrame(snakeEngine.loop);
+            },
+
+            inputs: () => {
+                const setVel = (x, y) => {
+                    if (snakeEngine.vel.x === -x && x !== 0) return;
+                    if (snakeEngine.vel.y === -y && y !== 0) return;
+
+                    snakeEngine.vel = { x, y };
+                    document.getElementById('tapMsg').style.display = 'none';
+                };
+
+                window.onkeydown = (e) => {
+                    // Verhindert Scrollen mit Pfeiltasten
+                    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
+                        e.preventDefault();
+                    }
+                    switch (e.key) {
+                        case 'ArrowLeft': setVel(-1, 0); break;
+                        case 'ArrowUp': setVel(0, -1); break;
+                        case 'ArrowRight': setVel(1, 0); break;
+                        case 'ArrowDown': setVel(0, 1); break;
+                    }
+                };
+
+                // Touch Swipe Logic
+                let tsX = 0, tsY = 0;
+
+                // WICHTIG: preventDefault bei touchstart/move verhindert Browser-Reload
+                window.ontouchstart = (e) => {
+                    tsX = e.changedTouches[0].screenX;
+                    tsY = e.changedTouches[0].screenY;
+                };
+
+                // Verhindert das Ziehen der Seite
+                window.addEventListener('touchmove', (e) => {
+                    if (snakeEngine.running) e.preventDefault();
+                }, { passive: false });
+
+                window.ontouchend = (e) => {
+                    if (!snakeEngine.running) return;
+                    let dX = e.changedTouches[0].screenX - tsX;
+                    let dY = e.changedTouches[0].screenY - tsY;
+
+                    // Schwellenwert für Swipe, damit nicht jedes Tippen zählt
+                    if (Math.abs(dX) < 30 && Math.abs(dY) < 30) return;
+
+                    if (Math.abs(dX) > Math.abs(dY)) {
+                        if (dX > 0) setVel(1, 0); else setVel(-1, 0);
+                    } else {
+                        if (dY > 0) setVel(0, 1); else setVel(0, -1);
+                    }
+                };
+            },
+
+            // NEUER LOOP: Delta Time basierend (Kein Flackern mehr)
+            loop: (currentTime) => {
+                if (!snakeEngine.running) return;
+
+                window.requestAnimationFrame(snakeEngine.loop);
+
+                const secondsSinceLastRender = (currentTime - snakeEngine.lastRenderTime) / 1000;
+                if (secondsSinceLastRender < snakeEngine.gameSpeed / 1000) return;
+
+                snakeEngine.lastRenderTime = currentTime;
+
+                snakeEngine.update();
+                snakeEngine.draw();
+            },
+
+            update: () => {
+                if (snakeEngine.vel.x === 0 && snakeEngine.vel.y === 0) return;
+
+                const head = { x: snakeEngine.snake[0].x + snakeEngine.vel.x, y: snakeEngine.snake[0].y + snakeEngine.vel.y };
+
+                // 1. Wand Kollision
+                if (head.x < 0 || head.x >= snakeEngine.tileCount || head.y < 0 || head.y >= snakeEngine.tileCount) {
+                    snakeEngine.over(); return;
+                }
+
+                // 2. Selbst Kollision
+                for (let t of snakeEngine.snake) {
+                    if (head.x === t.x && head.y === t.y) { snakeEngine.over(); return; }
+                }
+
+                snakeEngine.snake.unshift(head);
+
+                // 3. Essen
+                if (head.x === snakeEngine.apple.x && head.y === snakeEngine.apple.y) {
+                    snakeEngine.score++;
+                    if (snakeEngine.snake.length >= snakeEngine.tileCount * snakeEngine.tileCount) {
+                        snakeEngine.win(); return;
+                    }
+                    snakeEngine.placeApple();
+                } else {
+                    snakeEngine.snake.pop();
+                }
+            },
+
+            placeApple: () => {
+                let valid = false;
+                while (!valid) {
+                    snakeEngine.apple = {
+                        x: Math.floor(Math.random() * snakeEngine.tileCount),
+                        y: Math.floor(Math.random() * snakeEngine.tileCount)
+                    };
+                    valid = !snakeEngine.snake.some(t => t.x === snakeEngine.apple.x && t.y === snakeEngine.apple.y);
+                }
+            },
+
+            draw: () => {
+                const ctx = snakeEngine.ctx; const cs = snakeEngine.tileSize;
+                // Canvas komplett reinigen verhindert Artefakte
+                ctx.clearRect(0, 0, snakeEngine.cvs.width, snakeEngine.cvs.height);
+                ctx.fillStyle = "#111"; ctx.fillRect(0, 0, snakeEngine.cvs.width, snakeEngine.cvs.height);
+
+                const fW = snakeEngine.tileCount * cs;
+                const sX = (snakeEngine.cvs.width - fW) / 2;
+                const sY = (snakeEngine.cvs.height - fW) / 2;
+
+                ctx.strokeStyle = "#333"; ctx.lineWidth = 2; ctx.strokeRect(sX, sY, fW, fW);
+
+                ctx.fillStyle = "#4CAF50";
+                snakeEngine.snake.forEach(t => ctx.fillRect(sX + t.x * cs, sY + t.y * cs, cs - 1, cs - 1));
+
+                ctx.fillStyle = "#ff5252";
+                ctx.fillRect(sX + snakeEngine.apple.x * cs, sY + snakeEngine.apple.y * cs, cs - 1, cs - 1);
+
+                ctx.fillStyle = "white"; ctx.font = "bold 30px sans-serif"; ctx.fillText("Score: " + snakeEngine.score, 20, 50);
+            },
+
+            drawStatic: () => {
+                const ctx = snakeEngine.ctx; ctx.fillStyle = "#111"; ctx.fillRect(0, 0, snakeEngine.cvs.width, snakeEngine.cvs.height);
+            },
+
+            over: () => {
+                snakeEngine.running = false;
+                sendScore('snake', snakeEngine.score);
+                document.getElementById('gameOverScreen').style.display = 'block';
+                document.getElementById('finalScore').innerText = "Score: " + snakeEngine.score;
+                document.getElementById('finalScore').style.color = "#ff5252";
+            },
+
+            win: () => {
+                snakeEngine.running = false;
+                sendScore('snake', snakeEngine.score);
+                document.getElementById('gameOverScreen').style.display = 'block';
+                document.getElementById('gameTitleDisplay').innerHTML = "GEWONNEN!";
+                document.getElementById('finalScore').innerText = "Perfekt! Score: " + snakeEngine.score;
+                document.getElementById('finalScore').style.color = "#4CAF50";
+            }
+        };
+
+        window.addEventListener('resize', () => {
+            if (flappyEngine.running) flappyEngine.resize();
+            if (snakeEngine.running) snakeEngine.resize();
+        });
+
+        app.init();
+    </script>
+
+
+
+
+
+</body></html>
