@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teachermon 🃏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+
+        /* Background Glow */
+        .bg-glow {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 70%);
+        }
+
+        /* Glass Cards & Panels */
+        .glass-panel {
+            background: rgba(20, 25, 30, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        }
+
+        /* Inputs */
+        .input-holo {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: white;
+            transition: all 0.3s;
+        }
+        .input-holo:focus { border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); outline: none; }
+
+        /* Button Gradients */
+        .btn-buy { background: linear-gradient(135deg, #2563eb, #1d4ed8); transition: all 0.2s; }
+        .btn-buy:hover:not(:disabled) { box-shadow: 0 0 20px rgba(37, 99, 235, 0.5); transform: scale(1.02); }
+        .btn-buy:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-daily { background: linear-gradient(135deg, #10b981, #15803d); transition: all 0.2s; }
+        .btn-daily:hover:not(:disabled) { box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); transform: scale(1.02); }
+
+        .btn-admin { background: linear-gradient(135deg, #a855f7, #7e22ce); transition: all 0.2s; }
+        .btn-admin:hover:not(:disabled) { box-shadow: 0 0 20px rgba(168, 85, 247, 0.5); transform: scale(1.02); }
+
+        /* Card Rarities */
+        .card-wrapper { transition: all 0.3s; }
+        .card-wrapper:hover { transform: translateY(-5px); z-index: 10; }
+        
+        .rarity-common { border-color: rgba(160, 82, 45, 0.5); box-shadow: 0 4px 20px rgba(160, 82, 45, 0.1); }
+        .rarity-rare { border-color: rgba(59, 130, 246, 0.5); box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2); }
+        .rarity-premium { border-color: rgba(234, 179, 8, 0.6); box-shadow: 0 4px 25px rgba(234, 179, 8, 0.3); }
+        .rarity-episch { border-color: rgba(34, 197, 94, 0.7); box-shadow: 0 4px 30px rgba(34, 197, 94, 0.4); }
+        
+        /* Legendär mit Glitzer-Animation */
+        .rarity-legendaer {
+            border: 2px solid #a855f7;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+        .rarity-legendaer::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg); animation: glitter 3s infinite linear; pointer-events: none;
+        }
+        @keyframes glitter { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
+
+        /* Locked State */
+        .card-locked { opacity: 0.4; filter: grayscale(100%); }
+
+        /* Tabs */
+        .tab-btn { padding: 10px 20px; font-weight: bold; color: #9ca3af; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-btn:hover { color: #fff; }
+        .tab-btn.active { color: #a855f7; border-bottom: 2px solid #a855f7; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal */
+        #pack-modal { backdrop-filter: blur(20px); background: rgba(0, 0, 0, 0.85); }
+        .reveal-anim { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
+        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="bg-glow"></div>
+
+    <div class="max-w-6xl mx-auto">
+        
+        <header class="text-center mb-8 mt-4 relative">
+            <a href="/" class="absolute left-0 top-0 text-xs text-purple-400 hover:text-purple-300 tracking-widest mb-4 inline-block uppercase font-bold transition-colors">← Portal</a>
+            <h1 class="text-5xl md:text-7xl font-bold mb-4 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500 drop-shadow-lg">
+                Teachermon
+            </h1>
+            <p class="text-blue-200/60 text-lg">Sammle sie alle. Überlebe den Unterricht.</p>
+        </header>
+
+        <div id="login-warning" class="hidden glass-panel text-center py-8 rounded-2xl mb-8">
+            <p class="text-gray-400 mb-4">Bitte logge dich ein, um dein Sammelheft zu sehen.</p>
+            <a href="../index.html" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">Zum Login</a>
+        </div>
+
+        <div id="alert-box" class="hidden mb-6 text-center p-4 rounded-xl font-bold text-sm transition-all"></div>
+
+        <div id="app-container" class="hidden">
+            
+            <div class="glass-panel p-4 rounded-2xl mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex gap-2 border-b border-white/10 md:border-none w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                    <button class="tab-btn active whitespace-nowrap" onclick="switchTab('tab-album', this)">📖 Sammelheft</button>
+                    <button class="tab-btn whitespace-nowrap" onclick="switchTab('tab-inventory', this)">🎒 Mein Inventar</button>
+                    <button class="tab-btn whitespace-nowrap" onclick="switchTab('tab-trade', this)">🤝 Tauschbörse</button>
+                    <button class="tab-btn whitespace-nowrap hidden text-yellow-400" id="btn-admin-tab" onclick="switchTab('tab-admin', this)">⚙️ Admin</button>
+                </div>
+                <div class="text-right whitespace-nowrap shrink-0 bg-black/30 px-4 py-2 rounded-xl border border-white/5">
+                    <span class="text-xs text-gray-500 uppercase">Konto</span>
+                    <span class="text-xl font-bold text-white ml-2" id="user-balance">$0.00</span>
+                </div>
+            </div>
+
+            <div id="tab-album" class="tab-content active">
+                <div class="flex justify-between items-end mb-6">
+                    <h2 class="text-2xl font-bold text-white border-l-4 border-purple-500 pl-4">Alle Karten</h2>
+                    <p class="text-gray-400 font-mono text-sm" id="collection-progress">0/0 gesammelt</p>
+                </div>
+                <div id="album-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+
+            <div id="tab-inventory" class="tab-content">
+                <div class="glass-panel p-6 rounded-2xl mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center bg-black/40">
+                    <button onclick="claimDaily()" id="btn-daily" class="btn-daily px-8 py-4 rounded-xl uppercase tracking-wider text-sm font-bold text-white flex-1 flex justify-center gap-2">🎁 Daily Pack (Gratis)</button>
+                    <button onclick="buyPack()" id="btn-buy" class="btn-buy px-8 py-4 rounded-xl uppercase tracking-wider text-sm font-bold text-white flex-1 flex justify-center gap-2">🃏 Pack kaufen ($250)</button>
+                </div>
+                <h2 class="text-2xl font-bold text-white border-l-4 border-blue-500 pl-4 mb-6">Deine Sammlung</h2>
+                <div id="inventory-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+
+            <div id="tab-trade" class="tab-content">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="md:col-span-1">
+                        <div class="glass-panel p-6 rounded-2xl bg-black/40 sticky top-4">
+                            <h3 class="text-xl font-bold text-white mb-4">Neues Angebot</h3>
+                            <p class="text-xs text-gray-400 mb-4">Du kannst nur Karten anbieten, die du doppelt hast.</p>
+                            
+                            <label class="block text-xs text-gray-500 uppercase mb-1">Ich biete:</label>
+                            <select id="trade-offer" class="input-holo w-full p-3 rounded-lg mb-4 text-sm">
+                                <option value="">Lade Doppelte...</option>
+                            </select>
+
+                            <label class="block text-xs text-gray-500 uppercase mb-1">Ich suche:</label>
+                            <select id="trade-want" class="input-holo w-full p-3 rounded-lg mb-6 text-sm">
+                                <option value="">Lade Karten...</option>
+                            </select>
+
+                            <button onclick="createTrade()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg">
+                                Angebot aufgeben
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <h2 class="text-2xl font-bold text-white border-l-4 border-green-500 pl-4 mb-6">Schwarzes Brett</h2>
+                        <div id="trade-list" class="space-y-4">
+                            <div class="text-center text-gray-500 py-10">Lade Angebote...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-admin" class="tab-content">
+                <div class="glass-panel p-8 rounded-2xl bg-black/40 max-w-2xl mx-auto border-t-4 border-yellow-500">
+                    <h2 class="text-2xl font-bold text-white mb-6">Neue Karte erschaffen</h2>
+                    
+                    <form id="admin-card-form" onsubmit="createCard(event)" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Lehrer Name</label>
+                                <input type="text" id="ac-name" required class="input-holo w-full p-3 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Rarität</label>
+                                <select id="ac-rarity" class="input-holo w-full p-3 rounded-lg">
+                                    <option value="common">Common (Braun)</option>
+                                    <option value="rare">Rare (Blau)</option>
+                                    <option value="premium">Premium (Gelb)</option>
+                                    <option value="episch">Episch (Grün)</option>
+                                    <option value="legendaer">Legendär (Glitzer)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">☕ Kaffee/Tag</label>
+                                <input type="number" id="ac-kaffee" required value="0" class="input-holo w-full p-3 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">😩 Gequälte Schüler</label>
+                                <input type="number" id="ac-schueler" required value="0" class="input-holo w-full p-3 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">🧠 Intelligenz</label>
+                                <input type="number" id="ac-iq" required value="100" class="input-holo w-full p-3 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-4">
+                            <div class="col-span-3">
+                                <label class="block text-xs text-gray-400 mb-1">Spezial-Skill</label>
+                                <input type="text" id="ac-skill" required placeholder="z.B. Tafel wischen" class="input-holo w-full p-3 rounded-lg">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs text-gray-400 mb-1">Emoji/Bild</label>
+                                <input type="text" id="ac-img" required placeholder="👨‍🏫" class="input-holo w-full p-3 rounded-lg text-2xl text-center">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-admin w-full py-4 mt-4 rounded-xl text-white font-bold uppercase tracking-widest">
+                            In die Datenbank brennen
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="pack-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="text-center w-full max-w-4xl">
+            <h2 class="text-4xl font-bold text-white mb-8 drop-shadow-lg" id="modal-title">Pack geöffnet!</h2>
+            <div id="modal-cards" class="flex flex-wrap justify-center gap-6 mb-12"></div>
+            <button onclick="closeModal()" class="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white font-bold tracking-widest uppercase transition-all">
+                Zum Sammelheft
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.limazon.v6.rocks'; 
+        let currentUser = null;
+        let globalAlbum = []; // Speichert alle Kartendaten für die Formulare
+
+        async function fetchAuth(url, options = {}) {
+            options.credentials = 'include';
+            return fetch(url, options);
+        }
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+        });
+
+        async function checkAuth() {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/auth/me`);
+                if(res.ok) {
+                    currentUser = await res.json();
+                    document.getElementById('app-container').classList.remove('hidden');
+                    updateBalanceDisplay(currentUser.balance);
+                    
+                    if(currentUser.isAdmin) {
+                        document.getElementById('btn-admin-tab').classList.remove('hidden');
+                    }
+                    
+                    await loadAlbumData();
+                    await loadTrades(); // Lädt Trade-Board
+                } else {
+                    document.getElementById('login-warning').classList.remove('hidden');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+
+            if(tabId === 'tab-trade') loadTrades();
+        }
+
+        function updateBalanceDisplay(amount) {
+            document.getElementById('user-balance').innerText = `$${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+        function showAlert(msg, isError = false) {
+            const box = document.getElementById('alert-box');
+            box.innerText = msg;
+            box.className = `mb-6 text-center p-4 rounded-xl font-bold text-sm transition-all block ${isError ? 'bg-red-900/50 text-red-300 border border-red-500/30' : 'bg-green-900/50 text-green-300 border border-green-500/30'}`;
+            setTimeout(() => { box.classList.add('hidden'); }, 4000);
+        }
+
+        // --- KARTEN RENDERN (Sammelheft & Inventar) ---
+        async function loadAlbumData() {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/album`);
+                const data = await res.json();
+                if(res.ok) {
+                    globalAlbum = data.album;
+                    renderAlbum(globalAlbum);
+                    renderInventory(globalAlbum);
+                    updateTradeSelects(globalAlbum);
+                }
+            } catch(e) { showAlert("Fehler beim Laden der Karten.", true); }
+        }
+
+        function getRarityStyles(rarity) {
+            const styles = {
+                common: { border: 'rarity-common', text: 'text-orange-400' },
+                rare: { border: 'rarity-rare', text: 'text-blue-400' },
+                premium: { border: 'rarity-premium', text: 'text-yellow-400' },
+                episch: { border: 'rarity-episch', text: 'text-green-400' },
+                legendaer: { border: 'rarity-legendaer', text: 'text-purple-400 drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]' }
+            };
+            return styles[rarity] || styles.common;
+        }
+
+        function createCardHTML(card, showLock = false, isInventory = false) {
+            const rStyles = getRarityStyles(card.rarity);
+            const lockClass = (showLock && !card.owned) ? 'card-locked' : '';
+            
+            let actionHtml = '';
+            if(isInventory && card.duplicates > 0) {
+                actionHtml = `
+                    <div class="absolute -top-3 -right-3 bg-red-600 border border-red-400 text-white rounded-full w-8 h-8 flex items-center justify-center font-black text-sm shadow-lg z-20">
+                        ${card.duplicates + 1}
+                    </div>
+                    <button onclick="sellCard('${card.id}')" class="mt-4 w-full bg-white/10 hover:bg-green-600/80 border border-white/20 text-white py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all">
+                        Doppelte Verkaufen
+                    </button>
+                `;
+            } else if (isInventory) {
+                actionHtml = `<div class="mt-4 text-center text-xs text-gray-500 font-bold tracking-widest bg-black/20 py-2 rounded-lg">Im Album</div>`;
+            }
+
+            // NEU: Bild oder Emoji Logik
+            let mediaHtml = '';
+            if (card.img && card.img.startsWith('http')) {
+                // Es ist ein CDN-Link -> Zeige das echte Bild
+                mediaHtml = `
+                    <div class="w-full h-40 mb-4 rounded-xl overflow-hidden border border-white/10 shadow-inner">
+                        <img src="${card.img}" class="w-full h-full object-cover object-top" alt="${card.name}">
+                    </div>
+                `;
+            } else {
+                // Es ist ein Emoji (Fallback)
+                mediaHtml = `<div class="text-6xl text-center mb-4 pt-4 drop-shadow-md filter">${card.img || '❓'}</div>`;
+            }
+
+            return `
+                <div class="card-wrapper ${lockClass} h-full">
+                    <div class="glass-panel p-6 rounded-2xl relative h-full flex flex-col ${rStyles.border} bg-black/40">
+                        ${actionHtml}
+                        
+                        ${mediaHtml}
+                        
+                        <h3 class="font-bold text-xl text-center text-white mb-1">${card.name}</h3>
+                        <div class="text-center mb-4"><span class="text-xs uppercase font-black tracking-widest ${rStyles.text}">${card.rarity}</span></div>
+                        
+                        <div class="flex-grow bg-black/30 rounded-xl p-4 text-xs font-mono space-y-2 border border-white/5">
+                            <div class="flex justify-between items-center"><span class="text-gray-400">☕ Kaffee:</span> <span class="text-white font-bold">${card.kalterKaffee}</span></div>
+                            <div class="flex justify-between items-center"><span class="text-gray-400">😩 Gequält:</span> <span class="text-white font-bold">${card.gequaelt}</span></div>
+                            <div class="flex justify-between items-center"><span class="text-gray-400">🧠 IQ:</span> <span class="text-white font-bold">${card.intelligenz}</span></div>
+                        </div>
+                        <div class="mt-4 text-center"><span class="text-[10px] text-gray-500 uppercase">Skill</span><br><span class="text-sm text-purple-300 italic truncate block" title="${card.skills}">"${card.skills}"</span></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAlbum(album) {
+            const grid = document.getElementById('album-grid');
+            grid.innerHTML = '';
+            let ownedCount = 0;
+            album.forEach(card => {
+                if(card.owned) ownedCount++;
+                grid.innerHTML += createCardHTML(card, true, false); // showLock=true, isInv=false
+            });
+            document.getElementById('collection-progress').innerText = `${ownedCount}/${album.length} gesammelt`;
+        }
+
+        function renderInventory(album) {
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
+            const ownedCards = album.filter(c => c.owned);
+            
+            if(ownedCards.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">Dein Inventar ist leer. Öffne Packs!</div>';
+                return;
+            }
+            
+            ownedCards.forEach(card => {
+                grid.innerHTML += createCardHTML(card, false, true); // showLock=false, isInv=true
+            });
+        }
+
+        // --- PACKS & VERKAUF ---
+        async function claimDaily() {
+            const btn = document.getElementById('btn-daily'); btn.disabled = true; btn.innerText = "...";
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/pack/daily`, { method: 'POST' });
+                const data = await res.json();
+                if(res.ok) { showPackModal([data.card], "🎁 Daily Pack!"); } else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Fehler.", true); } finally { btn.disabled = false; btn.innerText = "🎁 Daily Pack (Gratis)"; }
+        }
+
+        async function buyPack() {
+            const btn = document.getElementById('btn-buy'); btn.disabled = true; btn.innerText = "...";
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/pack/buy`, { method: 'POST' });
+                const data = await res.json();
+                if(res.ok) { updateBalanceDisplay(data.newBalance); showPackModal(data.cards, "🃏 Booster Pack!"); } else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Fehler.", true); } finally { btn.disabled = false; btn.innerText = "🃏 Pack kaufen ($250)"; }
+        }
+
+        async function sellCard(cardId) {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/sell`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cardId })
+                });
+                const data = await res.json();
+                if(res.ok) { showAlert(data.message); await checkAuth(); } else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Verkaufsfehler.", true); }
+        }
+
+        function showPackModal(cards, title) {
+            document.getElementById('modal-title').innerText = title;
+            const container = document.getElementById('modal-cards');
+            container.innerHTML = '';
+            cards.forEach((card, index) => {
+                const rStyles = getRarityStyles(card.rarity);
+                
+                // Bild oder Emoji beim Auspacken
+                let mediaHtml = '';
+                if (card.img && card.img.startsWith('http')) {
+                    mediaHtml = `<img src="${card.img}" class="w-32 h-32 object-cover rounded-xl shadow-lg border border-white/20 mb-4">`;
+                } else {
+                    mediaHtml = `<div class="text-7xl mb-4 drop-shadow-xl filter">${card.img || '❓'}</div>`;
+                }
+
+                container.innerHTML += `
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center w-64 h-80 reveal-anim ${rStyles.border} bg-black/80" style="animation-delay: ${index*0.3}s">
+                        ${mediaHtml}
+                        <h3 class="font-bold text-2xl text-center text-white mb-2">${card.name}</h3>
+                        <span class="text-xs uppercase font-black tracking-widest ${rStyles.text} bg-black/50 px-3 py-1 rounded-full border border-white/10">${card.rarity}</span>
+                    </div>`;
+            });
+            document.getElementById('pack-modal').classList.remove('hidden');
+        }
+        
+        function closeModal() { document.getElementById('pack-modal').classList.add('hidden'); loadAlbumData(); }
+
+        // --- TRADING SYSTEM ---
+        function updateTradeSelects(album) {
+            const selOffer = document.getElementById('trade-offer');
+            const selWant = document.getElementById('trade-want');
+            
+            // Ich Biete: Nur Karten mit Duplikaten (>0)
+            const dupes = album.filter(c => c.owned && c.duplicates > 0);
+            selOffer.innerHTML = dupes.length > 0 ? '<option value="">-- Wähle eine doppelte Karte --</option>' : '<option value="">Du hast keine doppelten Karten.</option>';
+            dupes.forEach(c => selOffer.innerHTML += `<option value="${c.id}">${c.name} (${c.rarity}) - ${c.duplicates}x über</option>`);
+
+            // Ich Suche: Alle Karten (oder nur die, die man NICHT hat, aber man darf auch sammeln)
+            selWant.innerHTML = '<option value="">-- Wähle eine Wunschkarte --</option>';
+            album.forEach(c => selWant.innerHTML += `<option value="${c.id}">${c.name} (${c.rarity})</option>`);
+        }
+
+        async function createTrade() {
+            const offerId = document.getElementById('trade-offer').value;
+            const wantId = document.getElementById('trade-want').value;
+            if(!offerId || !wantId) return showAlert("Bitte wähle beide Karten aus.", true);
+
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/trades/create`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ offerCardId: offerId, wantCardId: wantId })
+                });
+                const data = await res.json();
+                if(res.ok) { showAlert(data.message); await loadAlbumData(); loadTrades(); } else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Fehler.", true); }
+        }
+
+        async function loadTrades() {
+            const list = document.getElementById('trade-list');
+            list.innerHTML = '<div class="text-center text-gray-500 py-4">Lade...</div>';
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/trades`);
+                const data = await res.json();
+                if(data.trades.length === 0) { list.innerHTML = '<div class="glass-panel p-6 text-center text-gray-400 rounded-xl">Keine aktiven Angebote.</div>'; return; }
+                
+                list.innerHTML = '';
+                data.trades.forEach(t => {
+                    const isMyTrade = t.offererId === currentUser.userId;
+                    const canAccept = !isMyTrade && globalAlbum.some(c => c.id === t.wantCardId && c.owned && c.duplicates > 0);
+                    
+                    let btnHtml = '';
+                    if (isMyTrade) btnHtml = `<button onclick="cancelTrade('${t._id}')" class="bg-red-900/50 hover:bg-red-600 border border-red-500 text-red-200 px-4 py-2 rounded-lg text-sm font-bold transition-all">Abbrechen</button>`;
+                    else if (canAccept) btnHtml = `<button onclick="acceptTrade('${t._id}')" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-green-500/30">Tauschen</button>`;
+                    else btnHtml = `<span class="text-xs text-gray-500 border border-gray-700 px-3 py-1 rounded">Fehlt dir doppelt</span>`;
+
+                    list.innerHTML += `
+                        <div class="glass-panel p-4 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-4 bg-black/40 border-l-2 border-green-500/50">
+                            <div class="flex items-center gap-4 text-center sm:text-left">
+                                <div class="bg-black/50 p-2 rounded-lg border border-white/5">
+                                    <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Bietet an</span>
+                                    <span class="text-xl">${t.offerCard.img} ${t.offerCard.name}</span>
+                                </div>
+                                <span class="text-gray-600">⇄</span>
+                                <div class="bg-black/50 p-2 rounded-lg border border-white/5">
+                                    <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Sucht</span>
+                                    <span class="text-xl">${t.wantCard.img} ${t.wantCard.name}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center sm:items-end gap-2">
+                                <span class="text-xs text-gray-400 font-mono">von @${t.offererUsername}</span>
+                                ${btnHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch(e) { list.innerHTML = '<div class="text-red-500">Fehler.</div>'; }
+        }
+
+        async function acceptTrade(id) {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/trades/accept/${id}`, { method: 'POST' });
+                const data = await res.json();
+                if(res.ok) { showAlert(data.message); await loadAlbumData(); loadTrades(); } else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Fehler.", true); }
+        }
+
+        async function cancelTrade(id) {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/trades/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if(res.ok) { showAlert(data.message); await loadAlbumData(); loadTrades(); } else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Fehler.", true); }
+        }
+
+        // --- ADMIN ---
+        async function createCard(e) {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('ac-name').value,
+                rarity: document.getElementById('ac-rarity').value,
+                kalterKaffee: document.getElementById('ac-kaffee').value,
+                gequaelt: document.getElementById('ac-schueler').value,
+                intelligenz: document.getElementById('ac-iq').value,
+                skills: document.getElementById('ac-skill').value,
+                img: document.getElementById('ac-img').value
+            };
+
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/cards`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if(res.ok) { 
+                    showAlert(data.message); 
+                    document.getElementById('admin-card-form').reset();
+                    loadAlbumData(); // Neue Karte ins UI laden
+                } else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Fehler.", true); }
+        }
+    </script>
+</body>
+</html>
