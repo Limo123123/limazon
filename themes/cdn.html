@@ -1,87 +1,130 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Limazon CDN</title>
+    <title>Limazon CDN ☁️</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
-        body { background-color: #050505; color: white; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: #050505;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
         .glass-panel {
             background: rgba(20, 25, 30, 0.7);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-top: 1px solid rgba(255, 255, 255, 0.15);
         }
-        #image-preview-container { max-height: 400px; width: 100%; display: none; }
-        img { display: block; max-width: 100%; }
-        
+
+        #image-preview-container {
+            max-height: 400px;
+            width: 100%;
+            display: none;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
         .gallery-img {
             aspect-ratio: 1;
             object-fit: cover;
             border-radius: 8px;
             transition: transform 0.2s;
         }
-        .gallery-img:hover { transform: scale(1.05); }
+
+        .gallery-item:hover .gallery-img {
+            transform: scale(1.05);
+        }
     </style>
 </head>
+
 <body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-10 relative">
+            <a href="/"
+                class="absolute left-0 top-0 text-xs text-blue-400 hover:text-blue-300 tracking-widest mb-4 inline-block uppercase font-bold transition-colors">←
+                Portal</a>
             <h1 class="text-4xl font-bold mb-2">☁️ Limazon CDN</h1>
             <p class="text-gray-400">Lade Bilder hoch, schneide sie zu und kopiere den Link.</p>
         </header>
 
-        <div class="glass-panel p-6 rounded-2xl mb-8">
-            <h2 class="text-xl font-bold mb-4">1. Bild auswählen & zuschneiden</h2>
-            
-            <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 mb-4 cursor-pointer"/>
+        <div class="glass-panel p-6 rounded-2xl mb-8 border-t-4 border-blue-500">
+            <h2 class="text-xl font-bold mb-4 text-white">1. Bild auswählen & zuschneiden</h2>
+
+            <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp"
+                class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 mb-4 cursor-pointer" />
 
             <div id="image-preview-container" class="bg-black rounded-xl overflow-hidden mb-4 border border-white/10">
                 <img id="image-preview" src="">
             </div>
 
-            <button id="btn-upload" class="hidden w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg">
+            <button id="btn-upload"
+                class="hidden w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg">
                 ☁️ Zuschneiden & Hochladen
             </button>
             <p id="upload-status" class="text-center mt-2 font-bold"></p>
         </div>
 
         <div class="glass-panel p-6 rounded-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold border-l-4 border-blue-500 pl-3">2. Deine Bilder</h2>
-                <button onclick="loadGallery()" class="text-sm bg-white/10 px-3 py-1 rounded hover:bg-white/20">🔄 Aktualisieren</button>
+            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                <h2 class="text-xl font-bold border-l-4 border-blue-500 pl-3">2. Server Galerie</h2>
+                <button onclick="loadGallery()"
+                    class="text-sm bg-white/10 px-4 py-2 rounded-lg hover:bg-white/20 transition-colors font-bold">🔄
+                    Aktualisieren</button>
             </div>
-            
-            <div id="gallery" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                </div>
+
+            <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            </div>
         </div>
     </div>
 
     <script>
         const API_BASE = 'https://api.limazon.v6.rocks';
         let cropper = null;
+        let currentUser = null;
 
-        // Bild auswählen
-        document.getElementById('file-input').addEventListener('change', function(e) {
+        // Init App
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            loadGallery();
+        });
+
+        // 1. Auth-Check (Wichtig für den Admin-Button!)
+        async function checkAuth() {
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    currentUser = await res.json();
+                }
+            } catch (e) { console.error("Auth Check Error", e); }
+        }
+
+        // 2. Bild auswählen & Cropper starten
+        document.getElementById('file-input').addEventListener('change', function (e) {
             const files = e.target.files;
             if (files && files.length > 0) {
                 const file = files[0];
                 const reader = new FileReader();
-                
-                reader.onload = function(event) {
+
+                reader.onload = function (event) {
                     const image = document.getElementById('image-preview');
                     image.src = event.target.result;
                     document.getElementById('image-preview-container').style.display = 'block';
                     document.getElementById('btn-upload').classList.remove('hidden');
 
-                    if (cropper) cropper.destroy(); // Alten cropper löschen
-                    
+                    if (cropper) cropper.destroy();
+
                     cropper = new Cropper(image, {
-                        aspectRatio: NaN, // Frei zuschneidbar (oder auf 1 stellen für Quadrate)
+                        aspectRatio: NaN, // Frei
                         viewMode: 1,
                         autoCropArea: 1
                     });
@@ -90,17 +133,16 @@
             }
         });
 
-        // Hochladen
+        // 3. Hochladen
         document.getElementById('btn-upload').addEventListener('click', async () => {
             if (!cropper) return;
-            
+
             const btn = document.getElementById('btn-upload');
             const status = document.getElementById('upload-status');
-            
+
             btn.disabled = true;
             btn.innerText = "Lade hoch...";
-            
-            // Cropper-Bild in einen Blob (Datei) umwandeln
+
             cropper.getCroppedCanvas({
                 maxWidth: 1024,
                 maxHeight: 1024,
@@ -114,15 +156,13 @@
                         credentials: 'include',
                         body: formData
                     });
-                    
+
                     const data = await res.json();
-                    
+
                     if (res.ok) {
-                        status.innerHTML = `<span class="text-green-400">Erfolg! Link in Zwischenablage kopiert.</span>`;
-                        // Direkt in Zwischenablage
+                        status.innerHTML = `<span class="text-green-400">Erfolg! Link kopiert.</span>`;
                         navigator.clipboard.writeText(data.url);
-                        
-                        // UI Reset
+
                         setTimeout(() => {
                             status.innerText = "";
                             document.getElementById('file-input').value = "";
@@ -130,13 +170,13 @@
                             btn.classList.add('hidden');
                             cropper.destroy();
                             cropper = null;
-                            loadGallery(); // Galerie updaten
+                            loadGallery();
                         }, 2000);
 
                     } else {
                         status.innerHTML = `<span class="text-red-400">Fehler: ${data.error}</span>`;
                     }
-                } catch(e) {
+                } catch (e) {
                     status.innerHTML = `<span class="text-red-400">Verbindungsfehler.</span>`;
                 } finally {
                     btn.disabled = false;
@@ -145,42 +185,80 @@
             }, 'image/jpeg');
         });
 
-        // Galerie laden
+        // 4. Galerie laden
         async function loadGallery() {
             const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '<div class="col-span-full text-center text-gray-500">Lade...</div>';
-            
+            gallery.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Lade Bilder...</div>';
+
             try {
                 const res = await fetch(`${API_BASE}/api/cdn/list`, { credentials: 'include' });
                 const data = await res.json();
-                
+
                 if (data.images && data.images.length > 0) {
                     gallery.innerHTML = '';
                     data.images.forEach(img => {
+
+                        // Wenn Admin, füge den Löschen-Button ins Overlay hinzu
+                        let adminDeleteHtml = '';
+                        if (currentUser && currentUser.isAdmin) {
+                            adminDeleteHtml = `<button onclick="deleteImage('${img.filename}')" class="bg-red-600/90 text-white text-xs px-3 py-2 rounded shadow-lg hover:bg-red-500 font-bold w-full">🗑️ Löschen</button>`;
+                        }
+
                         gallery.innerHTML += `
-                            <div class="relative group">
-                                <img src="${img.url}" class="gallery-img w-full bg-black/50 border border-white/5" loading="lazy">
-                                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                                    <button onclick="copyToClipboard('${img.url}')" class="bg-blue-600 text-white text-xs px-3 py-2 rounded shadow-lg hover:bg-blue-500">Kopieren</button>
+                            <div class="gallery-item relative group rounded-lg overflow-hidden border border-white/10 bg-black/50 aspect-square">
+                                <img src="${img.url}" class="gallery-img w-full h-full object-cover" loading="lazy">
+                                
+                                <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4">
+                                    <button onclick="copyToClipboard('${img.url}')" class="bg-blue-600 text-white text-xs px-3 py-2 rounded shadow-lg hover:bg-blue-500 font-bold w-full">🔗 Kopieren</button>
+                                    ${adminDeleteHtml}
                                 </div>
                             </div>
                         `;
                     });
                 } else {
-                    gallery.innerHTML = '<div class="col-span-full text-center text-gray-500">Noch keine Bilder hochgeladen.</div>';
+                    gallery.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Noch keine Bilder auf dem Server.</div>';
                 }
-            } catch(e) {
-                gallery.innerHTML = '<div class="col-span-full text-red-400 text-center">Fehler beim Laden.</div>';
+            } catch (e) {
+                gallery.innerHTML = '<div class="col-span-full text-red-400 text-center py-10">Fehler beim Laden der Galerie.</div>';
             }
         }
 
+        // 5. Bild in die Zwischenablage
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text);
-            alert("URL kopiert:\n" + text);
+            // Kleines visuelles Feedback ohne nerviges Alert()
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Kopiert! ✔️";
+            btn.classList.replace('bg-blue-600', 'bg-green-600');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.replace('bg-green-600', 'bg-blue-600');
+            }, 1500);
         }
 
-        // Init
-        loadGallery();
+        // 6. Bild löschen (Nur für Admins)
+        async function deleteImage(filename) {
+            if (!confirm("Bist du sicher, dass du dieses Bild endgültig löschen möchtest? (Wenn es in Produkten genutzt wird, fehlt es dort danach!)")) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/cdn/delete/${filename}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    loadGallery(); // Galerie sofort neu laden
+                } else {
+                    alert("Fehler: " + (data.error || "Unbekannt"));
+                }
+            } catch (e) {
+                alert("Verbindungsfehler beim Löschen.");
+            }
+        }
     </script>
 </body>
+
 </html>
