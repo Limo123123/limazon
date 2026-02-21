@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Limo Grand Lottery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #050505;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pot-glow {
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .ticket-card {
+            background: linear-gradient(135deg, #1e1e1e 0%, #111 100%);
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+
+<body class="p-6">
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-6xl font-black tracking-tighter mb-2">LIMO <span class="text-blue-500">LOTTERY</span></h1>
+            <p class="text-gray-500">Jede Woche. Drei Gewinner. Ein riesiger Pot.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="glass rounded-3xl p-8 text-center flex flex-col justify-center">
+                <h2 class="text-sm uppercase tracking-widest text-gray-400 mb-2">Aktueller Jackpot</h2>
+                <div id="potDisplay" class="text-6xl font-bold text-blue-400 pot-glow mb-4">$0</div>
+                <p class="text-xs text-gray-500">Gespeist durch Casino-Verluste & Ticketverkäufe</p>
+
+                <div class="mt-8 pt-8 border-t border-white/5 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <div class="text-gray-400">Lose im Spiel</div>
+                        <div id="totalTickets" class="font-bold text-xl">0</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-400">Nächste Ziehung</div>
+                        <div class="font-bold text-xl text-orange-400">Sonntag</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass rounded-3xl p-8">
+                <h2 class="text-2xl font-bold mb-6">Deine Chancen</h2>
+                <div class="ticket-card p-6 rounded-2xl mb-6">
+                    <div class="text-sm text-gray-400">Deine Lose</div>
+                    <div id="myTickets" class="text-4xl font-black">0</div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between bg-black/40 p-4 rounded-xl border border-white/5">
+                        <span>Preis pro Los</span>
+                        <span class="font-bold text-green-400">$1,000</span>
+                    </div>
+                    <input type="number" id="ticketCount" value="1" min="1"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl p-4 outline-none focus:border-blue-500 transition-all">
+                    <button onclick="buyTickets()"
+                        class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold transition-all transform active:scale-95">LOSE
+                        KAUFEN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12 glass rounded-3xl p-8">
+            <h3 class="text-xl font-bold mb-4">Wie funktioniert's?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-400">
+                <p>1. Jedes Mal, wenn jemand im Casino verliert, landet der Einsatz hier im Pot.</p>
+                <p>2. Kaufe Lose, um deinen Namen in die Trommel zu werfen.</p>
+                <p>3. Sonntags werden 3 Gewinner gezogen (60% / 25% / 15% vom Pot).</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadStatus() {
+            const res = await fetch('https://api.limazon.v6.rocks/api/lottery/status', { credentials: 'include' });
+            const data = await res.json();
+            document.getElementById('potDisplay').innerText = '$' + data.pot.toLocaleString();
+            document.getElementById('myTickets').innerText = data.myTickets;
+            document.getElementById('totalTickets').innerText = data.totalTickets;
+        }
+
+        async function buyTickets() {
+            const input = document.getElementById('ticketCount');
+            const count = parseInt(input.value);
+
+            if (isNaN(count) || count <= 0) {
+                alert("Bitte eine gültige Anzahl eingeben.");
+                return;
+            }
+
+            try {
+                const res = await fetch('https://api.limazon.v6.rocks/api/lottery/buy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ count: count }) // Schickt die Anzahl mit
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    // Erfolg-Feedback
+                    alert(data.message);
+                    loadStatus(); // Aktualisiert die Anzeige der eigenen Lose und den Pot
+                }
+            } catch (e) {
+                alert("Netzwerkfehler beim Loskauf.");
+            }
+        }
+
+        loadStatus();
+        setInterval(loadStatus, 30000); // Auto-Update alle 30 Sek
+    </script>
+</body>
+
+</html>

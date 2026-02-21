@@ -13,9 +13,12 @@
             color: #fff;
             min-height: 100vh;
             display: flex;
+            flex-direction: column; /* Erlaubt natürliches Stapeln */
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto; /* Scrollen erlauben */
+            padding: 40px 10px; /* Platz oben/unten für Laptops */
         }
 
         /* Background Effects */
