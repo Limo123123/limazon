@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon | Immobilien & WGs 🏠</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;600;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding-bottom: 5rem;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.12), transparent 70%);
+        }
+
+        .glass-panel {
+            background: rgba(20, 25, 30, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .house-card {
+            transition: all 0.3s ease;
+        }
+
+        .house-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-holo {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: white;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-holo:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Spezial-Effekt für Bunker */
+        .bunker-glow {
+            border-color: rgba(239, 68, 68, 0.4) !important;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.15) !important;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+    <div class="bg-glow"></div>
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <div>
+                <a href="/index.html"
+                    class="text-[10px] text-blue-400 hover:text-blue-300 tracking-widest uppercase font-bold transition-colors">←
+                    Zurück zum Portal</a>
+                <h1 class="text-4xl md:text-6xl font-bold text-white mt-2 tracking-tighter">Immobilien<span
+                        class="text-blue-500">.</span></h1>
+            </div>
+            <div class="glass-panel px-8 py-4 rounded-2xl border-t border-white/10 flex items-center gap-4">
+                <div>
+                    <span class="text-[10px] text-gray-500 uppercase font-black block tracking-widest">Verfügbares
+                        Kapital</span>
+                    <span id="user-balance" class="text-2xl md:text-3xl font-black text-white">$0.00</span>
+                </div>
+                <div class="text-3xl">💰</div>
+            </div>
+        </header>
+
+        <div id="alert-box" class="hidden mb-6 p-4 rounded-xl font-bold text-center animate-pulse"></div>
+
+        <div id="invites-section" class="hidden mb-12">
+            <h2 class="text-xl font-bold text-yellow-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <span>✉️</span> Neue WG-Einladungen
+            </h2>
+            <div id="invites-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
+        </div>
+
+        <div id="my-home-section" class="hidden mb-16">
+            <h2 class="text-xl font-bold text-blue-400 uppercase tracking-widest mb-4">Aktueller Wohnsitz</h2>
+            <div
+                class="glass-panel p-6 md:p-10 rounded-3xl border-l-4 border-blue-500 flex flex-col lg:flex-row gap-10 items-center relative overflow-hidden">
+                <div id="my-home-icon" class="text-9xl p-8 bg-black/40 rounded-3xl shadow-inner relative z-10">🏡</div>
+
+                <div class="flex-1 relative z-10 w-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 id="my-home-name" class="text-4xl font-black text-white mb-1">Laden...</h3>
+                            <p id="my-home-role-badge"
+                                class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                Rolle</p>
+                        </div>
+                    </div>
+
+                    <p id="my-home-desc" class="text-gray-400 mb-6 text-lg italic leading-relaxed"></p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-black/30 p-4 rounded-2xl border border-white/5">
+                            <span class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Tresor-Schutz</span>
+                            <span id="my-home-protection" class="text-2xl font-black text-green-400">0%</span>
+                        </div>
+                        <div class="bg-black/30 p-4 rounded-2xl border border-white/5">
+                            <span
+                                class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Regenerations-Bonus</span>
+                            <span id="my-home-energy" class="text-2xl font-black text-yellow-400">x1.0</span>
+                        </div>
+                        <div class="bg-black/30 p-4 rounded-2xl border border-white/5">
+                            <span class="text-[10px] text-gray-500 uppercase font-bold block mb-1">Miete / 24h</span>
+                            <span id="my-home-rent" class="text-2xl font-black text-red-400">$0</span>
+                        </div>
+                    </div>
+
+                    <div id="owner-actions-container" class="hidden mt-6 flex gap-4">
+                        <button onclick="sellHouse()"
+                            class="px-6 py-2 bg-orange-600 hover:bg-orange-500 border border-orange-400 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-orange-900/20">
+                            🏠 Immobilie an Makler verkaufen (75% Erstattung)
+                        </button>
+                    </div>
+
+                    <div id="leave-btn-container" class="hidden mt-6">
+                        <button onclick="removeUser()"
+                            class="px-6 py-2 bg-red-900/30 hover:bg-red-900/50 border border-red-500/50 text-red-200 text-xs font-bold rounded-xl transition-all">Auszug
+                            aus der WG bestätigen</button>
+                    </div>
+                </div>
+
+                <div id="wg-management"
+                    class="hidden w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-white/10 pt-8 lg:pt-0 lg:pl-10 relative z-10">
+                    <h4 class="font-bold text-white mb-4 flex items-center justify-between">
+                        <span>👥 Mitbewohner</span>
+                        <span id="slots-info" class="text-[10px] bg-white/5 px-2 py-1 rounded text-gray-400">Slots:
+                            0/0</span>
+                    </h4>
+
+                    <div class="space-y-3 mb-6 max-h-48 overflow-y-auto no-scrollbar pr-2" id="roommate-list">
+                    </div>
+
+                    <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold block mb-2">Jemanden einladen</span>
+                        <div class="flex gap-2">
+                            <input type="text" id="invite-username" placeholder="Spielername..."
+                                class="input-holo flex-1 px-4 py-2 rounded-xl text-sm">
+                            <button onclick="inviteRoommate()"
+                                class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all shadow-lg shadow-blue-900/20">Senden</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold text-white border-l-4 border-blue-600 pl-4">Immobilienmarkt</h2>
+            <div class="text-xs text-gray-500 font-mono">Real Estate Protocol v2.1</div>
+        </div>
+
+        <div id="market-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.limazon.v6.rocks';
+
+        async function fetchAuth(url, options = {}) {
+            options.credentials = 'include';
+            return fetch(url, options);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadData();
+        });
+
+        function showLocalAlert(msg, isError = false) {
+            const box = document.getElementById('alert-box');
+            box.innerText = msg;
+            box.className = `mb-6 p-4 rounded-xl font-bold text-center block ${isError ? 'bg-red-900/50 text-red-200 border border-red-500' : 'bg-green-900/50 text-green-200 border border-green-500'}`;
+            setTimeout(() => box.classList.add('hidden'), 5000);
+        }
+
+        async function loadData() {
+            try {
+                // User & Balance
+                const meRes = await fetchAuth(`${API_BASE_URL}/api/auth/me`);
+                if (meRes.ok) {
+                    const user = await meRes.json();
+                    document.getElementById('user-balance').innerText = `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                    window.currentUserId = user.userId;
+                }
+
+                // Markt & Home & Invites parallel laden
+                const [marketRes, homeRes, inviteRes] = await Promise.all([
+                    fetchAuth(`${API_BASE_URL}/api/realestate/market`),
+                    fetchAuth(`${API_BASE_URL}/api/realestate/my-home`),
+                    fetchAuth(`${API_BASE_URL}/api/realestate/wg/my-invites`)
+                ]);
+
+                const marketData = await marketRes.json();
+                renderMarket(marketData.houses);
+
+                const homeData = await homeRes.json();
+                renderMyHome(homeData);
+
+                const inviteData = await inviteRes.json();
+                renderInvites(inviteData.invites);
+
+            } catch (e) { console.error("Data Load Error:", e); }
+        }
+
+        function renderMarket(houses) {
+            const grid = document.getElementById('market-grid');
+            grid.innerHTML = '';
+            houses.forEach(h => {
+                const isSpecial = h.id === 'bunker';
+                grid.innerHTML += `
+                    <div class="glass-panel p-8 rounded-[2rem] house-card flex flex-col h-full bg-black/20 ${isSpecial ? 'bunker-glow' : ''}">
+                        <div class="text-7xl mb-6 text-center drop-shadow-2xl">${h.img}</div>
+                        <h3 class="text-2xl font-black text-white mb-2">${h.name}</h3>
+                        <p class="text-gray-400 text-sm mb-6 flex-grow leading-relaxed">${h.desc}</p>
+                        
+                        <div class="space-y-2 mb-8">
+                            <div class="flex justify-between text-[11px] uppercase tracking-widest font-bold">
+                                <span class="text-gray-500">🛡️ Tresor-Schutz</span>
+                                <span class="text-green-400">${Math.round(h.protection * 100)}%</span>
+                            </div>
+                            <div class="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                                <div class="bg-green-500 h-full" style="width: ${h.protection * 100}%"></div>
+                            </div>
+                            <div class="flex justify-between text-[11px] uppercase tracking-widest font-bold pt-2">
+                                <span class="text-gray-500">👥 Max. Bewohner</span>
+                                <span class="text-blue-400">${h.maxRoommates + 1} Personen</span>
+                            </div>
+                        </div>
+
+                        <button onclick="buyHouse('${h.id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-900/20 uppercase tracking-widest text-xs">
+                            Erwerben: $${h.price.toLocaleString()}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function renderMyHome(data) {
+            const section = document.getElementById('my-home-section');
+            if (!data.hasHome) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+
+            const details = data.details;
+            document.getElementById('my-home-name').innerText = details.name;
+            document.getElementById('my-home-desc').innerText = details.desc;
+            document.getElementById('my-home-icon').innerText = details.img;
+            document.getElementById('my-home-protection').innerText = `${Math.round(details.protection * 100)}%`;
+            document.getElementById('my-home-energy').innerText = `x${details.energyBonus || 1.0}`;
+            document.getElementById('my-home-rent').innerText = `$${details.rent.toLocaleString()}`;
+
+            const roleEl = document.getElementById('my-home-role-badge');
+            roleEl.innerText = data.isOwner ? "Eigentümer" : "Mitbewohner";
+            roleEl.className = data.isOwner ?
+                "inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" :
+                "inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-500/30";
+
+            if (data.isOwner) {
+                document.getElementById('wg-management').classList.remove('hidden');
+                document.getElementById('leave-btn-container').classList.add('hidden');
+                document.getElementById('owner-actions-container').classList.remove('hidden');
+                document.getElementById('slots-info').innerText = `Besetzt: ${data.roommates.length} / ${details.maxRoommates}`;
+
+                const rList = document.getElementById('roommate-list');
+                rList.innerHTML = '';
+                if (data.roommates.length === 0) {
+                    rList.innerHTML = '<p class="text-xs text-gray-600 py-4 text-center">Keine Untermieter vorhanden.</p>';
+                } else {
+                    data.roommates.forEach(r => {
+                        rList.innerHTML += `
+                            <div class="bg-white/5 px-4 py-3 rounded-xl text-xs flex justify-between items-center text-white border border-white/5 group">
+                                <span class="font-bold">@${r.username}</span>
+                                <button onclick="removeUser('${r._id}')" class="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-400 font-black tracking-widest uppercase text-[10px]">Kick</button>
+                            </div>`;
+                    });
+                }
+            } else {
+                document.getElementById('wg-management').classList.add('hidden');
+                document.getElementById('owner-actions-container').classList.add('hidden');
+                document.getElementById('leave-btn-container').classList.remove('hidden');
+            }
+        }
+
+        function renderInvites(invites) {
+            const container = document.getElementById('invites-section');
+            const list = document.getElementById('invites-list');
+            if (!invites || invites.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            container.classList.remove('hidden');
+            list.innerHTML = '';
+            invites.forEach(inv => {
+                list.innerHTML += `
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center border-l-4 border-yellow-500 gap-4 bg-yellow-500/5">
+                        <div class="text-center sm:text-left">
+                            <p class="text-sm font-bold text-white">Einladung von <span class="text-yellow-400">@${inv.ownerName}</span></p>
+                            <p class="text-xs text-gray-500">Möchtest du in das Objekt "${inv.houseName}" einziehen?</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="respondInvite('${inv._id}', 'accept')" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all">Einziehen</button>
+                            <button onclick="respondInvite('${inv._id}', 'decline')" class="bg-white/10 hover:bg-white/20 text-gray-300 px-5 py-2 rounded-xl text-xs font-bold transition-all">Ablehnen</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        async function buyHouse(houseId) {
+            if (!confirm("Immobilie kaufen? Dein aktueller Wohnsitz wird automatisch gekündigt/verkauft.")) return;
+            const res = await fetchAuth(`${API_BASE_URL}/api/realestate/buy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ houseId })
+            });
+            const data = await res.json();
+            if (res.ok) { showLocalAlert(data.message); setTimeout(() => location.reload(), 1500); }
+            else showLocalAlert(data.error, true);
+        }
+
+        async function inviteRoommate() {
+            const username = document.getElementById('invite-username').value;
+            if (!username) return;
+            const res = await fetchAuth(`${API_BASE_URL}/api/realestate/wg/invite`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ targetUsername: username })
+            });
+            const data = await res.json();
+            if (res.ok) { showLocalAlert(data.message); document.getElementById('invite-username').value = ''; }
+            else showLocalAlert(data.error, true);
+        }
+
+        async function respondInvite(inviteId, action) {
+            const res = await fetchAuth(`${API_BASE_URL}/api/realestate/wg/respond`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inviteId, action })
+            });
+            const data = await res.json();
+            if (res.ok) location.reload();
+            else showLocalAlert(data.error, true);
+        }
+
+        async function sellHouse() {
+            if (!confirm("Möchtest du dein Haus wirklich verkaufen? Du erhältst 75% des Kaufpreises zurück. Deine Mitbewohner werden sofort obdachlos!")) return;
+
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/realestate/sell`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function removeUser(targetUserId = null) {
+            const msg = targetUserId ? "Diesen Mitbewohner wirklich vor die Tür setzen?" : "Möchtest du die WG wirklich verlassen?";
+            if (!confirm(msg)) return;
+
+            const res = await fetchAuth(`${API_BASE_URL}/api/realestate/wg/remove`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ targetUserId })
+            });
+            if (res.ok) location.reload();
+            else showLocalAlert("Fehler beim WG-Update", true);
+        }
+    </script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teachermon 🃏</title>
+    <title>Teachermon 🃏 Multiverse</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;600;700&family=Inter:wght@400;600&display=swap"
@@ -236,7 +236,7 @@
             <h1
                 class="text-4xl md:text-7xl font-bold mb-2 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500 drop-shadow-lg">
                 Teachermon</h1>
-            <p class="text-blue-200/60 text-sm md:text-lg">Sammle sie alle. Überlebe den Unterricht.</p>
+            <p class="text-blue-200/60 text-sm md:text-lg">Sammle sie alle. Überlebe das Multiversum.</p>
         </header>
 
         <div id="login-warning" class="hidden glass-panel text-center py-8 rounded-2xl mb-8 mx-2">
@@ -277,9 +277,18 @@
                     <h2
                         class="text-xl md:text-2xl font-bold text-white border-l-4 border-purple-500 pl-3 whitespace-nowrap">
                         Katalog</h2>
-                    <input type="text" id="album-search" oninput="handleSearch()"
-                        placeholder="🔍 Suche Lehrer oder Rarität..."
-                        class="input-holo px-4 py-2 rounded-full text-sm w-full md:w-64">
+
+                    <div class="flex flex-1 flex-col sm:flex-row gap-2 w-full md:w-auto">
+                        <select id="album-universe-filter" onchange="handleUniverseFilter()"
+                            class="input-holo px-4 py-2 rounded-full text-sm bg-black/50 border-purple-500/30">
+                            <option value="all">🌌 Alle Universen</option>
+                        </select>
+
+                        <input type="text" id="album-search" oninput="handleSearch()"
+                            placeholder="🔍 Suche Name oder Rarität..."
+                            class="input-holo px-4 py-2 rounded-full text-sm w-full md:w-64">
+                    </div>
+
                     <p class="text-gray-400 font-mono text-xs md:text-sm bg-black/30 px-3 py-1 rounded-full whitespace-nowrap"
                         id="collection-progress">0/0 gesammelt</p>
                 </div>
@@ -298,25 +307,39 @@
 
             <div id="tab-inventory" class="tab-content px-1 md:px-0">
                 <div
-                    class="glass-panel p-4 md:p-6 rounded-xl md:rounded-2xl mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 bg-black/40">
-                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    class="glass-panel p-4 md:p-6 rounded-xl md:rounded-2xl mb-6 md:mb-8 flex flex-col xl:flex-row justify-between items-center gap-4 bg-black/40">
+                    <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto items-center">
+                        <select id="pack-universe"
+                            class="input-holo px-4 py-3 md:py-4 rounded-lg md:rounded-xl text-xs md:text-sm font-bold h-full">
+                            <option value="teachermon">🏫 Teachermon Edition</option>
+                            <option value="family_guy">📺 Family Guy Edition</option>
+                        </select>
                         <button onclick="claimDaily()" id="btn-daily"
                             class="btn-daily px-4 md:px-8 py-3 md:py-4 rounded-lg md:rounded-xl uppercase tracking-wider text-xs md:text-sm font-bold text-white flex-1 flex justify-center items-center gap-2 shadow-lg">🎁
-                            Daily Pack</button>
+                            Daily</button>
                         <button onclick="buyPack()" id="btn-buy"
                             class="btn-buy px-4 md:px-8 py-3 md:py-4 rounded-lg md:rounded-xl uppercase tracking-wider text-xs md:text-sm font-bold text-white flex-1 flex justify-center items-center gap-2 shadow-lg">🃏
                             Pack ($250)</button>
                         <button onclick="buyMultiPacks()" id="btn-buy-multi"
                             class="btn-buy px-4 md:px-8 py-3 md:py-4 rounded-lg md:rounded-xl uppercase tracking-wider text-[10px] md:text-sm font-bold text-white flex-1 flex justify-center items-center gap-2 shadow-lg bg-gradient-to-r from-fuchsia-600 to-purple-600">🚀
-                            10x Packs ($2500)</button>
+                            10x ($2500)</button>
                     </div>
                     <button onclick="sellAllDupes()" id="btn-sell-all"
-                        class="w-full md:w-auto bg-orange-600/90 hover:bg-orange-500 border border-orange-400 text-white px-4 md:px-8 py-3 md:py-4 rounded-lg md:rounded-xl uppercase tracking-wider text-xs md:text-sm font-bold transition-all shadow-[0_0_15px_rgba(234,88,12,0.3)]">
+                        class="w-full xl:w-auto bg-orange-600/90 hover:bg-orange-500 border border-orange-400 text-white px-4 md:px-8 py-3 md:py-4 rounded-lg md:rounded-xl uppercase tracking-wider text-xs md:text-sm font-bold transition-all shadow-[0_0_15px_rgba(234,88,12,0.3)]">
                         🧹 Doppelte verkaufen
                     </button>
                 </div>
-                <h2 class="text-xl md:text-2xl font-bold text-white border-l-4 border-blue-500 pl-3 mb-4 md:mb-6">Deine
-                    Sammlung</h2>
+                <div
+                    class="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-6 border-b border-white/10 pb-4 gap-4">
+                    <h2
+                        class="text-xl md:text-2xl font-bold text-white border-l-4 border-blue-500 pl-3 whitespace-nowrap">
+                        Deine Sammlung</h2>
+
+                    <select id="inventory-universe-filter" onchange="handleInventoryUniverseFilter()"
+                        class="input-holo px-4 py-2 rounded-full text-sm bg-black/50 border-blue-500/30 w-full md:w-64">
+                        <option value="all">🎒 Alle Besessenen (Gesamt)</option>
+                    </select>
+                </div>
                 <div id="inventory-grid"
                     class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6"></div>
             </div>
@@ -328,11 +351,11 @@
                             class="glass-panel p-4 md:p-6 rounded-xl md:rounded-2xl bg-black/40 sticky top-24 border-t-4 border-red-500">
                             <h3 class="text-lg md:text-xl font-bold text-white mb-2">⚔️ Ab in den Ring</h3>
                             <p class="text-[10px] md:text-xs text-red-400 mb-4 leading-relaxed font-bold">ACHTUNG: Der
-                                Gewinner erhält BEIDE Karten! Du kannst auch Einzelkarten setzen.</p>
+                                Gewinner erhält BEIDE Karten! (Sonderkarten können nicht kämpfen)</p>
 
                             <label class="block text-[10px] md:text-xs text-gray-500 uppercase mb-1 font-bold">Mein
                                 Kämpfer:</label>
-                            <select id="arena-card"
+                            <select id="arena-card" onchange="updateArenaStatOptions()"
                                 class="input-holo w-full p-2 md:p-3 rounded-lg mb-3 md:mb-4 text-xs md:text-sm bg-[#111]">
                                 <option value="">Lade Karten...</option>
                             </select>
@@ -341,9 +364,7 @@
                                 (Stat):</label>
                             <select id="arena-stat"
                                 class="input-holo w-full p-2 md:p-3 rounded-lg mb-4 md:mb-6 text-xs md:text-sm bg-[#111]">
-                                <option value="kalterKaffee">☕ Kalter Kaffee / Tag</option>
-                                <option value="gequaelt">😩 Gequälte Schüler</option>
-                                <option value="intelligenz">🧠 Intelligenz</option>
+                                <option value="">Wähle erst eine Karte...</option>
                             </select>
 
                             <button onclick="createBattle()"
@@ -352,7 +373,6 @@
                             </button>
                         </div>
                     </div>
-
                     <div class="lg:col-span-2">
                         <h2
                             class="text-xl md:text-2xl font-bold text-white border-l-4 border-red-500 pl-3 mb-4 md:mb-6">
@@ -374,15 +394,11 @@
                             <label class="block text-[10px] md:text-xs text-gray-500 uppercase mb-1 font-bold">Ich
                                 biete:</label>
                             <select id="trade-offer"
-                                class="input-holo w-full p-2 md:p-3 rounded-lg mb-3 md:mb-4 text-xs md:text-sm bg-[#111]">
-                                <option value="">Lade...</option>
-                            </select>
+                                class="input-holo w-full p-2 md:p-3 rounded-lg mb-3 md:mb-4 text-xs md:text-sm bg-[#111]"></select>
                             <label class="block text-[10px] md:text-xs text-gray-500 uppercase mb-1 font-bold">Ich
                                 suche:</label>
                             <select id="trade-want"
-                                class="input-holo w-full p-2 md:p-3 rounded-lg mb-4 md:mb-6 text-xs md:text-sm bg-[#111]">
-                                <option value="">Lade...</option>
-                            </select>
+                                class="input-holo w-full p-2 md:p-3 rounded-lg mb-4 md:mb-6 text-xs md:text-sm bg-[#111]"></select>
                             <button onclick="createTrade()"
                                 class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded-lg md:rounded-xl transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] text-sm uppercase tracking-wider">Angebot
                                 aufgeben</button>
@@ -399,64 +415,117 @@
 
             <div id="tab-admin" class="tab-content px-1 md:px-0">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div
-                        class="glass-panel p-4 md:p-8 rounded-xl md:rounded-2xl bg-black/40 border-t-4 border-yellow-500 h-fit">
-                        <h2 class="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Neue Karte erschaffen</h2>
-                        <form id="admin-card-form" onsubmit="createCard(event)" class="space-y-3 md:space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                                <div><label class="block text-xs text-gray-400 mb-1">Name</label><input type="text"
-                                        id="ac-name" required class="input-holo w-full p-2 md:p-3 rounded-lg text-sm">
+
+                    <div class="space-y-8">
+                        <div
+                            class="glass-panel p-4 md:p-8 rounded-xl md:rounded-2xl bg-black/40 border-t-4 border-blue-500">
+                            <h2 class="text-xl md:text-2xl font-bold text-white mb-4">🌌 Neues Universum anlegen</h2>
+                            <form id="admin-universe-form" onsubmit="createUniverse(event)" class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="block text-xs text-gray-400 mb-1">ID (z.B. family_guy)</label>
+                                        <input type="text" id="au-id" required
+                                            class="input-holo w-full p-2 rounded-lg text-sm">
+                                    </div>
+                                    <div><label class="block text-xs text-gray-400 mb-1">Anzeigename</label>
+                                        <input type="text" id="au-name" required placeholder="📺 Family Guy Edition"
+                                            class="input-holo w-full p-2 rounded-lg text-sm">
+                                    </div>
                                 </div>
-                                <div><label class="block text-xs text-gray-400 mb-1">Rarität</label>
-                                    <select id="ac-rarity"
-                                        class="input-holo w-full p-2 md:p-3 rounded-lg text-sm bg-[#111]">
-                                        <option value="common">Common (Braun)</option>
-                                        <option value="rare">Rare (Blau)</option>
-                                        <option value="premium">Premium (Gelb)</option>
-                                        <option value="episch">Episch (Grün)</option>
-                                        <option value="legendaer">Legendär (Glitzer)</option>
-                                    </select>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Werte (Komma-getrennt)</label>
+                                    <input type="text" id="au-stats" required
+                                        placeholder="z.B. Sarkasmus, Dummheit, Geld"
+                                        class="input-holo w-full p-2 rounded-lg text-sm">
+                                    <p class="text-[10px] text-gray-500 mt-1">Diese Werte werden später beim Erstellen
+                                        der Karte abgefragt.</p>
                                 </div>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 md:gap-4">
-                                <div><label class="block text-[10px] md:text-xs text-gray-400 mb-1 truncate">☕
-                                        Kaffee</label><input type="number" id="ac-kaffee" required value="0"
-                                        class="input-holo w-full p-2 md:p-3 rounded-lg text-sm"></div>
-                                <div><label class="block text-[10px] md:text-xs text-gray-400 mb-1 truncate">😩
-                                        Gequält</label><input type="number" id="ac-schueler" required value="0"
-                                        class="input-holo w-full p-2 md:p-3 rounded-lg text-sm"></div>
-                                <div><label class="block text-[10px] md:text-xs text-gray-400 mb-1 truncate">🧠
-                                        IQ</label><input type="number" id="ac-iq" required value="100"
-                                        class="input-holo w-full p-2 md:p-3 rounded-lg text-sm"></div>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
-                                <div class="md:col-span-3"><label
-                                        class="block text-xs text-gray-400 mb-1">Spezial-Skill</label><input type="text"
-                                        id="ac-skill" required placeholder="z.B. Tafel wischen"
-                                        class="input-holo w-full p-2 md:p-3 rounded-lg text-sm"></div>
-                                <div class="md:col-span-1"><label
-                                        class="block text-xs text-gray-400 mb-1">Emoji/URL</label><input type="text"
-                                        id="ac-img" required placeholder="👨‍🏫"
-                                        class="input-holo w-full p-2 md:p-3 rounded-lg text-sm text-center"></div>
-                            </div>
-                            <button type="submit"
-                                class="btn-admin w-full py-3 md:py-4 mt-2 md:mt-4 rounded-lg md:rounded-xl text-white font-bold uppercase tracking-widest text-sm shadow-lg">In
-                                die Datenbank brennen</button>
-                        </form>
+                                <button type="submit"
+                                    class="btn-buy w-full py-3 rounded-lg text-white font-bold uppercase tracking-widest text-sm shadow-lg">Universum
+                                    erschaffen</button>
+                            </form>
+
+                            <h3 class="font-bold text-white mt-6 mb-2 border-b border-white/10 pb-2">Aktive Universen
+                            </h3>
+                            <div id="admin-universe-list"
+                                class="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar"></div>
+                        </div>
+
+                        <div
+                            class="glass-panel p-4 md:p-8 rounded-xl md:rounded-2xl bg-black/40 border-t-4 border-yellow-500">
+                            <h2 class="text-xl md:text-2xl font-bold text-white mb-4">🃏 Neue Karte generieren</h2>
+                            <form id="admin-card-form" onsubmit="createCard(event)" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div><label class="block text-xs text-gray-400 mb-1">Name</label>
+                                        <input type="text" id="ac-name" required
+                                            class="input-holo w-full p-2 rounded-lg text-sm">
+                                    </div>
+                                    <div><label class="block text-xs text-gray-400 mb-1">Rarität</label>
+                                        <select id="ac-rarity"
+                                            class="input-holo w-full p-2 rounded-lg text-sm bg-[#111]">
+                                            <option value="common">Common (Braun)</option>
+                                            <option value="rare">Rare (Blau)</option>
+                                            <option value="premium">Premium (Gelb)</option>
+                                            <option value="episch">Episch (Grün)</option>
+                                            <option value="legendaer">Legendär (Glitzer)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div><label class="block text-xs text-gray-400 mb-1">Karten Typ</label>
+                                        <select id="ac-type" onchange="renderDynamicStatInputs()"
+                                            class="input-holo w-full p-2 rounded-lg text-sm bg-[#111]">
+                                            <option value="teacher">Kämpfer (Lehrer/Charakter)</option>
+                                            <option value="item">Sonderkarte: Item</option>
+                                            <option value="event">Sonderkarte: Event</option>
+                                        </select>
+                                    </div>
+                                    <div><label class="block text-xs text-gray-400 mb-1">Universum</label>
+                                        <select id="ac-universe" onchange="renderDynamicStatInputs()"
+                                            class="input-holo w-full p-2 rounded-lg text-sm bg-[#111]">
+                                            <option value="">Lade Universen...</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 border border-white/10 rounded-lg bg-black/50">
+                                    <p class="text-[10px] text-gray-400 mb-2 uppercase tracking-widest font-bold">
+                                        Karten-Werte</p>
+                                    <div id="dynamic-stats-container" class="grid grid-cols-3 gap-2 md:gap-4">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div class="md:col-span-3"><label class="block text-xs text-gray-400 mb-1">Skill /
+                                            Item Effekt Text</label>
+                                        <input type="text" id="ac-skill" placeholder="Was passiert?"
+                                            class="input-holo w-full p-2 rounded-lg text-sm">
+                                    </div>
+                                    <div class="md:col-span-1"><label
+                                            class="block text-xs text-gray-400 mb-1">Emoji/URL</label>
+                                        <input type="text" id="ac-img" required placeholder="👨‍🏫"
+                                            class="input-holo w-full p-2 rounded-lg text-sm text-center">
+                                    </div>
+                                </div>
+
+                                <button type="submit"
+                                    class="btn-admin w-full py-3 rounded-lg text-white font-bold uppercase tracking-widest text-sm shadow-lg">Karte
+                                    erschaffen</button>
+                            </form>
+                        </div>
                     </div>
 
-                    <div class="glass-panel p-4 md:p-8 rounded-xl md:rounded-2xl bg-black/40 border-t-4 border-red-500">
-                        <div class="flex justify-between items-center mb-4 md:mb-6">
-                            <h2 class="text-xl md:text-2xl font-bold text-white">Karten verwalten</h2>
-                        </div>
+                    <div
+                        class="glass-panel p-4 md:p-8 rounded-xl md:rounded-2xl bg-black/40 border-t-4 border-red-500 h-fit">
+                        <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Karten verwalten</h2>
                         <input type="text" id="admin-search" oninput="renderAdminCardList()" placeholder="🔍 Suchen..."
                             class="input-holo w-full px-4 py-2 rounded-lg text-sm mb-4">
-                        <div id="admin-card-list" class="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div id="admin-card-list" class="space-y-2 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
                         </div>
                     </div>
+
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -494,10 +563,12 @@
         let currentUser = null;
         let globalAlbum = [];
 
-        // Pagination
         let albumCurrentPage = 1;
         const albumItemsPerPage = 10;
         let albumSearchQuery = "";
+        let globalUniverses = [];
+        let selectedAlbumUniverse = "all";
+        let selectedInventoryUniverse = "all";
 
         async function fetchAuth(url, options = {}) { options.credentials = 'include'; return fetch(url, options); }
 
@@ -511,6 +582,8 @@
                     document.getElementById('app-container').classList.remove('hidden');
                     updateBalanceDisplay(currentUser.balance);
                     if (currentUser.isAdmin) document.getElementById('btn-admin-tab').classList.remove('hidden');
+
+                    await loadUniverses(); // <--- WICHTIG: Das hier einfügen!
                     await loadAlbumData();
                     await loadTrades();
                     await loadBattles();
@@ -564,9 +637,11 @@
             return styles[rarity] || styles.common;
         }
 
+        // KARTEN HTML GENERATOR (Mit Multiverse Support)
         function createCardHTML(card, showLock = false, isInventory = false) {
             const rStyles = getRarityStyles(card.rarity);
             const lockClass = (showLock && !card.owned) ? 'card-locked' : '';
+            const isItem = card.cardType === 'item' || card.cardType === 'event';
 
             let actionHtml = '';
             if (isInventory && card.duplicates > 0) {
@@ -580,26 +655,73 @@
                 ? `<div class="w-full h-24 md:h-36 mb-2 md:mb-4 rounded-lg md:rounded-xl overflow-hidden border border-white/10 shadow-inner bg-black/50"><img src="${card.img}" class="w-full h-full object-cover object-top" loading="lazy"></div>`
                 : `<div class="text-4xl md:text-6xl text-center mb-2 md:mb-4 pt-2 drop-shadow-md filter">${card.img || '❓'}</div>`;
 
-            return `<div class="card-wrapper ${lockClass} h-full"><div class="glass-panel p-3 md:p-5 rounded-xl md:rounded-2xl relative h-full flex flex-col ${rStyles.border} bg-black/40">${actionHtml}${mediaHtml}
+            // STATS ODER EFFEKT TEXT
+            let statsHtml = '';
+            if (isItem) {
+                statsHtml = `<div class="flex-grow bg-black/40 rounded-lg p-2 md:p-3 text-[10px] md:text-xs italic text-yellow-100 border border-yellow-500/30 text-center flex items-center justify-center shadow-inner">${card.effectText || card.skills || 'Kein Effekt'}</div>`;
+            } else {
+                if (!card.universe || card.universe === 'teachermon') {
+                    statsHtml = `<div class="flex-grow bg-black/40 rounded-lg md:rounded-xl p-2 md:p-3 text-[9px] md:text-xs font-mono space-y-1 md:space-y-2 border border-white/5">
+                        <div class="flex justify-between items-center"><span class="text-gray-400">☕</span> <span class="text-white font-bold">${card.kalterKaffee || 0}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-gray-400">😩</span> <span class="text-white font-bold">${card.gequaelt || 0}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-gray-400">🧠</span> <span class="text-white font-bold">${card.intelligenz || 0}</span></div>
+                    </div>`;
+                } else {
+                    let customHtml = '';
+                    if (card.customStats) {
+                        for (let [key, val] of Object.entries(card.customStats)) {
+                            customHtml += `<div class="flex justify-between items-center"><span class="text-gray-400 capitalize truncate pr-1">${key}</span> <span class="text-white font-bold">${val}</span></div>`;
+                        }
+                    }
+                    statsHtml = `<div class="flex-grow bg-black/40 rounded-lg md:rounded-xl p-2 md:p-3 text-[9px] md:text-xs font-mono space-y-1 md:space-y-2 border border-white/5">${customHtml}</div>`;
+                }
+            }
+
+            let skillHtml = '';
+            if (!isItem) {
+                skillHtml = `<div class="mt-2 md:mt-3 text-center"><span class="text-[8px] md:text-[10px] text-gray-500 uppercase">Skill</span><br><span class="text-[10px] md:text-sm text-purple-300 italic truncate block" title="${card.skills}">"${card.skills}"</span></div>`;
+            }
+
+            // Universums-Badge oben links
+            let uniBadge = (card.universe && card.universe !== 'teachermon') ? `<span class="absolute top-2 left-2 bg-blue-600/80 backdrop-blur-md text-white text-[8px] px-2 py-0.5 rounded-full z-10 uppercase font-bold border border-white/20">${card.universe}</span>` : '';
+            let typeBadge = isItem ? `<span class="absolute top-2 right-2 bg-yellow-600/80 backdrop-blur-md text-white text-[8px] px-2 py-0.5 rounded-full z-10 uppercase font-bold border border-white/20">${card.cardType}</span>` : '';
+
+            return `<div class="card-wrapper ${lockClass} h-full"><div class="glass-panel p-3 md:p-5 rounded-xl md:rounded-2xl relative h-full flex flex-col ${rStyles.border} bg-black/40">${uniBadge}${typeBadge}${actionHtml}${mediaHtml}
                         <h3 class="font-bold text-sm md:text-lg text-center text-white mb-1 leading-tight">${card.name}</h3>
                         <div class="text-center mb-2 md:mb-4"><span class="text-[9px] md:text-xs uppercase font-black tracking-widest ${rStyles.text} bg-black/30 px-2 py-0.5 rounded-full">${card.rarity}</span></div>
-                        <div class="flex-grow bg-black/40 rounded-lg md:rounded-xl p-2 md:p-3 text-[9px] md:text-xs font-mono space-y-1 md:space-y-2 border border-white/5">
-                            <div class="flex justify-between items-center"><span class="text-gray-400">☕</span> <span class="text-white font-bold">${card.kalterKaffee}</span></div>
-                            <div class="flex justify-between items-center"><span class="text-gray-400">😩</span> <span class="text-white font-bold">${card.gequaelt}</span></div>
-                            <div class="flex justify-between items-center"><span class="text-gray-400">🧠</span> <span class="text-white font-bold">${card.intelligenz}</span></div>
-                        </div><div class="mt-2 md:mt-3 text-center"><span class="text-[8px] md:text-[10px] text-gray-500 uppercase">Skill</span><br><span class="text-[10px] md:text-sm text-purple-300 italic truncate block" title="${card.skills}">"${card.skills}"</span></div>
+                        ${statsHtml}
+                        ${skillHtml}
                     </div></div>`;
         }
 
         // --- SEARCH & PAGINATION ---
         function handleSearch() { albumSearchQuery = document.getElementById('album-search').value.toLowerCase(); albumCurrentPage = 1; renderAlbum(); }
         function changePage(delta) { albumCurrentPage += delta; renderAlbum(); }
+        function handleUniverseFilter() {
+            selectedAlbumUniverse = document.getElementById('album-universe-filter').value;
+            albumCurrentPage = 1;
+            renderAlbum();
+        }
 
         function renderAlbum() {
-            const grid = document.getElementById('album-grid'); grid.innerHTML = '';
-            const filtered = globalAlbum.filter(c => c.name.toLowerCase().includes(albumSearchQuery) || c.rarity.toLowerCase().includes(albumSearchQuery));
+            const grid = document.getElementById('album-grid');
+            grid.innerHTML = '';
+
+            // Filter-Logik: Suchbegriff + Universum
+            const filtered = globalAlbum.filter(c => {
+                const matchesSearch = c.name.toLowerCase().includes(albumSearchQuery) ||
+                    c.rarity.toLowerCase().includes(albumSearchQuery);
+
+                const cardUniverse = c.universe || 'teachermon';
+                const matchesUniverse = (selectedAlbumUniverse === 'all') || (cardUniverse === selectedAlbumUniverse);
+
+                return matchesSearch && matchesUniverse;
+            });
+
             const totalPages = Math.ceil(filtered.length / albumItemsPerPage) || 1;
-            if (albumCurrentPage > totalPages) albumCurrentPage = totalPages; if (albumCurrentPage < 1) albumCurrentPage = 1;
+            if (albumCurrentPage > totalPages) albumCurrentPage = totalPages;
+            if (albumCurrentPage < 1) albumCurrentPage = 1;
+
             const start = (albumCurrentPage - 1) * albumItemsPerPage;
             const pagedCards = filtered.slice(start, start + albumItemsPerPage);
 
@@ -608,21 +730,46 @@
             document.getElementById('btn-prev-page').disabled = albumCurrentPage === 1;
             document.getElementById('btn-next-page').disabled = albumCurrentPage === totalPages;
 
-            if (pagedCards.length === 0) return grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Nichts gefunden.</div>';
+            if (pagedCards.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Keine Karten in dieser Auswahl gefunden.</div>';
+                return;
+            }
+
             pagedCards.forEach(card => grid.innerHTML += createCardHTML(card, true, false));
         }
 
         function renderInventory() {
-            const grid = document.getElementById('inventory-grid'); grid.innerHTML = '';
-            const ownedCards = globalAlbum.filter(c => c.owned);
-            if (ownedCards.length === 0) return grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500 text-sm">Dein Inventar ist leer. Öffne Packs!</div>';
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '';
+
+            // Filter-Logik: Nur Karten, die man besitzt UND die zum Universum passen
+            const ownedCards = globalAlbum.filter(c => {
+                const isOwned = c.owned;
+                const cardUniverse = c.universe || 'teachermon';
+                const matchesUniverse = (selectedInventoryUniverse === 'all') || (cardUniverse === selectedInventoryUniverse);
+                return isOwned && matchesUniverse;
+            });
+
+            if (ownedCards.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500 text-sm">Keine Karten in dieser Kategorie gefunden.</div>';
+                return;
+            }
+
             ownedCards.forEach(card => grid.innerHTML += createCardHTML(card, false, true));
         }
 
-        // --- PACKS & VERKAUF ---
+        // --- PACKS & VERKAUF (Mit Universe Parameter) ---
         async function claimDaily() { const btn = document.getElementById('btn-daily'); btn.disabled = true; try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/pack/daily`, { method: 'POST' }); const data = await res.json(); if (res.ok) showPackModal([data.card], "🎁 Daily Pack!"); else showAlert(data.error, true); } catch (e) { } finally { btn.disabled = false; } }
-        async function buyPack() { const btn = document.getElementById('btn-buy'); btn.disabled = true; try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/pack/buy`, { method: 'POST' }); const data = await res.json(); if (res.ok) { updateBalanceDisplay(data.newBalance); showPackModal(data.cards, "🃏 Booster Pack!"); } else showAlert(data.error, true); } catch (e) { } finally { btn.disabled = false; } }
-        async function buyMultiPacks() { const btn = document.getElementById('btn-buy-multi'); btn.disabled = true; try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/pack/buy-multi`, { method: 'POST' }); const data = await res.json(); if (res.ok) { updateBalanceDisplay(data.newBalance); showPackModal(data.cards, "🚀 10x Packs!"); } else showAlert(data.error, true); } catch (e) { } finally { btn.disabled = false; } }
+        async function buyPack() {
+            const universe = document.getElementById('pack-universe').value;
+            const btn = document.getElementById('btn-buy'); btn.disabled = true;
+            try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/pack/buy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ universe }) }); const data = await res.json(); if (res.ok) { updateBalanceDisplay(data.newBalance); showPackModal(data.cards, "🃏 Booster Pack!"); } else showAlert(data.error, true); } catch (e) { } finally { btn.disabled = false; }
+        }
+        async function buyMultiPacks() {
+            const universe = document.getElementById('pack-universe').value;
+            const btn = document.getElementById('btn-buy-multi'); btn.disabled = true;
+            try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/pack/buy-multi`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ universe }) }); const data = await res.json(); if (res.ok) { updateBalanceDisplay(data.newBalance); showPackModal(data.cards, "🚀 10x Packs!"); } else showAlert(data.error, true); } catch (e) { } finally { btn.disabled = false; }
+        }
         async function sellCard(cardId) { try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/sell`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cardId }) }); if (res.ok) { showAlert((await res.json()).message); await checkAuth(); } else showAlert((await res.json()).error, true); } catch (e) { } }
         async function sellAllDupes() { const btn = document.getElementById('btn-sell-all'); btn.disabled = true; try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/sell-all`, { method: 'POST' }); if (res.ok) { showAlert((await res.json()).message); await checkAuth(); } else showAlert((await res.json()).error, true); } catch (e) { } finally { btn.disabled = false; } }
 
@@ -671,18 +818,47 @@
         async function acceptTrade(id) { try { await fetchAuth(`${API_BASE_URL}/api/teachermon/trades/accept/${id}`, { method: 'POST' }); await loadAlbumData(); loadTrades(); } catch (e) { } }
         async function cancelTrade(id) { try { await fetchAuth(`${API_BASE_URL}/api/teachermon/trades/${id}`, { method: 'DELETE' }); await loadAlbumData(); loadTrades(); } catch (e) { } }
 
-        // --- ARENA (PVP) ---
+        // --- ARENA (DYNAMISCHES DROPDOWN) ---
         function updateArenaSelects() {
             const selArena = document.getElementById('arena-card');
-            const owned = globalAlbum.filter(c => c.owned);
-            selArena.innerHTML = owned.length > 0 ? '<option value="">-- Wähle Kämpfer --</option>' : '<option value="">Du hast keine Karten.</option>';
-            owned.forEach(c => selArena.innerHTML += `<option value="${c.id}">${c.name} (${c.rarity})</option>`);
+            // Filtere Items heraus
+            const battleReady = globalAlbum.filter(c => c.owned && (!c.cardType || (c.cardType !== 'item' && c.cardType !== 'event')));
+            selArena.innerHTML = battleReady.length > 0 ? '<option value="">-- Wähle Kämpfer --</option>' : '<option value="">Du hast keine kampffähigen Karten.</option>';
+            battleReady.forEach(c => selArena.innerHTML += `<option value="${c.id}">${c.name} (${c.rarity}) [${c.universe || 'teachermon'}]</option>`);
+            updateArenaStatOptions();
         }
+
+        // Lädt die passenden Stats basierend auf dem ausgewählten Universum der Karte
+        function updateArenaStatOptions() {
+            const selCard = document.getElementById('arena-card').value;
+            const selStat = document.getElementById('arena-stat');
+            selStat.innerHTML = '';
+
+            if (!selCard) {
+                selStat.innerHTML = '<option value="">Wähle erst eine Karte...</option>';
+                return;
+            }
+
+            const card = globalAlbum.find(c => c.id === selCard);
+            if (!card.universe || card.universe === 'teachermon') {
+                selStat.innerHTML += `<option value="kalterKaffee">☕ Kalter Kaffee / Tag</option>`;
+                selStat.innerHTML += `<option value="gequaelt">😩 Gequälte Schüler</option>`;
+                selStat.innerHTML += `<option value="intelligenz">🧠 Intelligenz</option>`;
+            } else if (card.customStats) {
+                for (let key of Object.keys(card.customStats)) {
+                    selStat.innerHTML += `<option value="${key}">${key.charAt(0).toUpperCase() + key.slice(1)}</option>`;
+                }
+            } else {
+                selStat.innerHTML = '<option value="">Diese Karte hat keine Werte.</option>';
+            }
+        }
+
         async function createBattle() {
             const cardId = document.getElementById('arena-card').value; const stat = document.getElementById('arena-stat').value;
             if (!cardId || !stat) return showAlert("Wähle Kämpfer und Kategorie.", true);
             try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/battles/create`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cardId, stat }) }); if (res.ok) { showAlert((await res.json()).message); await loadAlbumData(); loadBattles(); } else showAlert((await res.json()).error, true); } catch (e) { }
         }
+
         async function loadBattles() {
             const list = document.getElementById('battle-list'); list.innerHTML = '<div class="text-center text-gray-500 text-sm col-span-full">Lade...</div>';
             try {
@@ -690,25 +866,38 @@
                 if (data.battles.length === 0) return list.innerHTML = '<div class="glass-panel p-6 text-center text-gray-400 rounded-xl text-sm col-span-full">Keine Kämpfe aktiv.</div>';
                 list.innerHTML = '';
 
-                const statNames = { 'kalterKaffee': '☕ Kaffee/Tag', 'gequaelt': '😩 Gequälte Schüler', 'intelligenz': '🧠 Intelligenz' };
+                // Mapping für schöne Anzeige
+                const standardStatNames = { 'kalterKaffee': '☕ Kaffee/Tag', 'gequaelt': '😩 Gequälte Schüler', 'intelligenz': '🧠 Intelligenz' };
 
                 data.battles.forEach(b => {
                     const isMyBattle = b.challengerId === currentUser.userId;
-                    const btn = isMyBattle ? `<div class="bg-black/30 px-3 py-2 rounded text-xs text-gray-500 font-bold border border-white/5">Wartet auf Gegner...</div>` : `<button onclick="openBattleModal('${b._id}', '${b.stat}')" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-red-500/30 w-full transition-colors">Herausfordern!</button>`;
-                    list.innerHTML += `<div class="glass-panel p-4 rounded-xl flex flex-col justify-between bg-black/40 border-l-4 border-red-500"><div class="mb-3"><span class="text-xs text-red-400 font-bold uppercase tracking-widest">Gegner</span><div class="text-lg font-bold text-white">@${b.challengerUsername}</div></div><div class="mb-4"><span class="text-[10px] text-gray-500 uppercase block mb-1">Kategorie</span><div class="bg-black/50 px-3 py-2 rounded-lg border border-white/10 text-sm font-mono text-purple-300">${statNames[b.stat]}</div></div>${btn}</div>`;
+                    const statName = standardStatNames[b.stat] || b.stat.toUpperCase();
+                    const uniTag = b.universe ? `<span class="bg-blue-600 px-2 py-0.5 rounded-full text-[8px] ml-2 uppercase">${b.universe}</span>` : '';
+
+                    const btn = isMyBattle ? `<div class="bg-black/30 px-3 py-2 rounded text-xs text-gray-500 font-bold border border-white/5">Wartet auf Gegner...</div>` : `<button onclick="openBattleModal('${b._id}', '${b.stat}', '${b.universe || 'teachermon'}')" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-red-500/30 w-full transition-colors">Herausfordern!</button>`;
+                    list.innerHTML += `<div class="glass-panel p-4 rounded-xl flex flex-col justify-between bg-black/40 border-l-4 border-red-500"><div class="mb-3"><span class="text-xs text-red-400 font-bold uppercase tracking-widest">Gegner</span><div class="text-lg font-bold text-white flex items-center">@${b.challengerUsername} ${uniTag}</div></div><div class="mb-4"><span class="text-[10px] text-gray-500 uppercase block mb-1">Kategorie</span><div class="bg-black/50 px-3 py-2 rounded-lg border border-white/10 text-sm font-mono text-purple-300">${statName}</div></div>${btn}</div>`;
                 });
             } catch (e) { }
         }
 
-        function openBattleModal(battleId, stat) {
+        function openBattleModal(battleId, stat, requiredUniverse) {
             document.getElementById('battle-modal-id').value = battleId;
             const sel = document.getElementById('battle-accept-card');
-            const statNames = { 'kalterKaffee': '☕ Kaffee/Tag', 'gequaelt': '😩 Gequälte Schüler', 'intelligenz': '🧠 Intelligenz' };
-            document.getElementById('battle-modal-desc').innerText = `Es wird gekämpft um: ${statNames[stat]}`;
 
-            const owned = globalAlbum.filter(c => c.owned);
-            sel.innerHTML = owned.length > 0 ? '<option value="">-- Wähle Kämpfer --</option>' : '<option value="">Du hast keine Karten.</option>';
-            owned.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.name} (${c.rarity}) - Wert: ${c[stat]}</option>`);
+            const standardStatNames = { 'kalterKaffee': '☕ Kaffee/Tag', 'gequaelt': '😩 Gequälte Schüler', 'intelligenz': '🧠 Intelligenz' };
+            document.getElementById('battle-modal-desc').innerText = `Es wird gekämpft um: ${standardStatNames[stat] || stat.toUpperCase()} (Nur Universum: ${requiredUniverse})`;
+
+            // Filtere nur Karten aus dem SELBEN Universum
+            const ownedValid = globalAlbum.filter(c => c.owned && (c.universe || 'teachermon') === requiredUniverse && c.cardType !== 'item' && c.cardType !== 'event');
+
+            sel.innerHTML = ownedValid.length > 0 ? '<option value="">-- Wähle Kämpfer --</option>' : '<option value="">Du hast keine passende Karte für dieses Universum.</option>';
+
+            ownedValid.forEach(c => {
+                let statVal = 0;
+                if (requiredUniverse === 'teachermon') statVal = c[stat];
+                else statVal = c.customStats ? c.customStats[stat] : 0;
+                sel.innerHTML += `<option value="${c.id}">${c.name} (${c.rarity}) - Wert: ${statVal || 0}</option>`;
+            });
 
             document.getElementById('battle-modal').classList.remove('hidden');
         }
@@ -726,14 +915,161 @@
             if (filtered.length === 0) return list.innerHTML = '<div class="text-gray-500 text-sm">Nichts gefunden.</div>';
             filtered.forEach(card => {
                 const img = card.img.startsWith('http') ? `<img src="${card.img}" class="w-8 h-8 rounded-md object-cover">` : `<span class="text-2xl">${card.img}</span>`;
-                list.innerHTML += `<div class="flex justify-between items-center bg-black/30 p-3 rounded-lg border border-white/5"><div class="flex items-center gap-3">${img}<div><div class="font-bold text-sm text-white">${card.name}</div><div class="text-[10px] text-gray-400 uppercase tracking-widest">${card.rarity}</div></div></div><button onclick="deleteCardAdmin('${card.id}')" class="bg-red-900/80 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors">Löschen</button></div>`;
+                list.innerHTML += `<div class="flex justify-between items-center bg-black/30 p-3 rounded-lg border border-white/5"><div class="flex items-center gap-3">${img}<div><div class="font-bold text-sm text-white">${card.name}</div><div class="text-[10px] text-gray-400 uppercase tracking-widest">${card.rarity} | ${card.universe || 'Teachermon'}</div></div></div><button onclick="deleteCardAdmin('${card.id}')" class="bg-red-900/80 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors">Löschen</button></div>`;
             });
         }
+
+        async function loadUniverses() {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/universes`);
+                if (res.ok) {
+                    const data = await res.json();
+                    globalUniverses = data.universes;
+                    renderUniverseDropdowns();
+                }
+            } catch (e) { console.error("Fehler beim Laden der Universen."); }
+        }
+
+        // Baut alle Dropdowns für Universen auf
+        function renderUniverseDropdowns() {
+            const shopSelect = document.getElementById('pack-universe');
+            const adminSelect = document.getElementById('ac-universe');
+            const albumFilterSelect = document.getElementById('album-universe-filter');
+            const invFilterSelect = document.getElementById('inventory-universe-filter'); // NEU
+            const listHtml = document.getElementById('admin-universe-list');
+
+            if (shopSelect) shopSelect.innerHTML = '';
+            if (adminSelect) adminSelect.innerHTML = '';
+            if (albumFilterSelect) albumFilterSelect.innerHTML = '<option value="all">🌌 Alle Universen</option>';
+            if (invFilterSelect) invFilterSelect.innerHTML = '<option value="all">🎒 Alle Besessenen (Gesamt)</option>'; // NEU
+            if (listHtml) listHtml.innerHTML = '';
+
+            globalUniverses.forEach(uni => {
+                const optionHTML = `<option value="${uni.id}">${uni.name}</option>`;
+                if (shopSelect) shopSelect.innerHTML += optionHTML;
+                if (adminSelect) adminSelect.innerHTML += optionHTML;
+                if (albumFilterSelect) albumFilterSelect.innerHTML += optionHTML;
+                if (invFilterSelect) invFilterSelect.innerHTML += optionHTML; // NEU
+
+                if (listHtml) {
+                    const isProtected = uni.id === 'teachermon';
+                    const delBtn = isProtected ? '' : `<button onclick="deleteUniverse('${uni.id}')" class="text-red-500 hover:text-red-400 text-xs font-bold">Löschen</button>`;
+                    listHtml.innerHTML += `<div class="flex justify-between items-center bg-black/30 p-2 rounded border border-white/5"><div class="text-sm font-bold text-white">${uni.name} <span class="text-[10px] text-gray-500 font-mono">(${uni.id})</span></div>${delBtn}</div>`;
+                }
+            });
+
+            renderDynamicStatInputs();
+        }
+
+        function handleInventoryUniverseFilter() {
+            selectedInventoryUniverse = document.getElementById('inventory-universe-filter').value;
+            renderInventory();
+        }
+
+        // Erzeugt dynamisch die Input-Felder je nach gewähltem Universum und Kartentyp
+        function renderDynamicStatInputs() {
+            const container = document.getElementById('dynamic-stats-container');
+            const selectedUniId = document.getElementById('ac-universe').value;
+            const cardType = document.getElementById('ac-type').value;
+
+            container.innerHTML = '';
+
+            // Items/Events haben keine Stats
+            if (cardType === 'item' || cardType === 'event') {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xs py-2">Sonderkarten haben keine Kampfwerte. Nutze das "Effekt Text" Feld.</div>';
+                return;
+            }
+
+            // Passendes Universum finden
+            const uni = globalUniverses.find(u => u.id === selectedUniId);
+            if (!uni || !uni.stats || uni.stats.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-red-400 text-xs py-2">Dieses Universum hat keine Stats definiert.</div>';
+                return;
+            }
+
+            // Felder für jeden Stat generieren
+            uni.stats.forEach(stat => {
+                container.innerHTML += `
+            <div>
+                <label class="block text-[10px] md:text-xs text-gray-400 mb-1 truncate capitalize capitalize-first">${stat}</label>
+                <input type="number" data-stat-name="${stat}" value="0" class="dynamic-stat-input input-holo w-full p-2 rounded-lg text-sm">
+            </div>
+        `;
+            });
+        }
+
+        // Universum API Aufrufe
+        async function createUniverse(e) {
+            e.preventDefault();
+            const payload = {
+                id: document.getElementById('au-id').value,
+                name: document.getElementById('au-name').value,
+                statsString: document.getElementById('au-stats').value
+            };
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/universes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (res.ok) { showAlert(data.message); document.getElementById('admin-universe-form').reset(); loadUniverses(); }
+                else showAlert(data.error, true);
+            } catch (e) { }
+        }
+
+        async function deleteUniverse(id) {
+            if (!confirm("Sicher? Alte Karten dieses Universums bleiben in der Datenbank, können aber nicht mehr gezogen werden.")) return;
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/universes/${id}`, { method: 'DELETE' });
+                if (res.ok) { showAlert("Universum gelöscht"); loadUniverses(); }
+            } catch (e) { }
+        }
+
+        // Angepasste Karten-Erstellung
         async function createCard(e) {
             e.preventDefault();
-            const payload = { name: document.getElementById('ac-name').value, rarity: document.getElementById('ac-rarity').value, kalterKaffee: document.getElementById('ac-kaffee').value, gequaelt: document.getElementById('ac-schueler').value, intelligenz: document.getElementById('ac-iq').value, skills: document.getElementById('ac-skill').value, img: document.getElementById('ac-img').value };
-            try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/cards`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (res.ok) { showAlert((await res.json()).message); document.getElementById('admin-card-form').reset(); loadAlbumData(); } else showAlert((await res.json()).error, true); } catch (e) { }
+
+            const universe = document.getElementById('ac-universe').value;
+            const cardType = document.getElementById('ac-type').value;
+
+            const payload = {
+                name: document.getElementById('ac-name').value,
+                rarity: document.getElementById('ac-rarity').value,
+                universe: universe,
+                cardType: cardType,
+                effectText: document.getElementById('ac-skill').value,
+                skills: document.getElementById('ac-skill').value,
+                img: document.getElementById('ac-img').value,
+                stats: {} // Hier speichern wir die dynamischen Werte
+            };
+
+            // Dynamische Inputs auslesen
+            const statInputs = document.querySelectorAll('.dynamic-stat-input');
+            statInputs.forEach(input => {
+                const statName = input.getAttribute('data-stat-name');
+                const value = parseInt(input.value) || 0;
+
+                // Für Abwärtskompatibilität: Wenn es das Original-Teachermon ist, direkt ins Objekt schreiben
+                if (universe === 'teachermon') {
+                    payload[statName] = value;
+                } else {
+                    // Sonst in das customStats/stats Objekt
+                    payload.stats[statName] = value;
+                }
+            });
+
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/cards`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (res.ok) {
+                    showAlert(data.message);
+                    // Formular zurücksetzen, aber Universum behalten
+                    document.getElementById('ac-name').value = '';
+                    document.getElementById('ac-skill').value = '';
+                    document.getElementById('ac-img').value = '';
+                    loadAlbumData();
+                }
+                else showAlert(data.error, true);
+            } catch (e) { }
         }
+
         async function deleteCardAdmin(id) {
             if (!confirm("ACHTUNG! Willst du diese Karte wirklich löschen? Alle Besitzer bekommen ihr Geld erstattet.")) return;
             try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/cards/${id}`, { method: 'DELETE' }); if (res.ok) { showAlert((await res.json()).message); loadAlbumData(); } else showAlert((await res.json()).error, true); } catch (e) { }
