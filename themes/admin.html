@@ -11,7 +11,7 @@
         .sidebar-link:hover { background: #334155; color: white; }
         .sidebar-link.active { background: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3); }
         .content-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
-        .input-dark { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px; rounded: 6px; width: 100%; }
+        .input-dark { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; width: 100%; }
         .btn { padding: 8px 16px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
         .btn-primary { background: #4f46e5; color: white; } .btn-primary:hover { background: #4338ca; }
         .btn-danger { background: #ef4444; color: white; } .btn-danger:hover { background: #dc2626; }
@@ -19,8 +19,6 @@
         .btn-success { background: #10b981; color: white; } .btn-success:hover { background: #059669; }
         .fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* Stat Kacheln */
         .stat-box { background: #1e293b; border-radius: 8px; padding: 10px; text-align: center; border: 1px solid #334155; }
         .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
         .stat-value { font-size: 1.25rem; font-weight: bold; color: #fff; margin-top: 4px; }
@@ -120,7 +118,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div class="content-card border-orange-900/50">
                     <h3 class="text-xl font-bold mb-4 text-orange-400">🔧 Reparatur & Wartung</h3>
                     <div class="space-y-3">
@@ -197,7 +194,7 @@
                 
                 <div class="flex items-center gap-2 p-2 bg-slate-800 rounded">
                     <input id="edit-u-admin" type="checkbox" class="w-4 h-4">
-                    <label class="text-indigo-400 font-bold select-none cursor-pointer" for="edit-u-admin">Ist Admin</label>
+                    <label class="text-indigo-400 font-bold select-none cursor-pointer" for="edit-u-admin">Ist Echter Admin</label>
                 </div>
 
                 <div class="flex items-center gap-2 p-2 bg-slate-800 rounded border border-cyan-900/50">
@@ -222,7 +219,7 @@
             <div class="space-y-3">
                 <input id="edit-p-id" placeholder="ID (z.B. apple)" class="input-dark">
                 <input id="edit-p-name" placeholder="Name" class="input-dark">
-                <input id="edit-p-price" type="number" placeholder="Preis" class="input-dark">
+                <input id="edit-p-price" type="text" placeholder="Preis (z.B. 10 oder $10)" class="input-dark">
                 <input id="edit-p-stock" type="number" placeholder="Lagerbestand" class="input-dark">
                 <input id="edit-p-img" placeholder="Bild URL (optional)" class="input-dark">
                 <textarea id="edit-p-desc" placeholder="Beschreibung" class="input-dark h-20"></textarea>
@@ -242,7 +239,6 @@
         let prodPage = 1, prodPerPage = 12, prodFilter = "";
         let userPage = 1, userPerPage = 15, userFilter = "";
 
-        // INIT
         checkAuth();
 
         async function checkAuth() {
@@ -275,10 +271,7 @@
             const res = await fetch(API + '/api/admin/users', { credentials: 'include' });
             const data = await res.json();
             users = data.users;
-            
-            // Sortieren: Reiche User nach oben (damit man Exploits sieht)
             users.sort((a,b) => b.balance - a.balance);
-            
             renderUsers();
         }
 
@@ -316,6 +309,7 @@
                 
                 let badges = "";
                 if(u.isAdmin) badges += '<span class="bg-indigo-600 text-xs px-2 py-1 rounded mr-1">ADMIN</span>';
+                if(u.role && u.role !== 'user') badges += `<span class="bg-blue-600 text-xs px-2 py-1 rounded mr-1 uppercase">${u.role}</span>`;
                 if(u.infinityMoney || u.unlockedInfinityMoney) badges += '<span class="bg-cyan-900 text-cyan-300 text-xs px-2 py-1 rounded border border-cyan-700">∞</span>';
                 if(badges === "") badges = '<span class="text-slate-500 text-xs">User</span>';
 
@@ -344,7 +338,6 @@
             document.getElementById('edit-u-tok').value = u.tokens || 0;
             
             document.getElementById('edit-u-admin').checked = u.isAdmin || false;
-            // Infinity Checkbox setzen
             document.getElementById('edit-u-infinity').checked = u.infinityMoney || u.unlockedInfinityMoney || false;
             
             document.getElementById('edit-u-pass').value = "";
@@ -353,17 +346,13 @@
 
         async function saveUser() {
             const id = document.getElementById('edit-u-id').value;
-            
-            // HIER IST DAS UPDATE FÜR INFINITY MONEY
             const body = {
                 balance: document.getElementById('edit-u-bal').value,
                 tokens: document.getElementById('edit-u-tok').value,
                 isAdmin: document.getElementById('edit-u-admin').checked,
                 infinityMoney: document.getElementById('edit-u-infinity').checked,
-                unlockedInfinityMoney: document.getElementById('edit-u-infinity').checked // Beides setzen für Konsistenz
             };
             
-            // Backend muss PUT für infinityMoney akzeptieren (siehe server.js Änderungen)
             await fetch(API + '/api/admin/users/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'include' });
             
             const pass = document.getElementById('edit-u-pass').value;
@@ -374,32 +363,6 @@
             loadUsers();
         }
 
-        // ========================
-        // === DANGER ZONE ===
-        // ========================
-        async function revokeInfinityGlobal() {
-            if(!confirm("🚨 ALARM: Soll Infinity Money bei ALLEN normalen Usern (Nicht-Admins) entfernt werden?\n\nDies kann nicht rückgängig gemacht werden!")) return;
-            try {
-                const res = await fetch(API + '/api/admin/system/revoke-infinity', { method: 'POST', credentials: 'include' });
-                const d = await res.json();
-                alert(d.message || d.error);
-                loadUsers();
-            } catch(e) { alert("Fehler: " + e.message); }
-        }
-
-        async function resetEconomyGlobal() {
-            if(!confirm("🚨 TOTAL-RESET: Alle User mit mehr als 100.000$ (außer Admins) werden auf 5.000$ gesetzt.\n\nTokens über 1.000 werden auf 10 gesetzt.\n\nSicher?")) return;
-            try {
-                const res = await fetch(API + '/api/admin/system/reset-rich-users', { method: 'POST', credentials: 'include' });
-                const d = await res.json();
-                alert(d.message || d.error);
-                loadUsers();
-            } catch(e) { alert("Fehler: " + e.message); }
-        }
-
-        // ========================
-        // === STANDARD ACTIONS ===
-        // ========================
         async function deleteUser(id) {
             if(!confirm("User wirklich löschen?")) return;
             await fetch(API + '/api/admin/users/' + id, { method: 'DELETE', credentials: 'include' });
@@ -430,63 +393,15 @@
         }
 
         // ========================
-        // === SYSTEM HEALTH ===
-        // ========================
-        async function refreshHealth() {
-            const container = id => document.getElementById('health-stats').children[id].querySelector('.stat-value');
-            for(let i=0; i<4; i++) container(i).innerText = "...";
-            try {
-                const res = await fetch(API + '/api/admin/health-check', { credentials: 'include' });
-                if(res.ok) {
-                    const data = await res.json();
-                    container(0).innerText = data.memory || "N/A";
-                    container(1).innerText = data.uptime || "N/A";
-                    container(2).innerHTML = data.dbStatus === "Connected ✅" ? '<span class="text-green-400">Online</span>' : '<span class="text-red-500">Offline</span>';
-                    container(3).innerText = data.productCacheSize || "0";
-                }
-            } catch(e) {}
-        }
-
-        // ========================
-        // === SYSTEM TOOLS ===
-        // ========================
-        async function fixImages() {
-            if(!confirm("Bilder fixen?")) return;
-            const res = await fetch(API + '/api/admin/system/fix-images', { method: 'POST', credentials: 'include' });
-            alert((await res.json()).message);
-            loadProducts();
-        }
-        async function fixDecimals() {
-            if(!confirm("Decimals fixen?")) return;
-            const res = await fetch(API + '/api/admin/system/fix-decimals', { method: 'POST', credentials: 'include' });
-            alert((await res.json()).message);
-            loadUsers();
-        }
-        async function triggerNormalize() {
-            if(!confirm("Normalize?")) return;
-            const res = await fetch(API + '/api/admin/system/normalize', { method: 'POST', credentials: 'include' });
-            alert((await res.json()).message);
-            loadUsers();
-        }
-        async function triggerAI() {
-            const res = await fetch(API + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
-            alert((await res.json()).message);
-        }
-        async function resetHumanGrades() {
-            if(!confirm("Human Grades Reset?")) return;
-            await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
-            alert("Done.");
-        }
-
-        // ===========================
         // === PRODUCT MANAGEMENT ===
-        // ===========================
+        // ========================
         async function loadProducts() {
             document.getElementById('product-list-container').innerHTML = '';
             document.getElementById('product-loader').classList.remove('hidden');
             document.getElementById('product-pagination').classList.add('hidden');
             try {
-                const res = await fetch(API + '/api/admin/products', { credentials: 'include' });
+                // Wir laden die Produkte über den offenen Endpoint, damit wir das String-Format bekommen
+                const res = await fetch(API + '/api/products', { credentials: 'include' });
                 const data = await res.json();
                 products = data.products;
                 renderProducts();
@@ -519,20 +434,22 @@
             if(filtered.length === 0) { list.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">Keine Produkte.</div>`; return; }
 
             list.innerHTML = pageItems.map(p => {
-                const realPrice = (p.price !== undefined && p.price !== null) ? p.price : p.currentPrice;
-                const priceDisplay = (realPrice === undefined) ? '<span class="text-red-500">ERR</span>' : `$${realPrice}`;
+                // FIX: currentPrice für Börsenprodukte, price für normale
+                let displayPrice = p.currentPrice !== undefined ? `$${p.currentPrice}` : p.price;
+                const stockDisplay = p.stock !== undefined ? p.stock : "0";
+
                 return `
                 <div class="content-card flex flex-col justify-between h-full border border-slate-700 hover:border-indigo-500 transition">
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-bold text-lg text-white truncate pr-2">${p.name || "Unbekannt"}</span>
-                            <span class="text-emerald-400 font-mono whitespace-nowrap">${priceDisplay}</span>
+                            <span class="text-emerald-400 font-mono whitespace-nowrap">${displayPrice}</span>
                         </div>
-                        <p class="text-xs text-slate-500 mb-2 font-mono">ID: ${p.id}</p>
+                        <p class="text-xs text-slate-500 mb-2 font-mono">ID: ${p.id} | Stock: ${stockDisplay}</p>
                     </div>
                     <div class="flex gap-2 border-t border-slate-700 pt-3 mt-auto">
-                        <button onclick="openEditProduct('${p._id}')" class="btn bg-slate-700 text-xs flex-1 hover:bg-slate-600">Edit</button>
-                        <button onclick="deleteProduct('${p._id}')" class="btn btn-danger text-xs hover:bg-red-700">Del</button>
+                        <button onclick="openEditProduct('${p.id}')" class="btn bg-slate-700 text-xs flex-1 hover:bg-slate-600">Edit</button>
+                        <button onclick="deleteProduct('${p.id}')" class="btn btn-danger text-xs hover:bg-red-700">Del</button>
                     </div>
                 </div>`;
             }).join('');
@@ -548,14 +465,21 @@
                 document.getElementById('edit-p-img').value = "";
                 document.getElementById('edit-p-desc').value = "";
             } else {
-                const p = products.find(x => x._id === id);
+                const p = products.find(x => x.id === id || String(x.id) === String(id));
                 if(!p) return;
-                document.getElementById('edit-p-oid').value = p._id;
+                
+                // Da wir die Produkte über /api/products geladen haben, fehlt die MongoDB _id.
+                // Wir nutzen daher die numerische 'id' für Updates.
+                document.getElementById('edit-p-oid').value = p.id; 
                 document.getElementById('edit-p-id').value = p.id || "";
                 document.getElementById('edit-p-name').value = p.name || "";
-                document.getElementById('edit-p-price').value = (p.price !== undefined) ? p.price : p.currentPrice;
-                document.getElementById('edit-p-stock').value = (p.stock !== undefined) ? p.stock : (p.quantity || 999);
-                document.getElementById('edit-p-img').value = p.image || p.image_url || "";
+                
+                // Preis-Feld aufbereiten (Börsen-Preis bevorzugen)
+                const editablePrice = p.currentPrice !== undefined ? p.currentPrice : (p.price || "0").replace(/[^0-9.]/g, '');
+                document.getElementById('edit-p-price').value = editablePrice;
+                
+                document.getElementById('edit-p-stock').value = (p.stock !== undefined) ? p.stock : 0;
+                document.getElementById('edit-p-img').value = p.image_url || "";
                 document.getElementById('edit-p-desc').value = p.description || "";
             }
             document.getElementById('modal-product').classList.remove('hidden');
@@ -563,55 +487,118 @@
         function editProduct() { openEditProduct(null); }
 
         async function saveProduct() {
+            const isUpdate = document.getElementById('edit-p-oid').value !== "";
+            const numId = parseInt(document.getElementById('edit-p-id').value) || document.getElementById('edit-p-id').value;
+
             const body = {
-                _id: document.getElementById('edit-p-oid').value,
-                id: document.getElementById('edit-p-id').value,
+                id: numId,
                 name: document.getElementById('edit-p-name').value,
                 price: document.getElementById('edit-p-price').value,
-                stock: document.getElementById('edit-p-stock').value,
-                image: document.getElementById('edit-p-img').value,
+                stock: parseInt(document.getElementById('edit-p-stock').value),
+                image_url: document.getElementById('edit-p-img').value,
                 description: document.getElementById('edit-p-desc').value
             };
-            await fetch(API + '/api/admin/products', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'include' });
+            
+            // Wenn Update, schicken wir den Request an die Engine
+            if(isUpdate) {
+                await fetch(API + '/api/admin/engine', { 
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({
+                        mode: 'db',
+                        collection: 'products',
+                        operation: 'updateOne',
+                        filter: { id: numId },
+                        payload: { $set: body }
+                    }), 
+                    credentials: 'include' 
+                });
+            } else {
+                // Neues Produkt (Nutzt deinen regulären Endpoint, da er IDs generiert)
+                await fetch(API + '/api/products', { 
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify(body), 
+                    credentials: 'include' 
+                });
+            }
+            
             closeModal('modal-product');
-            loadProducts();
+            
+            // WICHTIG: Cache neu laden, damit die Änderungen sofort im Admin Panel sichtbar sind
+            await fetch(API + '/api/admin/engine', { 
+                method: 'POST', 
+                headers: {'Content-Type':'application/json'}, 
+                body: JSON.stringify({ mode: 'db', collection: 'dummy', operation: 'dummy' }), // Trick um Server kurz aufzuwecken
+                credentials: 'include' 
+            });
+            setTimeout(loadProducts, 1000); 
         }
 
         async function deleteProduct(id) {
-            if(!confirm("Produkt löschen?")) return;
-            await fetch(API + '/api/admin/products/' + id, { method: 'DELETE', credentials: 'include' });
-            loadProducts();
+            if(!confirm("Produkt löschen? (Das löscht es auch aus den Inventaren der User!)")) return;
+            const numId = parseInt(id) || id;
+            await fetch(API + '/api/admin/products/' + numId, { method: 'DELETE', credentials: 'include' });
+            setTimeout(loadProducts, 500);
         }
 
+        // --- SYSTEM ACTIONS ---
+        async function revokeInfinityGlobal() {
+            if(!confirm("🚨 ALARM: Soll Infinity Money bei ALLEN normalen Usern entfernt werden?")) return;
+            await fetch(API + '/api/admin/system/revoke-infinity', { method: 'POST', credentials: 'include' });
+            loadUsers();
+        }
+        async function resetEconomyGlobal() {
+            if(!confirm("🚨 TOTAL-RESET (> 100k)?")) return;
+            await fetch(API + '/api/admin/system/reset-rich-users', { method: 'POST', credentials: 'include' });
+            loadUsers();
+        }
         async function resetStock(zero) {
             const endpoint = zero ? '/api/admin/zero-stock' : '/api/products/reset';
-            const action = zero ? "auf 0 setzen" : "auffüllen";
-            
-            if(!confirm(`Lager wirklich ${action}?`)) return;
-            
-            try {
-                const res = await fetch(API + endpoint, { method: 'PATCH', credentials: 'include' });
-                const d = await res.json();
-                alert(d.message);
-                loadProducts(); // Liste aktualisieren
-            } catch(e) { alert("Fehler: " + e.message); }
+            if(!confirm(zero ? "Lager auf 0 setzen?" : "Lager auffüllen?")) return;
+            await fetch(API + endpoint, { method: 'PATCH', credentials: 'include' });
+            setTimeout(loadProducts, 500);
         }
-
         async function forceTax() {
-            if(!confirm("⚠️ Sofort 0,5% Steuern bei allen Reichen (>100M) einziehen?")) return;
-            
+            if(!confirm("⚠️ Steuern (0,5%) bei Reichen einziehen?")) return;
+            const res = await fetch(API + '/api/admin/system/force-tax', { method: 'POST', credentials: 'include' });
+            const d = await res.json();
+            alert(d.message);
+            loadUsers();
+        }
+        async function fixImages() {
+            await fetch(API + '/api/admin/system/fix-images', { method: 'POST', credentials: 'include' });
+            setTimeout(loadProducts, 500);
+        }
+        async function fixDecimals() {
+            await fetch(API + '/api/admin/system/fix-decimals', { method: 'POST', credentials: 'include' });
+            loadUsers();
+        }
+        async function triggerNormalize() {
+            await fetch(API + '/api/admin/system/normalize', { method: 'POST', credentials: 'include' });
+            loadUsers();
+        }
+        async function triggerAI() {
+            await fetch(API + '/api/admin/news/trigger-ai', { method: 'POST', credentials: 'include' });
+            alert("News generiert.");
+        }
+        async function resetHumanGrades() {
+            if(!confirm("Human Grades DB resetten?")) return;
+            await fetch(API + '/api/human/admin/reset-defaults', { method: 'POST', credentials: 'include' });
+            alert("Reset ausgeführt.");
+        }
+        async function refreshHealth() {
+            const container = id => document.getElementById('health-stats').children[id].querySelector('.stat-value');
             try {
-                const res = await fetch(API + '/api/admin/system/force-tax', { method: 'POST', credentials: 'include' });
-                const d = await res.json();
-                
-                if(d.success) {
-                    const det = d.details;
-                    alert(`Erfolg!\n\nEingesammelt: $${det.collected.toLocaleString()}\nBetroffene User: ${det.taxedCount}\nGeschützt: ${det.shieldedCount}`);
-                } else {
-                    alert(d.message);
+                const res = await fetch(API + '/api/admin/health-check', { credentials: 'include' });
+                if(res.ok) {
+                    const data = await res.json();
+                    container(0).innerText = data.memory || "N/A";
+                    container(1).innerText = data.uptime || "N/A";
+                    container(2).innerHTML = data.dbStatus === "Connected ✅" ? '<span class="text-green-400">Online</span>' : '<span class="text-red-500">Offline</span>';
+                    container(3).innerText = data.productCacheSize || "0";
                 }
-                loadUsers(); // User-Liste aktualisieren (Geld hat sich geändert)
-            } catch(e) { alert("Fehler: " + e.message); }
+            } catch(e) {}
         }
     </script>
 </body>

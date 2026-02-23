@@ -841,8 +841,12 @@
     </div>
 
 
-    <footer class="mt-12 text-center text-gray-500 text-sm">
-        © 2025 Limazon Universe
+    <footer class="mt-12 py-6 border-t border-gray-800 text-center text-gray-500 text-xs">
+        <div class="flex items-center justify-center gap-2">
+            <span>© 2025 Limazon Universe</span>
+            <span class="text-gray-700">|</span>
+            <span id="cluster-display" class="font-mono opacity-50">Cluster: Offline</span>
+        </div>
     </footer>
 
     <script>
@@ -944,54 +948,46 @@
         // --- SMART POLLING CHECK ---
         async function checkForUpdates() {
             try {
-                // Wir fragen nur den winzigen Version-Endpoint (ca. 200 Bytes)
                 const res = await fetch(`${getApiUrl()}/status/versions`);
                 if (!res.ok) return;
 
                 const serverVersions = await res.json();
 
+                if (serverVersions.workerPid) {
+                    const display = document.getElementById('cluster-display');
+                    if (display) display.innerText = `Worker-PID: ${serverVersions.workerPid}`;
+                }
+
                 // 1. PRODUKTE CHECK
-                // Wenn Server-Zeitstempel neuer ist als unserer -> Laden!
                 if (serverVersions.products > localDataVersions.products) {
-                    console.log(`${LOG_PREFIX} Smart-Polling: Neue Produktdaten erkannt (Server: ${serverVersions.products}, Local: ${localDataVersions.products}).`);
-
-                    // Wir speichern die vorherigen Bestände für den Vergleich
+                    console.log(`${LOG_PREFIX} Smart-Polling: Neue Produktdaten erkannt.`);
                     const prevStocks = products.reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {});
-
                     await loadProducts('polling');
 
-                    // UI Updates nach dem Laden (nur wenn nötig)
                     if (!isServerStarting) {
                         let changed = false;
-                        // Einfache Logik: Haben sich Bestände geändert?
                         for (const curP of products) {
                             if (!curP.isTokenCard && (prevStocks[curP.id] === undefined || prevStocks[curP.id] !== curP.stock)) {
-                                changed = true;
-                                break;
+                                changed = true; break;
                             }
                         }
-
                         if (changed) {
                             if (!document.getElementById('cart-modal').classList.contains('hidden')) viewCart();
                             if (detailModalProductId !== null) showProductDetails(detailModalProductId);
                             if (!document.getElementById('inventory-modal').classList.contains('hidden') && loggedInUser) showMyInventory();
                         }
                     }
-
-                    // Aktualisiere unsere lokale Version
                     localDataVersions.products = serverVersions.products;
                 }
 
-                // 2. STONKS CHECK (Optional, falls Börse offen ist)
+                // 2. STONKS CHECK
                 const stonkModal = document.getElementById('stonks-market-modal');
                 if (stonkModal && !stonkModal.classList.contains('hidden')) {
                     if (serverVersions.stonks > localDataVersions.stonks) {
-                        console.log(`${LOG_PREFIX} Smart-Polling: Neue Börsendaten.`);
                         renderStonkMarket();
                         localDataVersions.stonks = serverVersions.stonks;
                     }
                 }
-
             } catch (e) {
                 console.warn("Smart Polling Fehler (ignoriert):", e);
             }
@@ -2051,6 +2047,7 @@
             loadCartFromCookies();
             await checkLoginStatus();
             await loadProducts();
+            startPolling();
 
             // Event Listeners wieder anhängen
             document.getElementById('search').addEventListener('input', (e) => {
