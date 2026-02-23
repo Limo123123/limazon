@@ -374,11 +374,22 @@
                         </div>
                     </div>
                     <div class="lg:col-span-2">
-                        <h2
-                            class="text-xl md:text-2xl font-bold text-white border-l-4 border-red-500 pl-3 mb-4 md:mb-6">
-                            Aktuelle Herausforderungen</h2>
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 md:mb-6 border-b border-white/10 pb-4 gap-4">
+                            <h2 class="text-xl md:text-2xl font-bold text-white border-l-4 border-red-500 pl-3">
+                                Kampfgeschehen
+                            </h2>
+                            <div class="flex bg-black/40 p-1 rounded-lg border border-white/10 w-full sm:w-auto">
+                                <button onclick="toggleArenaView('open')" id="btn-arena-open" class="flex-1 sm:flex-none px-4 py-2 rounded text-sm font-bold bg-red-600 text-white shadow-md transition-all">Offene Kämpfe</button>
+                                <button onclick="toggleArenaView('history')" id="btn-arena-history" class="flex-1 sm:flex-none px-4 py-2 rounded text-sm font-bold text-gray-400 hover:text-white transition-all">Meine Historie</button>
+                            </div>
+                        </div>
+                        
                         <div id="battle-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="text-center text-gray-500 py-10 text-sm col-span-full">Lade Kämpfe...</div>
+                        </div>
+
+                        <div id="battle-history-list" class="hidden grid grid-cols-1 gap-3">
+                            <div class="text-center text-gray-500 py-10 text-sm col-span-full">Lade Historie...</div>
                         </div>
                     </div>
                 </div>
@@ -583,10 +594,11 @@
                     updateBalanceDisplay(currentUser.balance);
                     if (currentUser.isAdmin) document.getElementById('btn-admin-tab').classList.remove('hidden');
 
-                    await loadUniverses(); // <--- WICHTIG: Das hier einfügen!
+                    await loadUniverses();
                     await loadAlbumData();
                     await loadTrades();
                     await loadBattles();
+                    await loadBattleHistory(); // NEU
                 } else {
                     document.getElementById('login-warning').classList.remove('hidden');
                 }
@@ -599,7 +611,10 @@
             document.getElementById(tabId).classList.add('active');
             btnElement.classList.add('active');
             if (tabId === 'tab-trade') loadTrades();
-            if (tabId === 'tab-arena') loadBattles();
+            if (tabId === 'tab-arena') {
+                loadBattles();
+                loadBattleHistory();
+            }
         }
 
         function updateBalanceDisplay(amount) {
@@ -626,6 +641,18 @@
             } catch (e) { showAlert("Fehler beim Laden.", true); }
         }
 
+        // Hilfsfunktion für Bilder/Icons der Karten
+        function getCardGraphic(cardId) {
+            const card = globalAlbum.find(c => c.id === cardId);
+            if (!card) return '❓';
+            if (card.img.startsWith('http')) return `<img src="${card.img}" class="w-8 h-8 rounded-md object-cover inline">`;
+            return `<span class="text-xl">${card.img}</span>`;
+        }
+        function getCardName(cardId) {
+            const card = globalAlbum.find(c => c.id === cardId);
+            return card ? card.name : "Unbekannte Karte";
+        }
+
         function getRarityStyles(rarity) {
             const styles = {
                 common: { border: 'rarity-common', text: 'text-orange-400' },
@@ -637,7 +664,7 @@
             return styles[rarity] || styles.common;
         }
 
-        // KARTEN HTML GENERATOR (Mit Multiverse Support)
+        // KARTEN HTML GENERATOR
         function createCardHTML(card, showLock = false, isInventory = false) {
             const rStyles = getRarityStyles(card.rarity);
             const lockClass = (showLock && !card.owned) ? 'card-locked' : '';
@@ -707,14 +734,10 @@
             const grid = document.getElementById('album-grid');
             grid.innerHTML = '';
 
-            // Filter-Logik: Suchbegriff + Universum
             const filtered = globalAlbum.filter(c => {
-                const matchesSearch = c.name.toLowerCase().includes(albumSearchQuery) ||
-                    c.rarity.toLowerCase().includes(albumSearchQuery);
-
+                const matchesSearch = c.name.toLowerCase().includes(albumSearchQuery) || c.rarity.toLowerCase().includes(albumSearchQuery);
                 const cardUniverse = c.universe || 'teachermon';
                 const matchesUniverse = (selectedAlbumUniverse === 'all') || (cardUniverse === selectedAlbumUniverse);
-
                 return matchesSearch && matchesUniverse;
             });
 
@@ -741,8 +764,6 @@
         function renderInventory() {
             const grid = document.getElementById('inventory-grid');
             grid.innerHTML = '';
-
-            // Filter-Logik: Nur Karten, die man besitzt UND die zum Universum passen
             const ownedCards = globalAlbum.filter(c => {
                 const isOwned = c.owned;
                 const cardUniverse = c.universe || 'teachermon';
@@ -758,7 +779,7 @@
             ownedCards.forEach(card => grid.innerHTML += createCardHTML(card, false, true));
         }
 
-        // --- PACKS & VERKAUF (Mit Universe Parameter) ---
+        // --- PACKS & VERKAUF ---
         async function claimDaily() { const btn = document.getElementById('btn-daily'); btn.disabled = true; try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/pack/daily`, { method: 'POST' }); const data = await res.json(); if (res.ok) showPackModal([data.card], "🎁 Daily Pack!"); else showAlert(data.error, true); } catch (e) { } finally { btn.disabled = false; } }
         async function buyPack() {
             const universe = document.getElementById('pack-universe').value;
@@ -818,17 +839,29 @@
         async function acceptTrade(id) { try { await fetchAuth(`${API_BASE_URL}/api/teachermon/trades/accept/${id}`, { method: 'POST' }); await loadAlbumData(); loadTrades(); } catch (e) { } }
         async function cancelTrade(id) { try { await fetchAuth(`${API_BASE_URL}/api/teachermon/trades/${id}`, { method: 'DELETE' }); await loadAlbumData(); loadTrades(); } catch (e) { } }
 
-        // --- ARENA (DYNAMISCHES DROPDOWN) ---
+        // --- ARENA ---
+        function toggleArenaView(view) {
+            if (view === 'open') {
+                document.getElementById('btn-arena-open').className = "flex-1 sm:flex-none px-4 py-2 rounded text-sm font-bold bg-red-600 text-white shadow-md transition-all";
+                document.getElementById('btn-arena-history').className = "flex-1 sm:flex-none px-4 py-2 rounded text-sm font-bold text-gray-400 hover:text-white transition-all";
+                document.getElementById('battle-list').classList.remove('hidden');
+                document.getElementById('battle-history-list').classList.add('hidden');
+            } else {
+                document.getElementById('btn-arena-history').className = "flex-1 sm:flex-none px-4 py-2 rounded text-sm font-bold bg-gray-700 text-white shadow-md transition-all";
+                document.getElementById('btn-arena-open').className = "flex-1 sm:flex-none px-4 py-2 rounded text-sm font-bold text-gray-400 hover:text-white transition-all";
+                document.getElementById('battle-list').classList.add('hidden');
+                document.getElementById('battle-history-list').classList.remove('hidden');
+            }
+        }
+
         function updateArenaSelects() {
             const selArena = document.getElementById('arena-card');
-            // Filtere Items heraus
             const battleReady = globalAlbum.filter(c => c.owned && (!c.cardType || (c.cardType !== 'item' && c.cardType !== 'event')));
             selArena.innerHTML = battleReady.length > 0 ? '<option value="">-- Wähle Kämpfer --</option>' : '<option value="">Du hast keine kampffähigen Karten.</option>';
             battleReady.forEach(c => selArena.innerHTML += `<option value="${c.id}">${c.name} (${c.rarity}) [${c.universe || 'teachermon'}]</option>`);
             updateArenaStatOptions();
         }
 
-        // Lädt die passenden Stats basierend auf dem ausgewählten Universum der Karte
         function updateArenaStatOptions() {
             const selCard = document.getElementById('arena-card').value;
             const selStat = document.getElementById('arena-stat');
@@ -866,7 +899,6 @@
                 if (data.battles.length === 0) return list.innerHTML = '<div class="glass-panel p-6 text-center text-gray-400 rounded-xl text-sm col-span-full">Keine Kämpfe aktiv.</div>';
                 list.innerHTML = '';
 
-                // Mapping für schöne Anzeige
                 const standardStatNames = { 'kalterKaffee': '☕ Kaffee/Tag', 'gequaelt': '😩 Gequälte Schüler', 'intelligenz': '🧠 Intelligenz' };
 
                 data.battles.forEach(b => {
@@ -880,6 +912,83 @@
             } catch (e) { }
         }
 
+        // LÄDT DIE KAMPF-HISTORIE
+        async function loadBattleHistory() {
+            const list = document.getElementById('battle-history-list');
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/battles/history`);
+                const data = await res.json();
+                
+                if (!data.history || data.history.length === 0) {
+                    list.innerHTML = '<div class="glass-panel p-6 text-center text-gray-400 rounded-xl text-sm">Noch keine Kämpfe bestritten.</div>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                const standardStatNames = { 'kalterKaffee': '☕ Kaffee', 'gequaelt': '😩 Opfer', 'intelligenz': '🧠 IQ' };
+
+                data.history.forEach(b => {
+                    // Herausfinden, wer ich bin und wer der Gegner
+                    const isChallenger = b.challengerId === currentUser.userId;
+                    
+                    const myCardId = isChallenger ? b.challengerCardId : b.acceptorCardId;
+                    const oppCardId = isChallenger ? b.acceptorCardId : b.challengerCardId;
+                    const oppName = isChallenger ? b.acceptorUsername : b.challengerUsername;
+
+                    // Wer hat gewonnen?
+                    let statusColor = "border-gray-500";
+                    let statusText = "UNENTSCHIEDEN";
+                    
+                    if (b.winnerId === null) {
+                        statusColor = "border-gray-500";
+                        statusText = "UNENTSCHIEDEN";
+                    } else if (b.winnerId === currentUser.userId) {
+                        statusColor = "border-green-500";
+                        statusText = "GEWONNEN";
+                    } else {
+                        statusColor = "border-red-500";
+                        statusText = "VERLOREN";
+                    }
+
+                    const statName = standardStatNames[b.stat] || b.stat.toUpperCase();
+                    const dateStr = new Date(b.resolvedAt).toLocaleDateString('de-DE', {day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'});
+
+                    // HTML Aufbau
+                    list.innerHTML += `
+                    <div class="glass-panel p-3 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-3 bg-black/40 border-l-4 ${statusColor}">
+                        
+                        <div class="flex items-center gap-4 w-full sm:w-auto">
+                            <div class="text-center w-20">
+                                <div class="text-xs text-gray-400 mb-1">Du</div>
+                                <div class="bg-black/50 p-1 rounded-lg border border-white/10 flex flex-col items-center justify-center">
+                                    ${getCardGraphic(myCardId)}
+                                    <span class="text-[10px] truncate max-w-[70px] mt-1">${getCardName(myCardId)}</span>
+                                </div>
+                            </div>
+
+                            <div class="text-center font-black text-gray-600 text-lg">VS</div>
+
+                            <div class="text-center w-20">
+                                <div class="text-xs text-red-400 mb-1 truncate">@${oppName}</div>
+                                <div class="bg-black/50 p-1 rounded-lg border border-white/10 flex flex-col items-center justify-center">
+                                    ${getCardGraphic(oppCardId)}
+                                    <span class="text-[10px] truncate max-w-[70px] mt-1">${getCardName(oppCardId)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center sm:items-end w-full sm:w-auto">
+                            <span class="text-[10px] font-bold tracking-widest ${statusColor.replace('border-', 'text-')}">${statusText}</span>
+                            <span class="text-xs text-purple-300 font-mono mt-1">${statName}</span>
+                            <span class="text-[9px] text-gray-500 mt-2">${dateStr}</span>
+                        </div>
+                    </div>`;
+                });
+            } catch (e) {
+                list.innerHTML = '<div class="text-center text-red-500 py-4 text-sm">Fehler beim Laden der Historie.</div>';
+            }
+        }
+
         function openBattleModal(battleId, stat, requiredUniverse) {
             document.getElementById('battle-modal-id').value = battleId;
             const sel = document.getElementById('battle-accept-card');
@@ -887,7 +996,6 @@
             const standardStatNames = { 'kalterKaffee': '☕ Kaffee/Tag', 'gequaelt': '😩 Gequälte Schüler', 'intelligenz': '🧠 Intelligenz' };
             document.getElementById('battle-modal-desc').innerText = `Es wird gekämpft um: ${standardStatNames[stat] || stat.toUpperCase()} (Nur Universum: ${requiredUniverse})`;
 
-            // Filtere nur Karten aus dem SELBEN Universum
             const ownedValid = globalAlbum.filter(c => c.owned && (c.universe || 'teachermon') === requiredUniverse && c.cardType !== 'item' && c.cardType !== 'event');
 
             sel.innerHTML = ownedValid.length > 0 ? '<option value="">-- Wähle Kämpfer --</option>' : '<option value="">Du hast keine passende Karte für dieses Universum.</option>';
@@ -905,7 +1013,7 @@
         async function confirmBattle() {
             const battleId = document.getElementById('battle-modal-id').value; const cardId = document.getElementById('battle-accept-card').value;
             if (!cardId) return alert("Wähle eine Karte!");
-            try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/battles/accept/${battleId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cardId }) }); const data = await res.json(); closeBattleModal(); if (res.ok) { showAlert(data.message); await loadAlbumData(); loadBattles(); } else showAlert(data.error, true); } catch (e) { }
+            try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/battles/accept/${battleId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cardId }) }); const data = await res.json(); closeBattleModal(); if (res.ok) { showAlert(data.message); await loadAlbumData(); loadBattles(); loadBattleHistory(); } else showAlert(data.error, true); } catch (e) { }
         }
 
         // --- ADMIN ---
@@ -930,18 +1038,17 @@
             } catch (e) { console.error("Fehler beim Laden der Universen."); }
         }
 
-        // Baut alle Dropdowns für Universen auf
         function renderUniverseDropdowns() {
             const shopSelect = document.getElementById('pack-universe');
             const adminSelect = document.getElementById('ac-universe');
             const albumFilterSelect = document.getElementById('album-universe-filter');
-            const invFilterSelect = document.getElementById('inventory-universe-filter'); // NEU
+            const invFilterSelect = document.getElementById('inventory-universe-filter');
             const listHtml = document.getElementById('admin-universe-list');
 
             if (shopSelect) shopSelect.innerHTML = '';
             if (adminSelect) adminSelect.innerHTML = '';
             if (albumFilterSelect) albumFilterSelect.innerHTML = '<option value="all">🌌 Alle Universen</option>';
-            if (invFilterSelect) invFilterSelect.innerHTML = '<option value="all">🎒 Alle Besessenen (Gesamt)</option>'; // NEU
+            if (invFilterSelect) invFilterSelect.innerHTML = '<option value="all">🎒 Alle Besessenen (Gesamt)</option>';
             if (listHtml) listHtml.innerHTML = '';
 
             globalUniverses.forEach(uni => {
@@ -949,7 +1056,7 @@
                 if (shopSelect) shopSelect.innerHTML += optionHTML;
                 if (adminSelect) adminSelect.innerHTML += optionHTML;
                 if (albumFilterSelect) albumFilterSelect.innerHTML += optionHTML;
-                if (invFilterSelect) invFilterSelect.innerHTML += optionHTML; // NEU
+                if (invFilterSelect) invFilterSelect.innerHTML += optionHTML;
 
                 if (listHtml) {
                     const isProtected = uni.id === 'teachermon';
@@ -966,7 +1073,6 @@
             renderInventory();
         }
 
-        // Erzeugt dynamisch die Input-Felder je nach gewähltem Universum und Kartentyp
         function renderDynamicStatInputs() {
             const container = document.getElementById('dynamic-stats-container');
             const selectedUniId = document.getElementById('ac-universe').value;
@@ -974,20 +1080,17 @@
 
             container.innerHTML = '';
 
-            // Items/Events haben keine Stats
             if (cardType === 'item' || cardType === 'event') {
                 container.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xs py-2">Sonderkarten haben keine Kampfwerte. Nutze das "Effekt Text" Feld.</div>';
                 return;
             }
 
-            // Passendes Universum finden
             const uni = globalUniverses.find(u => u.id === selectedUniId);
             if (!uni || !uni.stats || uni.stats.length === 0) {
                 container.innerHTML = '<div class="col-span-full text-center text-red-400 text-xs py-2">Dieses Universum hat keine Stats definiert.</div>';
                 return;
             }
 
-            // Felder für jeden Stat generieren
             uni.stats.forEach(stat => {
                 container.innerHTML += `
             <div>
@@ -998,7 +1101,6 @@
             });
         }
 
-        // Universum API Aufrufe
         async function createUniverse(e) {
             e.preventDefault();
             const payload = {
@@ -1022,7 +1124,6 @@
             } catch (e) { }
         }
 
-        // Angepasste Karten-Erstellung
         async function createCard(e) {
             e.preventDefault();
 
@@ -1037,20 +1138,17 @@
                 effectText: document.getElementById('ac-skill').value,
                 skills: document.getElementById('ac-skill').value,
                 img: document.getElementById('ac-img').value,
-                stats: {} // Hier speichern wir die dynamischen Werte
+                stats: {} 
             };
 
-            // Dynamische Inputs auslesen
             const statInputs = document.querySelectorAll('.dynamic-stat-input');
             statInputs.forEach(input => {
                 const statName = input.getAttribute('data-stat-name');
                 const value = parseInt(input.value) || 0;
 
-                // Für Abwärtskompatibilität: Wenn es das Original-Teachermon ist, direkt ins Objekt schreiben
                 if (universe === 'teachermon') {
                     payload[statName] = value;
                 } else {
-                    // Sonst in das customStats/stats Objekt
                     payload.stats[statName] = value;
                 }
             });
@@ -1060,7 +1158,6 @@
                 const data = await res.json();
                 if (res.ok) {
                     showAlert(data.message);
-                    // Formular zurücksetzen, aber Universum behalten
                     document.getElementById('ac-name').value = '';
                     document.getElementById('ac-skill').value = '';
                     document.getElementById('ac-img').value = '';
