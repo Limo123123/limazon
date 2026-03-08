@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limea - Interior Design</title>
+    <style>
+        :root {
+            --limea-blue: #0058a3;
+            --limea-yellow: #fcc200;
+            --bg: #1e1e1e;
+            --panel-bg: #2d2d2d;
+            --text: #fff;
+        }
+
+        body {
+            margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg); color: var(--text);
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        #top-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--limea-blue); padding: 10px 20px;
+            border-bottom: 4px solid var(--limea-yellow); z-index: 100;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--limea-yellow); }
+        .nav-actions { display: flex; gap: 10px; }
+        .nav-actions button {
+            background: #222; color: white; border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        .nav-actions button.save-btn { background: #44db95; color: black; border: none; }
+
+        .main-wrapper {
+            display: flex; flex: 1; overflow: hidden;
+            flex-direction: row; 
+        }
+
+        #sidebar {
+            width: 350px; background: var(--panel-bg); border-right: 2px solid #444;
+            display: flex; flex-direction: column; z-index: 10;
+        }
+        .sidebar-header { padding: 15px; text-align: center; border-bottom: 1px solid #444; }
+        
+        .tabs { display: flex; cursor: pointer; }
+        .tab { flex: 1; padding: 15px; text-align: center; background: #222; font-weight: bold; transition: 0.2s;}
+        .tab.active { background: var(--panel-bg); color: var(--limea-yellow); border-bottom: 2px solid var(--limea-yellow); }
+
+        .item-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .list-item {
+            background: #3a3a3a; margin-bottom: 10px; padding: 10px;
+            border-radius: 8px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .item-icon { font-size: 2rem; margin-right: 10px; }
+        .item-details { flex: 1; }
+        .item-name { font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        .item-price { color: #44db95; font-size: 0.85rem; }
+        .item-qty { color: #aaa; font-size: 0.8rem; }
+        
+        .buy-btn { background: var(--limea-blue); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; }
+        .btn-place { background: var(--limea-yellow); color: #000; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight:bold; }
+        .btn-place:disabled { background: #555; color: #888; cursor: not-allowed; }
+
+        /* EDITOR BEREICH FIX FÜR GROßE RÄUME */
+        #editor-area {
+            flex: 1; background: #111; overflow: auto; position: relative;
+            padding: 40px; box-sizing: border-box;
+            /* Flex-Center entfernt, damit man in riesigen Räumen normal scrollen kann! */
+        }
+
+        #room {
+            background: #e0e0e0; position: relative; 
+            border: 10px solid #555; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background-image: linear-gradient(#ccc 1px, transparent 1px), linear-gradient(90deg, #ccc 1px, transparent 1px);
+            background-size: 20px 20px; 
+            margin: 0 auto; /* Zentriert horizontal, wenn der Raum kleiner als der Bildschirm ist */
+        }
+
+        .furniture-piece {
+            position: absolute; display: flex; justify-content: center; align-items: center;
+            font-size: 2rem; cursor: grab; user-select: none;
+            touch-action: none; box-sizing: border-box;
+            box-shadow: 2px 5px 10px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: box-shadow 0.1s, border 0.1s;
+        }
+        .furniture-piece.dragging { cursor: grabbing; box-shadow: 5px 15px 25px rgba(0,0,0,0.7); z-index: 1000 !important; }
+        .furniture-piece.selected { border: 2px dashed var(--limea-yellow); }
+        .visitor-mode .furniture-piece { cursor: default; } 
+
+        #item-controls {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 200;
+            background: rgba(0,0,0,0.9); padding: 15px 25px; border-radius: 30px;
+            display: none; gap: 15px; align-items: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+        #item-controls button {
+            background: #333; color: white; border: 1px solid #555;
+            padding: 8px 15px; border-radius: 20px; cursor: pointer;
+        }
+        #item-controls button:hover { background: #444; }
+
+        .loading-screen {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background:#111; z-index: 1000; display:flex; justify-content:center; align-items:center;
+            font-size: 2rem; color: var(--limea-yellow); font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-wrapper { flex-direction: column; }
+            #sidebar { width: 100%; height: 40%; border-right: none; border-top: 2px solid #444; order: 2; }
+            #editor-area { height: 60%; order: 1; }
+            #item-controls { bottom: 42%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading" class="loading-screen">Lade Limea...</div>
+
+    <div id="top-nav">
+        <div class="logo" id="header-logo">LIMEA</div>
+        <div class="nav-actions">
+            <button onclick="history.back()">Zurück</button>
+            <button class="save-btn" id="save-btn" onclick="saveLayout()">💾 Speichern</button>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <span style="font-size: 1rem; color:#44db95; font-weight:bold;" id="bal-display">$0</span>
+            </div>
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('shop')" id="tab-shop">Katalog</div>
+                <div class="tab" onclick="switchTab('inv')" id="tab-inv">Mein Besitz</div>
+            </div>
+            <div class="item-list" id="sidebar-list"></div>
+        </div>
+
+        <div id="editor-area">
+            <div id="room"></div>
+        </div>
+    </div>
+
+    <div id="item-controls">
+        <span id="selected-name" style="color:var(--limea-yellow); font-weight:bold; margin-right: 10px;"></span>
+        <button onclick="rotateSelected()">🔄 Drehen</button>
+        <button onclick="removeSelected()" style="color: #ff4458; border-color: #ff4458;">❌ Wegpacken</button>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://api.limazon.v6.rocks'; 
+        
+        const ROOM_SIZES = {
+            'carton': { w: 300, h: 300 },
+            'trailer': { w: 500, h: 300 },
+            'apartment': { w: 600, h: 500 },
+            'suburb': { w: 800, h: 600 },
+            'mansion': { w: 1000, h: 800 },
+            'bunker': { w: 1200, h: 1000 },
+            'penthouse': { w: 1200, h: 900 }
+        };
+
+        let catalog = [];
+        let inventory = {};
+        let placedFurniture = [];
+        let isOwner = false;
+        let currentTab = 'shop';
+        let selectedItem = null;
+
+        let isDragging = false;
+        let dragTarget = null;
+        let startX, startY, initialX, initialY;
+
+        async function fetchApi(endpoint, method = 'GET', body = null) {
+            const options = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include' };
+            if (body) options.body = JSON.stringify(body);
+            const res = await fetch(BACKEND_URL + endpoint, options);
+            return await res.json();
+        }
+
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const visitId = urlParams.get('visit');
+
+            let data;
+            
+            if (visitId) {
+                data = await fetchApi(`/api/limea/visit/${visitId}`);
+                if (data.error) {
+                    alert(data.error); history.back(); return;
+                }
+                
+                document.getElementById('sidebar').style.display = 'none';
+                document.getElementById('save-btn').style.display = 'none';
+                document.getElementById('header-logo').innerText = `Zu Besuch bei ${data.home.ownerName} 🏠`;
+                document.getElementById('room').classList.add('visitor-mode');
+                
+                isOwner = false;
+                catalog = data.catalog;
+            } else {
+                data = await fetchApi('/api/limea/editor-data');
+                if (data.error) {
+                    alert(data.error); window.location.href = '/'; return;
+                }
+
+                document.getElementById('bal-display').innerText = `$${data.balance.toLocaleString()}`;
+                catalog = data.catalog;
+                isOwner = data.home.isOwner;
+
+                if (!isOwner) {
+                    alert(`Du bist nur Untermieter in ${data.home.name}. Du darfst dich umsehen, aber nichts verändern.`);
+                    document.getElementById('save-btn').style.display = 'none';
+                }
+
+                data.inventory.forEach(inv => { inventory[inv.productId] = inv.quantityOwned; });
+                renderSidebar();
+            }
+
+            const roomSize = ROOM_SIZES[data.home.id] || { w: 600, h: 400 }; 
+            const roomEl = document.getElementById('room');
+            roomEl.style.width = roomSize.w + 'px';
+            roomEl.style.height = roomSize.h + 'px';
+
+            if (data.home.layout && data.home.layout.length > 0) {
+                data.home.layout.forEach(itemData => {
+                    if (inventory[itemData.id] && inventory[itemData.id] > 0) inventory[itemData.id]--;
+                    spawnFurnitureDOM(itemData.id, itemData.uid, itemData.x, itemData.y, itemData.r);
+                });
+            }
+
+            document.getElementById('loading').style.display = 'none';
+            
+            document.getElementById('editor-area').addEventListener('pointerdown', (e) => {
+                if(e.target.id === 'editor-area' || e.target.id === 'room') deselectAll();
+            });
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-shop').classList.toggle('active', tab === 'shop');
+            document.getElementById('tab-inv').classList.toggle('active', tab === 'inv');
+            renderSidebar();
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('sidebar-list');
+            list.innerHTML = '';
+
+            if (currentTab === 'shop') {
+                catalog.forEach(item => {
+                    list.innerHTML += `
+                        <div class="list-item">
+                            <div class="item-icon">${item.icon}</div>
+                            <div class="item-details">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-price">$${item.price}</div>
+                            </div>
+                            <button class="buy-btn" onclick="buyItem('${item.id}')">Kaufen</button>
+                        </div>
+                    `;
+                });
+            } else {
+                catalog.forEach(item => {
+                    const available = inventory[item.id] || 0;
+                    if (available > 0) {
+                        list.innerHTML += `
+                            <div class="list-item">
+                                <div class="item-icon">${item.icon}</div>
+                                <div class="item-details">
+                                    <div class="item-name">${item.name}</div>
+                                    <div class="item-qty">Im Lager: ${available}x</div>
+                                </div>
+                                <button class="btn-place" onclick="placeItem('${item.id}')" ${!isOwner ? 'disabled' : ''}>Bauen</button>
+                            </div>
+                        `;
+                    }
+                });
+                if (list.innerHTML === '') list.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px;">Dein Lager ist leer.</div>';
+            }
+        }
+
+        async function buyItem(id) {
+            const res = await fetchApi('/api/limea/buy', 'POST', { itemId: id, quantity: 1 });
+            if (res.error) alert(res.error);
+            else {
+                inventory[id] = (inventory[id] || 0) + 1;
+                if (res.newBalance !== undefined) {
+                    document.getElementById('bal-display').innerText = `$${res.newBalance.toLocaleString()}`;
+                }
+                switchTab('inv');
+            }
+        }
+
+        function placeItem(id) {
+            if (inventory[id] <= 0 || !isOwner) return;
+            inventory[id]--; 
+            renderSidebar();
+
+            const uid = 'uid_' + Date.now() + Math.floor(Math.random() * 1000);
+            const room = document.getElementById('room');
+            
+            let startX = (room.clientWidth / 2) - 30;
+            let startY = (room.clientHeight / 2) - 30;
+            startX = Math.round(startX / 20) * 20;
+            startY = Math.round(startY / 20) * 20;
+
+            const el = spawnFurnitureDOM(id, uid, startX, startY, 0);
+            selectItem(el);
+            
+            // Scrollt im Mobile Modus sanft in die Mitte zum platzierten Item
+            document.getElementById('editor-area').scrollTop = startY - 100;
+            document.getElementById('editor-area').scrollLeft = startX - 100;
+        }
+
+        function spawnFurnitureDOM(id, uid, x, y, rotation) {
+            const itemDef = catalog.find(i => i.id === id);
+            if (!itemDef) return;
+
+            const el = document.createElement('div');
+            el.className = 'furniture-piece';
+            el.dataset.id = id;
+            el.dataset.uid = uid;
+            el.dataset.rotation = rotation;
+            el.innerHTML = itemDef.icon;
+            
+            const layer = itemDef.layer || 'base';
+            el.dataset.layer = layer;
+            
+            let z = 20;
+            if(layer === 'floor') z = 10;
+            if(layer === 'decor') z = 30;
+            el.style.zIndex = z;
+
+            el.style.width = itemDef.w + 'px';
+            el.style.height = itemDef.h + 'px';
+            el.style.backgroundColor = itemDef.bg;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.transform = `rotate(${rotation}deg)`;
+
+            if (isOwner) {
+                el.addEventListener('pointerdown', startDrag);
+                el.addEventListener('click', (e) => { e.stopPropagation(); selectItem(el); });
+            }
+
+            document.getElementById('room').appendChild(el);
+            placedFurniture.push(el);
+            return el;
+        }
+
+        function getBounds(el, x, y) {
+            let w = parseInt(el.style.width);
+            let h = parseInt(el.style.height);
+            let r = parseInt(el.dataset.rotation) || 0;
+            let cx = x + w / 2;
+            let cy = y + h / 2;
+            if (r === 90 || r === 270) {
+                return { left: cx - h/2, right: cx + h/2, top: cy - w/2, bottom: cy + w/2 };
+            } else {
+                return { left: x, right: x + w, top: y, bottom: y + h };
+            }
+        }
+
+        function checkCollision(boundsA, boundsB) {
+            return (boundsA.left < boundsB.right - 1 && boundsA.right > boundsB.left + 1 && 
+                    boundsA.top < boundsB.bottom - 1 && boundsA.bottom > boundsB.top + 1);
+        }
+
+        function shouldCollide(layerA, layerB) {
+            if (!layerA) layerA = 'base';
+            if (!layerB) layerB = 'base';
+            if (layerA === 'floor' || layerB === 'floor') return false;
+            if ((layerA === 'decor' && layerB === 'base') || (layerA === 'base' && layerB === 'decor')) return false;
+            return true; 
+        }
+
+        function startDrag(e) {
+            if(!isOwner) return;
+            if(e.target !== this && !this.contains(e.target)) return; 
+
+            isDragging = true;
+            dragTarget = this;
+            selectItem(dragTarget);
+
+            dragTarget.classList.add('dragging');
+
+            startX = e.clientX;
+            startY = e.clientY;
+            initialX = parseInt(dragTarget.style.left);
+            initialY = parseInt(dragTarget.style.top);
+
+            document.addEventListener('pointermove', onDrag);
+            document.addEventListener('pointerup', endDrag);
+            dragTarget.setPointerCapture(e.pointerId);
+        }
+
+        function onDrag(e) {
+            if (!isDragging || !dragTarget) return;
+
+            let dx = e.clientX - startX;
+            let dy = e.clientY - startY;
+
+            let newX = initialX + dx;
+            let newY = initialY + dy;
+
+            newX = Math.round(newX / 20) * 20;
+            newY = Math.round(newY / 20) * 20;
+
+            let bounds = getBounds(dragTarget, newX, newY);
+            let room = document.getElementById('room');
+            
+            if (bounds.left < 0) newX += (0 - bounds.left);
+            if (bounds.top < 0) newY += (0 - bounds.top);
+            if (bounds.right > room.clientWidth) newX -= (bounds.right - room.clientWidth);
+            if (bounds.bottom > room.clientHeight) newY -= (bounds.bottom - room.clientHeight);
+
+            dragTarget.style.left = newX + 'px';
+            dragTarget.style.top = newY + 'px';
+        }
+
+        function endDrag(e) {
+            isDragging = false;
+            if(!dragTarget) return;
+            
+            dragTarget.classList.remove('dragging');
+            dragTarget.releasePointerCapture(e.pointerId);
+            document.removeEventListener('pointermove', onDrag);
+            document.removeEventListener('pointerup', endDrag);
+
+            let myBounds = getBounds(dragTarget, parseInt(dragTarget.style.left), parseInt(dragTarget.style.top));
+            let isColliding = false;
+
+            for (let other of placedFurniture) {
+                if (other === dragTarget) continue;
+                let otherBounds = getBounds(other, parseInt(other.style.left), parseInt(other.style.top));
+                
+                if (checkCollision(myBounds, otherBounds)) {
+                    if (shouldCollide(dragTarget.dataset.layer, other.dataset.layer)) {
+                        isColliding = true; 
+                        break;
+                    }
+                }
+            }
+
+            if (isColliding) {
+                dragTarget.style.left = initialX + 'px';
+                dragTarget.style.top = initialY + 'px';
+                dragTarget.style.borderColor = "red";
+                setTimeout(() => dragTarget.style.borderColor = "", 300);
+            }
+        }
+
+        function selectItem(el) {
+            deselectAll();
+            selectedItem = el;
+            el.classList.add('selected');
+            
+            const itemDef = catalog.find(i => i.id === el.dataset.id);
+            document.getElementById('selected-name').innerText = itemDef ? itemDef.name : "Objekt";
+            document.getElementById('item-controls').style.display = 'flex';
+        }
+
+        function deselectAll() {
+            placedFurniture.forEach(el => el.classList.remove('selected'));
+            selectedItem = null;
+            document.getElementById('item-controls').style.display = 'none';
+        }
+
+        function rotateSelected() {
+            if (!selectedItem) return;
+            let oldR = parseInt(selectedItem.dataset.rotation) || 0;
+            let newR = (oldR + 90) % 360;
+            
+            selectedItem.dataset.rotation = newR;
+            let bounds = getBounds(selectedItem, parseInt(selectedItem.style.left), parseInt(selectedItem.style.top));
+            let room = document.getElementById('room');
+            
+            let collision = false;
+            
+            if (bounds.left < 0 || bounds.top < 0 || bounds.right > room.clientWidth || bounds.bottom > room.clientHeight) {
+                collision = true;
+            }
+
+            if (!collision) {
+                for (let other of placedFurniture) {
+                    if (other === selectedItem) continue;
+                    let oBounds = getBounds(other, parseInt(other.style.left), parseInt(other.style.top));
+                    if (checkCollision(bounds, oBounds)) { 
+                        if (shouldCollide(selectedItem.dataset.layer, other.dataset.layer)) {
+                            collision = true; 
+                            break; 
+                        }
+                    }
+                }
+            }
+
+            if (collision) {
+                selectedItem.dataset.rotation = oldR;
+                selectedItem.style.borderColor = "red";
+                setTimeout(() => selectedItem.style.borderColor = "", 300);
+            } else {
+                selectedItem.style.transform = `rotate(${newR}deg)`;
+            }
+        }
+
+        function removeSelected() {
+            if (!selectedItem) return;
+            const id = selectedItem.dataset.id;
+            
+            inventory[id] = (inventory[id] || 0) + 1; 
+            selectedItem.remove(); 
+            placedFurniture = placedFurniture.filter(el => el !== selectedItem); 
+            
+            deselectAll();
+            if(currentTab === 'inv') renderSidebar();
+        }
+
+        async function saveLayout() {
+            if (!isOwner) return;
+
+            const layoutData = [];
+            const roomNodes = document.getElementById('room').children;
+
+            for (let i = 0; i < roomNodes.length; i++) {
+                const node = roomNodes[i];
+                if (node.classList.contains('furniture-piece')) {
+                    layoutData.push({
+                        id: node.dataset.id,
+                        uid: node.dataset.uid,
+                        x: parseInt(node.style.left) || 0,
+                        y: parseInt(node.style.top) || 0,
+                        r: parseInt(node.dataset.rotation) || 0
+                    });
+                }
+            }
+
+            const res = await fetchApi('/api/realestate/my-home/layout', 'POST', { layout: layoutData });
+            if (res.error) alert(res.error);
+            else alert(res.message);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
