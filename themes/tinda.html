@@ -96,7 +96,7 @@
         .back-btn { background: none; border: none; color: white; font-size: 1.5rem; margin-right: 15px; cursor: pointer; }
         .delete-chat-btn { background: none; border: none; color: #ff4458; font-size: 1.2rem; cursor: pointer; }
         
-        /* NEU: Relationship Bar (Heiraten, Scheiden etc.) */
+        /* Relationship Bar (Heiraten, Scheiden etc.) */
         .relationship-bar { 
             display: flex; gap: 10px; padding: 10px 15px; background: #15181c; 
             border-bottom: 1px solid #333; overflow-x: auto; white-space: nowrap;
@@ -105,6 +105,7 @@
         .btn-marry { background: #e91e63; color: white; }
         .btn-divorce { background: transparent; color: #ff4458; border: 1px solid #ff4458; }
         .btn-allowance { background: #2ecc71; color: white; }
+        .btn-child { background: #ff9800; color: white; }
 
         .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
         .message { max-width: 70%; padding: 10px 15px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
@@ -205,7 +206,8 @@
         let pollingInterval = null;
         
         let activePartnerName = "";
-        let activeIsMarried = false; // NEU: Beziehungsstatus tracken
+        let activeIsMarried = false;
+        let activeChatType = null; // Wichtig für Kinder/Familien Unterscheidung
 
         async function api(endpoint, method = 'GET', body = null) {
             try {
@@ -278,21 +280,36 @@
             container.innerHTML = '<div class="loading">Lade Chats...</div>';
             const data = await api('/api/chat/chats');
             if (data && data.chats) {
-                const tindaChats = data.chats.filter(c => c.type === 'tinda');
+                // Erlaubt nun auch Kinder- und Familienchats
+                const tindaChats = data.chats.filter(c => ['tinda', 'tinda_child', 'tinda_family'].includes(c.type));
+                
                 if (tindaChats.length === 0) {
                     container.innerHTML = '<div class="empty-stack">Noch keine Matches.</div>';
                     return;
                 }
+                
                 container.innerHTML = tindaChats.map(chat => {
-                    const img = 'https://placehold.co/50x50/333/fff?text=' + chat.tindaPartnerName.charAt(0);
-                    const safeName = chat.tindaPartnerName.replace(/'/g, "\\'"); // Verhindert Fehler bei Namen mit Apostroph
-                    const marriedIcon = chat.isMarried ? '💍' : ''; // Ring anzeigen, wenn verheiratet
+                    let displayName = chat.tindaPartnerName;
+                    let typeIcon = '';
+                    let marriedIcon = chat.isMarried && chat.type === 'tinda' ? '💍' : '';
+
+                    if(chat.type === 'tinda_child') {
+                        displayName = chat.childName;
+                        typeIcon = '👶';
+                    }
+                    if(chat.type === 'tinda_family') {
+                        displayName = "Familie " + chat.tindaPartnerName;
+                        typeIcon = '👨‍👩‍👧‍👦';
+                    }
+                    
+                    const img = 'https://placehold.co/50x50/333/fff?text=' + displayName.charAt(0);
+                    const safeName = displayName.replace(/'/g, "\\'");
                     
                     return `
-                        <div class="match-item" onclick="openChat('${chat._id}', '${safeName}', ${!!chat.isMarried})">
+                        <div class="match-item" onclick="openChat('${chat._id}', '${safeName}', ${!!chat.isMarried}, '${chat.type}')">
                             <img class="match-avatar" src="${img}">
                             <div class="match-info">
-                                <div class="match-name">${chat.tindaPartnerName} ${marriedIcon}</div>
+                                <div class="match-name">${displayName} ${marriedIcon} ${typeIcon}</div>
                                 <div class="match-preview">${chat.lastMessagePreview || '...'}</div>
                             </div>
                         </div>`;
@@ -327,21 +344,28 @@
             document.querySelector('.search-input').value = '';
             const res = await api('/api/tinda/match/direct', 'POST', { humanId });
             if(res && res.success) {
-                // Bei neuem Chat ist man standardmäßig nicht verheiratet
-                openChat(res.chat._id, res.chat.tindaPartnerName, false);
+                openChat(res.chat._id, res.chat.tindaPartnerName, false, res.chat.type);
             } else {
                 alert("Fehler beim Starten des Chats.");
             }
         }
 
         // --- CHAT ---
-        async function openChat(chatId, name, isMarried) {
+        async function openChat(chatId, name, isMarried, type = 'tinda') {
             activeChatId = chatId;
             activePartnerName = name;
             activeIsMarried = isMarried;
+            activeChatType = type;
             
             document.getElementById('chat-window').style.display = 'flex';
-            document.getElementById('chat-header-name').innerText = name + (isMarried ? ' 💍' : '');
+            
+            // Name im Header je nach Chat anpassen
+            let headerName = name;
+            if (isMarried && type === 'tinda') headerName += ' 💍';
+            if (type === 'tinda_child') headerName += ' 👶';
+            if (type === 'tinda_family') headerName += ' 👨‍👩‍👧‍👦';
+
+            document.getElementById('chat-header-name').innerText = headerName;
             document.getElementById('chat-header-img').src = 'https://placehold.co/50x50/333/fff?text=' + name.charAt(0);
             
             renderRelationshipBar();
@@ -351,12 +375,20 @@
             pollingInterval = setInterval(loadMessages, 3000);
         }
         
-        // NEU: UI Logik für Beziehungsstatus
+        // UI Logik für Beziehungsstatus & Kinder
         function renderRelationshipBar() {
             const bar = document.getElementById('relationship-bar');
+            
+            // Bei Kinder- oder Familienchats keine Hochzeits-Aktionen anzeigen
+            if (activeChatType === 'tinda_child' || activeChatType === 'tinda_family') {
+                bar.innerHTML = `<div style="color: #aaa; font-size: 0.9rem; padding: 5px 0;">Sonder-Chat</div>`;
+                return;
+            }
+
             if (activeIsMarried) {
                 bar.innerHTML = `
                     <button class="rel-btn btn-allowance" onclick="getSharedAllowance()">🏦 Taschengeld ($1.500)</button>
+                    <button class="rel-btn btn-child" onclick="haveChild()">👶 Kind bekommen</button>
                     <button class="rel-btn btn-divorce" onclick="divorcePartner()">💔 Scheidung ($5.000)</button>
                 `;
             } else {
@@ -366,7 +398,20 @@
             }
         }
 
-        // NEU: Backend Aufrufe für Beziehung
+        // --- NEU: Kind bekommen ---
+        async function haveChild() {
+            const childName = prompt(`Herzlichen Glückwunsch! Wie soll das Kind von dir und ${activePartnerName} heißen?`);
+            if (!childName || childName.trim().length < 2) return;
+
+            const res = await api(`/api/tinda/chat/${activeChatId}/have-child`, 'POST', { childName });
+            if (res && res.error) {
+                alert(res.error);
+            } else {
+                alert(res.message);
+                loadMessages(); 
+            }
+        }
+
         async function marryPartner() {
             if(!confirm(`Möchtest du ${activePartnerName} wirklich heiraten?\nDas kostet $10.000 für die Feier und ihr zieht zusammen.`)) return;
             const res = await api(`/api/tinda/chat/${activeChatId}/marry`, 'POST');
@@ -423,6 +468,7 @@
                         return `<div class="message msg-system">${msg.content}</div>`;
                     }
                     const style = msg.isAi ? 'msg-other' : 'msg-me';
+                    // Bei Familienchats wird von der KI teils der Name davor geschrieben, das lassen wir einfach als Content stehen
                     return `<div class="message ${style}">${msg.content}</div>`;
                 }).join('');
                 
@@ -447,7 +493,7 @@
         async function sendMoneyPrompt() {
             if (!activeChatId) return;
             
-            const amountStr = prompt(`Wie viel Geld möchtest du an ${activePartnerName} senden?\n(Achtung: Das Geld ist danach weg!)`);
+            const amountStr = prompt(`Wie viel Geld möchtest du senden?\n(Achtung: Das Geld ist danach weg!)`);
             if (!amountStr) return;
 
             const amount = parseFloat(amountStr);
@@ -456,7 +502,7 @@
                 return;
             }
 
-            if (!confirm(`Wirklich $${amount.toLocaleString()} an ${activePartnerName} senden?`)) return;
+            if (!confirm(`Wirklich $${amount.toLocaleString()} senden?`)) return;
 
             const container = document.getElementById('messages-container');
             container.innerHTML += `<div class="message msg-system" style="opacity:0.5">💸 Sende $${amount.toLocaleString()}...</div>`;
@@ -475,6 +521,7 @@
             activeChatId = null;
             activePartnerName = "";
             activeIsMarried = false;
+            activeChatType = null;
             if (pollingInterval) clearInterval(pollingInterval);
             loadMatches();
         }

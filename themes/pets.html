@@ -164,8 +164,12 @@
                 if (pet.hunger < 20) barColor = 'var(--danger)'; 
                 const animation = pet.isDying ? 'animation: pulse 1s infinite alternate;' : '';
 
-                // Anzeige formatieren
                 const ageText = pet.ageDays === 1 ? '1 Tag alt' : `${pet.ageDays} Tage alt`;
+
+                // NEU: Logik für Pflanzen und Bäume (Gießen statt Füttern)
+                const isPlant = pet.type.includes('Pflanze') || pet.type.includes('Baum');
+                const actionWord = isPlant ? '💧 Gießen' : '🥩 Füttern';
+                const btnColor = isPlant ? '#2ecc71' : '#3498db';
 
                 return `
                     <div class="pet-card" style="${pet.isDying ? 'border-color: var(--danger);' : ''}">
@@ -176,10 +180,10 @@
                         
                         <div class="hunger-wrapper">
                             <div class="hunger-bar" style="width: ${pet.hunger}%; background-color: ${barColor};"></div>
-                            <div class="hunger-text">${pet.hunger}% Sättigung</div>
+                            <div class="hunger-text">${pet.hunger}% ${isPlant ? 'Wasser' : 'Sättigung'}</div>
                         </div>
 
-                        <button class="btn-feed" onclick="feedPet('${pet.id}')">🥩 Füttern ($15)</button>
+                        <button class="btn-feed" style="background-color: ${btnColor};" onclick="feedPet('${pet.id}')">${actionWord} ($15)</button>
                     </div>
                 `;
             }).join('');
