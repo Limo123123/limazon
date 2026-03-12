@@ -1,0 +1,231 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Haustiere &amp; Gehege</title>
+    <style>
+        :root {
+            --bg: #111418;
+            --card-bg: #1f2329;
+            --primary: #44db95;
+            --danger: #ff4458;
+            --text: #ffffff;
+            --text-muted: #888;
+        }
+
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); }
+        .header { background: #222; padding: 20px; text-align: center; border-bottom: 2px solid var(--primary); position: relative; }
+        .header h1 { margin: 0; color: var(--primary); }
+        .back-btn { position: absolute; left: 20px; top: 20px; background: #333; border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;}
+        
+        .tabs { display: flex; justify-content: center; gap: 10px; margin: 20px 0; padding: 0 20px; }
+        .tab-btn { background: var(--card-bg); border: 1px solid #444; color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .tab-btn.active { background: var(--primary); color: #000; border-color: var(--primary); }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; display: none; }
+        .container.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+        /* SHOP */
+        .shop-card { background: var(--card-bg); border-radius: 10px; padding: 20px; text-align: center; border: 1px solid #333; }
+        .shop-icon { font-size: 4rem; margin-bottom: 10px; }
+        .shop-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
+        .shop-price { color: var(--primary); font-weight: bold; margin-bottom: 15px; }
+        .name-input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: none; background: #111; color: white; box-sizing: border-box; }
+        .btn-buy { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; }
+
+        /* EIGENE TIERE */
+        .pet-card { background: var(--card-bg); border-radius: 15px; padding: 20px; text-align: center; border: 2px solid #444; position: relative; overflow: hidden; }
+        .pet-enclosure { font-size: 1rem; color: var(--text-muted); margin-bottom: 5px; }
+        .pet-age { font-size: 0.85rem; color: var(--primary); font-weight: bold; margin-bottom: 15px; }
+        .pet-icon { font-size: 5rem; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .pet-name { font-size: 1.5rem; font-weight: bold; color: #fff; }
+        
+        .hunger-wrapper { background: #111; border-radius: 10px; height: 20px; margin: 15px 0; overflow: hidden; position: relative; }
+        .hunger-bar { height: 100%; background: var(--primary); width: 100%; transition: width 0.5s, background-color 0.5s; }
+        .hunger-text { position: absolute; width: 100%; text-align: center; line-height: 20px; font-size: 0.8rem; font-weight: bold; top:0; left:0; }
+        
+        .btn-feed { background: #3498db; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn-feed:hover { background: #2980b9; }
+
+        /* FRIEDHOF */
+        .grave-card { background: #111; border: 1px solid #333; border-radius: 10px; padding: 20px; text-align: center; color: #aaa; position: relative;}
+        .grave-icon { font-size: 3rem; filter: grayscale(100%); opacity: 0.5; margin-bottom: 10px; }
+        .grave-name { font-size: 1.2rem; color: #fff; text-decoration: line-through; }
+        .grave-cause { color: var(--danger); font-size: 0.9rem; margin-top: 10px; }
+        .grave-age { position: absolute; top: 10px; right: 10px; background: #333; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem;}
+        
+        .cemetery-bg { background-image: radial-gradient(circle, #222 10%, #000 90%); }
+        
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.9); opacity: 0.7; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='/'">🔙 Stadt</button>
+        <h1>🐾 Haustiere</h1>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('myPets')">Meine Gehege</button>
+        <button class="tab-btn" onclick="switchTab('shop')">Tierhandlung</button>
+        <button class="tab-btn" onclick="switchTab('cemetery')">Tierfriedhof 🪦</button>
+    </div>
+
+    <div id="myPets" class="container active">
+        <div class="grid" id="my-pets-grid">
+            <div style="text-align:center; color:#888; grid-column: 1 / -1;">Lade deine Tiere...</div>
+        </div>
+    </div>
+
+    <div id="shop" class="container">
+        <p style="text-align:center; color:#aaa; margin-bottom: 20px;">Jedes Tier hat einen eigenen Magen. Pass auf, dass der Balken nie auf 0 fällt!</p>
+        <div class="grid" id="shop-grid"></div>
+    </div>
+
+    <div id="cemetery" class="container cemetery-bg">
+        <h2 style="text-align: center; color: #666;">Ruhet in Frieden</h2>
+        <div class="grid" id="cemetery-grid"></div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://api.limazon.v6.rocks'; 
+
+        async function fetchApi(endpoint, method = 'GET', body = null) {
+            const options = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include' };
+            if (body) options.body = JSON.stringify(body);
+            try {
+                const res = await fetch(BACKEND_URL + endpoint, options);
+                return await res.json();
+            } catch (e) {
+                console.error(e); return { error: "Netzwerkfehler" };
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabId === 'shop') loadShop();
+            if (tabId === 'myPets') loadMyPets();
+            if (tabId === 'cemetery') loadCemetery();
+        }
+
+        async function loadShop() {
+            const data = await fetchApi('/api/pets/shop');
+            if (data.catalog) {
+                const grid = document.getElementById('shop-grid');
+                grid.innerHTML = data.catalog.map(pet => `
+                    <div class="shop-card">
+                        <div class="shop-icon">${pet.icon}</div>
+                        <div class="shop-title">${pet.name}</div>
+                        <div style="font-size: 0.9rem; color: #888; margin-bottom: 10px;">Gehege: ${pet.enclosure}</div>
+                        <div class="shop-price">$${pet.price}</div>
+                        <input type="text" id="name-${pet.id}" class="name-input" placeholder="Name für dein Tier..." maxlength="20">
+                        <button class="btn-buy" onclick="adoptPet('${pet.id}')">Adoptieren</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function adoptPet(petId) {
+            const nameInput = document.getElementById(`name-${petId}`).value;
+            if (!nameInput) { alert("Bitte gib einen Namen ein!"); return; }
+
+            const res = await fetchApi('/api/pets/adopt', 'POST', { petId: petId, customName: nameInput });
+            if (res.error) {
+                alert(res.error);
+            } else {
+                alert(res.message);
+                document.getElementById(`name-${petId}`).value = '';
+                // Klick künstlich den "Meine Gehege" Button an
+                document.querySelector('.tab-btn').click(); 
+            }
+        }
+
+        async function loadMyPets() {
+            const data = await fetchApi('/api/pets/my');
+            const grid = document.getElementById('my-pets-grid');
+
+            if (data.error) { grid.innerHTML = `<div style="color:red;">${data.error}</div>`; return; }
+            if (!data.pets || data.pets.length === 0) {
+                grid.innerHTML = `<div style="text-align:center; color:#888; grid-column: 1 / -1;">Du hast keine Haustiere. Schau in der Tierhandlung vorbei!</div>`;
+                return;
+            }
+
+            grid.innerHTML = data.pets.map(pet => {
+                let barColor = 'var(--primary)';
+                if (pet.hunger < 50) barColor = '#f39c12'; 
+                if (pet.hunger < 20) barColor = 'var(--danger)'; 
+                const animation = pet.isDying ? 'animation: pulse 1s infinite alternate;' : '';
+
+                const ageText = pet.ageDays === 1 ? '1 Tag alt' : `${pet.ageDays} Tage alt`;
+
+                // NEU: Logik für Pflanzen und Bäume (Gießen statt Füttern)
+                const isPlant = pet.type.includes('Pflanze') || pet.type.includes('Baum');
+                const actionWord = isPlant ? '💧 Gießen' : '🥩 Füttern';
+                const btnColor = isPlant ? '#2ecc71' : '#3498db';
+
+                return `
+                    <div class="pet-card" style="${pet.isDying ? 'border-color: var(--danger);' : ''}">
+                        <div class="pet-enclosure">${pet.enclosure}</div>
+                        <div class="pet-age">⏳ ${ageText}</div>
+                        <div class="pet-icon" style="${animation}">${pet.icon}</div>
+                        <div class="pet-name">${pet.name} <span style="font-size:0.9rem; font-weight:normal; color:#888;">(${pet.type})</span></div>
+                        
+                        <div class="hunger-wrapper">
+                            <div class="hunger-bar" style="width: ${pet.hunger}%; background-color: ${barColor};"></div>
+                            <div class="hunger-text">${pet.hunger}% ${isPlant ? 'Wasser' : 'Sättigung'}</div>
+                        </div>
+
+                        <button class="btn-feed" style="background-color: ${btnColor};" onclick="feedPet('${pet.id}')">${actionWord} ($15)</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function feedPet(petId) {
+            const res = await fetchApi(`/api/pets/${petId}/feed`, 'POST');
+            if (res.error) {
+                alert(res.error);
+            } else {
+                // Das Alert zeigt dir, dass es funktioniert hat!
+                alert(res.message); 
+                loadMyPets(); 
+            }
+        }
+
+        async function loadCemetery() {
+            const data = await fetchApi('/api/pets/cemetery');
+            const grid = document.getElementById('cemetery-grid');
+
+            if (data.error) { grid.innerHTML = `<div style="color:red;">${data.error}</div>`; return; }
+            if (!data.cemetery || data.cemetery.length === 0) {
+                grid.innerHTML = `<div style="text-align:center; color:#888; grid-column: 1 / -1;">Der Friedhof ist leer. Alle Besitzer kümmern sich gut um ihre Tiere!</div>`;
+                return;
+            }
+
+            grid.innerHTML = data.cemetery.map(dead => {
+                const deathDate = new Date(dead.deathDate).toLocaleDateString('de-DE');
+                const ageText = dead.ageDays === 1 ? 'Wurde 1 Tag alt' : `Wurde ${dead.ageDays || 0} Tage alt`;
+                
+                return `
+                    <div class="grave-card">
+                        <div class="grave-age">${ageText}</div>
+                        <div class="grave-icon">🪦</div>
+                        <div class="grave-name">"${dead.petName}"</div>
+                        <div style="margin-top: 5px; font-size: 0.8rem;">Das geliebte ${dead.type} von ${dead.ownerName}</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px;">Gestorben am: ${deathDate}</div>
+                        <div class="grave-cause">${dead.cause}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.onload = loadMyPets;
+    </script>
+
+</body></html>
