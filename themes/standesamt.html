@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💒 Limazon Standesamt</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #f43f5e; /* Rose / Pink for love */
+            --primary-hover: #e11d48;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
+        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 5px; }
+
+        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; background: #0b1120; border: 1px solid var(--border); color: white; border-radius: 8px; font-size: 1rem; }
+        
+        button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1rem; transition: 0.2s; }
+        button:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+
+        .spouse-card, .proposal-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-group button { width: auto; padding: 8px 15px; }
+
+        .badge-tax { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 15px;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>💒 Standesamt</h1>
+        <p style="color: var(--text-muted);">Trauungen, Scheidungen und finanzielle Vorteile.</p>
+    </header>
+
+    <div class="card">
+        <h2>💍 Antrag machen</h2>
+        <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 0.9rem;">Polygamie ist erlaubt! Jede Heirat halbiert deine Steuerlast (Ehegattensplitting).</p>
+        
+        <input type="text" id="target-username" placeholder="Username der glücklichen Person...">
+        <select id="ring-select">
+            <option value="">Ring auswählen...</option>
+            </select>
+        
+        <button onclick="propose()">Auf die Knie gehen</button>
+    </div>
+
+    <div class="card" id="inbox-section">
+        <h2>💌 Offene Anträge</h2>
+        <div id="incoming-list">Lade...</div>
+    </div>
+
+    <div class="card">
+        <h2>👪 Deine Ehen</h2>
+        <div id="tax-badge" class="badge-tax" style="display: none;">✅ Steuerklasse 3 (Ehegattensplitting aktiv)</div>
+        <div id="spouses-list">Lade...</div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'https://api.limazon.v6.rocks/api';
+    const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+
+    async function loadData() {
+        try {
+            const res = await fetch(`${API_BASE}/standesamt/status`, fetchOpts);
+            if (!res.ok) return alert("Bitte einloggen.");
+            const data = await res.json();
+
+            // Ringe ins Select laden
+            const select = document.getElementById('ring-select');
+            if (select.options.length <= 1) { // Nur einmal füllen
+                for (const [key, ring] of Object.entries(data.rings)) {
+                    select.innerHTML += `<option value="${key}">${ring.icon} ${ring.name} - $${ring.price.toLocaleString()}</option>`;
+                }
+            }
+
+            // Anträge rendern
+            const inbox = document.getElementById('incoming-list');
+            inbox.innerHTML = '';
+            if (data.incoming.length === 0) inbox.innerHTML = '<p style="color: var(--text-muted);">Niemand hat dir einen Antrag gemacht.</p>';
+            
+            data.incoming.forEach(p => {
+                inbox.innerHTML += `
+                    <div class="proposal-card">
+                        <div>
+                            <strong>${p.senderName}</strong> fragt dich!<br>
+                            <span style="font-size:0.9rem; color: var(--text-muted);">Ring: ${p.ringDetails.icon} ${p.ringDetails.name}</span>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-success" onclick="respond('${p._id}', 'accept')">JA!</button>
+                            <button class="btn-danger" onclick="respond('${p._id}', 'decline')">Nein</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Ehepartner rendern
+            const spousesList = document.getElementById('spouses-list');
+            spousesList.innerHTML = '';
+            document.getElementById('tax-badge').style.display = data.spouses.length > 0 ? 'inline-block' : 'none';
+
+            if (data.spouses.length === 0) spousesList.innerHTML = '<p style="color: var(--text-muted);">Du bist glücklicher Single.</p>';
+
+            data.spouses.forEach(s => {
+                spousesList.innerHTML += `
+                    <div class="spouse-card">
+                        <div>
+                            💖 <strong>${s.name}</strong><br>
+                            <span style="font-size:0.9rem; color: var(--text-muted);">Ring: ${s.ring} | Seit: ${new Date(s.date).toLocaleDateString()}</span>
+                        </div>
+                        <button class="btn-danger" style="width: auto;" onclick="divorce('${s.id}', '${s.name}')">Scheidung ($25k)</button>
+                    </div>
+                `;
+            });
+
+        } catch (e) {
+            console.error(e);
+            alert("Fehler beim Laden.");
+        }
+    }
+
+    async function propose() {
+        const target = document.getElementById('target-username').value;
+        const ring = document.getElementById('ring-select').value;
+        if (!target || !ring) return alert("Fülle alles aus!");
+
+        try {
+            const res = await fetch(`${API_BASE}/standesamt/propose`, {
+                ...fetchOpts, method: 'POST', body: JSON.stringify({ targetUsername: target, ringType: ring })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if (res.ok) document.getElementById('target-username').value = '';
+            loadData();
+        } catch (e) { alert("Fehler"); }
+    }
+
+    async function respond(proposalId, action) {
+        try {
+            const res = await fetch(`${API_BASE}/standesamt/respond`, {
+                ...fetchOpts, method: 'POST', body: JSON.stringify({ proposalId, action })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            loadData();
+        } catch (e) { alert("Fehler"); }
+    }
+
+    async function divorce(targetId, name) {
+        if (!confirm(`Willst du dich wirklich von ${name} scheiden lassen? Das kostet $25.000 Anwaltsgebühren und landet in den LNN News!`)) return;
+        try {
+            const res = await fetch(`${API_BASE}/standesamt/divorce`, {
+                ...fetchOpts, method: 'POST', body: JSON.stringify({ targetId })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            loadData();
+        } catch (e) { alert("Fehler"); }
+    }
+
+    window.onload = loadData;
+</script>
+</body>
+</html>
