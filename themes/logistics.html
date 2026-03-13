@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 Limo Logistics</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #f59e0b;
+            --primary-hover: #d97706;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
+        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 5px; }
+
+        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; background: #0b1120; border: 1px solid var(--border); color: white; border-radius: 8px; font-size: 1rem; }
+        
+        /* Optgroups schön machen */
+        optgroup { color: var(--primary); font-style: normal; font-weight: bold; background: #1e293b; }
+        option { color: white; font-weight: normal; }
+
+        .provider-grid { display: grid; gap: 10px; margin-bottom: 20px; }
+        .provider-card { border: 2px solid var(--border); padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; background: rgba(0,0,0,0.2); }
+        .provider-card:hover { border-color: var(--primary); }
+        .provider-card.selected { border-color: var(--primary); background: rgba(245, 158, 11, 0.1); }
+        
+        .prov-name { font-weight: bold; font-size: 1.1rem; }
+        .prov-stats { font-size: 0.9rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 5px; }
+
+        button { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1.1rem; transition: 0.2s; }
+        button:hover { background: var(--primary-hover); }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📦 Limo Logistics</h1>
+        <p style="color: var(--text-muted);">Versende Items aus deinem Inventar an andere.</p>
+    </header>
+
+    <div class="card">
+        <h2>1. Was möchtest du versenden?</h2>
+        <select id="product-select">
+            <option value="">Lade Inventar...</option>
+        </select>
+        <input type="number" id="quantity" placeholder="Menge (z.B. 1)" value="1" min="1">
+
+        <h2>2. An wen?</h2>
+        <input type="text" id="target-username" placeholder="Username des Empfängers">
+
+        <h2>3. Lieferdienst wählen</h2>
+        <div class="provider-grid" id="providers-container">
+            Lade Tarife...
+        </div>
+
+        <button id="send-btn" onclick="sendPackage()">📦 Paket kostenpflichtig absenden</button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'https://api.limazon.v6.rocks/api';
+    const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+    let currentProviders = [];
+    let selectedProviderId = null;
+
+    async function init() {
+        await Promise.all([loadInventory(), loadProviders()]);
+    }
+
+    async function loadInventory() {
+        try {
+            const res = await fetch(`${API_BASE}/delivery/inventory`, fetchOpts);
+            const items = await res.json();
+            const select = document.getElementById('product-select');
+            
+            select.innerHTML = '<option value="">Bitte Item auswählen...</option>';
+            
+            if (items.length === 0) {
+                select.innerHTML = '<option value="">Dein Inventar ist leer!</option>';
+                document.getElementById('send-btn').disabled = true;
+                return;
+            }
+
+            // HIER IST DIE NEUE GRUPPIERUNG:
+            const categories = {};
+            items.forEach(item => {
+                if (!categories[item.category]) categories[item.category] = [];
+                categories[item.category].push(
+                    `<option value="${item.productId}">${item.icon} ${item.name} (Besitz: ${item.quantityOwned})</option>`
+                );
+            });
+
+            // Optgroups bauen
+            for (const [catName, options] of Object.entries(categories)) {
+                select.innerHTML += `<optgroup label="--- ${catName.toUpperCase()} ---">${options.join('')}</optgroup>`;
+            }
+
+        } catch (e) {
+            alert("Fehler beim Laden des Inventars.");
+        }
+    }
+
+    async function loadProviders() {
+        try {
+            const res = await fetch(`${API_BASE}/delivery/providers`, fetchOpts);
+            currentProviders = await res.json();
+            
+            const container = document.getElementById('providers-container');
+            container.innerHTML = '';
+            
+            currentProviders.forEach(p => {
+                container.innerHTML += `
+                    <div class="provider-card" id="prov-${p.id}" onclick="selectProvider('${p.id}')">
+                        <div class="prov-name">${p.name}</div>
+                        <div class="prov-stats">
+                            <span>⏱️ ca. ${p.timeMins} Min</span>
+                            <span style="color: var(--primary);">💸 $${p.cost.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (e) { alert("Konnte Tarife nicht laden."); }
+    }
+
+    function selectProvider(providerId) {
+        document.querySelectorAll('.provider-card').forEach(el => el.classList.remove('selected'));
+        document.getElementById(`prov-${providerId}`).classList.add('selected');
+        selectedProviderId = providerId;
+    }
+
+    async function sendPackage() {
+        const productId = document.getElementById('product-select').value;
+        const quantity = document.getElementById('quantity').value;
+        const target = document.getElementById('target-username').value.trim();
+
+        if (!productId || !target || !selectedProviderId) return alert("Bitte wähle Item, Empfänger und einen Tarif!");
+
+        const btn = document.getElementById('send-btn');
+        btn.disabled = true;
+        btn.innerText = "Sende...";
+
+        try {
+            const res = await fetch(`${API_BASE}/delivery/send`, {
+                ...fetchOpts, 
+                method: 'POST', 
+                body: JSON.stringify({
+                    targetUsername: target,
+                    productId: productId,
+                    quantity: quantity,
+                    providerId: selectedProviderId 
+                })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            
+            if(res.ok) {
+                document.getElementById('target-username').value = '';
+                document.getElementById('quantity').value = '1';
+                selectedProviderId = null;
+                await init(); 
+            }
+        } catch (e) { 
+            alert("Fehler beim Versand."); 
+        }
+        
+        btn.disabled = false;
+        btn.innerText = "📦 Paket kostenpflichtig absenden";
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
