@@ -866,12 +866,9 @@
         const MAX_SERVER_RETRIES = 12;
         const SERVER_RETRY_DELAY = 5000;
 
-        // NEU: Polling Timer Variable
         let pollingTimer = null;
-        // NEU: Schnelleres Intervall (3 Sekunden), da der Check winzig ist
         const pollingInterval = 3000;
 
-        // NEU: Speichert den lokalen Zeitstempel der Daten
         let localDataVersions = { products: 0, chat: 0, news: 0, stonks: 0 };
 
         let detailModalProductId = null;
@@ -958,7 +955,6 @@
                     if (display) display.innerText = `Worker-PID: ${serverVersions.workerPid}`;
                 }
 
-                // 1. PRODUKTE CHECK
                 if (serverVersions.products > localDataVersions.products) {
                     console.log(`${LOG_PREFIX} Smart-Polling: Neue Produktdaten erkannt.`);
                     const prevStocks = products.reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {});
@@ -980,7 +976,6 @@
                     localDataVersions.products = serverVersions.products;
                 }
 
-                // 2. STONKS CHECK
                 const stonkModal = document.getElementById('stonks-market-modal');
                 if (stonkModal && !stonkModal.classList.contains('hidden')) {
                     if (serverVersions.stonks > localDataVersions.stonks) {
@@ -995,9 +990,9 @@
 
         // --- Kernfunktionen (Laden, Rendern) ---
         async function loadProducts(triggeredBy = 'initial') {
-            console.log(`${LOG_PREFIX} loadProducts. Trigger: ${triggeredBy}, ServerStart: ${isServerStarting}, TimeoutID: ${serverStartTimeoutId !== null}`);
-            if (triggeredBy !== 'retry' && serverStartTimeoutId) { console.log(`${LOG_PREFIX} loadProducts (${triggeredBy}): Ignoriert (Retry geplant).`); return; }
-            if (triggeredBy === 'polling' && isServerStarting) { console.log(`${LOG_PREFIX} loadProducts (${triggeredBy}): Ignoriert (Server startet).`); return; }
+            console.log(`${LOG_PREFIX} loadProducts. Trigger: ${triggeredBy}`);
+            if (triggeredBy !== 'retry' && serverStartTimeoutId) { return; }
+            if (triggeredBy === 'polling' && isServerStarting) { return; }
 
             if (triggeredBy === 'initial' || triggeredBy === 'retry') { showLoadingStatus("Lade Produkte...", true, true); if (triggeredBy === 'initial') isServerStarting = true; }
             if (triggeredBy !== 'retry') serverRetryCount = 0;
@@ -1007,22 +1002,18 @@
                 const contentType = res.headers.get("content-type");
 
                 if (!res.ok || !contentType || !contentType.includes("application/json")) {
-                    console.warn(`${LOG_PREFIX} loadProducts: Nicht OK (${res.status}) oder kein JSON (${contentType}). Server startet?`);
                     isServerStarting = true; serverRetryCount++;
-                    if (serverRetryCount > MAX_SERVER_RETRIES) { console.error(`${LOG_PREFIX} loadProducts: Serverstart Timeout.`); showLoadingStatus(`Server antwortet nicht. Timeout.`, false, true); isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; return; }
+                    if (serverRetryCount > MAX_SERVER_RETRIES) { showLoadingStatus(`Server antwortet nicht. Timeout.`, false, true); isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; return; }
                     const waitTime = SERVER_RETRY_DELAY / 1000; showLoadingStatus(`Server startet... (Versuch ${serverRetryCount}/${MAX_SERVER_RETRIES}, +${waitTime}s)`, true, true);
                     if (serverStartTimeoutId) clearTimeout(serverStartTimeoutId); serverStartTimeoutId = setTimeout(() => { serverStartTimeoutId = null; loadProducts('retry'); }, SERVER_RETRY_DELAY); return;
                 }
 
                 const wasStarting = isServerStarting; isServerStarting = false; serverRetryCount = 0; if (serverStartTimeoutId) { clearTimeout(serverStartTimeoutId); serverStartTimeoutId = null; }
-                if (wasStarting) console.log(`${LOG_PREFIX} loadProducts: Server scheint gestartet.`);
                 if (wasStarting || triggeredBy === 'initial' || triggeredBy === 'retry') showLoadingStatus(null);
 
                 const { products: data } = await res.json();
                 products = Array.isArray(data) ? filterValidProducts(data).sort((a, b) => a.id - b.id) : [];
 
-                // NEU: Lokale Version synchronisieren, damit Polling nicht doppelt lädt
-                // Wir setzen es einfach auf "jetzt", das verhindert einen sofortigen Reload
                 if (triggeredBy !== 'polling') {
                     localDataVersions.products = Date.now();
                 }
@@ -1036,7 +1027,6 @@
                 if (triggeredBy === 'initial' || !isServerStarting) showLoadingStatus(`Fehler Laden Produkte: ${error.message}.`, false, true);
                 if (serverRetryCount >= MAX_SERVER_RETRIES || (triggeredBy === 'initial' && !serverStartTimeoutId)) isServerStarting = false;
 
-                // UI Disable Logik bei Fehler
                 const pageInfoEl = document.getElementById('page-info'); if (pageInfoEl) pageInfoEl.textContent = 'Fehler';
                 const prevBtn = document.getElementById('prev'); if (prevBtn) prevBtn.disabled = true;
                 const nextBtn = document.getElementById('next'); if (nextBtn) nextBtn.disabled = true;
@@ -1063,46 +1053,43 @@
             }
 
             chunk.forEach(p => {
-                // 1. SICHERHEITS-LOGIK FÜR BILDER
                 let imgUrl = p.image_url;
                 if (!imgUrl || imgUrl.includes('placehold.co') || imgUrl.includes('via.placeholder')) {
                     imgUrl = PLACEHOLDER_IMG;
                 }
 
-                // 2. LAGER & WARENKORB LOGIK
                 const sStock = p.isTokenCard ? 99999 : (p.stock || 0);
                 const itemInCart = cart.find(i => i.id === p.id);
-                const qCart = itemInCart ? itemInCart.quantity : 0; // Wie viele habe ich schon?
+                const qCart = itemInCart ? itemInCart.quantity : 0;
 
                 const availableToAdd = Math.max(0, sStock - qCart);
                 const canAdd = availableToAdd > 0;
 
-                // Lager Text & Farbe bestimmen
                 let stockText = `Verfügbar: ${sStock}`;
                 let stockClass = "text-green-600";
 
-                if (sStock === 0) {
+                if (p.isTokenCard) {
+                    stockText = "Digitaler Code";
+                } else if (sStock === 0) {
                     stockText = "Ausverkauft";
                     stockClass = "text-red-600 font-bold";
                 } else if (qCart > 0) {
-                    // Wenn schon was im Korb ist, zeigen wir an, wie viel NOCH geht
                     stockText = `Noch ${availableToAdd} verfügbar`;
                     stockClass = "text-orange-500";
                 }
 
-                // 3. HTML ZUSAMMENBAUEN
                 const div = document.createElement('div');
                 div.className = 'product bg-white rounded-lg shadow-md flex flex-col overflow-hidden';
 
                 div.innerHTML = `
                     <img src="${imgUrl}" 
-                         class="w-full h-40 object-cover bg-gray-200"
+                         class="w-full h-40 object-cover bg-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
                          onerror="this.src='${PLACEHOLDER_IMG}'" 
-                         onclick="openDetail(${p.id})">
+                         onclick="showProductDetails(${p.id})">
                          
                     <div class="p-4 flex flex-col flex-grow">
                         <div class="mb-2">
-                            <strong class="text-lg block leading-tight">${p.name}</strong>
+                            <strong class="text-lg block leading-tight cursor-pointer hover:text-blue-600 transition-colors" onclick="showProductDetails(${p.id})">${p.name}</strong>
                             <span class="text-xs text-gray-500">ID: ${p.id}</span>
                         </div>
                         
@@ -1110,9 +1097,7 @@
                         
                         <div class="text-sm mb-3">
                             <span class="${stockClass}">${stockText}</span>
-                            
                             ${qCart > 0 ? `<span class="block text-xs text-blue-500 font-semibold mt-1">(${qCart} im Korb)</span>` : ''}
-                            
                             ${p.isTokenCard ? '<span class="text-xs text-purple-600 block mt-1">(Token Code)</span>' : ''}
                         </div>
 
@@ -1121,13 +1106,13 @@
                                    class="border rounded p-1 w-12 text-center text-sm" 
                                    ${!canAdd ? 'disabled' : ''}>
                             
-                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm flex-1 disabled:opacity-50" 
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm flex-1 disabled:opacity-50 transition-colors" 
                                     onclick="addToCart(${p.id}, document.getElementById('qty-${p.id}').value)"
                                     ${!canAdd ? 'disabled' : ''}>
                                 In Korb
                             </button>
                             
-                            <button class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-sm flex-1 disabled:opacity-50" 
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-sm flex-1 disabled:opacity-50 transition-colors" 
                                     onclick="buyNow(${p.id}, document.getElementById('qty-${p.id}').value)"
                                     ${!canAdd ? 'disabled' : ''}>
                                 Kaufen
@@ -1138,25 +1123,15 @@
                 list.appendChild(div);
             });
 
-            // Update Page Info
             const maxPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
             document.getElementById('page-info').textContent = `Seite ${currentPage} von ${maxPages}`;
-
-            // Buttons deaktivieren wenn am Ende/Anfang
             document.getElementById('prev').disabled = currentPage <= 1;
             document.getElementById('next').disabled = currentPage >= maxPages;
         }
 
-        // Hilfsfunktion für "Direkt Kaufen", falls sie fehlt
-        function buyNow(id, qty) {
-            addToCart(id, qty);
-            viewCart();
-        }
         const debouncedApplySearchFilter = debounce(() => { applySearchFilter(); }, 300);
         document.getElementById('search').addEventListener('input', debouncedApplySearchFilter);
         document.getElementById('search').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); applySearchFilter(); } });
-        document.getElementById('prev').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderProducts(); } });
-        document.getElementById('next').addEventListener('click', () => { const tp = Math.ceil(filteredProducts.length / itemsPerPage) || 1; if (currentPage < tp) { currentPage++; renderProducts(); } });
 
         // --- Warenkorb-Funktionen ---
         function addToCart(id, qtyInput) { const qty = parseInt(qtyInput, 10); if (isNaN(qty) || qty < 1) { showToast('Fehler: Menge.'); return; } const p = products.find(pr => pr.id === id); if (!p) { showToast('Fehler: Produkt?'); return; } const sStock = p.isTokenCard ? 99999 : (p.stock || 0); const item = cart.find(i => i.id === id); const qCart = item ? item.quantity : 0; const canAdd = Math.max(0, sStock - qCart); if (qty > canAdd && !p.isTokenCard) { showToast(`Max noch ${canAdd} Stk.`); const field = document.getElementById(`qty-${id}`) || document.getElementById(`detail-qty`); if (field) field.value = canAdd > 0 ? canAdd : 1; return; } if (item) item.quantity += qty; else { const price = parseFloat((p.price || "").replace(/[^0-9.]/g, '')) || 0; cart.push({ id: p.id, name: p.name, price: price, quantity: qty, isTokenCard: !!p.isTokenCard }); } updateCartCount(); saveCartToCookies(); renderProducts(); if (!document.getElementById('cart-modal').classList.contains('hidden')) viewCart(); if (detailModalProductId === id) showProductDetails(id); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); showToast(`${qty} x ${p.name} hinzugefügt.`); }
@@ -1185,7 +1160,6 @@
             try {
                 const response = await fetch(`${api}/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cart: cart }), credentials: 'include' });
                 let result; try { result = await response.json(); } catch (e) { const txt = await response.text().catch(() => response.statusText); result = { error: `Server ${response.status}. Kein JSON.`, details: txt.substring(0, 200) }; }
-                console.log(`${LOG_PREFIX} API Antwort /purchase: St ${response.status}, Erg:`, result);
                 if (!response.ok) { errorResult = result; showToast(`Kauf fehlgeschlagen: ${errorResult.error || errorResult.message || 'Fehler.'}`, 5000); }
                 else {
                     lastPurchasedCart = JSON.parse(JSON.stringify(cart));
@@ -1261,9 +1235,74 @@
             }
         }
         function closeMyInventory() { document.getElementById('inventory-modal').classList.add('hidden'); }
-        function openSellProductModalFromInventory(productId, quantityUserOwns) { if (!loggedInUser) { openAuthModal('login'); return; } const product = products.find(p => p.id === productId); if (!product) { showToast("Produkt nicht im Katalog."); return; } if (quantityUserOwns <= 0) { showToast("Produkt nicht im Bestand."); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); return; } currentSellProductId = productId; document.getElementById('sell-product-name').textContent = product.name; document.getElementById('sell-product-original-price').textContent = product.price; document.getElementById('sell-product-user-stock').textContent = `${quantityUserOwns} Stk.`; const sellQtyInput = document.getElementById('sell-quantity'); sellQtyInput.value = 1; sellQtyInput.max = quantityUserOwns; const sellPriceInput = document.getElementById('sell-price'); const origPriceNum = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; sellPriceInput.value = origPriceNum.toFixed(2); document.getElementById('sell-error-message').classList.add('hidden'); document.getElementById('sell-cooldown-message').classList.add('hidden'); updateSellProbability(); const confirmSellBtn = document.getElementById('confirm-sell-button'); confirmSellBtn.onclick = () => handleSellProduct(); confirmSellBtn.disabled = false; confirmSellBtn.querySelector('.button-text').textContent = 'Verkaufen'; confirmSellBtn.querySelector('.button-spinner').classList.add('hidden'); checkSellCooldown(productId); document.getElementById('sell-product-modal').classList.remove('hidden'); }
+        function openSellProductModalFromInventory(productId, quantityUserOwns) { 
+            if (!loggedInUser) { openAuthModal('login'); return; } 
+            const product = products.find(p => p.id === productId); 
+            if (!product) { showToast("Produkt nicht im Katalog."); return; } 
+            if (quantityUserOwns <= 0) { showToast("Produkt nicht im Bestand."); if (!document.getElementById('inventory-modal').classList.contains('hidden')) showMyInventory(); return; } 
+            
+            currentSellProductId = productId; 
+            document.getElementById('sell-product-name').textContent = product.name; 
+            document.getElementById('sell-product-original-price').textContent = product.price; 
+            document.getElementById('sell-product-user-stock').textContent = `${quantityUserOwns} Stk.`; 
+            
+            const sellQtyInput = document.getElementById('sell-quantity'); 
+            sellQtyInput.value = 1; 
+            sellQtyInput.max = quantityUserOwns; 
+            
+            const sellPriceInput = document.getElementById('sell-price'); 
+            const origPriceNum = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; 
+            sellPriceInput.value = origPriceNum.toFixed(2); 
+            sellPriceInput.oninput = updateSellProbability;
+            
+            document.getElementById('sell-error-message').classList.add('hidden'); 
+            document.getElementById('sell-cooldown-message').classList.add('hidden'); 
+            
+            updateSellProbability(); 
+            
+            const confirmSellBtn = document.getElementById('confirm-sell-button'); 
+            confirmSellBtn.onclick = () => handleSellProduct(); 
+            confirmSellBtn.disabled = false; 
+            confirmSellBtn.querySelector('.button-text').textContent = 'Verkaufen'; 
+            confirmSellBtn.querySelector('.button-spinner').classList.add('hidden'); 
+            
+            checkSellCooldown(productId); 
+            document.getElementById('sell-product-modal').classList.remove('hidden'); 
+        }
         function closeSellProductModal() { document.getElementById('sell-product-modal').classList.add('hidden'); currentSellProductId = null; if (sellCooldownIntervalId) { clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; } }
-        function updateSellProbability() { if (!currentSellProductId) return; const product = products.find(p => p.id === currentSellProductId); if (!product) return; const sellPriceInput = document.getElementById('sell-price'); const probabilityEl = document.getElementById('sell-probability'); if (!sellPriceInput || !probabilityEl) return; const sellPrice = parseFloat(sellPriceInput.value); const originalPriceNumeric = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; let probability = 1.0; if (isNaN(sellPrice) || sellPrice <= 0) { probabilityEl.textContent = "?%"; return; } if (sellPrice > originalPriceNumeric) { probability = originalPriceNumeric / sellPrice; probability = Math.max(0.05, Math.min(1.0, probability)); } else if (sellPrice < originalPriceNumeric * 0.5) { probability = 1.0; } const serverStock = product.stock || 0; const defaultStockVal = product.default_stock || 20; if (serverStock > defaultStockVal * 2.5) probability *= 0.2; else if (serverStock > defaultStockVal * 1.8) probability *= 0.5; else if (serverStock > defaultStockVal * 1.2) probability *= 0.8; probability = Math.max(0.01, Math.min(1.0, probability)); probabilityEl.textContent = `${(probability * 100).toFixed(0)}%`; }
+        function updateSellProbability() { 
+            if (!currentSellProductId) return; 
+            const product = products.find(p => p.id === currentSellProductId); 
+            if (!product) return; 
+            const sellPriceInput = document.getElementById('sell-price'); 
+            const probabilityEl = document.getElementById('sell-probability'); 
+            if (!sellPriceInput || !probabilityEl) return; 
+            
+            const sellPrice = parseFloat(sellPriceInput.value); 
+            const originalPriceNumeric = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; 
+            
+            let probability = 1.0; 
+            if (isNaN(sellPrice) || sellPrice <= 0) { 
+                probabilityEl.textContent = "?%"; 
+                return; 
+            } 
+            
+            if (sellPrice > originalPriceNumeric) { 
+                probability = originalPriceNumeric / sellPrice; 
+            } else if (sellPrice < originalPriceNumeric * 0.5) { 
+                probability = 1.0; 
+            } 
+            
+            const serverStock = product.stock || 0; 
+            const defaultStockVal = product.default_stock || 20; 
+            
+            if (serverStock > defaultStockVal * 2.5) probability *= 0.1; 
+            else if (serverStock > defaultStockVal * 1.8) probability *= 0.5; 
+            else if (serverStock > defaultStockVal * 1.2) probability *= 0.8; 
+            
+            probability = Math.max(0.01, Math.min(1.0, probability)); 
+            probabilityEl.textContent = `${(probability * 100).toFixed(0)}%`; 
+        }
         function checkSellCooldown(productId) { const confirmSellButton = document.getElementById('confirm-sell-button'); const cooldownMsgEl = document.getElementById('sell-cooldown-message'); if (!confirmSellButton || !cooldownMsgEl) return; cooldownMsgEl.classList.add('hidden'); if (sellCooldownIntervalId) clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; confirmSellButton.disabled = false; if (loggedInUser && loggedInUser.productSellCooldowns && loggedInUser.productSellCooldowns[productId.toString()]) { const cooldownEndTimeISO = loggedInUser.productSellCooldowns[productId.toString()]; const cooldownEndTime = new Date(cooldownEndTimeISO).getTime(); const updateTimer = () => { const now = Date.now(); const timeLeftSeconds = Math.ceil((cooldownEndTime - now) / 1000); if (timeLeftSeconds > 0) { confirmSellButton.disabled = true; cooldownMsgEl.textContent = `Cooldown: ${timeLeftSeconds}s`; cooldownMsgEl.classList.remove('hidden'); } else { confirmSellButton.disabled = false; cooldownMsgEl.classList.add('hidden'); clearInterval(sellCooldownIntervalId); sellCooldownIntervalId = null; if (loggedInUser.productSellCooldowns) delete loggedInUser.productSellCooldowns[productId.toString()]; } }; if (Date.now() < cooldownEndTime) { updateTimer(); sellCooldownIntervalId = setInterval(updateTimer, 1000); } else { if (loggedInUser.productSellCooldowns) delete loggedInUser.productSellCooldowns[productId.toString()]; } } }
         async function handleSellProduct() {
             if (!currentSellProductId || !loggedInUser) return;
@@ -1274,7 +1313,7 @@
             const btnTxt = confirmBtn.querySelector('.button-text');
             const spinner = confirmBtn.querySelector('.button-spinner');
 
-            const qty = parseInt(qtyInput.value, 10); // Deine Variable für die Menge heißt 'qty'
+            const qty = parseInt(qtyInput.value, 10);
             const sellPrice = parseFloat(priceInput.value);
 
             errEl.classList.add('hidden');
@@ -1301,13 +1340,10 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    // KORRIGIERTE STELLE:
-                    // Das Backend erwartet ein Feld 'quantity',
-                    // der Wert dafür kommt aus deiner Variable 'qty'.
                     body: JSON.stringify({
                         productId: currentSellProductId,
-                        sellPrice, // Dies ist eine Kurzschreibweise für sellPrice: sellPrice
-                        quantity: qty // Hier wird das Feld 'quantity' mit dem Wert der Variable 'qty' befüllt
+                        sellPrice,
+                        quantity: qty
                     }),
                     credentials: 'include'
                 });
@@ -1334,7 +1370,7 @@
                     closeSellProductModal();
                 }
             } catch (error) {
-                console.error(`${LOG_PREFIX} Fehler handleSellProduct:`, error); // Beachte, dass LOG_PREFIX hier definiert sein muss
+                console.error(`${LOG_PREFIX} Fehler handleSellProduct:`, error);
                 errEl.textContent = "Netzwerkfehler.";
                 errEl.classList.remove('hidden');
             } finally {
@@ -1394,15 +1430,13 @@
         function startPolling() {
             if (pollingTimer) clearInterval(pollingTimer);
 
-            // Wir rufen jetzt checkForUpdates auf
             pollingTimer = setInterval(async () => {
                 if (!isServerStarting && !serverStartTimeoutId) {
                     await checkForUpdates();
                 }
-            }, pollingInterval); // Alle 3 Sekunden (Definiert in Variable oben)
+            }, pollingInterval);
         }
 
-        // --- START: New Function for merging tokens ---
         async function mergeTokenCodes() {
             const valueSelect = document.getElementById('merge-token-value');
             const countInput = document.getElementById('merge-token-count');
@@ -1445,7 +1479,7 @@
                 messageEl.textContent = result.message || 'Erfolgreich!';
                 countInput.value = '';
                 showToast("Codes erfolgreich zusammengeführt!");
-                await showMyTokenCodes(); // Refresh the list of codes
+                await showMyTokenCodes(); 
 
             } catch (error) {
                 console.error(`${LOG_PREFIX} Fehler beim Zusammenführen der Token Codes:`, error);
@@ -1457,9 +1491,6 @@
                 spinner.classList.add('hidden');
             }
         }
-        // --- END: New Function for merging tokens ---
-
-        // --- NEUE FUNKTIONEN FÜR DAS AUKTIONSHAUS ---
 
         let auctionUpdateInterval = null;
 
@@ -1520,9 +1551,9 @@
                 auctions.forEach(auction => {
 
                     const auctionCard = document.createElement('div');
-                    auctionCard.className = 'product bg-white rounded-lg shadow-md flex flex-col overflow-hidden p-2 cursor-pointer hover:shadow-xl transition-shadow'; // Klassen für Hover-Effekt hinzugefügt
+                    auctionCard.className = 'product bg-white rounded-lg shadow-md flex flex-col overflow-hidden p-2 cursor-pointer hover:shadow-xl transition-shadow'; 
                     auctionCard.dataset.endTime = auction.endTime;
-                    auctionCard.onclick = () => openAuctionDetail(auction._id); // ONCLICK HINZUGEFÜGT
+                    auctionCard.onclick = () => openAuctionDetail(auction._id); 
 
                     const highestBidderText = auction.highestBidderUsername ? auction.highestBidderUsername : 'Niemand';
 
@@ -1557,7 +1588,6 @@
             const modal = document.getElementById('auction-detail-modal');
             modal.classList.remove('hidden');
 
-            // Reset state
             document.getElementById('auction-detail-name').textContent = 'Lade Auktion...';
             document.getElementById('auction-detail-image').src = '';
             document.getElementById('auction-bid-history').innerHTML = '<p class="text-gray-500">Lade Historie...</p>';
@@ -1569,15 +1599,13 @@
                 if (!response.ok) throw new Error("Details konnten nicht geladen werden.");
                 const { auction } = await response.json();
 
-                // Populate modal with data
                 document.getElementById('auction-detail-name').textContent = auction.productName;
                 document.getElementById('auction-detail-image').src = auction.productImageUrl;
                 document.getElementById('auction-detail-seller').textContent = auction.sellerUsername;
-                document.getElementById('auction-detail-time').textContent = formatTimeRemaining(auction.endTime).replace(/<[^>]+>/g, ''); // strip html tags
+                document.getElementById('auction-detail-time').textContent = formatTimeRemaining(auction.endTime).replace(/<[^>]+>/g, '');
                 document.getElementById('auction-detail-bid').textContent = auction.currentBid.toFixed(2);
                 document.getElementById('auction-detail-highest-bidder').textContent = auction.highestBidderUsername || 'Niemand';
 
-                // Populate bid history
                 const historyDiv = document.getElementById('auction-bid-history');
                 if (auction.bids && auction.bids.length > 0) {
                     historyDiv.innerHTML = auction.bids.map(bid =>
@@ -1590,10 +1618,9 @@
                     historyDiv.innerHTML = '<p class="text-gray-500">Noch keine Gebote.</p>';
                 }
 
-                // Set up bid button
                 const confirmBtn = document.getElementById('confirm-bid-button');
                 confirmBtn.onclick = () => handleBid(auction._id);
-                // Disable button if user is seller
+                
                 if (loggedInUser && loggedInUser.userId === auction.sellerId) {
                     confirmBtn.disabled = true;
                     document.getElementById('bid-amount').disabled = true;
@@ -1638,8 +1665,8 @@
 
                 showToast("Gebot erfolgreich abgegeben!");
                 document.getElementById('auction-detail-modal').classList.add('hidden');
-                renderAuctions(); // Refresh the main auction list to show the new bid
-                updateUserInfo(); // Refresh user balance in header
+                renderAuctions(); 
+                updateUserInfo(); 
 
             } catch (error) {
                 errorEl.textContent = error.message;
@@ -1667,7 +1694,7 @@
             document.getElementById('create-auction-error-message').classList.add('hidden');
 
             const confirmBtn = document.getElementById('confirm-create-auction-button');
-            confirmBtn.onclick = handleCreateAuction; // Set onclick handler
+            confirmBtn.onclick = handleCreateAuction; 
 
             document.getElementById('create-auction-modal').classList.remove('hidden');
         }
@@ -1715,7 +1742,7 @@
 
                 showToast("Auktion erfolgreich gestartet!");
                 closeCreateAuctionModal();
-                showMyInventory(); // Refresh inventory to show decreased stock
+                showMyInventory(); 
 
             } catch (error) {
                 errorEl.textContent = error.message;
@@ -1727,11 +1754,9 @@
             }
         }
 
-        // --- NEUE FUNKTIONEN FÜR LIMOSTONKS BÖRSE ---
-
         let stonkUpdateInterval = null;
         let userPortfolios = [];
-        const STONKS_PRICE_UPDATE_INTERVAL = 5 * 60 * 1000; // 5 Minuten in ms
+        const STONKS_PRICE_UPDATE_INTERVAL = 5 * 60 * 1000; 
 
         function openStonkMarket() {
             if (!loggedInUser) { openAuthModal('login'); showToast("Bitte einloggen."); return; }
@@ -1763,10 +1788,9 @@
 
                 timerSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-                // Reload market when timer hits zero
                 if (minutes === 0 && seconds === 0) {
                     showToast("Marktpreise werden aktualisiert...");
-                    setTimeout(renderStonkMarket, 2000); // Wait 2s for server to finish
+                    setTimeout(renderStonkMarket, 2000);
                 }
             };
 
@@ -1779,7 +1803,6 @@
             contentDiv.innerHTML = '<p class.text-center text-gray-500 py-4 col-span-full">Lade Aktienkurse...</p>';
 
             try {
-                // Lade Aktienkurse und das persönliche Portfolio gleichzeitig
                 const [productsResponse, portfolioResponse] = await Promise.all([
                     fetch(`${getApiUrl()}/products`),
                     fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' })
@@ -1792,11 +1815,7 @@
                 const { portfolio } = await portfolioResponse.json();
 
                 let stocks = allProducts.filter(p => !p.isTokenCard && p.hasOwnProperty('currentPrice'));
-
-                // Eine Map für schnellen Zugriff auf Portfolio-Daten erstellen
                 const portfolioMap = new Map(portfolio.map(item => [item.productId, item]));
-
-                // ... (Der Rest der Funktion für Suche und Sortierung bleibt gleich, aber die renderStockCards-Funktion darin wird angepasst)
 
                 const renderStockCards = (stocksToRender) => {
                     contentDiv.innerHTML = '';
@@ -1808,9 +1827,7 @@
                         let priceChangeHtml = '';
                         const portfolioItem = portfolioMap.get(stock.id);
 
-                        // ** NEUE LOGIK: Entscheiden, welche Info angezeigt wird **
                         if (portfolioItem) {
-                            // Der Nutzer besitzt diese Aktie -> Persönlichen G/V anzeigen
                             const totalValue = portfolioItem.quantityShares * stock.currentPrice;
                             const totalCost = portfolioItem.quantityShares * portfolioItem.averageBuyPrice;
                             const profit = totalValue - totalCost;
@@ -1818,7 +1835,6 @@
                             const profitClass = profit > 0 ? 'text-green-600' : (profit < 0 ? 'text-red-500' : 'text-gray-600');
                             priceChangeHtml = `<p class="text-xs ${profitClass} font-bold">Mein G/V: ${profit.toFixed(2)} (${profitPercent.toFixed(2)}%)</p>`;
                         } else {
-                            // Der Nutzer besitzt die Aktie nicht -> Allgemeine Markt-Änderung anzeigen
                             const priceHistory = stock.priceHistory || [];
                             const lastPrice = stock.currentPrice;
                             const previousPrice = priceHistory.length > 1 ? priceHistory[priceHistory.length - 2].price : lastPrice;
@@ -1830,7 +1846,6 @@
                         }
 
                         const stockCard = document.createElement('div');
-                        // Wenn der User die Aktie besitzt, bekommt sie einen blauen Rand
                         const ownedClass = portfolioItem ? 'border-blue-500' : 'border-transparent';
                         stockCard.className = `p-3 bg-white rounded-lg shadow-md flex flex-col cursor-pointer hover:shadow-lg border-2 ${ownedClass} transition-all`;
                         stockCard.onclick = () => openStonkDetail(stock.id);
@@ -1846,10 +1861,6 @@
                     });
                 };
 
-                // Hier kommt der Rest der renderStonkMarket-Funktion hin (Filter/Sortierung und der Aufruf von applyFiltersAndSort)
-                // Es ist wichtig, dass die renderStockCards-Subfunktion durch die obige ersetzt wird.
-
-                // --- Temporär, um es einfach zu halten, hier der Rest der Funktion ---
                 let currentSort = { key: 'name', direction: 'asc' };
                 const applyFiltersAndSort = () => {
                     const searchTerm = document.getElementById('stonk-search-input').value.toLowerCase();
@@ -1857,22 +1868,20 @@
                     if (searchTerm) {
                         filteredStocks = stocks.filter(stock => stock.name.toLowerCase().includes(searchTerm) || String(stock.id).includes(searchTerm));
                     }
-                    // Sortierlogik bleibt hier unverändert...
                     renderStockCards(filteredStocks);
                 };
                 document.getElementById('stonk-search-input').addEventListener('input', applyFiltersAndSort);
-                // Sortier-Buttons setup bleibt unverändert...
                 applyFiltersAndSort();
 
             } catch (error) {
                 contentDiv.innerHTML = `<p class="text-center text-red-500 py-4 col-span-full">Fehler: ${error.message}</p>`;
             }
         }
+        
         async function openStonkDetail(productId) {
             const modal = document.getElementById('stonk-detail-modal');
             modal.classList.remove('hidden');
 
-            // Reset UI with loading states
             document.getElementById('stonk-detail-name').textContent = 'Lade Aktie...';
             document.getElementById('stonk-detail-price').textContent = '--.--';
             document.getElementById('stonk-trade-error').textContent = '';
@@ -1883,7 +1892,6 @@
             document.getElementById('stonk-portfolio-total-value').textContent = '...';
 
             try {
-                // Fetch product list and user portfolio simultaneously for efficiency
                 const [productsResponse, portfolioResponse] = await Promise.all([
                     fetch(`${getApiUrl()}/products`),
                     fetch(`${getApiUrl()}/stonks/portfolio`, { credentials: 'include' })
@@ -1898,14 +1906,10 @@
                 const stock = allProducts.find(p => p.id === productId);
                 if (!stock) throw new Error("Aktie nicht im Markt gefunden.");
 
-                // --- Populate Modal with correct data ---
-
-                // 1. Stock Info
                 document.getElementById('stonk-detail-name').textContent = stock.name;
                 document.getElementById('stonk-detail-image').src = stock.image_url;
                 document.getElementById('stonk-detail-price').textContent = stock.currentPrice.toFixed(2);
 
-                // 2. User's Portfolio Info for THIS stock
                 const portfolioItem = portfolio.find(item => item.productId === productId);
 
                 if (portfolioItem && portfolioItem.quantityShares > 0) {
@@ -1919,7 +1923,6 @@
                     document.getElementById('stonk-portfolio-total-value').textContent = '$0.00';
                 }
 
-                // 3. Setup Event Listeners
                 const qtyInput = document.getElementById('stonk-trade-quantity');
                 const estimatedValueEl = document.getElementById('stonk-trade-estimated-value');
 
@@ -1962,8 +1965,8 @@
 
                 showToast(result.message);
                 document.getElementById('stonk-detail-modal').classList.add('hidden');
-                updateUserInfo(); // Update balance in header
-                renderStonkMarket(); // Refresh market view
+                updateUserInfo(); 
+                renderStonkMarket(); 
 
             } catch (error) {
                 errorEl.textContent = error.message;
@@ -1998,7 +2001,7 @@
                 }
 
                 let totalPortfolioValue = 0;
-                contentTbody.innerHTML = ''; // Clear loading state
+                contentTbody.innerHTML = ''; 
 
                 portfolio.forEach(item => {
                     const totalValue = item.quantityShares * item.currentPrice;
@@ -2039,44 +2042,36 @@
         }
 
         // --- Initialisierung ---
-        // WICHTIG: DOMContentLoaded feuert sofort, auch wenn Bilder noch laden/blockieren
         document.addEventListener('DOMContentLoaded', async () => {
             console.log(`${LOG_PREFIX} Start.`);
 
-            // Deine Initialisierungs-Funktionen
             loadCartFromCookies();
             await checkLoginStatus();
             await loadProducts();
             startPolling();
 
-            // Event Listeners wieder anhängen
             document.getElementById('search').addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
                 filteredProducts = products.filter(p => p.name.toLowerCase().includes(term));
                 currentPage = 1; renderProducts();
             });
 
-            // --- ROBUST PAGINATION FIX ---
             const prevBtnOriginal = document.getElementById('prev');
             const nextBtnOriginal = document.getElementById('next');
 
             if (prevBtnOriginal && nextBtnOriginal) {
-                // Clone nodes to strip ALL existing event listeners (including invisible ones)
                 const prevBtn = prevBtnOriginal.cloneNode(true);
                 const nextBtn = nextBtnOriginal.cloneNode(true);
 
-                // Replace the original buttons in the DOM with the clean clones
                 prevBtnOriginal.parentNode.replaceChild(prevBtn, prevBtnOriginal);
                 nextBtnOriginal.parentNode.replaceChild(nextBtn, nextBtnOriginal);
 
-                // Explicitly remove any inline onclick attributes from the clones
                 prevBtn.removeAttribute('onclick');
                 nextBtn.removeAttribute('onclick');
 
-                // Attach SINGLE, controlled event listeners
                 prevBtn.addEventListener('click', (e) => {
-                    e.preventDefault(); // Stop any default form submission or link following
-                    e.stopPropagation(); // Stop event bubbling
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
 
                     if (currentPage > 1) {
                         console.log(`${LOG_PREFIX} Page ${currentPage} -> ${currentPage - 1}`);
