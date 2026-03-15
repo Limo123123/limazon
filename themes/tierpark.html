@@ -2,232 +2,235 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌳 Limazon Tierpark</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Tierpark</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #22c55e;
-            --primary-hover: #16a34a;
-            --border: #334155;
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
         
-        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
-        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 5px; }
+        select option { background-color: #0f172a; color: white; }
 
-        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        @keyframes float { 
+            0%, 100% { transform: translateY(0px); } 
+            50% { transform: translateY(-12px); } 
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
         
-        select { width: 100%; padding: 12px; margin-bottom: 10px; background: #0b1120; border: 1px solid var(--border); color: white; border-radius: 8px; font-size: 1rem; }
-        button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1rem; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
-        button:hover { background: var(--primary-hover); }
-        .btn-secondary { background: #3b82f6; }
-        .btn-secondary:hover { background: #2563eb; }
-        .btn-danger { background: #ef4444; }
-        .btn-danger:hover { background: #dc2626; }
-
-        .park-wiese { background: linear-gradient(180deg, #86efac 0%, #22c55e 100%); border-radius: 12px; min-height: 250px; padding: 20px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; position: relative; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); margin-bottom: 20px; }
-        
-        .pet-entity { background: rgba(255,255,255,0.9); color: #000; padding: 10px; border-radius: 12px; text-align: center; width: 100px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); animation: float 3s ease-in-out infinite; }
-        .pet-entity:nth-child(even) { animation-delay: 1.5s; }
-        .pet-icon { font-size: 2.5rem; display: block; margin-bottom: 5px; }
-        .pet-name { font-size: 0.8rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .pet-owner { font-size: 0.6rem; color: #64748b; }
-
-        .event-log { background: #0b1120; border: 1px solid var(--border); border-radius: 8px; padding: 15px; max-height: 200px; overflow-y: auto; font-family: monospace; }
-        .log-entry { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 10px; align-items: flex-start; }
-        .log-icon { font-size: 1.5rem; }
-
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        /* Die Wiese */
+        .park-wiese {
+            background: radial-gradient(circle at center, #34d399 0%, #10b981 60%, #059669 100%);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
 
-<div class="container">
-    <header>
-        <h1>🌳 Limazon Tierpark</h1>
-        <p style="color: var(--text-muted);">Lass deine Tiere auf der Wiese spielen. Das füllt ihren Hunger auf!</p>
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-emerald-500">🌳</span> Tierpark
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Lass deine Tiere auf der Wiese spielen</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
     </header>
 
-    <div class="card">
-        <h2 style="margin-bottom: 10px;">Park-Eingang</h2>
-        <select id="pet-select">
-            <option value="">Lade deine Tiere...</option>
-        </select>
+    <main class="flex-grow space-y-6 z-0">
         
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button onclick="sendToPark()">🐾 In den Park lassen</button>
-            <button class="btn-danger" onclick="callHome()">🏠 Tier nach Hause rufen</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h2>Live-Wiese</h2>
-            <button class="btn-secondary" style="width: auto; padding: 8px 15px; font-size: 0.9rem; margin: 0;" onclick="observeAnimals()">👀 Beobachten (Event)</button>
-        </div>
-        
-        <div class="park-wiese" id="park-wiese">
-            <p style="color: #064e3b; font-weight: bold;">Lade Park...</p>
-        </div>
-
-        <h2 style="margin-bottom: 10px;">Park-Funk</h2>
-        <div class="event-log" id="event-log">
-            <p style="color: var(--text-muted);">Warte auf Ereignisse...</p>
-        </div>
-    </div>
-</div>
-
-<script>
-    const API_BASE = 'https://api.limazon.v6.rocks/api';
-    const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
-
-    // 1. Eigene Tiere für das Dropdown laden
-    async function loadMyPetsForDropdown() {
-        const select = document.getElementById('pet-select');
-        try {
-            const res = await fetch(`${API_BASE}/pets/my`, fetchOpts);
-            const { pets } = await res.json();
-
-            if (!pets || pets.length === 0) {
-                select.innerHTML = '<option value="">Du besitzt keine Tiere. (Geh in die Tierhandlung!)</option>';
-                select.disabled = true;
-                return;
-            }
-
-            select.innerHTML = '<option value="">-- Wähle ein Tier aus --</option>';
-            pets.forEach(pet => {
-                const status = pet.isDying ? ' (Sehr Hungrig!)' : ` (${pet.hunger}% Satt)`;
-                select.innerHTML += `<option value="${pet.id}">${pet.icon} ${pet.name} ${status}</option>`;
-            });
-            select.disabled = false;
-        } catch (e) {
-            select.innerHTML = '<option value="">Fehler beim Laden der Tiere.</option>';
-        }
-    }
-
-    // 2. Das magische "Alles in einem"-Skript
-    async function sendToPark() {
-        const petId = document.getElementById('pet-select').value;
-        if (!petId) return alert("Bitte wähle zuerst ein Tier aus dem Dropdown aus!");
-
-        try {
-            // Schritt A: Tier ausrüsten (ohne, dass der User es merkt)
-            const resEquip = await fetch(`${API_BASE}/pets/equip`, { ...fetchOpts, method: 'POST', body: JSON.stringify({ petId }) });
-            if (!resEquip.ok) return alert("Dein Tier möchte gerade nicht.");
-
-            // Schritt B: Sofort in den Park schicken
-            const resToggle = await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
-            const data = await resToggle.json();
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-emerald-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                🎟️ Park-Eingang
+            </h2>
             
-            if(resToggle.ok) {
-                alert("Erfolg: Dein Tier ist jetzt auf der Wiese!");
-                loadPark(); // Wiese neu laden
-            } else {
-                alert(data.error);
-            }
-        } catch (e) { alert("Verbindung zum Tor unterbrochen."); }
-    }
-
-    // 3. Tier zurückholen
-    async function callHome() {
-        try {
-            // Wir checken erst beim Backend, ob überhaupt eins im Park ist, indem wir toggle rufen. 
-            // Da das Frontend nicht zu 100% weiß, ob gerade eins drin ist, riskieren wir hier, dass er ein Tier IN den Park schickt, 
-            // wenn vorher keins drin war. 
-            // Workaround: Wir rufen einfach das Toggle auf und schauen was passiert.
-            const res = await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
-            const data = await res.json();
+            <select id="pet-select" class="w-full bg-slate-900 border border-slate-700 text-white p-3 rounded-xl text-sm mb-4 focus:outline-none focus:border-emerald-500 transition font-medium appearance-none">
+                <option value="">Lade deine Tiere...</option>
+            </select>
             
-            if(res.ok) {
-                // Wenn "inPark" jetzt true ist, war es vorher false. Wir rufen es nochmal auf, um es wieder auf false zu setzen.
-                if (data.inPark === true) {
-                    await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
+            <div class="flex gap-3">
+                <button onclick="sendToPark()" class="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/20 active:scale-95 text-sm flex justify-center items-center gap-2">
+                    <span>🐾</span> Reinlassen
+                </button>
+                <button onclick="callHome()" class="flex-1 bg-rose-500/20 text-rose-400 border border-rose-500/50 font-bold py-3 rounded-xl hover:bg-rose-500 hover:text-white transition active:scale-95 text-sm flex justify-center items-center gap-2">
+                    <span>🏠</span> Heim rufen
+                </button>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm uppercase text-emerald-400 font-bold tracking-wider">Live-Wiese</h2>
+                <button onclick="observeAnimals()" class="bg-blue-500/20 text-blue-400 border border-blue-500/50 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition active:scale-95 flex items-center gap-1">
+                    <span>👀</span> Beobachten
+                </button>
+            </div>
+            
+            <div id="park-wiese" class="park-wiese rounded-xl min-h-[250px] p-5 flex flex-wrap gap-4 justify-center items-center relative overflow-hidden border border-green-700/50">
+                <p class="text-green-900 font-bold text-lg drop-shadow-sm flex items-center gap-2">
+                    <span class="animate-spin">⏳</span> Lade Park...
+                </p>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-emerald-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                📻 Park-Funk
+            </h2>
+            <div id="event-log" class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 max-h-48 overflow-y-auto hide-scroll text-sm font-mono space-y-3">
+                <p class="text-slate-500 text-center py-2">Warte auf Ereignisse...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const API_BASE = 'https://api.limazon.v6.rocks/api';
+        const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+
+        // 1. Eigene Tiere für das Dropdown laden
+        async function loadMyPetsForDropdown() {
+            const select = document.getElementById('pet-select');
+            try {
+                const res = await fetch(`${API_BASE}/pets/my`, fetchOpts);
+                const { pets } = await res.json();
+
+                if (!pets || pets.length === 0) {
+                    select.innerHTML = '<option value="">Du besitzt keine Tiere.</option>';
+                    select.disabled = true;
+                    return;
                 }
-                alert("Dein Tier wurde nach Hause geholt!");
-                loadPark();
-            } else {
-                alert(data.error);
+
+                select.innerHTML = '<option value="">-- Wähle ein Tier aus --</option>';
+                pets.forEach(pet => {
+                    const status = pet.isDying ? ' (Sehr Hungrig!)' : ` (${pet.hunger}% Satt)`;
+                    select.innerHTML += `<option value="${pet.id}">${pet.icon} ${pet.name} ${status}</option>`;
+                });
+                select.disabled = false;
+            } catch (e) {
+                select.innerHTML = '<option value="">Fehler beim Laden.</option>';
             }
-        } catch (e) { alert("Fehler beim Zurückrufen."); }
-    }
-
-    // 4. Die Wiese laden
-    async function loadPark() {
-        const wiese = document.getElementById('park-wiese');
-        try {
-            const res = await fetch(`${API_BASE}/park/pets`, fetchOpts);
-            const pets = await res.json();
-
-            if (pets.length === 0) {
-                wiese.innerHTML = '<p style="color: #064e3b; font-weight: bold; font-size: 1.2rem;">Der Park ist leer. Schick ein Tier rein!</p>';
-                return;
-            }
-
-            wiese.innerHTML = '';
-            pets.forEach(p => {
-                wiese.innerHTML += `
-                    <div class="pet-entity">
-                        <span class="pet-icon">${p.petIcon}</span>
-                        <div class="pet-name">${p.petName}</div>
-                        <div class="pet-owner">${p.username}</div>
-                    </div>
-                `;
-            });
-        } catch (e) {
-            wiese.innerHTML = '<p style="color: red; font-weight: bold;">Störung im Park.</p>';
         }
-    }
 
-    // 5. Zufalls-Event auslösen
-    async function observeAnimals(isAuto = false) {
-        const log = document.getElementById('event-log');
-        try {
-            const res = await fetch(`${API_BASE}/park/interact`, { ...fetchOpts, method: 'POST' });
-            const data = await res.json();
-            
-            if(res.ok) {
-                // Wenn der Park leer ist und das System automatisch sucht -> Nichts tun
-                if(data.message.includes("komplett leer") && isAuto) return;
+        // 2. Tier in den Park schicken
+        async function sendToPark() {
+            const petId = document.getElementById('pet-select').value;
+            if (!petId) return alert("Bitte wähle zuerst ein Tier aus!");
 
-                if(log.innerHTML.includes("Warte auf Ereignisse")) log.innerHTML = '';
+            try {
+                const resEquip = await fetch(`${API_BASE}/pets/equip`, { ...fetchOpts, method: 'POST', body: JSON.stringify({ petId }) });
+                if (!resEquip.ok) return alert("Fehler beim Ausrüsten des Tiers.");
 
-                const entry = document.createElement('div');
-                entry.className = 'log-entry';
-                entry.innerHTML = `<span class="log-icon">${data.icon || '🐾'}</span> <span style="color: #a7f3d0;">[${new Date().toLocaleTimeString()}]</span> ${data.message}`;
+                const resToggle = await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
+                const data = await resToggle.json();
                 
-                log.prepend(entry);
-                loadPark(); // Aktualisiert die Wiese
-            } else {
-                if(!isAuto) alert(data.error); // Fehler nur zeigen, wenn man selbst geklickt hat
-            }
-        } catch (e) { 
-            if(!isAuto) alert("Du konntest nichts erkennen."); 
+                if(resToggle.ok) {
+                    alert("Erfolg: Dein Tier ist jetzt auf der Wiese!");
+                    loadPark(); 
+                } else alert(data.error);
+            } catch (e) { alert("Verbindung fehlgeschlagen."); }
         }
-    }
 
-    // Start-Logik mit Random-Events
-    window.onload = () => {
-        loadMyPetsForDropdown();
-        loadPark();
-        
-        // Live-Wiese alle 10 Sek. aktualisieren
-        setInterval(loadPark, 10000); 
+        // 3. Tier zurückholen
+        async function callHome() {
+            try {
+                const res = await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    if (data.inPark === true) {
+                        await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
+                    }
+                    alert("Dein Tier wurde nach Hause geholt!");
+                    loadPark();
+                } else alert(data.error);
+            } catch (e) { alert("Fehler beim Zurückrufen."); }
+        }
 
-        // 🔥 NEU: Der automatische Event-Generator!
-        // Alle 30 Sekunden gibt es eine 50% Chance, dass die Tiere von selbst Chaos anrichten
-        setInterval(() => {
-            if (Math.random() > 0.5) {
-                observeAnimals(true);
+        // 4. Die Wiese laden
+        async function loadPark() {
+            const wiese = document.getElementById('park-wiese');
+            try {
+                const res = await fetch(`${API_BASE}/park/pets`, fetchOpts);
+                const pets = await res.json();
+
+                if (pets.length === 0) {
+                    wiese.innerHTML = '<p class="text-green-900 font-bold text-center">Der Park ist leer.<br><span class="text-sm font-normal opacity-80">Schick ein Tier rein!</span></p>';
+                    return;
+                }
+
+                wiese.innerHTML = '';
+                pets.forEach(p => {
+                    // Zufälliges Delay für die Float-Animation, damit sie nicht synchron hüpfen
+                    const delay = (Math.random() * 2).toFixed(2);
+                    
+                    wiese.innerHTML += `
+                        <div class="bg-white/95 text-slate-900 p-3 rounded-2xl text-center w-24 shadow-xl border-b-4 border-slate-300 animate-float" style="animation-delay: ${delay}s">
+                            <span class="text-4xl block mb-1 drop-shadow-md">${p.petIcon}</span>
+                            <div class="text-[11px] font-bold truncate leading-tight">${p.petName}</div>
+                            <div class="text-[9px] text-slate-500 truncate uppercase tracking-wider mt-1">${p.username}</div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                wiese.innerHTML = '<p class="text-red-800 font-bold">Störung im Park.</p>';
             }
-        }, 30000);
-    };
-</script>
+        }
+
+        // 5. Zufalls-Event auslösen
+        async function observeAnimals(isAuto = false) {
+            const log = document.getElementById('event-log');
+            try {
+                const res = await fetch(`${API_BASE}/park/interact`, { ...fetchOpts, method: 'POST' });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    if(data.message.includes("komplett leer") && isAuto) return;
+                    if(log.innerHTML.includes("Warte auf Ereignisse")) log.innerHTML = '';
+
+                    const entry = document.createElement('div');
+                    entry.className = 'border-b border-slate-800/50 pb-3 flex gap-3 items-start animate-[fadeIn_0.3s_ease-out]';
+                    entry.innerHTML = `
+                        <span class="text-2xl mt-1">${data.icon || '🐾'}</span>
+                        <div>
+                            <span class="text-emerald-400 text-[10px] font-bold tracking-wider">[${new Date().toLocaleTimeString()}]</span>
+                            <p class="text-slate-300 mt-0.5 leading-snug">${data.message}</p>
+                        </div>
+                    `;
+                    
+                    log.prepend(entry);
+                    loadPark(); 
+                } else {
+                    if(!isAuto) alert(data.error); 
+                }
+            } catch (e) { 
+                if(!isAuto) alert("Du konntest nichts erkennen."); 
+            }
+        }
+
+        // Start-Logik mit Random-Events
+        window.onload = () => {
+            loadMyPetsForDropdown();
+            loadPark();
+            
+            // Live-Wiese alle 10 Sek. aktualisieren
+            setInterval(loadPark, 10000); 
+
+            // Automatischer Event-Generator (alle 30s)
+            setInterval(() => {
+                if (Math.random() > 0.5) observeAnimals(true);
+            }, 30000);
+        };
+    </script>
 </body>
 </html>

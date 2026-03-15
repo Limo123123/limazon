@@ -2,422 +2,330 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏛️ Limazon Rathaus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Rathaus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --success: #10b981;
-            --success-hover: #059669;
-            --gold: #fbbf24;
-            --border: #334155;
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
         }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; line-height: 1.6; }
-        
-        .container { max-width: 800px; margin: 0 auto; }
-        
-        header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--gold); }
-        h2 { font-size: 1.5rem; margin-bottom: 15px; }
-        p.subtitle { color: var(--text-muted); }
+        /* Toast Styling */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(12px); border-left: 4px solid #3b82f6; color: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; animation: fadein 0.3s forwards; font-size: 0.875rem; font-weight: bold; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.success { border-left-color: #10b981; }
+        @keyframes fadein { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
 
-        .hidden { display: none !important; }
-
-        /* Cards */
-        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        
-        /* Buttons */
-        button { border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; color: white; width: 100%; font-size: 1rem; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-primary { background-color: var(--primary); }
-        .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
-        .btn-danger { background-color: var(--danger); }
-        .btn-danger:hover:not(:disabled) { background-color: var(--danger-hover); }
-        .btn-success { background-color: var(--success); }
-        .btn-success:hover:not(:disabled) { background-color: var(--success-hover); }
-
-        /* Election Candidates */
-        .candidate-list { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); margin-top: 20px; }
-        .candidate-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 15px; border-radius: 8px; text-align: center; }
-        .candidate-name { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
-        .candidate-votes { color: var(--gold); font-size: 1.1rem; margin-bottom: 15px; }
-        .crown { color: var(--gold); }
-
-        /* Sliders & Inputs */
-        input[type=range] { width: 100%; margin: 15px 0; cursor: pointer; }
-        .slider-value { text-align: center; font-size: 1.5rem; font-weight: bold; color: var(--primary); margin-bottom: 15px; }
-
-        /* Toast Notifications */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
-        .toast { background: var(--card-bg); border-left: 5px solid var(--primary); color: white; padding: 15px 25px; margin-bottom: 10px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); opacity: 0; animation: fadein 0.3s forwards; }
-        .toast.error { border-left-color: var(--danger); }
-        .toast.success { border-left-color: var(--success); }
-        
-        @keyframes fadein { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* Status Badge */
-        .status-badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; background: var(--border); margin-bottom: 20px; }
-        .status-badge.active { background: var(--danger); color: white; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        /* Slider Custom Styling */
+        input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; margin: 15px 0; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #fbbf24; cursor: pointer; margin-top: -8px; box-shadow: 0 0 15px rgba(251, 191, 36, 0.5); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #334155; border-radius: 4px; border: 1px solid #0f172a; }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
 
-<div id="toast-container"></div>
+    <div id="toast-container"></div>
 
-<div class="container">
-    <header>
-        <h1>🏛️ Das Rathaus</h1>
-        <p class="subtitle" id="global-subtitle">Lade Akten...</p>
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-amber-500">🏛️</span> Das Rathaus
+            </h1>
+            <p id="global-subtitle" class="text-xs text-slate-400 mt-1">Lade Akten...</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
     </header>
 
-    <div id="admin-view" class="hidden">
-        <div class="card" style="border-color: var(--danger); background: rgba(239, 68, 68, 0.1);">
-            <h2 style="color: var(--danger);">🛠️ Admin-Regime (Top Secret)</h2>
-            <p class="subtitle">Als unantastbarer Herrscher steuerst du hier die demokratische Illusion.</p>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-primary" onclick="startElection()">Wahl ausrufen (3 Tage)</button>
-                <button class="btn-danger" onclick="endElection()">Wahl sofort beenden & Auszählen</button>
+    <main class="flex-grow space-y-6 z-0">
+        
+        <div id="admin-view" class="hidden">
+            <div class="glass p-5 rounded-2xl shadow-xl border-l-4 border-l-rose-500 bg-rose-900/10">
+                <h2 class="text-sm uppercase text-rose-400 font-bold mb-2 tracking-wider flex items-center gap-2">
+                    🛠️ Admin-Regime
+                </h2>
+                <p class="text-xs text-slate-400 mb-5">Steuere die demokratische Illusion.</p>
+                
+                <div class="flex gap-3">
+                    <button onclick="startElection()" class="flex-1 bg-rose-600/20 text-rose-400 border border-rose-500/50 py-3 rounded-xl font-bold text-xs hover:bg-rose-600 hover:text-white transition active:scale-95">Wahl starten (3 Tage)</button>
+                    <button onclick="endElection()" class="flex-1 bg-rose-800 text-white py-3 rounded-xl font-bold text-xs hover:bg-rose-700 transition shadow-lg shadow-rose-900/50 active:scale-95">Beenden & Auszählen</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="citizen-view" class="hidden">
-        <div class="card" style="text-align: center;">
-            <h2>Aktueller Bürgermeister</h2>
-            <h1 id="current-mayor-name" style="font-size: 3rem; margin: 20px 0;">--</h1>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Das Admin-Regime duldet diese Herrschaft bis auf Weiteres.</p>
-            
-            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
-                <h3>Wann ist die nächste Wahl?</h3>
-                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 5px;">
-                    Neuwahlen werden willkürlich durch das Admin-Regime ausgerufen, wenn das Volk zu unruhig wird. Halte die Augen in den LNN News offen!
+        <div id="citizen-view" class="hidden space-y-6">
+            <div class="glass p-8 rounded-2xl shadow-xl text-center border border-slate-700 relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl"></div>
+                <h2 class="text-xs uppercase text-slate-400 font-bold tracking-widest mb-3">Aktueller Bürgermeister</h2>
+                <h1 id="current-mayor-name" class="text-4xl md:text-5xl font-bold text-amber-400 my-6 tracking-tight drop-shadow-lg">--</h1>
+                <p class="text-xs text-slate-500 font-medium">Das Admin-Regime duldet diese Herrschaft bis auf Weiteres.</p>
+            </div>
+
+            <div class="bg-slate-800/50 border border-slate-700 p-5 rounded-2xl text-center">
+                <h3 class="text-sm font-bold text-white mb-2">Wann ist die nächste Wahl?</h3>
+                <p class="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+                    Neuwahlen werden willkürlich durch das Admin-Regime ausgerufen, wenn das Volk zu unruhig wird. Halte die Augen in den <span class="text-rose-400 font-bold">LNN News</span> offen!
                 </p>
             </div>
         </div>
-    </div>
 
-    <div id="election-view" class="hidden">
-        <div class="card">
-            <div style="text-align: center;">
-                <div class="status-badge active">WAHLKABINE GEÖFFNET</div>
-                <h2>Wähle deinen Bürgermeister!</h2>
-                <p>Die Urne schließt am: <span id="election-end-date" style="color: var(--primary); font-weight: bold;">--</span></p>
-                <p id="vote-status-text" style="margin-top: 10px; font-weight: bold;"></p>
+        <div id="election-view" class="hidden space-y-6">
+            <div class="glass p-6 rounded-2xl shadow-xl text-center border-t-4 border-t-amber-500 relative overflow-hidden">
+                <div class="inline-block bg-rose-500 text-white text-[10px] font-bold px-3 py-1 rounded-full animate-pulse mb-5 shadow-lg shadow-rose-500/30">WAHLKABINE GEÖFFNET</div>
+                <h2 class="text-2xl font-bold text-white mb-2">Wähle deinen Favoriten!</h2>
+                <p class="text-xs text-slate-400 mb-5">Die Urne schließt am: <span id="election-end-date" class="text-amber-400 font-mono font-bold">--</span></p>
+                <div id="vote-status-text" class="text-sm font-bold bg-slate-800/80 py-3 px-4 rounded-xl border border-slate-700 inline-block mx-auto"></div>
             </div>
 
-            <div class="candidate-list" id="candidates-container">
+            <div id="candidates-container" class="grid grid-cols-2 gap-4">
                 </div>
         </div>
-    </div>
 
-    <div id="mayor-view" class="hidden">
-        <div class="card" style="border-color: var(--gold); background: linear-gradient(145deg, #1e293b, #2a2015);">
-            <h2 style="color: var(--gold);">👑 Willkommen im Büro, Herr/Frau Bürgermeister!</h2>
-            <p>Du hast die Macht. Nutze sie weise (oder auch nicht). Deine Aktionen werden öffentlich in den News verkündet.</p>
+        <div id="mayor-view" class="hidden space-y-6">
+            <div class="glass p-6 rounded-2xl shadow-xl border border-amber-500/30 bg-gradient-to-br from-amber-900/30 to-slate-900 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-7xl opacity-20 drop-shadow-2xl">👑</div>
+                <h2 class="text-xl font-bold text-amber-400 mb-2 relative z-10">Willkommen im Büro!</h2>
+                <p class="text-xs text-slate-300 relative z-10 font-medium">Du hast die Macht. Nutze sie weise (oder auch nicht).</p>
+            </div>
+
+            <div class="glass p-6 rounded-2xl border border-slate-700 shadow-lg">
+                <h2 class="text-sm uppercase text-amber-400 font-bold mb-2 tracking-wider flex items-center gap-2">💰 Steuern anpassen</h2>
+                <p class="text-xs text-slate-400 mb-6">Setze den allgemeinen Steuersatz fest. (0.1% - 1.5%)</p>
+                
+                <input type="range" id="tax-slider" min="0.1" max="1.5" step="0.1" value="0.5" oninput="updateTaxDisplay()">
+                <div class="text-center text-4xl font-bold text-white font-mono my-4 drop-shadow-md">
+                    <span id="tax-display">0.5</span><span class="text-amber-500 text-2xl ml-1">%</span>
+                </div>
+                
+                <button id="btn-tax" onclick="setTaxes()" class="w-full bg-amber-600 text-white font-bold py-4 rounded-xl hover:bg-amber-500 transition shadow-lg shadow-amber-600/20 active:scale-95 text-sm uppercase tracking-wide">Gesetz erlassen</button>
+            </div>
+
+            <div class="glass p-6 rounded-2xl border border-slate-700 shadow-lg">
+                <h2 class="text-sm uppercase text-emerald-400 font-bold mb-2 tracking-wider flex items-center gap-2">💸 Konjunkturpaket</h2>
+                <p class="text-xs text-slate-400 mb-5">Nimm 10% aus der Staatskasse und verteile es an alle aktiven Spieler. (Cooldown: 7 Tage)</p>
+                <button id="btn-stimulus" onclick="triggerStimulus()" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/20 active:scale-95 text-sm uppercase tracking-wide">Geld regnen lassen</button>
+            </div>
+
+            <div class="glass p-6 rounded-2xl border border-slate-700 shadow-lg">
+                <h2 class="text-sm uppercase text-sky-400 font-bold mb-2 tracking-wider flex items-center gap-2">⚖️ Begnadigung</h2>
+                <p class="text-xs text-slate-400 mb-5">Bricht eine aktuell laufende Gerichtsverhandlung ab und spricht den Angeklagten sofort frei.</p>
+                <button id="btn-pardon" onclick="pardonInmate()" class="w-full bg-sky-600 text-white font-bold py-4 rounded-xl hover:bg-sky-500 transition shadow-lg shadow-sky-600/20 active:scale-95 text-sm uppercase tracking-wide">Angeklagten befreien</button>
+            </div>
         </div>
 
-        <div class="card">
-            <h2>💰 Steuern anpassen</h2>
-            <p class="subtitle">Setze den allgemeinen Steuersatz für Limazon fest. (0.1% - 1.5%)</p>
+    </main>
+
+    <script>
+        const API_BASE = 'https://api.limazon.v6.rocks/api';
+        const fetchOptions = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+        let currentUser = null;
+
+        async function init() {
+            try {
+                const authRes = await fetch(`${API_BASE}/auth/me`, fetchOptions);
+                if (!authRes.ok) {
+                    document.getElementById('global-subtitle').innerText = "Bitte logge dich zuerst ein.";
+                    return;
+                }
+                currentUser = await authRes.json();
+                loadRathausData();
+            } catch (e) {
+                showToast("Fehler bei der Verbindung zum Server.", "error");
+            }
+        }
+
+        async function loadRathausData() {
+            try {
+                const res = await fetch(`${API_BASE}/mayor/election`, fetchOptions);
+                const data = await res.json();
+
+                document.getElementById('citizen-view').classList.add('hidden');
+                document.getElementById('election-view').classList.add('hidden');
+                document.getElementById('mayor-view').classList.add('hidden');
+
+                const isMeMayor = (data.currentMayor === currentUser.username);
+                document.getElementById('global-subtitle').innerHTML = `Bürgerakte: <span class="font-bold text-white">${currentUser.username}</span>`;
+
+                if (data.isActive) {
+                    document.getElementById('election-view').classList.remove('hidden');
+                    renderElection(data);
+                } else if (isMeMayor) {
+                    document.getElementById('mayor-view').classList.remove('hidden');
+                } else {
+                    document.getElementById('citizen-view').classList.remove('hidden');
+                    document.getElementById('current-mayor-name').innerHTML = 
+                        data.currentMayor !== "Niemand" ? `<span class="text-3xl">👑</span><br>${data.currentMayor}` : `Anarchie<br><span class="text-sm font-normal opacity-50 block mt-2">(Kein Bürgermeister)</span>`;
+                }
+
+                if (currentUser.isRealAdmin) {
+                    document.getElementById('admin-view').classList.remove('hidden');
+                }
+
+            } catch (e) {
+                showToast("Konnte Akten nicht laden.", "error");
+            }
+        }
+
+        function renderElection(data) {
+            document.getElementById('election-end-date').innerText = new Date(data.endsAt).toLocaleString('de-DE');
             
-            <input type="range" id="tax-slider" min="0.1" max="1.5" step="0.1" value="0.5" oninput="updateTaxDisplay()">
-            <div class="slider-value"><span id="tax-display">0.5</span>%</div>
-            
-            <button class="btn-primary" onclick="setTaxes()" id="btn-tax">Gesetz erlassen</button>
-        </div>
+            const statusText = document.getElementById('vote-status-text');
+            if (data.hasVoted) {
+                statusText.innerHTML = "✅ Deine Stimme ist in der Urne.";
+                statusText.className = "text-sm font-bold bg-emerald-500/10 text-emerald-400 py-3 px-4 rounded-xl border border-emerald-500/20 inline-block mx-auto";
+            } else {
+                statusText.innerHTML = "Wähle weise!";
+                statusText.className = "text-sm font-bold bg-slate-800/80 text-white py-3 px-4 rounded-xl border border-slate-700 inline-block mx-auto";
+            }
 
-        <div class="card">
-            <h2>💸 Konjunkturpaket (Stimulus)</h2>
-            <p class="subtitle">Nimm 10% aus der Staatskasse und verteile es an alle aktiven Spieler. Kann nur alle 7 Tage genutzt werden!</p>
-            <br>
-            <button class="btn-success" onclick="triggerStimulus()" id="btn-stimulus">Geld regnen lassen</button>
-        </div>
+            const container = document.getElementById('candidates-container');
+            container.innerHTML = '';
 
-        <div class="card">
-            <h2>⚖️ Veto & Begnadigung</h2>
-            <p class="subtitle">Bricht eine aktuell laufende Gerichtsverhandlung ab und spricht den Angeklagten sofort frei.</p>
-            <br>
-            <button class="btn-danger" onclick="pardonInmate()" id="btn-pardon">Angeklagten sofort befreien</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    // --- KONFIGURATION ---
-    // Da Frontend und Backend auf verschiedenen Subdomains laufen
-    const API_BASE = 'https://api.limazon.v6.rocks/api';
-    
-    // Wichtig für Cross-Origin Cookies (Session)
-    const fetchOptions = {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-    };
-
-    let currentUser = null;
-
-    // --- INITIALISIERUNG ---
-    async function init() {
-        try {
-            // 1. Wer bin ich?
-            const authRes = await fetch(`${API_BASE}/auth/me`, fetchOptions);
-            if (!authRes.ok) {
-                document.getElementById('global-subtitle').innerText = "Bitte logge dich zuerst ein.";
+            if (!data.candidates || data.candidates.length === 0) {
+                container.innerHTML = '<p class="col-span-2 text-center text-slate-500 text-sm">Keine aktiven Kandidaten gefunden.</p>';
                 return;
             }
-            currentUser = await authRes.json();
-            
-            // 2. Was ist los im Rathaus?
-            loadRathausData();
 
-        } catch (e) {
-            showToast("Fehler bei der Verbindung zum Server.", "error");
-        }
-    }
+            data.candidates.forEach(cand => {
+                const isMe = (cand.username === currentUser.username);
+                
+                let html = `
+                    <div class="glass p-4 rounded-2xl border border-slate-700 flex flex-col justify-between h-full hover:border-amber-500/50 transition">
+                        <div class="text-center mb-5 mt-2">
+                            <div class="w-12 h-12 bg-slate-800 rounded-full mx-auto flex items-center justify-center text-xl font-bold text-white border-2 ${cand.isCurrentMayor ? 'border-amber-400' : 'border-slate-600'} mb-3">
+                                ${cand.username.substring(0, 1).toUpperCase()}
+                            </div>
+                            <div class="text-sm font-bold text-white truncate leading-tight">${cand.isCurrentMayor ? '<span class="text-amber-400">👑</span> ' : ''}${cand.username}</div>
+                            <div class="text-amber-400 font-mono text-xs mt-1 font-bold bg-amber-400/10 inline-block px-2 py-0.5 rounded-md">${cand.votes} Stimme(n)</div>
+                        </div>
+                `;
 
-    async function loadRathausData() {
-        try {
-            const res = await fetch(`${API_BASE}/mayor/election`, fetchOptions);
-            const data = await res.json();
-
-            // Sektionen ausblenden
-            document.getElementById('citizen-view').classList.add('hidden');
-            document.getElementById('election-view').classList.add('hidden');
-            document.getElementById('mayor-view').classList.add('hidden');
-
-            const isMeMayor = (data.currentMayor === currentUser.username);
-
-            document.getElementById('global-subtitle').innerText = `Eingeloggt als ${currentUser.username}`;
-
-            if (data.isActive) {
-                // WAHL LÄUFT
-                document.getElementById('election-view').classList.remove('hidden');
-                renderElection(data);
-            } else if (isMeMayor) {
-                // ICH BIN BÜRGERMEISTER (Und keine Wahl läuft)
-                document.getElementById('mayor-view').classList.remove('hidden');
-            } else {
-                // NORMALER BÜRGER (Und keine Wahl läuft)
-                document.getElementById('citizen-view').classList.remove('hidden');
-                document.getElementById('current-mayor-name').innerHTML = 
-                    data.currentMayor !== "Niemand" ? `<span class="crown">👑</span> ${data.currentMayor}` : "Anarchie (Kein Bürgermeister)";
-            }
-
-            // Admin-Bereich einblenden, falls du es bist
-            if (currentUser.isRealAdmin) {
-                document.getElementById('admin-view').classList.remove('hidden');
-            }
-
-        } catch (e) {
-            showToast("Konnte Daten nicht laden.", "error");
-        }
-    }
-
-    // --- WAHL RENDER LOGIK ---
-    function renderElection(data) {
-        document.getElementById('election-end-date').innerText = new Date(data.endsAt).toLocaleString('de-DE');
-        
-        const statusText = document.getElementById('vote-status-text');
-        if (data.hasVoted) {
-            statusText.innerText = "✅ Du hast deine Stimme bereits abgegeben.";
-            statusText.style.color = "var(--success)";
-        } else {
-            statusText.innerText = "Gib jetzt deine Stimme ab!";
-            statusText.style.color = "var(--text-main)";
-        }
-
-        const container = document.getElementById('candidates-container');
-        container.innerHTML = '';
-
-        if (!data.candidates || data.candidates.length === 0) {
-            container.innerHTML = '<p>Keine aktiven Kandidaten gefunden.</p>';
-            return;
-        }
-
-        data.candidates.forEach(cand => {
-            const card = document.createElement('div');
-            card.className = 'candidate-card';
-            
-            const isMe = (cand.username === currentUser.username);
-            
-            let html = `
-                <div class="candidate-name">${cand.isCurrentMayor ? '👑 ' : ''}${cand.username}</div>
-                <div class="candidate-votes">${cand.votes} Stimme(n)</div>
-            `;
-
-            if (data.hasVoted) {
-                // Schon gewählt -> Buttons weg, evtl. anzeigen wen man gewählt hat
-                if (data.myVoteId === cand.id) {
-                    html += `<button class="btn-success" disabled>Deine Wahl</button>`;
+                if (data.hasVoted) {
+                    if (data.myVoteId === cand.id) {
+                        html += `<button class="w-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 py-2.5 rounded-xl font-bold text-xs" disabled>Deine Wahl</button>`;
+                    } else {
+                        html += `<button class="w-full bg-slate-800/50 text-slate-500 py-2.5 rounded-xl font-bold text-xs" disabled>Gewählt</button>`;
+                    }
+                } else if (isMe) {
+                    html += `<button class="w-full bg-slate-800/50 text-slate-500 py-2.5 rounded-xl font-bold text-xs border border-slate-700" disabled>Du selbst</button>`;
                 } else {
-                    html += `<button disabled style="background: var(--border);">Gewählt</button>`;
+                    html += `<button class="w-full bg-amber-600 text-white py-2.5 rounded-xl font-bold text-xs hover:bg-amber-500 transition active:scale-95 shadow-md shadow-amber-600/20" onclick="voteFor('${cand.id}', '${cand.username}')">Wählen</button>`;
                 }
-            } else if (isMe) {
-                html += `<button disabled style="background: var(--border);">Du selbst</button>`;
-            } else {
-                html += `<button class="btn-primary" onclick="voteFor('${cand.id}', '${cand.username}')">Wählen</button>`;
-            }
 
-            card.innerHTML = html;
-            container.appendChild(card);
-        });
-    }
-
-    // --- WAHL AKTION ---
-    async function voteFor(candidateId, candidateName) {
-        if (!confirm(`Bist du sicher, dass du deine Stimme an ${candidateName} geben willst? Dies kann nicht rückgängig gemacht werden.`)) return;
-
-        try {
-            const res = await fetch(`${API_BASE}/mayor/vote`, {
-                ...fetchOptions,
-                method: 'POST',
-                body: JSON.stringify({ candidateId })
+                html += `</div>`;
+                container.innerHTML += html;
             });
-            const data = await res.json();
-
-            if (res.ok) {
-                showToast(data.message, "success");
-                loadRathausData(); // UI neu laden
-            } else {
-                showToast(data.error || "Fehler bei der Stimmabgabe", "error");
-            }
-        } catch (e) {
-            showToast("Netzwerkfehler", "error");
         }
-    }
 
-    // --- BÜRGERMEISTER AKTIONEN ---
-    function updateTaxDisplay() {
-        document.getElementById('tax-display').innerText = document.getElementById('tax-slider').value;
-    }
+        async function voteFor(candidateId, candidateName) {
+            if (!confirm(`Stimme wirklich an ${candidateName} vergeben? Dies ist endgültig.`)) return;
 
-    async function setTaxes() {
-        const rate = parseFloat(document.getElementById('tax-slider').value);
-        const btn = document.getElementById('btn-tax');
-        btn.disabled = true;
-
-        try {
-            const res = await fetch(`${API_BASE}/mayor/taxes`, {
-                ...fetchOptions,
-                method: 'POST',
-                body: JSON.stringify({ newRatePercent: rate })
-            });
-            const data = await res.json();
-            
-            if (res.ok) showToast(data.message, "success");
-            else showToast(data.error, "error");
-        } catch (e) {
-            showToast("Fehler.", "error");
+            try {
+                const res = await fetch(`${API_BASE}/mayor/vote`, {
+                    ...fetchOptions, method: 'POST', body: JSON.stringify({ candidateId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message, "success");
+                    loadRathausData(); 
+                } else showToast(data.error || "Fehler", "error");
+            } catch (e) { showToast("Netzwerkfehler", "error"); }
         }
-        btn.disabled = false;
-    }
 
-    async function triggerStimulus() {
-        if (!confirm("Willst du wirklich ein Konjunkturpaket aus der Staatskasse ausschütten? Das Volk wird dich lieben!")) return;
-        
-        const btn = document.getElementById('btn-stimulus');
-        btn.disabled = true;
-
-        try {
-            const res = await fetch(`${API_BASE}/mayor/stimulus`, { ...fetchOptions, method: 'POST' });
-            const data = await res.json();
-            
-            if (res.ok) showToast(data.message, "success");
-            else showToast(data.error, "error");
-        } catch (e) {
-            showToast("Fehler.", "error");
+        function updateTaxDisplay() {
+            document.getElementById('tax-display').innerText = parseFloat(document.getElementById('tax-slider').value).toFixed(1);
         }
-        btn.disabled = false;
-    }
 
-    async function pardonInmate() {
-        if (!confirm("Achtung! Dies bricht den aktuellen Gerichtsprozess ab und spricht den Angeklagten sofort frei. Sicher?")) return;
-        
-        const btn = document.getElementById('btn-pardon');
-        btn.disabled = true;
+        async function setTaxes() {
+            const rate = parseFloat(document.getElementById('tax-slider').value);
+            const btn = document.getElementById('btn-tax');
+            const ogText = btn.innerText;
+            btn.disabled = true; btn.innerText = "Speichert...";
 
-        try {
-            const res = await fetch(`${API_BASE}/mayor/pardon`, { ...fetchOptions, method: 'POST' });
-            const data = await res.json();
-            
-            if (res.ok) showToast(data.message, "success");
-            else showToast(data.error, "error");
-        } catch (e) {
-            showToast("Fehler.", "error");
+            try {
+                const res = await fetch(`${API_BASE}/mayor/taxes`, {
+                    ...fetchOptions, method: 'POST', body: JSON.stringify({ newRatePercent: rate })
+                });
+                const data = await res.json();
+                if (res.ok) showToast(data.message, "success");
+                else showToast(data.error, "error");
+            } catch (e) { showToast("Fehler.", "error"); }
+            btn.disabled = false; btn.innerText = ogText;
         }
-        btn.disabled = false;
-    }
 
-    // --- ADMIN AKTIONEN ---
-    async function startElection() {
-        if (!confirm("Möchtest du wirklich Neuwahlen ausrufen? Das Volk hat dann 3 Tage Zeit zum Abstimmen.")) return;
+        async function triggerStimulus() {
+            if (!confirm("Willst du wirklich ein Konjunkturpaket aus der Staatskasse ausschütten?")) return;
+            const btn = document.getElementById('btn-stimulus');
+            const ogText = btn.innerText;
+            btn.disabled = true; btn.innerText = "Fließt...";
 
-        try {
-            const res = await fetch(`${API_BASE}/admin/mayor/start`, {
-                ...fetchOptions,
-                method: 'POST',
-                body: JSON.stringify({ days: 3 }) // 3 Tage Wahlkampf
-            });
-            const data = await res.json();
-            
-            if (res.ok) {
-                showToast(data.message, "success");
-                loadRathausData(); // Lädt die Seite neu und zeigt sofort die Wahlurne
-            } else {
-                showToast(data.error, "error");
-            }
-        } catch (e) {
-            showToast("Fehler beim Starten der Wahl.", "error");
+            try {
+                const res = await fetch(`${API_BASE}/mayor/stimulus`, { ...fetchOptions, method: 'POST' });
+                const data = await res.json();
+                if (res.ok) showToast(data.message, "success");
+                else showToast(data.error, "error");
+            } catch (e) { showToast("Fehler.", "error"); }
+            btn.disabled = false; btn.innerText = ogText;
         }
-    }
 
-    async function endElection() {
-        if (!confirm("Willst du die Wahl SOFORT beenden und den Sieger krönen?")) return;
+        async function pardonInmate() {
+            if (!confirm("Gerichtsverhandlung sofort abbrechen und Freispruch erteilen?")) return;
+            const btn = document.getElementById('btn-pardon');
+            const ogText = btn.innerText;
+            btn.disabled = true; btn.innerText = "Begnadigt...";
 
-        try {
-            const res = await fetch(`${API_BASE}/admin/mayor/end`, {
-                ...fetchOptions,
-                method: 'POST'
-            });
-            const data = await res.json();
-            
-            if (res.ok) {
-                showToast(data.message, "success");
-                loadRathausData(); // Lädt die Seite neu, Wahlurne verschwindet, neuer BM wird angezeigt
-            } else {
-                showToast(data.error, "error");
-            }
-        } catch (e) {
-            showToast("Fehler bei der Auszählung.", "error");
+            try {
+                const res = await fetch(`${API_BASE}/mayor/pardon`, { ...fetchOptions, method: 'POST' });
+                const data = await res.json();
+                if (res.ok) showToast(data.message, "success");
+                else showToast(data.error, "error");
+            } catch (e) { showToast("Fehler.", "error"); }
+            btn.disabled = false; btn.innerText = ogText;
         }
-    }
 
-    // --- UTILS ---
-    function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerText = message;
-        container.appendChild(toast);
+        async function startElection() {
+            if (!confirm("Neuwahlen ausrufen? (3 Tage)")) return;
+            try {
+                const res = await fetch(`${API_BASE}/admin/mayor/start`, { ...fetchOptions, method: 'POST', body: JSON.stringify({ days: 3 }) });
+                const data = await res.json();
+                if (res.ok) { showToast(data.message, "success"); loadRathausData(); }
+                else showToast(data.error, "error");
+            } catch (e) { showToast("Fehler.", "error"); }
+        }
 
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
-        }, 4000);
-    }
+        async function endElection() {
+            if (!confirm("Wahl SOFORT beenden und Sieger krönen?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/admin/mayor/end`, { ...fetchOptions, method: 'POST' });
+                const data = await res.json();
+                if (res.ok) { showToast(data.message, "success"); loadRathausData(); }
+                else showToast(data.error, "error");
+            } catch (e) { showToast("Fehler.", "error"); }
+        }
 
-    // Start
-    window.onload = init;
-</script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span class="mr-2">${type === 'success' ? '✅' : '❌'}</span> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
 
+        window.onload = init;
+    </script>
 </body>
 </html>

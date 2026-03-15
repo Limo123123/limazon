@@ -2,179 +2,284 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💒 Limazon Standesamt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Standesamt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #f43f5e; /* Rose / Pink for love */
-            --primary-hover: #e11d48;
-            --danger: #ef4444;
-            --success: #10b981;
-            --border: #334155;
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: 0 auto; }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-dark {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: #f43f5e; /* Rose / Pink */
+            box-shadow: 0 0 10px rgba(244, 63, 94, 0.2);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
         
-        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
-        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 5px; }
+        select option { background-color: #0f172a; color: white; }
 
-        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
-        
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; background: #0b1120; border: 1px solid var(--border); color: white; border-radius: 8px; font-size: 1rem; }
-        
-        button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1rem; transition: 0.2s; }
-        button:hover { background: var(--primary-hover); }
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); }
-
-        .spouse-card, .proposal-card { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn-group button { width: auto; padding: 8px 15px; }
-
-        .badge-tax { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 15px;}
+        /* Toast Styling */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(12px); border-left: 4px solid #f43f5e; color: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; animation: fadein 0.3s forwards; font-size: 0.875rem; font-weight: bold; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.success { border-left-color: #10b981; }
+        @keyframes fadein { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
 
-<div class="container">
-    <header>
-        <h1>💒 Standesamt</h1>
-        <p style="color: var(--text-muted);">Trauungen, Scheidungen und finanzielle Vorteile.</p>
+    <div id="toast-container"></div>
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-rose-500">💒</span> Standesamt
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Die Steuerklasse 3 erwartet dich</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
     </header>
 
-    <div class="card">
-        <h2>💍 Antrag machen</h2>
-        <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 0.9rem;">Polygamie ist erlaubt! Jede Heirat halbiert deine Steuerlast (Ehegattensplitting).</p>
-        
-        <input type="text" id="target-username" placeholder="Username der glücklichen Person...">
-        <select id="ring-select">
-            <option value="">Ring auswählen...</option>
-            </select>
-        
-        <button onclick="propose()">Auf die Knie gehen</button>
-    </div>
+    <main class="flex-grow space-y-6 z-0">
 
-    <div class="card" id="inbox-section">
-        <h2>💌 Offene Anträge</h2>
-        <div id="incoming-list">Lade...</div>
-    </div>
-
-    <div class="card">
-        <h2>👪 Deine Ehen</h2>
-        <div id="tax-badge" class="badge-tax" style="display: none;">✅ Steuerklasse 3 (Ehegattensplitting aktiv)</div>
-        <div id="spouses-list">Lade...</div>
-    </div>
-</div>
-
-<script>
-    const API_BASE = 'https://api.limazon.v6.rocks/api';
-    const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
-
-    async function loadData() {
-        try {
-            const res = await fetch(`${API_BASE}/standesamt/status`, fetchOpts);
-            if (!res.ok) return alert("Bitte einloggen.");
-            const data = await res.json();
-
-            // Ringe ins Select laden
-            const select = document.getElementById('ring-select');
-            if (select.options.length <= 1) { // Nur einmal füllen
-                for (const [key, ring] of Object.entries(data.rings)) {
-                    select.innerHTML += `<option value="${key}">${ring.icon} ${ring.name} - $${ring.price.toLocaleString()}</option>`;
-                }
-            }
-
-            // Anträge rendern
-            const inbox = document.getElementById('incoming-list');
-            inbox.innerHTML = '';
-            if (data.incoming.length === 0) inbox.innerHTML = '<p style="color: var(--text-muted);">Niemand hat dir einen Antrag gemacht.</p>';
+        <div class="glass p-5 rounded-2xl shadow-xl relative overflow-hidden border-t-4 border-t-rose-500">
+            <div class="absolute -right-10 -top-10 text-9xl opacity-5 drop-shadow-2xl pointer-events-none">💍</div>
             
-            data.incoming.forEach(p => {
-                inbox.innerHTML += `
-                    <div class="proposal-card">
-                        <div>
-                            <strong>${p.senderName}</strong> fragt dich!<br>
-                            <span style="font-size:0.9rem; color: var(--text-muted);">Ring: ${p.ringDetails.icon} ${p.ringDetails.name}</span>
+            <h2 class="text-sm uppercase text-rose-400 font-bold mb-2 tracking-wider flex items-center gap-2">
+                Antrag stellen
+            </h2>
+            <p class="text-xs text-slate-400 mb-5 leading-relaxed">
+                <span class="text-emerald-400 font-bold">Tipp:</span> Polygamie ist erlaubt! Jede Heirat verringert die Steuerlast durch Ehegattensplitting.
+            </p>
+            
+            <div class="space-y-4 relative z-10">
+                <div class="relative">
+                    <span class="absolute left-4 top-3 text-slate-400 font-bold">@</span>
+                    <input type="text" id="target-username" placeholder="Username" class="input-dark w-full p-3 pl-8 rounded-xl text-sm font-medium" autocomplete="off">
+                </div>
+                
+                <select id="ring-select" class="input-dark w-full p-3 rounded-xl text-sm font-medium appearance-none">
+                    <option value="">-- Ring auswählen --</option>
+                </select>
+                
+                <button onclick="propose()" class="w-full bg-rose-600 text-white font-bold p-4 rounded-xl hover:bg-rose-500 transition shadow-lg shadow-rose-600/20 active:scale-95 flex items-center justify-center gap-2">
+                    Auf die Knie gehen 🧎
+                </button>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-rose-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                💌 Offene Anträge
+            </h2>
+            <div id="incoming-list" class="space-y-3">
+                <p class="text-slate-500 text-sm text-center py-4">Lade Akten...</p>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm uppercase text-rose-400 font-bold tracking-wider flex items-center gap-2">
+                    👪 Deine Ehen
+                </h2>
+                <div id="tax-badge" class="hidden bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase">
+                    Steuerklasse 3
+                </div>
+            </div>
+            
+            <div id="spouses-list" class="space-y-3">
+                <p class="text-slate-500 text-sm text-center py-4">Lade Akten...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const API_BASE = 'https://api.limazon.v6.rocks/api';
+        const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+
+        async function loadData() {
+            try {
+                const res = await fetch(`${API_BASE}/standesamt/status`, fetchOpts);
+                if (!res.ok) {
+                    showToast("Bitte logge dich ein.", "error");
+                    return;
+                }
+                const data = await res.json();
+
+                // Ringe ins Select laden
+                const select = document.getElementById('ring-select');
+                if (select.options.length <= 1) { 
+                    for (const [key, ring] of Object.entries(data.rings)) {
+                        select.innerHTML += `<option value="${key}">${ring.icon} ${ring.name} - $${ring.price.toLocaleString('de-DE')}</option>`;
+                    }
+                }
+
+                // Anträge rendern
+                const inbox = document.getElementById('incoming-list');
+                inbox.innerHTML = '';
+                if (data.incoming.length === 0) {
+                    inbox.innerHTML = '<p class="text-slate-500 text-sm text-center py-2 border border-dashed border-slate-700 rounded-lg">Niemand hat dir einen Antrag gemacht. 💔</p>';
+                }
+                
+                data.incoming.forEach(p => {
+                    const dateStr = new Date(p.createdAt).toLocaleDateString('de-DE');
+                    inbox.innerHTML += `
+                        <div class="bg-slate-800/50 border border-rose-500/30 p-4 rounded-xl relative overflow-hidden">
+                            <div class="absolute right-2 top-2 text-4xl opacity-10">💍</div>
+                            <p class="text-sm text-slate-300 mb-1">
+                                <strong class="text-white font-bold text-lg">${p.senderName}</strong> fragt dich!
+                            </p>
+                            <p class="text-xs text-slate-400 font-mono mb-4">
+                                Ring: ${p.ringDetails.icon} ${p.ringDetails.name} • ${dateStr}
+                            </p>
+                            <div class="flex gap-2 relative z-10">
+                                <button onclick="respond('${p._id}', 'accept')" class="flex-1 bg-emerald-600/20 text-emerald-400 border border-emerald-600/50 py-2 rounded-lg font-bold text-sm hover:bg-emerald-600 hover:text-white transition active:scale-95">JA!</button>
+                                <button onclick="respond('${p._id}', 'decline')" class="flex-1 bg-slate-700 text-slate-300 border border-slate-600 py-2 rounded-lg font-bold text-sm hover:bg-rose-600 hover:text-white hover:border-rose-600 transition active:scale-95">Nein</button>
+                            </div>
                         </div>
-                        <div class="btn-group">
-                            <button class="btn-success" onclick="respond('${p._id}', 'accept')">JA!</button>
-                            <button class="btn-danger" onclick="respond('${p._id}', 'decline')">Nein</button>
+                    `;
+                });
+
+                // Ehepartner rendern
+                const spousesList = document.getElementById('spouses-list');
+                spousesList.innerHTML = '';
+                
+                const taxBadge = document.getElementById('tax-badge');
+                if (data.spouses.length > 0) {
+                    taxBadge.classList.remove('hidden');
+                } else {
+                    taxBadge.classList.add('hidden');
+                }
+
+                if (data.spouses.length === 0) {
+                    spousesList.innerHTML = '<p class="text-slate-500 text-sm text-center py-2 border border-dashed border-slate-700 rounded-lg">Du bist glücklicher Single. 🧘‍♂️</p>';
+                }
+
+                data.spouses.forEach(s => {
+                    const dateStr = new Date(s.date).toLocaleDateString('de-DE');
+                    spousesList.innerHTML += `
+                        <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl flex justify-between items-center group hover:border-rose-500/50 transition">
+                            <div>
+                                <h3 class="text-white font-bold flex items-center gap-2">
+                                    <span class="text-rose-500">💖</span> ${s.name}
+                                </h3>
+                                <p class="text-[11px] text-slate-400 font-mono mt-1">
+                                    ${s.ring} • Seit: ${dateStr}
+                                </p>
+                            </div>
+                            <button onclick="divorce('${s.id}', '${s.name}')" class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-600 hover:text-white transition active:scale-95 whitespace-nowrap">
+                                Scheidung
+                            </button>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
 
-            // Ehepartner rendern
-            const spousesList = document.getElementById('spouses-list');
-            spousesList.innerHTML = '';
-            document.getElementById('tax-badge').style.display = data.spouses.length > 0 ? 'inline-block' : 'none';
-
-            if (data.spouses.length === 0) spousesList.innerHTML = '<p style="color: var(--text-muted);">Du bist glücklicher Single.</p>';
-
-            data.spouses.forEach(s => {
-                spousesList.innerHTML += `
-                    <div class="spouse-card">
-                        <div>
-                            💖 <strong>${s.name}</strong><br>
-                            <span style="font-size:0.9rem; color: var(--text-muted);">Ring: ${s.ring} | Seit: ${new Date(s.date).toLocaleDateString()}</span>
-                        </div>
-                        <button class="btn-danger" style="width: auto;" onclick="divorce('${s.id}', '${s.name}')">Scheidung ($25k)</button>
-                    </div>
-                `;
-            });
-
-        } catch (e) {
-            console.error(e);
-            alert("Fehler beim Laden.");
+            } catch (e) {
+                showToast("Fehler beim Laden der Akten.", "error");
+            }
         }
-    }
 
-    async function propose() {
-        const target = document.getElementById('target-username').value;
-        const ring = document.getElementById('ring-select').value;
-        if (!target || !ring) return alert("Fülle alles aus!");
+        async function propose() {
+            const target = document.getElementById('target-username').value.trim();
+            const ring = document.getElementById('ring-select').value;
+            
+            if (!target || !ring) return showToast("Bitte wähle eine Person und einen Ring.", "error");
 
-        try {
-            const res = await fetch(`${API_BASE}/standesamt/propose`, {
-                ...fetchOpts, method: 'POST', body: JSON.stringify({ targetUsername: target, ringType: ring })
-            });
-            const data = await res.json();
-            alert(data.message || data.error);
-            if (res.ok) document.getElementById('target-username').value = '';
-            loadData();
-        } catch (e) { alert("Fehler"); }
-    }
+            const btn = document.querySelector('button[onclick="propose()"]');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = `<span class="animate-spin">⏳</span> Kaufe Ring...`;
+            btn.disabled = true;
 
-    async function respond(proposalId, action) {
-        try {
-            const res = await fetch(`${API_BASE}/standesamt/respond`, {
-                ...fetchOpts, method: 'POST', body: JSON.stringify({ proposalId, action })
-            });
-            const data = await res.json();
-            alert(data.message || data.error);
-            loadData();
-        } catch (e) { alert("Fehler"); }
-    }
+            try {
+                const res = await fetch(`${API_BASE}/standesamt/propose`, {
+                    ...fetchOpts, method: 'POST', body: JSON.stringify({ targetUsername: target, ringType: ring })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message, "success");
+                    document.getElementById('target-username').value = '';
+                    document.getElementById('ring-select').value = '';
+                    loadData();
+                } else {
+                    showToast(data.error, "error");
+                }
+            } catch (e) { 
+                showToast("Der Ring ist ins Gulli gefallen.", "error"); 
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        }
 
-    async function divorce(targetId, name) {
-        if (!confirm(`Willst du dich wirklich von ${name} scheiden lassen? Das kostet $25.000 Anwaltsgebühren und landet in den LNN News!`)) return;
-        try {
-            const res = await fetch(`${API_BASE}/standesamt/divorce`, {
-                ...fetchOpts, method: 'POST', body: JSON.stringify({ targetId })
-            });
-            const data = await res.json();
-            alert(data.message || data.error);
-            loadData();
-        } catch (e) { alert("Fehler"); }
-    }
+        async function respond(proposalId, action) {
+            try {
+                const res = await fetch(`${API_BASE}/standesamt/respond`, {
+                    ...fetchOpts, method: 'POST', body: JSON.stringify({ proposalId, action })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message, "success");
+                    loadData();
+                } else {
+                    showToast(data.error, "error");
+                }
+            } catch (e) { 
+                showToast("Fehler bei der Antwort.", "error"); 
+            }
+        }
 
-    window.onload = loadData;
-</script>
+        async function divorce(targetId, name) {
+            if (!confirm(`Willst du dich wirklich von ${name} scheiden lassen? Das kostet $25.000 Anwaltsgebühren und landet in den LNN News!`)) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/standesamt/divorce`, {
+                    ...fetchOpts, method: 'POST', body: JSON.stringify({ targetId })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message, "success");
+                    loadData();
+                } else {
+                    showToast(data.error, "error");
+                }
+            } catch (e) { 
+                showToast("Die Anwälte streiken.", "error"); 
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span class="mr-2">${type === 'success' ? '✅' : '❌'}</span> ${message}`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        window.onload = loadData;
+    </script>
 </body>
 </html>
