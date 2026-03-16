@@ -37,7 +37,7 @@
             try {
                 // HINWEIS: pay.limazon.v6.rocks ODER api.limazon.v6.rocks klappt beides, 
                 // je nachdem wie deine Proxies eingestellt sind.
-                const res = await fetch(`https://pay.limazon.v6.rocks/v1/payments/${paymentId}/status`);
+                const res = await fetch(`https://api.limazon.v6.rocks/v1/payments/${paymentId}/status`);
                 const data = await res.json();
 
                 if (res.ok && data.status === 'pending') {
