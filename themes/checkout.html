@@ -58,7 +58,7 @@
             btn.innerText = "Verarbeite...";
 
             try {
-                const res = await fetch(`https://pay.limazon.v6.rocks/v1/payments/${paymentId}/execute`, {
+                const res = await fetch(`https://api.limazon.v6.rocks/v1/payments/${paymentId}/execute`, {
                     method: 'POST',
                     credentials: 'include' // Schickt dein Limazon-Login mit!
                 });
