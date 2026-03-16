@@ -26,7 +26,7 @@
 
     <script>
         // HIER MUSS DEINE API DOMAIN REIN:
-        const API_BASE = 'https://api.limazon.v6.rocks/v1/payments'; 
+        const API_BASE = 'https://api.limazon.v6.rocks/api/pay/v1/payments';
         
         const urlParams = new URLSearchParams(window.location.search);
         const paymentId = urlParams.get('id');
@@ -37,7 +37,7 @@
             try {
                 // HINWEIS: pay.limazon.v6.rocks ODER api.limazon.v6.rocks klappt beides, 
                 // je nachdem wie deine Proxies eingestellt sind.
-                const res = await fetch(`https://api.limazon.v6.rocks/v1/payments/${paymentId}/status`);
+                const res = await fetch(`https://api.limazon.v6.rocks/api/pay/v1/payments/${paymentId}/status`);
                 const data = await res.json();
 
                 if (res.ok && data.status === 'pending') {
@@ -58,7 +58,7 @@
             btn.innerText = "Verarbeite...";
 
             try {
-                const res = await fetch(`https://api.limazon.v6.rocks/v1/payments/${paymentId}/execute`, {
+                const res = await fetch(`https://api.limazon.v6.rocks/api/pay/v1/payments/${paymentId}/execute`, {
                     method: 'POST',
                     credentials: 'include' // Schickt dein Limazon-Login mit!
                 });
