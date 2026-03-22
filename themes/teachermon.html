@@ -183,6 +183,11 @@
             border-bottom: 2px solid #a855f7;
         }
 
+        .tab-btn.satan-btn.active {
+            color: #ef4444;
+            border-bottom: 2px solid #ef4444;
+        }
+
         .tab-content {
             display: none;
         }
@@ -261,6 +266,7 @@
                     <button class="tab-btn whitespace-nowrap" onclick="switchTab('tab-arena', this)">⚔️ Arena</button>
                     <button class="tab-btn whitespace-nowrap" onclick="switchTab('tab-trade', this)">🤝
                         Tauschen</button>
+                    <button class="tab-btn satan-btn whitespace-nowrap text-red-500 hover:text-red-400" onclick="switchTab('tab-satan', this)">🔥 Satanskreis</button>
                     <button class="tab-btn whitespace-nowrap hidden text-yellow-400" id="btn-admin-tab"
                         onclick="switchTab('tab-admin', this)">⚙️ Admin</button>
                 </div>
@@ -342,6 +348,28 @@
                 </div>
                 <div id="inventory-grid"
                     class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6"></div>
+            </div>
+
+            <div id="tab-satan" class="tab-content px-1 md:px-0">
+                <div class="glass-panel p-6 md:p-10 rounded-2xl bg-black/60 border-t-4 border-red-600 text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.15),transparent_60%)] animate-pulse pointer-events-none"></div>
+                    <h2 class="text-3xl md:text-4xl font-black text-red-500 mb-4 drop-shadow-[0_0_10px_rgba(220,38,38,0.8)]">Satanskreis</h2>
+                    <p class="text-gray-400 mb-8 max-w-xl mx-auto">Opfere deine doppelten Karten den dunklen Mächten, um eine zufällige Karte der nächsthöheren Stufe zu beschwören.</p>
+
+                    <div class="max-w-md mx-auto bg-black/40 p-6 rounded-xl border border-red-900/50 shadow-[0_0_30px_rgba(220,38,38,0.2)] relative z-10">
+                        <label class="block text-xs text-red-400 uppercase font-bold mb-2">Wähle dein Opfer:</label>
+                        <select id="sacrifice-rarity" class="input-holo w-full p-3 rounded-lg mb-6 text-sm bg-[#111] border-red-900/50 text-white">
+                            <option value="common">50x Common ➔ 1x Rare</option>
+                            <option value="rare">20x Rare ➔ 1x Premium</option>
+                            <option value="premium">10x Premium ➔ 1x Episch</option>
+                            <option value="episch">5x Episch ➔ 1x Legendär</option>
+                        </select>
+
+                        <button onclick="sacrificeCards()" id="btn-sacrifice" class="w-full bg-gradient-to-r from-red-800 to-red-600 hover:from-red-700 hover:to-red-500 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(220,38,38,0.5)] uppercase tracking-widest text-lg">
+                            🔥 Beschwören 🔥
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-arena" class="tab-content px-1 md:px-0">
@@ -805,6 +833,34 @@
             document.getElementById('pack-modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('pack-modal').classList.add('hidden'); loadAlbumData(); }
+
+        // --- SATANSKREIS ---
+        async function sacrificeCards() {
+            const btn = document.getElementById('btn-sacrifice');
+            const rarity = document.getElementById('sacrifice-rarity').value;
+            btn.disabled = true;
+            btn.innerHTML = '🔥 Opfere... 🔥';
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/satanic-circle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rarityToSacrifice: rarity })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showAlert(data.message);
+                    showPackModal([data.summonedCard], "😈 Dämonische Beschwörung!");
+                    await loadAlbumData();
+                } else {
+                    showAlert(data.error, true);
+                }
+            } catch (e) {
+                showAlert("Die Geister antworten nicht.", true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔥 Beschwören 🔥';
+            }
+        }
 
         // --- TRADING ---
         function updateTradeSelects() {
