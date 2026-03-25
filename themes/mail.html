@@ -1,0 +1,280 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Postfach</title>
+    <script src="/assets_offline/1774449474315_dl_asset.css"></script>
+    <link href="/assets_offline/1774449474889_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-dark {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: #6366f1; /* Indigo */
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        select option { background-color: #0f172a; color: white; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-indigo-500">📬</span> Postfach
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Nachrichten &amp; System-Belohnungen</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow space-y-6 z-0">
+        
+        <div id="admin-panel" class="glass p-5 rounded-2xl shadow-xl border-l-4 border-l-rose-500 hidden">
+            <h2 class="text-sm uppercase text-rose-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                🛠️ Neue System-Mail
+            </h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block uppercase tracking-wider">Empfänger</label>
+                    <select id="mail-target" class="input-dark w-full p-3 rounded-xl text-sm font-medium">
+                        <option value="active">Aktive Spieler (letzte 7 Tage)</option>
+                        <option value="all">An absolut alle User</option>
+                        <option value="single">Spezieller User</option>
+                    </select>
+                </div>
+                
+                <div id="mail-target-name-container" class="hidden">
+                    <input type="text" id="mail-target-name" placeholder="Username eingeben" class="input-dark w-full p-3 rounded-xl text-sm font-medium">
+                </div>
+
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block uppercase tracking-wider">Betreff</label>
+                    <input type="text" id="mail-subject" placeholder="z.B. Entschuldigung für den Ausfall!" class="input-dark w-full p-3 rounded-xl text-sm font-medium">
+                </div>
+
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block uppercase tracking-wider">Nachricht</label>
+                    <textarea id="mail-content" rows="4" placeholder="Schreibe deine Nachricht..." class="input-dark w-full p-3 rounded-xl text-sm font-medium"></textarea>
+                </div>
+
+                <div class="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl">
+                    <h3 class="text-xs uppercase text-amber-400 font-bold mb-3 tracking-wider flex items-center gap-2">
+                        🎁 Belohnungen anhängen (Optional)
+                    </h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="number" id="mail-reward-money" placeholder="Geld ($)" class="input-dark w-full p-2 rounded-lg text-xs font-mono text-center">
+                        <input type="number" id="mail-reward-tokens" placeholder="Tokens (T)" class="input-dark w-full p-2 rounded-lg text-xs font-mono text-center">
+                        <input type="text" id="mail-reward-badge" placeholder="Badge-ID" class="input-dark w-full p-2 rounded-lg text-xs text-center">
+                    </div>
+                </div>
+
+                <button onclick="sendAdminMail()" class="w-full bg-rose-600 text-white font-bold p-3 rounded-xl hover:bg-rose-500 transition shadow-lg shadow-rose-600/20 active:scale-95 flex items-center justify-center gap-2 text-sm">
+                    <span>📨</span> System-Mail absenden
+                </button>
+            </div>
+        </div>
+
+        <div id="inbox-container" class="space-y-4">
+            <p class="text-center text-slate-500 text-sm font-medium py-8">Lade E-Mails...</p>
+        </div>
+
+    </main>
+
+    <script>
+        const API_BASE = 'https://api.limazon.v6.rocks/api';
+        const fetchOptions = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+
+        // Admin-Dropdown Logik
+        document.getElementById('mail-target').addEventListener('change', (e) => {
+            const nameContainer = document.getElementById('mail-target-name-container');
+            if (e.target.value === 'single') {
+                nameContainer.classList.remove('hidden');
+            } else {
+                nameContainer.classList.add('hidden');
+                document.getElementById('mail-target-name').value = '';
+            }
+        });
+
+        async function init() {
+            try {
+                const authRes = await fetch(`${API_BASE}/auth/me`, fetchOptions);
+                if (!authRes.ok) return alert("Bitte einloggen.");
+                const user = await authRes.json();
+                
+                if (user.isRealAdmin) document.getElementById('admin-panel').classList.remove('hidden');
+                loadMails();
+            } catch (e) { console.error("Init Error:", e); }
+        }
+
+        async function loadMails() {
+            const container = document.getElementById('inbox-container');
+            try {
+                const res = await fetch(`${API_BASE}/mail/inbox`, fetchOptions);
+                const data = await res.json();
+
+                container.innerHTML = '';
+                if (!data.mails || data.mails.length === 0) {
+                    container.innerHTML = '<div class="glass p-8 rounded-xl text-center text-slate-400 text-sm font-medium border border-slate-800">Dein Postfach ist leer. 📭</div>';
+                    return;
+                }
+
+                data.mails.forEach(mail => {
+                    const isUnread = !mail.isRead;
+                    const dateStr = new Date(mail.createdAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    
+                    let rewardHtml = '';
+                    if (mail.rewards) {
+                        if (mail.isClaimed) {
+                            rewardHtml = `
+                                <div class="mt-4 bg-slate-800/50 border border-slate-700 p-3 rounded-xl text-center opacity-70">
+                                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">✅ Belohnung eingelöst</span>
+                                </div>`;
+                        } else {
+                            // Erstelle einen kleinen Text, was drin ist
+                            let rewardDetails = [];
+                            if(mail.rewards.money) rewardDetails.push(`<span class="text-emerald-400 font-mono">$${mail.rewards.money.toLocaleString('de-DE')}</span>`);
+                            if(mail.rewards.tokens) rewardDetails.push(`<span class="text-amber-400 font-mono">${mail.rewards.tokens} Tokens</span>`);
+                            if(mail.rewards.badge) rewardDetails.push(`<span class="text-purple-400">Badge</span>`);
+
+                            rewardHtml = `
+                                <div class="mt-4 bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl text-center shadow-inner">
+                                    <p class="text-sm font-bold text-white mb-1">🎁 Belohnung verfügbar!</p>
+                                    <p class="text-xs text-slate-300 mb-3">Enthält: ${rewardDetails.join(' • ')}</p>
+                                    <button class="bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-emerald-500 transition active:scale-95 text-sm shadow-lg shadow-emerald-600/20 w-full" onclick="claimReward('${mail._id}')">
+                                        Jetzt einlösen
+                                    </button>
+                                </div>`;
+                        }
+                    }
+
+                    // Ungelesene Mails bekommen einen dicken linken Rand und einen leichten Glow
+                    const unreadClasses = isUnread ? 'border-l-4 border-l-indigo-500 bg-indigo-900/10' : 'border border-slate-700';
+                    const iconColor = isUnread ? 'text-indigo-400' : 'text-slate-500';
+
+                    container.innerHTML += `
+                        <div class="glass p-5 rounded-2xl shadow-md ${unreadClasses} transition relative" id="mail-${mail._id}">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="${iconColor} text-lg">📩</span>
+                                    <span class="text-sm font-bold text-slate-300 uppercase tracking-wider">${mail.sender}</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 font-mono">${dateStr}</span>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-white mb-2 leading-tight">${mail.subject}</h3>
+                            <div class="bg-slate-900/50 p-4 rounded-xl text-sm text-slate-300 whitespace-pre-wrap border border-slate-800 leading-relaxed">${mail.content}</div>
+                            
+                            ${rewardHtml}
+                        </div>
+                    `;
+
+                    // Wenn ungelesen, automatisch im Backend als gelesen markieren
+                    if (isUnread) {
+                        fetch(`${API_BASE}/mail/${mail._id}/read`, { ...fetchOptions, method: 'POST' });
+                    }
+                });
+
+            } catch (e) {
+                container.innerHTML = '<p class="text-center text-red-500 font-bold">Fehler beim Laden.</p>';
+            }
+        }
+
+        async function claimReward(mailId) {
+            try {
+                const res = await fetch(`${API_BASE}/mail/${mailId}/claim`, { ...fetchOptions, method: 'POST' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert(data.message);
+                    loadMails(); // Lade neu, um den Status auf "eingelöst" zu setzen
+                } else {
+                    alert("Fehler: " + data.error);
+                }
+            } catch (e) {
+                alert("Fehler beim Einlösen.");
+            }
+        }
+
+        // Für Admins
+        async function sendAdminMail() {
+            if(!confirm("Mail wirklich absenden?")) return;
+
+            let target = document.getElementById('mail-target').value;
+            if (target === 'single') target = document.getElementById('mail-target-name').value.trim();
+
+            const subject = document.getElementById('mail-subject').value.trim();
+            const content = document.getElementById('mail-content').value.trim();
+
+            if(!subject || !content) return alert("Betreff und Nachricht dürfen nicht leer sein!");
+
+            const money = parseInt(document.getElementById('mail-reward-money').value) || 0;
+            const tokens = parseInt(document.getElementById('mail-reward-tokens').value) || 0;
+            const badge = document.getElementById('mail-reward-badge').value.trim();
+
+            let rewards = null;
+            if (money > 0 || tokens > 0 || badge) {
+                rewards = {};
+                if (money > 0) rewards.money = money;
+                if (tokens > 0) rewards.tokens = tokens;
+                if (badge) rewards.badge = badge;
+            }
+
+            const payload = {
+                target: target,
+                subject: subject,
+                content: content,
+                rewards: rewards
+            };
+
+            const btn = document.querySelector('#admin-panel button');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = "Sende...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/admin/mail/send`, {
+                    ...fetchOptions,
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                alert(res.ok ? "Erfolg: " + data.message : "Fehler: " + data.error);
+                
+                if(res.ok) {
+                    document.getElementById('mail-subject').value = '';
+                    document.getElementById('mail-content').value = '';
+                    document.getElementById('mail-reward-money').value = '';
+                    document.getElementById('mail-reward-tokens').value = '';
+                    document.getElementById('mail-reward-badge').value = '';
+                    loadMails(); // Damit der Admin seine eigene Mail sieht (falls 'all' gewählt)
+                }
+            } catch (e) {
+                alert("Verbindungsfehler beim Versenden.");
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        }
+
+        window.onload = init;
+    </script>
+
+</body></html>

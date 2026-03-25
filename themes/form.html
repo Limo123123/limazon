@@ -1,0 +1,183 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Support</title>
+    <script src="/assets_offline/1774449474315_dl_asset.css"></script>
+    <link href="/assets_offline/1774449474889_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-dark {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24">
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-sky-400">📝</span> Support Center
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Formulare &amp; Anträge</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow space-y-8 z-0">
+        
+        <div class="glass p-6 rounded-2xl shadow-xl">
+            <h2 class="text-lg font-bold text-white mb-4">Neuen Antrag stellen</h2>
+            <form id="requestForm" class="space-y-4">
+                <div>
+                    <label class="text-xs uppercase text-sky-400 font-bold mb-2 block tracking-wider">Art des Antrags</label>
+                    <select id="reqType" class="input-dark w-full p-3 rounded-xl text-sm font-medium" required="">
+                        <option value="refund">Geld zurückerstatten / Entschädigung</option>
+                        <option value="bug_bounty">Bug Bounty Prämie einfordern</option>
+                        <option value="delete_account">Account löschen</option>
+                        <option value="other">Sonstiges</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs uppercase text-sky-400 font-bold mb-2 block tracking-wider">Betrag (Optional, sonst 0)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3 text-slate-400 font-bold">$</span>
+                        <input type="number" id="reqAmount" value="0" min="0" step="1" class="input-dark w-full p-3 pl-8 rounded-xl text-sm font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs uppercase text-sky-400 font-bold mb-2 block tracking-wider">Begründung</label>
+                    <textarea id="reqReason" rows="3" class="input-dark w-full p-3 rounded-xl text-sm" required="" placeholder="Bitte erkläre dein Anliegen genau..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-sky-600 text-white font-bold p-4 rounded-xl hover:bg-sky-500 transition shadow-lg shadow-sky-500/20 active:scale-95">
+                    Antrag absenden ➜
+                </button>
+            </form>
+        </div>
+
+        <div id="adminPanel" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-rose-400 flex items-center gap-2">🛡️ Admin: Offene Anträge</h2>
+                <button onclick="loadAdminRequests()" class="text-xs text-slate-400 hover:text-white bg-slate-800 px-2 py-1 rounded">↻ Refresh</button>
+            </div>
+            <div id="ticketList" class="space-y-4">
+                <p class="text-slate-500 text-sm text-center py-4">Lade...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks/api';
+        const fetchOptions = { headers: { 'Content-Type': 'application/json' }, credentials: 'include' };
+
+        // Formular absenden
+        document.getElementById('requestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = "Sendet..."; btn.disabled = true;
+
+            const payload = {
+                type: document.getElementById('reqType').value,
+                amount: document.getElementById('reqAmount').value,
+                reason: document.getElementById('reqReason').value
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/requests`, { ...fetchOptions, method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Erfolg: " + data.message);
+                    document.getElementById('requestForm').reset();
+                } else {
+                    alert("Fehler: " + data.error);
+                }
+            } catch (err) {
+                alert("Verbindungsfehler.");
+            } finally {
+                btn.innerText = originalText; btn.disabled = false;
+            }
+        });
+
+        // Admin Tickets laden
+        async function loadAdminRequests() {
+            const list = document.getElementById('ticketList');
+            try {
+                const res = await fetch(`${API_URL}/admin/requests`, fetchOptions);
+                if (res.ok) {
+                    document.getElementById('adminPanel').classList.remove('hidden');
+                    const data = await res.json();
+                    renderTickets(data.requests);
+                }
+            } catch (err) { console.error("Kein Admin-Zugriff."); }
+        }
+
+        function renderTickets(requests) {
+            const list = document.getElementById('ticketList');
+            if (!requests || requests.length === 0) {
+                list.innerHTML = '<div class="glass p-6 rounded-xl text-center text-emerald-400 text-sm font-bold border border-emerald-500/20">Keine offenen Anträge! 🎉</div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            requests.forEach(req => {
+                const date = new Date(req.createdAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                list.innerHTML += `
+                    <div class="glass p-5 rounded-xl border border-slate-700 relative" id="ticket-${req._id}">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <span class="text-white font-bold block">${req.username}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">${date}</span>
+                            </div>
+                            <span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-bold px-2 py-1 rounded border border-indigo-500/30 uppercase">${req.type}</span>
+                        </div>
+                        <div class="bg-slate-900/50 p-3 rounded-lg mb-4 text-sm text-slate-300 border border-slate-800">
+                            <p class="mb-2"><strong>Grund:</strong> ${req.reason}</p>
+                            ${req.amount > 0 ? `<p class="text-emerald-400 font-mono"><strong>Forderung:</strong> $${req.amount}</p>` : ''}
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="processTicket('${req._id}', 'approve')" class="flex-1 bg-emerald-600/20 text-emerald-400 border border-emerald-600/50 py-2 rounded-lg font-bold text-sm hover:bg-emerald-600 hover:text-white transition">Genehmigen</button>
+                            <button onclick="processTicket('${req._id}', 'reject')" class="flex-1 bg-rose-600/20 text-rose-400 border border-rose-600/50 py-2 rounded-lg font-bold text-sm hover:bg-rose-600 hover:text-white transition">Ablehnen</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function processTicket(id, action) {
+            if (!confirm(`Antrag wirklich ${action === 'approve' ? 'GENEHMIGEN' : 'ABLEHNEN'}?`)) return;
+            try {
+                const res = await fetch(`${API_URL}/admin/requests/${id}/process`, { ...fetchOptions, method: 'POST', body: JSON.stringify({ action }) });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById(`ticket-${id}`).remove();
+                    // Wenn die Liste leer ist, neu laden um die "Leer"-Nachricht anzuzeigen
+                    if(document.getElementById('ticketList').children.length === 0) loadAdminRequests();
+                } else alert("Fehler: " + data.error);
+            } catch (err) { alert("Verarbeitungsfehler."); }
+        }
+
+        // Init initialisieren
+        loadAdminRequests();
+    </script>
+
+</body></html>

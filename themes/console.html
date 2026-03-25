@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <title>Limo Engine Admin v2</title>
+    <style>
+        :root {
+            --bg: #0d1117; --panel: #161b22; --border: #30363d;
+            --text: #c9d1d9; --blue: #58a6ff; --green: #238636; --red: #da3633;
+        }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; margin: 0; padding: 20px; }
+        h1 { color: var(--blue); font-size: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        
+        .controls { display: flex; gap: 10px; background: var(--panel); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end; }
+        .group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 12px; color: #8b949e; }
+        
+        select, input { background: var(--bg); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; outline: none; }
+        select:focus, input:focus { border-color: var(--blue); }
+
+        button { background: var(--green); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button.secondary { background: #30363d; }
+        button.danger { background: var(--red); }
+        button:hover { opacity: 0.8; }
+
+        .table-container { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: auto; max-height: 70vh; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+        th { background: #21262d; padding: 12px; border-bottom: 2px solid var(--border); position: sticky; top: 0; }
+        td { padding: 10px; border-bottom: 1px solid var(--border); white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
+        tr:hover { background: rgba(88, 166, 255, 0.05); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+        .modal-content { background: var(--panel); padding: 20px; border-radius: 8px; border: 1px solid var(--border); width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-content textarea { width: 100%; height: 300px; background: var(--bg); color: #79c0ff; border: 1px solid var(--border); font-family: monospace; padding: 10px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <h1>⚙️ Limo Engine Explorer</h1>
+
+    <div class="controls">
+        <div class="group">
+    <label>Collection auswählen</label>
+    <select id="colSelect" onchange="loadData()">
+        <optgroup label="Core &amp; Users">
+            <option value="users">Benutzer (users)</option>
+            <option value="sessions">Sessions</option>
+            <option value="authCodes">OAuth Codes</option>
+            <option value="banned_ips">Banned IPs</option>
+            <option value="systemSettings">System Settings</option>
+        </optgroup>
+        <optgroup label="Wirtschaft &amp; Shop">
+            <option value="products">Produkte (products)</option>
+            <option value="orders">Bestellungen (orders)</option>
+            <option value="userInventories">Inventare (userInventories)</option>
+            <option value="portfolios">Aktien-Portfolios (portfolios)</option>
+            <option value="tokenCodes">Token Codes</option>
+            <option value="tokenTransactions">Token Logs</option>
+            <option value="bankTransactions">Bank Überweisungen</option>
+        </optgroup>
+        <optgroup label="Social &amp; Chat">
+            <option value="limChats">Chats</option>
+            <option value="limMessages">Nachrichten (limMessages)</option>
+            <option value="limUserChatSettings">Chat Settings</option>
+            <option value="ideas">Ideenbox</option>
+            <option value="dontBlameMePosts">Don't Blame Me Posts</option>
+            <option value="limterestPins">Limterest Pins</option>
+        </optgroup>
+        <optgroup label="Crime &amp; Recht">
+            <option value="robberyLogs">Raub-Logs</option>
+            <option value="courtCases">Gerichtsfälle</option>
+            <option value="gangs">Gangs</option>
+            <option value="zones">Gang-Zonen</option>
+        </optgroup>
+        <optgroup label="Teachermon">
+            <option value="teachermonCards">Karten (Cards)</option>
+            <option value="teachermonInventories">User Karten-Besitz</option>
+            <option value="teachermonTrades">Offene Trades</option>
+            <option value="teachermonBattles">Arena Kämpfe</option>
+            <option value="teachermonUniverses">Universen</option>
+        </optgroup>
+        <optgroup label="Immobilien &amp; Gastro">
+            <option value="properties">Haus-Katalog (properties)</option>
+            <option value="ownedProperties">User Häuser (owned)</option>
+            <option value="propertyInvites">WG-Einladungen</option>
+            <option value="restaurantOrders">Restaurant Bestellungen</option>
+        </optgroup>
+        <optgroup label="Entertainment">
+            <option value="wheels">Glücksräder (wheels)</option>
+            <option value="highscores">Highscores</option>
+            <option value="humans">Human Grades Personen</option>
+            <option value="ratings">Human Grades Bewertungen</option>
+            <option value="tindaSwipes">Tinda Swipes</option>
+            <option value="news">LNN News Network</option>
+            <option value="bugReports">Bug Reports</option>
+        </optgroup>
+    </select>
+</div>
+        <div class="group">
+            <label>Suche (Name/Username/ID)</label>
+            <input type="text" id="searchInput" placeholder="Suchwort...">
+        </div>
+        <button onclick="loadData()">DATEN LADEN</button>
+        <button class="secondary" onclick="openEditModal(null)">+ NEUER EINTRAG</button>
+    </div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <thead><tr id="tableHeader"><th>Warte auf Eingabe...</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Bearbeiten</h2>
+            <textarea id="jsonEdit"></textarea>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button onclick="saveEntry()">SPEICHERN</button>
+                <button class="secondary" onclick="closeModal()">ABBRECHEN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks/api/admin/engine';
+        let currentData = [];
+
+        async function loadData() {
+            const collection = document.getElementById('colSelect').value;
+            const searchTerm = document.getElementById('searchInput').value;
+            const body = document.getElementById('tableBody');
+            const head = document.getElementById('tableHeader');
+
+            body.innerHTML = '<tr><td>Lade...</td></tr>';
+
+            // Filter bauen: Wenn ein Suchwort da ist, suchen wir in gängigen Feldern
+            let filter = {};
+            if (searchTerm) {
+                filter = {
+                    $or: [
+                        { username: { $regex: searchTerm, $options: 'i' } },
+                        { name: { $regex: searchTerm, $options: 'i' } },
+                        { id: searchTerm.match(/^\d+$/) ? parseInt(searchTerm) : searchTerm }
+                    ]
+                };
+            }
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ mode: 'db', collection, operation: 'find', filter, payload: 100 })
+                });
+                const data = await res.json();
+                
+                if (!data.success) throw new Error(data.error);
+                
+                currentData = data.result;
+                renderTable(currentData);
+            } catch (e) {
+                body.innerHTML = `<tr><td style="color:red">Fehler: ${e.message}</td></tr>`;
+            }
+        }
+
+        function renderTable(data) {
+            const head = document.getElementById('tableHeader');
+            const body = document.getElementById('tableBody');
+            head.innerHTML = '';
+            body.innerHTML = '';
+
+            if (data.length === 0) {
+                body.innerHTML = '<tr><td>Keine Einträge gefunden.</td></tr>';
+                return;
+            }
+
+            // Header generieren (aus den Keys des ersten Objekts)
+            const keys = ['_id', ...Object.keys(data[0]).filter(k => k !== '_id')];
+            keys.push('AKTIONEN');
+            
+            keys.forEach(k => {
+                const th = document.createElement('th');
+                th.innerText = k;
+                head.appendChild(th);
+            });
+
+            // Zeilen generieren
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                keys.forEach(k => {
+                    const td = document.createElement('td');
+                    if (k === 'AKTIONEN') {
+                        td.innerHTML = `
+                            <button onclick="openEditModal(${index})">Edit</button>
+                            <button class="danger" onclick="deleteEntry('${row._id}')">X</button>
+                        `;
+                    } else {
+                        const val = row[k];
+                        td.innerText = typeof val === 'object' ? JSON.stringify(val) : val;
+                        td.title = td.innerText; // Tooltip für lange Texte
+                    }
+                    tr.appendChild(td);
+                });
+                body.appendChild(tr);
+            });
+        }
+
+        // --- MODAL LOGIK ---
+        function openEditModal(index) {
+            const modal = document.getElementById('editModal');
+            const area = document.getElementById('jsonEdit');
+            const title = document.getElementById('modalTitle');
+            
+            if (index !== null) {
+                area.value = JSON.stringify(currentData[index], null, 4);
+                title.innerText = "Eintrag bearbeiten";
+            } else {
+                area.value = '{\n    "name": "Neu"\n}';
+                title.innerText = "Neuen Eintrag erstellen";
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function saveEntry() {
+            const collection = document.getElementById('colSelect').value;
+            const json = JSON.parse(document.getElementById('jsonEdit').value);
+            const isUpdate = !!json._id;
+
+            const operation = isUpdate ? 'updateOne' : 'insertOne';
+            const filter = isUpdate ? { _id: json._id } : {};
+            
+            // Payload vorbereiten (bei Update das $set nutzen)
+            const payload = isUpdate ? { $set: json } : json;
+            if (isUpdate) delete json._id; // _id darf nicht im $set stehen
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ mode: 'db', collection, operation, filter, payload })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert("Erfolgreich gespeichert!");
+                    closeModal();
+                    loadData();
+                } else { alert("Fehler: " + result.error); }
+            } catch (e) { alert("Netzwerkfehler"); }
+        }
+
+        async function deleteEntry(id) {
+            if (!confirm("Wirklich löschen? Das ist endgültig!")) return;
+            const collection = document.getElementById('colSelect').value;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ mode: 'db', collection, operation: 'deleteOne', filter: { _id: id } })
+                });
+                loadData();
+            } catch (e) { alert("Fehler beim Löschen"); }
+        }
+    </script>
+
+</body></html>
