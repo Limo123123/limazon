@@ -29,14 +29,15 @@
 
     <div id="aprilFoolsScreen" class="fixed inset-0 z-[999] bg-white text-black flex flex-col items-center justify-center p-8 hidden">
         <h1 class="text-3xl md:text-5xl font-serif font-bold mb-8 border-b-4 border-black pb-4 text-center">PROJEKT EINGESTELLT</h1>
-        <div class="max-w-3xl text-lg md:text-2xl text-center leading-relaxed space-y-6 font-serif">
+        <div id="prankContent" class="max-w-3xl text-lg md:text-2xl text-center leading-relaxed space-y-6 font-serif">
             <p>Der Betrieb der Plattform <b>Limazon Universe</b> wurde aus privaten Gründen und mangelndem persönlichen Interesse an der Weiterentwicklung mit sofortiger Wirkung komplett eingestellt.</p>
             <p>Die Serverinfrastruktur wird am 3 April heruntergefahren. Da das Projekt nicht fortgeführt wird, wurden alle virtuellen Kontostände, Anlagegüter und Tokens unwiderruflich gelöscht und auf <b>0,00 $</b> gesetzt.</p>
             <p class="text-sm md:text-base text-gray-500 mt-12 font-sans uppercase tracking-widest">Ich bedanke mich für die gemeinsame Zeit. Support- oder Auszahlungsanfragen werden nicht gelesen oder beantwortet.</p>
-        </div>
-        <div class="mt-8">
-                <a href="#" onclick="endPrank(); return false;" class="text-sm text-blue-600 hover:text-blue-800 underline font-sans">Weitere Informationen & Datenlöschung</a>
+            
+            <div class="mt-8">
+                <a href="#" onclick="showMoreInfo(); return false;" class="text-sm text-blue-600 hover:text-blue-800 underline font-sans">Weitere Informationen & Datenlöschung</a>
             </div>
+        </div>
     </div>
 
     <div class="fixed inset-0 z-[-1]" id="bgEffects">
@@ -536,28 +537,40 @@
         // === APRIL FOOLS CHECK ===
         const today = new Date();
         
-        // Prüfe ob 1. April ist UND der Scherz noch nicht aufgelöst wurde (sessionStorage)
+        // Prüfe ob 1. April ist UND der Scherz noch nicht aufgelöst wurde
         if (today.getMonth() === 3 && today.getDate() === 1 && !sessionStorage.getItem('limazon_prank_done')) {
             document.getElementById('mainContent').style.display = 'none';
             document.getElementById('bgEffects').style.display = 'none';
             document.getElementById('aprilFoolsScreen').classList.remove('hidden');
         }
 
-        // Wird aufgerufen, wenn man auf "Weitere Informationen" klickt
-        function endPrank() {
+        // STUFE 2: Noch mehr Panik
+        function showMoreInfo() {
+            document.getElementById('prankContent').innerHTML = `
+                <h2 class="text-2xl md:text-4xl font-bold mb-6 text-red-600">STATUS: DATENLÖSCHUNG ABGESCHLOSSEN</h2>
+                <p>Die MongoDB-Datenbank wurde erfolgreich formatiert. Dein gesamtes Inventar, alle Teachermon-Karten, Häuser und Krypto-Wallets wurden <b>unwiderruflich zerstört</b>.</p>
+                <p>Der Raspberry Pi Server wird aktuell auf Werkseinstellungen zurückgesetzt.</p>
+                <div class="mt-12">
+                    <a href="#" onclick="revealPrank(); return false;" class="text-sm text-gray-400 hover:text-gray-600 underline font-sans">Detailliertes Server-Löschprotokoll einsehen</a>
+                </div>
+            `;
+        }
+
+        // STUFE 3: Die Auflösung
+        function revealPrank() {
             document.getElementById('aprilFoolsScreen').innerHTML = `
                 <div class="text-center">
                     <h1 class="text-5xl md:text-7xl font-black text-blue-600 mb-6">APRIL, APRIL! 😂</h1>
-                    <p class="text-2xl mb-8 font-sans">Dein Guthaben ist noch da. Keine Panik! Wird aber als 0 angezeigt.</p>
+                    <p class="text-2xl mb-8 font-sans">Dein Guthaben ist noch da. Keine Panik!</p>
                     <button onclick="showRealLimazon()" class="px-8 py-4 bg-black text-white font-bold rounded-xl text-xl hover:bg-gray-800 transition-colors">Zum echten Limazon</button>
                 </div>
             `;
         }
 
-        // Löst den Scherz für diese Browser-Sitzung auf und lädt Limazon
+        // Zurück zum Alltag
         function showRealLimazon() {
             sessionStorage.setItem('limazon_prank_done', 'true');
-            location.reload(); // Lädt neu, aber diesmal wird das normale Dashboard gezeigt!
+            location.reload(); 
         }
         // =========================
 
