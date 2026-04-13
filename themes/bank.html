@@ -135,30 +135,29 @@
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
         }
 
-        /* WICHTIG: Hier definieren wir BEIDE Transitions gleichzeitig */
         #credit-card-bg {
             transition:
                 background 1.5s ease-in-out,
-                /* Farbe ändert sich langsam */
                 transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                /* Klick federt (Bounce-Effekt) */
                 box-shadow 0.3s ease;
             transform-style: preserve-3d;
             cursor: pointer;
         }
 
-        /* Hover Effekt (leicht anheben) */
         #credit-card-bg:hover {
             transform: translateY(-5px) scale(1.02);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
         }
 
-        /* Klick Effekt (Eindrücken) */
         #credit-card-bg:active {
             transform: scale(0.95) rotateX(2deg);
-            /* Kleiner werden + leichte 3D Neigung */
             box-shadow: 0 5px 10px -5px rgba(0, 0, 0, 0.3);
         }
+
+        /* Schufa Score Colors */
+        .schufa-good { color: #10b981; }
+        .schufa-ok { color: #f59e0b; }
+        .schufa-bad { color: #ef4444; }
     </style>
 </head>
 
@@ -193,9 +192,11 @@
                 <div class="flex justify-between items-start">
                     <span class="text-[10px] font-bold tracking-[0.2em] opacity-80 uppercase drop-shadow-md">Limo
                         Debit</span>
-                    <svg class="w-8 h-8 text-white opacity-90 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M2 10h20v2H2zM2 15h20v2H2z" />
-                    </svg>
+                    
+                    <div class="bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10 flex items-center gap-2">
+                        <span class="text-[10px] uppercase tracking-wider text-white/70">Schufa</span>
+                        <span id="card-schufa" class="text-sm font-bold text-white drop-shadow-md">---</span>
+                    </div>
                 </div>
 
                 <div class="mt-4">
@@ -217,7 +218,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="grid grid-cols-2 gap-4 mb-4">
             <button onclick="openTransferModal('money')"
                 class="glass p-4 rounded-xl flex flex-col items-center gap-3 hover:bg-white/10 transition active:scale-95 group">
                 <div
@@ -241,22 +242,24 @@
                 </div>
                 <span class="text-sm font-bold text-slate-200">Tokens senden</span>
             </button>
-            <div onclick="claimDaily()"
-                class="bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl p-6 text-white shadow-lg transform hover:scale-105 transition cursor-pointer relative overflow-hidden group">
-                <div
-                    class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full group-hover:scale-150 transition">
-                </div>
+        </div>
 
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="font-bold text-lg">Tagesbonus</h3>
-                        <p class="text-pink-100 text-xs mt-1">Hol dir dein Gratis-Geld!</p>
-                    </div>
-                    <span class="text-3xl">🎁</span>
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <button onclick="openLoanModal()"
+                class="glass p-4 rounded-xl flex flex-col items-center gap-3 hover:bg-white/10 transition active:scale-95 group relative overflow-hidden">
+                <div class="w-12 h-12 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:bg-blue-500/20 transition border border-blue-500/20 z-10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                    </svg>
                 </div>
-                <div class="mt-4 font-bold text-sm bg-black/20 inline-block px-3 py-1 rounded-full">
-                    Bis zu $500/Tag
-                </div>
+                <span class="text-sm font-bold text-slate-200 z-10">Kredite</span>
+            </button>
+
+            <div onclick="claimDaily()"
+                class="bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl p-4 text-white shadow-lg transform hover:scale-105 transition cursor-pointer relative overflow-hidden group flex flex-col items-center justify-center gap-1">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full group-hover:scale-150 transition"></div>
+                <span class="text-2xl mb-1">🎁</span>
+                <span class="font-bold text-sm">Tagesbonus</span>
             </div>
         </div>
 
@@ -274,10 +277,8 @@
 
     </main>
 
-    <div id="transfer-modal"
-        class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-sm transition-opacity duration-300">
-        <div
-            class="bg-[#0f172a] rounded-t-3xl p-6 w-full max-w-md mx-auto slide-up border-t border-slate-700 shadow-2xl relative">
+    <div id="transfer-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-[#0f172a] rounded-t-3xl p-6 w-full max-w-md mx-auto slide-up border-t border-slate-700 shadow-2xl relative">
             <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-6"></div>
 
             <h3 class="text-2xl font-bold mb-1 text-white" id="modal-title">Überweisung</h3>
@@ -287,8 +288,7 @@
                 <input type="hidden" id="tx-type">
 
                 <div class="mb-5 relative">
-                    <label
-                        class="text-xs uppercase text-indigo-400 font-bold mb-2 block tracking-wider">Empfänger</label>
+                    <label class="text-xs uppercase text-indigo-400 font-bold mb-2 block tracking-wider">Empfänger</label>
                     <input type="text" id="tx-to" class="input-dark w-full p-4 rounded-xl text-lg font-medium"
                         placeholder="@username" oninput="handleUserSearch(this.value)" autocomplete="off" required>
                     <div id="user-search-results" class="search-results hidden"></div>
@@ -302,22 +302,18 @@
                     <span class="absolute right-5 top-10 text-slate-400 font-bold text-xl" id="tx-currency">$</span>
                 </div>
 
-                <div
-                    class="flex items-center justify-between bg-slate-800 p-3 rounded-xl mb-5 border border-slate-700">
+                <div class="flex items-center justify-between bg-slate-800 p-3 rounded-xl mb-5 border border-slate-700">
                     <div>
                         <span class="text-sm font-bold text-white block">High-Limit Modus 🚀</span>
                         <span class="text-xs text-slate-400">Bis zu 9 Billiarden (1% Gebühr)</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="tx-high-limit" class="sr-only peer" onchange="updateFeePreview()">
-                        <div
-                            class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
-                        </div>
+                        <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
                 </div>
 
-                <div id="fee-preview"
-                    class="hidden mb-5 text-xs bg-indigo-900/20 p-3 rounded-lg border border-indigo-500/30">
+                <div id="fee-preview" class="hidden mb-5 text-xs bg-indigo-900/20 p-3 rounded-lg border border-indigo-500/30">
                     <div class="flex justify-between mb-1">
                         <span class="text-slate-400">Gebühr (1%):</span>
                         <span class="text-red-400 font-mono" id="calc-fee">-$0.00</span>
@@ -338,16 +334,90 @@
                     <button type="button" onclick="closeModal('transfer-modal')"
                         class="flex-1 py-4 rounded-xl font-bold text-slate-400 bg-slate-800 hover:bg-slate-700 transition">Abbrechen</button>
                     <button type="submit"
-                        class="flex-1 bg-indigo-600 py-4 rounded-xl font-bold text-white hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20 active:scale-95">Senden
-                        ➜</button>
+                        class="flex-1 bg-indigo-600 py-4 rounded-xl font-bold text-white hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20 active:scale-95">Senden ➜</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <div id="loan-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-[#0f172a] rounded-t-3xl p-6 w-full max-w-md mx-auto slide-up border-t border-slate-700 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-6"></div>
+
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-white">Zentralbank</h3>
+                    <p class="text-slate-400 text-sm">Kredite & Schufa</p>
+                </div>
+                <div class="text-right bg-slate-800 p-2 rounded-xl border border-slate-700">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-0.5">Dein Score</span>
+                    <span id="loan-schufa-score" class="text-xl font-bold font-mono">---</span>
+                    <div id="loan-schufa-rating" class="text-[10px] uppercase font-bold mt-0.5">Lade...</div>
+                </div>
+            </div>
+
+            <div id="loan-loading" class="text-center py-8 text-slate-400 text-sm">Prüfe Akten...</div>
+
+            <div id="loan-apply-view" class="hidden">
+                <div class="bg-indigo-900/20 border border-indigo-500/20 rounded-xl p-4 mb-6">
+                    <p class="text-sm text-indigo-200 mb-2">Dein Kreditrahmen beträgt bis zu:</p>
+                    <h4 class="text-3xl font-mono font-bold text-white mb-1" id="loan-max-amount">$0.00</h4>
+                    <p class="text-xs text-indigo-300">Zinssatz: <span id="loan-interest-rate" class="font-bold">-%</span> (Zahlbar in 14 Tagen)</p>
+                </div>
+
+                <p id="loan-error-msg" class="text-sm text-red-400 mb-4 bg-red-500/10 p-3 rounded-lg border border-red-500/20 hidden"></p>
+
+                <form onsubmit="submitLoanApply(event)">
+                    <div class="mb-6 relative">
+                        <label class="text-xs uppercase text-slate-400 font-bold mb-2 block tracking-wider">Wunschbetrag</label>
+                        <input type="number" id="loan-request-amount" step="1" min="1"
+                            class="input-dark w-full p-4 rounded-xl text-2xl font-mono font-bold text-white"
+                            placeholder="0" required>
+                        <span class="absolute right-5 top-10 text-slate-400 font-bold text-xl">$</span>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button type="button" onclick="closeModal('loan-modal')"
+                            class="flex-1 py-4 rounded-xl font-bold text-slate-400 bg-slate-800 hover:bg-slate-700 transition">Schließen</button>
+                        <button type="submit" id="btn-loan-apply"
+                            class="flex-1 bg-blue-600 py-4 rounded-xl font-bold text-white hover:bg-blue-500 transition shadow-lg shadow-blue-500/20 active:scale-95">Beantragen</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="loan-pay-view" class="hidden">
+                <div class="bg-red-900/20 border border-red-500/20 rounded-xl p-4 mb-6">
+                    <p class="text-sm text-red-200 mb-2">Offene Schulden:</p>
+                    <h4 class="text-3xl font-mono font-bold text-white mb-1" id="loan-debt-amount">$0.00</h4>
+                    <p class="text-xs text-red-300">Fällig am: <span id="loan-due-date" class="font-bold">--.--.----</span></p>
+                </div>
+
+                <form onsubmit="submitLoanPay(event)">
+                    <div class="mb-6 relative">
+                        <label class="text-xs uppercase text-slate-400 font-bold mb-2 block tracking-wider">Zahlungsbetrag</label>
+                        <input type="number" id="loan-pay-amount" step="0.01" min="0.01"
+                            class="input-dark w-full p-4 rounded-xl text-2xl font-mono font-bold text-white"
+                            placeholder="0.00" required>
+                        <span class="absolute right-5 top-10 text-slate-400 font-bold text-xl">$</span>
+                    </div>
+                    <div class="flex justify-end mb-4">
+                        <button type="button" onclick="payFullLoan()" class="text-xs text-blue-400 hover:text-blue-300 font-bold">Alles abbezahlen (Full Pay)</button>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button type="button" onclick="closeModal('loan-modal')"
+                            class="flex-1 py-4 rounded-xl font-bold text-slate-400 bg-slate-800 hover:bg-slate-700 transition">Schließen</button>
+                        <button type="submit"
+                            class="flex-1 bg-emerald-600 py-4 rounded-xl font-bold text-white hover:bg-emerald-500 transition shadow-lg shadow-emerald-500/20 active:scale-95">Bezahlen</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
     <div id="profile-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex flex-col justify-end backdrop-blur-sm">
-        <div
-            class="bg-[#0f172a] rounded-t-3xl p-8 w-full max-w-md mx-auto slide-up border-t border-slate-700 shadow-2xl">
+        <div class="bg-[#0f172a] rounded-t-3xl p-8 w-full max-w-md mx-auto slide-up border-t border-slate-700 shadow-2xl">
             <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-8"></div>
             <div class="text-center mb-8">
                 <div class="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center text-3xl font-bold text-white mx-auto mb-4 border-4 border-slate-800 shadow-xl"
@@ -411,6 +481,7 @@
         const API_URL = 'https://api.limazon.v6.rocks';
         let currentUser = null;
         let searchTimeout = null;
+        let currentLoanData = null; // Speichert Daten für Kredite
 
         checkAuth();
 
@@ -428,14 +499,9 @@
 
         // --- FORMATIERUNG ---
         function formatBigNumber(num, isCurrency = true) {
-            // JS Safe Integer Limit ist 9 Billiarden. Alles drüber wird ungenau.
             const SAFE_MAX = Number.MAX_SAFE_INTEGER;
+            if (num > SAFE_MAX) return isCurrency ? "$ ∞" : "∞ Tokens";
 
-            if (num > SAFE_MAX) {
-                return isCurrency ? "$ ∞" : "∞ Tokens";
-            }
-
-            // Normale Formatierung für "kleine" Zahlen (< 1 Billion)
             if (num < 1000000000000) {
                 const formatted = new Intl.NumberFormat('de-DE', {
                     minimumFractionDigits: 2,
@@ -444,7 +510,6 @@
                 return isCurrency ? `$ ${formatted}` : `${formatted} Tokens`;
             }
 
-            // Kompakte Notation für große Zahlen (1.5T, 500B etc.)
             const compact = new Intl.NumberFormat('en-US', {
                 notation: "compact",
                 compactDisplay: "short",
@@ -454,7 +519,12 @@
             return isCurrency ? `$ ${compact}` : `${compact} Tokens`;
         }
 
-        // --- NEU: GEBÜHREN BERECHNUNG ---
+        function getSchufaColorClass(score) {
+            if(score >= 750) return 'schufa-good';
+            if(score >= 400) return 'schufa-ok';
+            return 'schufa-bad';
+        }
+
         function updateFeePreview() {
             const amountInput = document.getElementById('tx-amount').value;
             const amount = parseFloat(amountInput) || 0;
@@ -468,14 +538,10 @@
             }
 
             previewBox.classList.remove('hidden');
-
-            const fee = amount * 0.01; // 1%
+            const fee = amount * 0.01; 
             const receive = amount - fee;
-
-            // Simple Formatierung für die Preview
             const symbol = type === 'money' ? '$' : 'T';
             
-            // Formatierungs-Helfer für die Preview
             const fmt = (n) => {
                 if(n > 1000000000000) return new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 2 }).format(n);
                 return n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -527,6 +593,7 @@
                 document.getElementById('tab-register').classList.add('active');
             }
         }
+        
         async function doLogin() {
             const u = document.getElementById('l-user').value; const p = document.getElementById('l-pass').value;
             const err = document.getElementById('l-err');
@@ -536,6 +603,7 @@
                 if (res.ok) window.location.reload(); else { const d = await res.json(); err.innerText = d.error || "Login fehlgeschlagen."; }
             } catch (e) { err.innerText = "Verbindungsfehler."; }
         }
+        
         async function doRegister() {
             const u = document.getElementById('r-user').value; const p = document.getElementById('r-pass').value;
             const err = document.getElementById('l-err');
@@ -546,6 +614,7 @@
                 else { const d = await res.json(); err.innerText = d.error || "Fehler."; }
             } catch (e) { err.innerText = "Fehler."; }
         }
+        
         async function logout() { try { await fetch(API_URL + '/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch (e) { } window.location.reload(); }
 
         // --- UI ---
@@ -558,6 +627,12 @@
             document.getElementById('user-avatar').innerText = initial.substring(0, 1);
             document.getElementById('profile-avatar').innerText = initial;
             document.getElementById('profile-username').innerText = currentUser.username;
+
+            // Schufa auf der Karte
+            const schufaScore = currentUser.schufaScore || 500;
+            const cardSchufaEl = document.getElementById('card-schufa');
+            cardSchufaEl.innerText = schufaScore;
+            cardSchufaEl.className = `text-sm font-bold drop-shadow-md ${getSchufaColorClass(schufaScore)}`;
         }
 
         async function loadTransactions() {
@@ -594,7 +669,6 @@
                     cardBg.className = baseClasses + " card-default";
                 }
 
-
                 data.transactions.forEach(tx => {
                     const isIncoming = tx.toId === currentUser.userId;
                     const amountSign = isIncoming ? '+' : '-';
@@ -607,7 +681,6 @@
 
                     const formattedAmount = formatBigNumber(tx.amount, false).replace("Tokens", "").replace("$", "").trim();
 
-                    // Fee Anzeige im Verlauf (nur wenn man Sender war)
                     let feeInfo = "";
                     if(!isIncoming && tx.fee > 0) {
                         feeInfo = `<span class="text-[10px] text-red-400 block opacity-70">Gebühr: -${tx.type==='token'?'T':'$'}${formatBigNumber(tx.fee, false).replace("Tokens","").replace("$","").trim()}</span>`;
@@ -633,6 +706,134 @@
             } catch (e) { list.innerHTML = '<div class="text-red-500 text-center">Ladefehler</div>'; }
         }
 
+        // --- KREDIT LOGIK ---
+        async function openLoanModal() {
+            document.getElementById('loan-modal').classList.remove('hidden');
+            document.getElementById('loan-loading').classList.remove('hidden');
+            document.getElementById('loan-apply-view').classList.add('hidden');
+            document.getElementById('loan-pay-view').classList.add('hidden');
+            
+            try {
+                const res = await fetch(API_URL + '/api/bank/loan', { credentials: 'include' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    currentLoanData = data;
+                    
+                    // Header Update
+                    const scoreEl = document.getElementById('loan-schufa-score');
+                    const ratingEl = document.getElementById('loan-schufa-rating');
+                    
+                    scoreEl.innerText = data.schufaScore;
+                    scoreEl.className = `text-xl font-bold font-mono ${getSchufaColorClass(data.schufaScore)}`;
+                    ratingEl.innerText = data.rating;
+                    ratingEl.className = `text-[10px] uppercase font-bold mt-0.5 ${getSchufaColorClass(data.schufaScore)}`;
+
+                    document.getElementById('loan-loading').classList.add('hidden');
+
+                    if (data.activeLoan) {
+                        // Hat schon einen Kredit -> Zeige Abbezahlen View
+                        document.getElementById('loan-pay-view').classList.remove('hidden');
+                        document.getElementById('loan-debt-amount').innerText = `$${data.activeLoan.remainingDue.toLocaleString('de-DE', {minimumFractionDigits: 2})}`;
+                        document.getElementById('loan-due-date').innerText = new Date(data.activeLoan.dueDate).toLocaleDateString('de-DE');
+                        document.getElementById('loan-pay-amount').max = data.activeLoan.remainingDue;
+                    } else {
+                        // Kein Kredit -> Zeige Beantragen View
+                        document.getElementById('loan-apply-view').classList.remove('hidden');
+                        document.getElementById('loan-max-amount').innerText = `$${data.maxLoan.toLocaleString('de-DE')}`;
+                        document.getElementById('loan-interest-rate').innerText = `${data.interestRate}%`;
+                        document.getElementById('loan-request-amount').max = data.maxLoan;
+
+                        const applyBtn = document.getElementById('btn-loan-apply');
+                        const errMsg = document.getElementById('loan-error-msg');
+
+                        if (!data.canApply) {
+                            applyBtn.disabled = true;
+                            applyBtn.className = "flex-1 bg-slate-700 py-4 rounded-xl font-bold text-slate-500 cursor-not-allowed";
+                            errMsg.classList.remove('hidden');
+                            if (data.accountAgeDays < 7) {
+                                errMsg.innerText = "Dein Account muss mindestens 7 Tage alt sein.";
+                            } else if (data.maxLoan === 0) {
+                                errMsg.innerText = "Dein Schufa-Score ist zu niedrig für einen Kredit.";
+                            } else {
+                                errMsg.innerText = "Dein Konto ist im Minus. Begleiche erst deine Schulden.";
+                            }
+                        } else {
+                            applyBtn.disabled = false;
+                            applyBtn.className = "flex-1 bg-blue-600 py-4 rounded-xl font-bold text-white hover:bg-blue-500 transition shadow-lg shadow-blue-500/20 active:scale-95";
+                            errMsg.classList.add('hidden');
+                        }
+                    }
+                } else {
+                    document.getElementById('loan-loading').innerText = data.error || "Fehler beim Laden.";
+                }
+            } catch (err) {
+                document.getElementById('loan-loading').innerText = "Verbindungsfehler zur Schufa.";
+            }
+        }
+
+        async function submitLoanApply(e) {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('loan-request-amount').value);
+            const btn = document.getElementById('btn-loan-apply');
+            
+            btn.disabled = true; btn.innerText = "Prüfe...";
+            try {
+                const res = await fetch(API_URL + '/api/bank/loan/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    closeModal('loan-modal');
+                    checkAuth(); // Lädt UI neu
+                } else {
+                    alert("Abgelehnt: " + data.error);
+                }
+            } catch (err) {
+                alert("Fehler bei der Verbindung zur Bank.");
+            } finally {
+                btn.disabled = false; btn.innerText = "Beantragen";
+            }
+        }
+
+        async function submitLoanPay(e) {
+            e.preventDefault();
+            const amount = parseFloat(document.getElementById('loan-pay-amount').value);
+            const btn = e.target.querySelector('button[type="submit"]');
+            
+            btn.disabled = true; btn.innerText = "Zahle...";
+            try {
+                const res = await fetch(API_URL + '/api/bank/loan/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    closeModal('loan-modal');
+                    checkAuth(); // Lädt UI neu
+                } else {
+                    alert("Fehler: " + data.error);
+                }
+            } catch (err) {
+                alert("Verbindungsfehler.");
+            } finally {
+                btn.disabled = false; btn.innerText = "Bezahlen";
+            }
+        }
+
+        function payFullLoan() {
+            if (currentLoanData && currentLoanData.activeLoan) {
+                document.getElementById('loan-pay-amount').value = currentLoanData.activeLoan.remainingDue;
+            }
+        }
+
         // --- MODALS ---
         function openTransferModal(type) {
             const modal = document.getElementById('transfer-modal');
@@ -642,14 +843,15 @@
             document.getElementById('tx-to').value = '';
             document.getElementById('tx-amount').value = '';
             document.getElementById('tx-reason').value = '';
-            document.getElementById('tx-high-limit').checked = false; // Reset Toggle
-            updateFeePreview(); // Reset View
+            document.getElementById('tx-high-limit').checked = false; 
+            updateFeePreview(); 
             document.getElementById('user-search-results').classList.add('hidden');
 
             if (type === 'money') { title.innerText = "Geld senden"; cur.innerText = "$"; }
             else { title.innerText = "Tokens senden"; cur.innerText = "T"; }
             modal.classList.remove('hidden');
         }
+        
         function openProfile() { document.getElementById('profile-modal').classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
@@ -659,7 +861,7 @@
             const to = document.getElementById('tx-to').value;
             const amount = parseFloat(document.getElementById('tx-amount').value);
             const reason = document.getElementById('tx-reason').value;
-            const isHigh = document.getElementById('tx-high-limit').checked; // Toggle Status
+            const isHigh = document.getElementById('tx-high-limit').checked; 
 
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerText; btn.innerText = "Sende..."; btn.disabled = true;
@@ -668,13 +870,7 @@
                 const res = await fetch(API_URL + '/api/bank/transfer', { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ 
-                        recipientName: to, 
-                        amount, 
-                        type, 
-                        reason, 
-                        highLimitMode: isHigh // Sende an Backend
-                    }), 
+                    body: JSON.stringify({ recipientName: to, amount, type, reason, highLimitMode: isHigh }), 
                     credentials: 'include' 
                 });
                 const data = await res.json();
