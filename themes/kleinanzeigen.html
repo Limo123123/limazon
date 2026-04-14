@@ -333,9 +333,18 @@
         async function startChat(adId) {
             try {
                 const res = await fetch(`${API_BASE}/classifieds/${adId}/chat`, { method: 'POST', ...fetchOpts });
-                if(res.ok) showView('dashboard');
-                else alert((await res.json()).error);
-            } catch(e) { alert('Netzwerkfehler.'); }
+                const data = await res.json();
+                
+                if(res.ok) { 
+                    showView('dashboard');
+                    await loadDashboard(); // Lade die Chat-Liste neu, damit der neue Chat drin ist
+                    openChat(data.chat._id); // Öffne den Chat sofort visuell!
+                } else {
+                    alert(data.error);
+                }
+            } catch(e) { 
+                alert('Netzwerkfehler beim Starten des Chats.'); 
+            }
         }
 
         async function openChat(chatId) {

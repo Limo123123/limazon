@@ -1228,6 +1228,7 @@
             try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/cards/${id}`, { method: 'DELETE' }); if (res.ok) { showAlert((await res.json()).message); loadAlbumData(); } else showAlert((await res.json()).error, true); } catch (e) { }
         }
     </script>
+    <script src="js/limo-global.js?v=3" data-page="teachermon"></script>
 </body>
 
 </html>
