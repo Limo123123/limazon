@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Among Us - Limo P2P Edition</title>
+    <style>
+        :root {
+            --bg-color: #000;
+            --accent: #ff0000;
+            --text-main: #fff;
+        }
+
+        body {
+            margin: 0; font-family: 'Segoe UI', sans-serif;
+            background: var(--bg-color); color: var(--text-main);
+            overflow: hidden; user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #uiLayer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
+        }
+
+        .screen {
+            background: rgba(20, 20, 20, 0.95); padding: 30px;
+            border-radius: 15px; border: 2px solid #444; text-align: center;
+            pointer-events: auto; min-width: 320px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+        }
+
+        h1 { color: var(--accent); margin-top: 0; text-transform: uppercase; letter-spacing: 2px; }
+        p { color: #ccc; margin-bottom: 20px; }
+
+        .btn {
+            background: #4CAF50; color: white; border: none;
+            padding: 12px 20px; font-size: 16px; border-radius: 6px;
+            cursor: pointer; font-weight: bold; width: 100%;
+            margin-bottom: 10px; transition: 0.2s;
+        }
+        .btn:hover { background: #388E3C; }
+        .btn-blue { background: #2196F3; }
+        .btn-blue:hover { background: #1976D2; }
+        .btn-danger { background: #d32f2f; }
+        .btn-danger:hover { background: #b71c1c; }
+
+        #gameCanvas { display: block; background: #000; }
+
+        #hud {
+            position: absolute; top: 15px; left: 15px;
+            pointer-events: none; font-size: 18px; font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+            background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;
+            z-index: 50;
+        }
+
+        #taskBtn, #reportBtn {
+            position: absolute; bottom: 30px; width: 80px; height: 80px; 
+            border-radius: 50%; font-weight: bold; font-size: 16px; 
+            cursor: pointer; pointer-events: auto; display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 50;
+        }
+        #taskBtn { right: 30px; background: #fbc02d; color: black; border: 4px solid #f9a825; }
+        #reportBtn { right: 120px; background: #d32f2f; color: white; border: 4px solid #b71c1c; }
+        #taskBtn:active, #reportBtn:active { transform: scale(0.95); }
+
+        #meetingScreen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); z-index: 3000;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .meeting-box {
+            background: #2a2a35; border: 2px solid #444; border-radius: 10px;
+            padding: 20px; width: 90%; max-width: 500px; text-align: center;
+            pointer-events: auto;
+        }
+        .player-vote-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #1e1e24; margin: 5px 0; padding: 10px; border-radius: 6px;
+            border: 1px solid #333;
+        }
+        .player-vote-row.dead { opacity: 0.5; text-decoration: line-through; }
+        .vote-btn {
+            background: #4CAF50; color: white; border: none; padding: 5px 15px;
+            border-radius: 4px; cursor: pointer;
+        }
+        .vote-btn:hover { background: #388E3C; }
+    </style>
+</head>
+<body>
+
+    <div id="hud" style="display: none;">
+        <div>Tasks: <span id="taskCount" style="color:#fbc02d">0</span> / 5</div>
+        <div id="p2pStatus" style="font-size: 12px; color: #888; margin-top: 5px;">Modus: Solo</div>
+    </div>
+    
+    <button id="taskBtn" onclick="game.doTask()">USE</button>
+    <button id="reportBtn" onclick="game.reportBody()">REPORT</button>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="uiLayer">
+        <div id="startScreen" class="screen">
+            <h1>Among Us<br><small style="font-size:14px; color:#888;">Limo P2P Edition</small></h1>
+            <p id="userInfo">Lade Spielerdaten...</p>
+            
+            <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                <button class="btn btn-blue" id="hostBtn" onclick="game.hostLobby()" disabled>Lobby Hosten</button>
+                <button class="btn btn-blue" id="joinBtn" onclick="game.joinLobby()" disabled>Beitreten</button>
+            </div>
+            
+            <button class="btn" id="startBtn" onclick="game.startSolo()" disabled>Solo spielen</button>
+            <button class="btn btn-danger" onclick="window.location.href='/'">Zurück zur Arcade</button>
+        </div>
+
+        <div id="matchmakingScreen" class="screen" style="display: none;">
+            <h2 style="margin:0 0 15px 0;">Erstelle Karte...</h2>
+            <div id="playerList" style="text-align:left; font-family:monospace; margin-bottom:10px; color:#aaa;"></div>
+        </div>
+
+        <div id="gameOverScreen" class="screen" style="display: none;">
+            <h1 id="endTitle">DEFEAT</h1>
+            <p id="endReason">Du wurdest erwischt!</p>
+            <button class="btn" onclick="window.location.reload()">Zurück ins Menü</button>
+        </div>
+    </div>
+
+    <div id="meetingScreen">
+        <div class="meeting-box">
+            <h1 id="meetingTitle" style="color: #ff0000; margin-bottom: 5px;">EMERGENCY MEETING</h1>
+            <p id="meetingReporter" style="margin-top: 0; color: #aaa;">Jemand hat eine Leiche gefunden!</p>
+            <div id="votingList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
+            <button class="btn btn-blue" onclick="game.castVote('skip')">Skip Vote</button>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://api.limazon.v6.rocks/api'; 
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const game = {
+            user: null, running: false, state: 'IDLE',
+            tasksCompleted: 0, totalTasks: 5, frame: 0,
+            
+            // P2P State
+            roomCode: null, isHost: false, peerConnection: null,
+            dataChannel: null, pollInterval: null, lastSync: 0,
+
+            // Entities
+            player: { x: 0, y: 0, size: 14, speed: 4, color: '#00cc00', dx: 0, dy: 0, isImpostor: false, isAlive: true, killCooldown: 0 },
+            peer: { x: -1000, y: -1000, size: 14, color: '#0055ff', name: 'Gegner', isAlive: false, isImpostor: false, dx: 0, dy: 0 },
+            bots: [], deadBodies: [], tasks: [],
+            
+            // Map
+            map: { 
+                w: 2000, h: 1500,
+                walls: [
+                    {x: 0, y: 0, w: 2000, h: 20}, {x: 0, y: 1480, w: 2000, h: 20},
+                    {x: 0, y: 0, w: 20, h: 1500}, {x: 1980, y: 0, w: 20, h: 1500},
+                    {x: 400, y: 0, w: 20, h: 400}, {x: 400, y: 600, w: 20, h: 400}, 
+                    {x: 0, y: 400, w: 300, h: 20}, {x: 800, y: 300, w: 600, h: 20},
+                    {x: 800, y: 300, w: 20, h: 500}, {x: 1400, y: 300, w: 20, h: 500},
+                    {x: 800, y: 800, w: 200, h: 20}, {x: 1200, y: 800, w: 220, h: 20},
+                    {x: 400, y: 1000, w: 1000, h: 20}, {x: 400, y: 1000, w: 20, h: 500}
+                ],
+                vents: [{x: 200, y: 200}, {x: 1800, y: 200}, {x: 200, y: 1300}, {x: 1800, y: 1300}]
+            },
+            iceCandidateQueue: [],
+            camera: { x: 0, y: 0 },
+            keys: {},
+
+            init: async () => {
+                game.resize();
+                window.addEventListener('resize', game.resize);
+                window.addEventListener('keydown', (e) => game.keys[e.code] = true);
+                window.addEventListener('keyup', (e) => game.keys[e.code] = false);
+
+                canvas.addEventListener('touchstart', game.handleTouch, {passive: false});
+                canvas.addEventListener('touchmove', game.handleTouch, {passive: false});
+                canvas.addEventListener('touchend', () => { game.player.dx = 0; game.player.dy = 0; });
+
+                await game.checkAuth();
+            },
+
+            resize: () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            },
+
+            handleTouch: (e) => {
+                e.preventDefault();
+                if(game.state !== 'PLAYING' || !game.player.isAlive) return;
+                const touch = e.touches[0];
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                const angle = Math.atan2((touch.clientY - canvas.getBoundingClientRect().top) - cy, (touch.clientX - canvas.getBoundingClientRect().left) - cx);
+                
+                game.player.dx = Math.cos(angle) * game.player.speed;
+                game.player.dy = Math.sin(angle) * game.player.speed;
+            },
+
+            checkAuth: async () => {
+                try {
+                    const res = await fetch(`${API}/auth/me`, { credentials: 'include' });
+                    if (res.ok) {
+                        game.user = await res.json();
+                        document.getElementById('userInfo').innerText = `Eingeloggt als: ${game.user.username}`;
+                        document.getElementById('startBtn').disabled = false;
+                        document.getElementById('hostBtn').disabled = false;
+                        document.getElementById('joinBtn').disabled = false;
+                    }
+                } catch (e) { 
+                    document.getElementById('startBtn').disabled = false; 
+                }
+            },
+
+            // --- NEU: RAYCASTING / SICHTLINIE ---
+            lineIntersect: (x1, y1, x2, y2, x3, y3, x4, y4) => {
+                let dir = ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
+                if (dir === 0) return false;
+                let uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / dir;
+                let uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / dir;
+                return (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1);
+            },
+
+            hasLineOfSight: (x1, y1, x2, y2) => {
+                for (let w of game.map.walls) {
+                    if (game.lineIntersect(x1, y1, x2, y2, w.x, w.y, w.x+w.w, w.y)) return false;
+                    if (game.lineIntersect(x1, y1, x2, y2, w.x, w.y+w.h, w.x+w.w, w.y+w.h)) return false;
+                    if (game.lineIntersect(x1, y1, x2, y2, w.x, w.y, w.x, w.y+w.h)) return false;
+                    if (game.lineIntersect(x1, y1, x2, y2, w.x+w.w, w.y, w.x+w.w, w.y+w.h)) return false;
+                }
+                return true;
+            },
+
+            checkCollision: (x, y, size) => {
+                const px = x - size, py = y - size, pw = size * 2, ph = size * 2;
+                for (let w of game.map.walls) {
+                    if (px < w.x + w.w && px + pw > w.x && py < w.y + w.h && py + ph > w.y) return true;
+                }
+                return false;
+            },
+
+            getRandomSafePos: () => {
+                let x, y, safe = false, attempts = 0;
+                while (!safe && attempts < 100) {
+                    x = 50 + Math.random() * (game.map.w - 100);
+                    y = 50 + Math.random() * (game.map.h - 100);
+                    safe = !game.checkCollision(x, y, 20);
+                    attempts++;
+                }
+                return {x, y};
+            },
+
+            // --- WEBRTC SIGNALING ---
+            hostLobby: async () => {
+                try {
+                    const res = await fetch(`${API}/amongus/host`, { method: 'POST', credentials: 'include' });
+                    const data = await res.json();
+                    if(data.error) return alert(data.error);
+                    game.roomCode = data.roomCode;
+                    game.isHost = true;
+                    
+                    document.getElementById('startScreen').style.display = 'none';
+                    document.getElementById('matchmakingScreen').style.display = 'block';
+                    document.getElementById('playerList').innerHTML = `Dein Raumcode: <b style="color:var(--accent); font-size:20px;">${game.roomCode}</b><br>Warte auf Mitspieler...`;
+                    game.setupWebRTC();
+                } catch(e) { alert("Server nicht erreichbar."); }
+            },
+
+            joinLobby: async () => {
+                const code = prompt("Bitte 4-stelligen Raumcode eingeben:");
+                if(!code) return;
+
+                try {
+                    const res = await fetch(`${API}/amongus/join`, { 
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ roomCode: code }), credentials: 'include' 
+                    });
+                    const data = await res.json();
+                    if(data.error) return alert(data.error);
+
+                    game.roomCode = data.roomCode;
+                    game.isHost = false;
+                    
+                    document.getElementById('startScreen').style.display = 'none';
+                    document.getElementById('matchmakingScreen').style.display = 'block';
+                    document.getElementById('playerList').innerHTML = `Verbunden mit ${game.roomCode}. Verbindungsaufbau...`;
+                    game.setupWebRTC();
+                } catch(e) { alert("Server nicht erreichbar."); }
+            },
+
+            setupWebRTC: () => {
+                game.peerConnection = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+                game.iceCandidateQueue = []; // Queue beim Start leeren
+
+                // 1. Lokale ICE Candidates sammeln und an den Pi senden
+                game.peerConnection.onicecandidate = async (event) => {
+                    if (event.candidate) {
+                        await fetch(`${API}/amongus/signal`, {
+                            method: 'POST', headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ roomCode: game.roomCode, signal: { ice: event.candidate } }),
+                            credentials: 'include'
+                        });
+                    }
+                };
+
+                // 2. Data Channel Setup
+                if (game.isHost) {
+                    game.dataChannel = game.peerConnection.createDataChannel("gameData");
+                    game.setupDataChannel();
+                    
+                    // Host erstellt das Offer
+                    game.peerConnection.createOffer().then(async offer => {
+                        await game.peerConnection.setLocalDescription(offer);
+                        await fetch(`${API}/amongus/signal`, {
+                            method: 'POST', headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ roomCode: game.roomCode, signal: { sdp: game.peerConnection.localDescription } }),
+                            credentials: 'include'
+                        });
+                    });
+                } else {
+                    // Guest wartet auf den Data Channel vom Host
+                    game.peerConnection.ondatachannel = (event) => {
+                        game.dataChannel = event.channel;
+                        game.setupDataChannel();
+                    };
+                }
+
+                // 3. Polling Loop (Signale vom Pi abrufen)
+                game.pollInterval = setInterval(async () => {
+                    try {
+                        const res = await fetch(`${API}/amongus/signal/${game.roomCode}`, { credentials: 'include' });
+                        const data = await res.json();
+                        
+                        if (!data.signals) return;
+
+                        for (let signal of data.signals) {
+                            if (signal.sdp) {
+                                // SDP erhalten -> Remote Description setzen!
+                                await game.peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+                                
+                                // Wenn wir der Guest sind und ein Offer bekommen, antworten wir
+                                if (signal.sdp.type === 'offer') {
+                                    const answer = await game.peerConnection.createAnswer();
+                                    await game.peerConnection.setLocalDescription(answer);
+                                    await fetch(`${API}/amongus/signal`, {
+                                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify({ roomCode: game.roomCode, signal: { sdp: game.peerConnection.localDescription } }),
+                                        credentials: 'include'
+                                    });
+                                }
+
+                                // WICHTIG: Jetzt wo die RemoteDescription da ist, lassen wir alle wartenden ICE Candidates rein!
+                                while (game.iceCandidateQueue.length > 0) {
+                                    await game.peerConnection.addIceCandidate(game.iceCandidateQueue.shift());
+                                }
+
+                            } else if (signal.ice) {
+                                const candidate = new RTCIceCandidate(signal.ice);
+                                // Ist die RemoteDescription schon da?
+                                if (game.peerConnection.remoteDescription) {
+                                    // Ja -> Direkt hinzufügen
+                                    await game.peerConnection.addIceCandidate(candidate);
+                                } else {
+                                    // Nein -> Ins Wartezimmer damit!
+                                    game.iceCandidateQueue.push(candidate);
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Polling Fehler:", err);
+                    }
+                }, 2000);
+            },
+
+            setupDataChannel: () => {
+                game.dataChannel.onopen = () => {
+                    clearInterval(game.pollInterval); 
+                    document.getElementById('playerList').innerHTML += "<br>P2P Verbindung hergestellt! Starte Spiel...";
+                    document.getElementById('p2pStatus').innerText = "Modus: Online P2P";
+                    game.peer.isAlive = true;
+                    setTimeout(game.startGame, 1000);
+                };
+                
+                game.dataChannel.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (game.isHost) {
+                        if (data.type === 'guest_update') {
+                            game.peer.x = data.player.x; game.peer.y = data.player.y;
+                            game.peer.dx = data.player.dx; game.peer.isAlive = data.player.isAlive;
+                        }
+                        if (data.type === 'task_done') {
+                            game.tasksCompleted++;
+                            if(game.tasks[data.taskId]) game.tasks[data.taskId].active = false;
+                            document.getElementById('taskCount').innerText = game.tasksCompleted;
+                        }
+                        if (data.type === 'call_meeting') game.startMeeting(data.reporter);
+                    } else {
+                        if (data.type === 'host_update') {
+                            game.peer.x = data.hostPlayer.x; game.peer.y = data.hostPlayer.y;
+                            game.peer.dx = data.hostPlayer.dx; game.peer.isAlive = data.hostPlayer.isAlive;
+                            game.bots = data.bots; game.tasks = data.tasks;
+                            game.tasksCompleted = data.tasksCompleted; game.deadBodies = data.deadBodies;
+                            document.getElementById('taskCount').innerText = game.tasksCompleted;
+                        }
+                        if (data.type === 'game_setup') {
+                            game.player.isImpostor = data.guestIsImpostor;
+                            game.peer.isImpostor = data.hostIsImpostor;
+                            game.peer.name = data.hostName;
+                            if(game.player.isImpostor) {
+                                document.getElementById('taskCount').parentElement.innerHTML = '<span style="color:var(--accent)">Du bist der Impostor!</span>';
+                                document.getElementById('taskBtn').innerText = "KILL";
+                            }
+                        }
+                        if (data.type === 'call_meeting') game.startMeeting(data.reporter);
+                        if (data.type === 'game_over') game.endGame(data.title, data.reason);
+                    }
+                };
+            },
+
+            // --- GAMEPLAY & MEETINGS ---
+            startSolo: () => {
+                document.getElementById('startScreen').style.display = 'none';
+                game.isHost = true; 
+                game.peer.isAlive = false; 
+                game.startGame();
+            },
+
+            startGame: () => {
+                document.getElementById('matchmakingScreen').style.display = 'none';
+                document.getElementById('hud').style.display = 'block';
+                game.state = 'PLAYING';
+                game.tasksCompleted = 0; game.deadBodies = [];
+                document.getElementById('taskCount').innerText = "0";
+
+                const spawn = game.getRandomSafePos();
+                game.player.x = spawn.x; game.player.y = spawn.y;
+                game.player.isAlive = true;
+                
+                if (game.isHost || !game.dataChannel) {
+                    const maxRoll = game.dataChannel ? 8 : 6; 
+                    const impostorRoll = Math.floor(Math.random() * maxRoll); 
+                    
+                    game.player.isImpostor = (impostorRoll === 0);
+                    game.peer.isImpostor = (impostorRoll === 1);
+
+                    if(game.player.isImpostor) {
+                        document.getElementById('taskCount').parentElement.innerHTML = '<span style="color:var(--accent)">Du bist der Impostor!</span>';
+                        document.getElementById('taskBtn').innerText = "KILL";
+                    } else {
+                        document.getElementById('taskCount').parentElement.innerHTML = 'Tasks: <span id="taskCount" style="color:#fbc02d">0</span> / 5';
+                        document.getElementById('taskBtn').innerText = "USE";
+                    }
+
+                    const colors = ['#1e88e5', '#8e24aa', '#e53935', '#fdd835', '#8d6e63', '#00acc1'];
+                    game.bots = [];
+                    for(let i=0; i<6; i++) {
+                        const bSpawn = game.getRandomSafePos();
+                        game.bots.push({
+                            id: i, x: bSpawn.x, y: bSpawn.y, size: 14, isAlive: true,
+                            speed: 2 + Math.random(), color: colors[i],
+                            tx: bSpawn.x, ty: bSpawn.y,
+                            isImpostor: (impostorRoll === i + (game.dataChannel ? 2 : 1)),
+                            killCooldown: 0, stuckTimer: 0
+                        });
+                    }
+
+                    game.tasks = [];
+                    for(let i=0; i<game.totalTasks; i++) {
+                        const tSpawn = game.getRandomSafePos();
+                        game.tasks.push({ id: i, x: tSpawn.x, y: tSpawn.y, active: true });
+                    }
+
+                    if (game.dataChannel && game.dataChannel.readyState === 'open') {
+                        game.dataChannel.send(JSON.stringify({
+                            type: 'game_setup', hostIsImpostor: game.player.isImpostor,
+                            guestIsImpostor: game.peer.isImpostor, hostName: game.user ? game.user.username : 'Host'
+                        }));
+                    }
+                } else {
+                    game.dataChannel.send(JSON.stringify({
+                        type: 'guest_update', player: { x: game.player.x, y: game.player.y, dx: 0, isAlive: true }
+                    }));
+                }
+
+                game.running = true;
+                requestAnimationFrame(game.loop);
+            },
+
+            doTask: () => {
+                if (!game.player.isAlive || game.state !== 'PLAYING') return;
+
+                if (game.player.isImpostor) {
+                    if (game.player.killCooldown > 0) return;
+                    
+                    for (let b of game.bots) {
+                        if (b.isAlive && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) {
+                            b.isAlive = false;
+                            game.deadBodies.push({x: b.x, y: b.y, color: b.color});
+                            game.player.killCooldown = 300; 
+                            if(game.isHost || !game.dataChannel) game.checkWinCondition(); // FIX WIN BUG
+                            return;
+                        }
+                    }
+                    
+                    if (game.dataChannel && game.peer.isAlive && Math.hypot(game.player.x - game.peer.x, game.player.y - game.peer.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, game.peer.x, game.peer.y)) {
+                        game.peer.isAlive = false; 
+                        game.deadBodies.push({x: game.peer.x, y: game.peer.y, color: game.peer.color});
+                        game.player.killCooldown = 300;
+                        if(game.isHost) game.checkWinCondition();
+                    }
+                    return;
+                }
+
+                for (let i=0; i<game.tasks.length; i++) {
+                    let t = game.tasks[i];
+                    if (t.active && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y)) {
+                        t.active = false;
+                        game.tasksCompleted++;
+                        document.getElementById('taskCount').innerText = game.tasksCompleted;
+                        
+                        if (!game.isHost && game.dataChannel) game.dataChannel.send(JSON.stringify({ type: 'task_done', taskId: i }));
+                        if (game.isHost) game.checkWinCondition();
+                        break;
+                    }
+                }
+            },
+
+            checkWinCondition: () => {
+                if (!game.isHost) return;
+
+                if (game.tasksCompleted >= game.totalTasks) {
+                    game.sendGameOver("VICTORY", "Alle Tasks erledigt! Crewmates gewinnen.");
+                    return;
+                }
+
+                let livingCrewmates = 0;
+                let livingImpostors = 0;
+
+                if (game.player.isAlive) { game.player.isImpostor ? livingImpostors++ : livingCrewmates++; }
+                if (game.dataChannel && game.peer.isAlive) { game.peer.isImpostor ? livingImpostors++ : livingCrewmates++; }
+                for (let b of game.bots) {
+                    if (b.isAlive) { b.isImpostor ? livingImpostors++ : livingCrewmates++; }
+                }
+
+                if (livingImpostors >= livingCrewmates) {
+                    game.sendGameOver("DEFEAT", "Die Impostors haben gewonnen!");
+                } else if (livingImpostors === 0) {
+                    game.sendGameOver("VICTORY", "Alle Impostors wurden eliminiert!");
+                }
+            },
+
+            sendGameOver: (title, reason) => {
+                game.endGame(title, reason);
+                if (game.dataChannel && game.dataChannel.readyState === 'open') {
+                    // Guest kriegt das Gegenteil, wenn die Rollen unterschiedlich sind
+                    let guestTitle = title;
+                    if (game.player.isImpostor !== game.peer.isImpostor) {
+                        guestTitle = title === "VICTORY" ? "DEFEAT" : "VICTORY";
+                    }
+                    game.dataChannel.send(JSON.stringify({ type: 'game_over', title: guestTitle, reason: reason }));
+                }
+            },
+
+            reportBody: () => {
+                if (!game.player.isAlive || game.state !== 'PLAYING') return;
+                
+                // Prüfen ob wirklich eine Leiche da ist UND wir Sicht haben
+                let canReport = false;
+                for (let dead of game.deadBodies) {
+                    if (Math.hypot(game.player.x - dead.x, game.player.y - dead.y) < 100 && game.hasLineOfSight(game.player.x, game.player.y, dead.x, dead.y)) {
+                        canReport = true; break;
+                    }
+                }
+                if(!canReport) return;
+
+                const reporterName = game.user ? game.user.username : "Du";
+                game.startMeeting(reporterName);
+                if (game.dataChannel && game.dataChannel.readyState === 'open') {
+                    game.dataChannel.send(JSON.stringify({ type: 'call_meeting', reporter: reporterName }));
+                }
+            },
+
+            startMeeting: (reporterName) => {
+                game.state = 'MEETING';
+                game.player.dx = 0; game.player.dy = 0; 
+                
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('taskBtn').style.display = 'none';
+                document.getElementById('reportBtn').style.display = 'none';
+                document.getElementById('meetingScreen').style.display = 'flex';
+                document.getElementById('meetingReporter').innerText = `${reporterName} hat eine Leiche gefunden!`;
+
+                const list = document.getElementById('votingList');
+                list.innerHTML = '';
+
+                list.innerHTML += `
+                    <div class="player-vote-row ${!game.player.isAlive ? 'dead' : ''}">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:20px; height:20px; border-radius:50%; background:${game.player.color}"></div>
+                            <span>${game.user ? game.user.username : "Du"} ${game.player.isAlive ? '' : '☠️'}</span>
+                        </div>
+                        ${game.player.isAlive ? `<button class="vote-btn" onclick="game.castVote('player')">Vote</button>` : ''}
+                    </div>
+                `;
+
+                if (game.dataChannel) {
+                    list.innerHTML += `
+                        <div class="player-vote-row ${!game.peer.isAlive ? 'dead' : ''}">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:20px; height:20px; border-radius:50%; background:${game.peer.color}"></div>
+                                <span>${game.peer.name} ${game.peer.isAlive ? '' : '☠️'}</span>
+                            </div>
+                            ${game.player.isAlive && game.peer.isAlive ? `<button class="vote-btn" onclick="game.castVote('peer')">Vote</button>` : ''}
+                        </div>
+                    `;
+                }
+
+                game.bots.forEach((b, index) => {
+                    list.innerHTML += `
+                        <div class="player-vote-row ${!b.isAlive ? 'dead' : ''}">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:20px; height:20px; border-radius:50%; background:${b.color}"></div>
+                                <span>Bot_${index + 1} ${b.isAlive ? '' : '☠️'}</span>
+                            </div>
+                            ${game.player.isAlive && b.isAlive ? `<button class="vote-btn" onclick="game.castVote(${index})">Vote</button>` : ''}
+                        </div>
+                    `;
+                });
+            },
+
+            castVote: (targetId) => {
+                let votes = { 'skip': 0, 'player': 0, 'peer': 0 };
+                game.bots.forEach((b, i) => votes[i] = 0);
+                
+                if(game.player.isAlive) votes[targetId]++;
+
+                game.bots.forEach((b) => {
+                    if (b.isAlive) {
+                        let options = ['skip'];
+                        if(game.player.isAlive) options.push('player');
+                        if(game.dataChannel && game.peer.isAlive) options.push('peer');
+                        game.bots.forEach((ob, idx) => { if(ob.isAlive) options.push(idx); });
+                        votes[options[Math.floor(Math.random() * options.length)]]++;
+                    }
+                });
+
+                let maxVotes = 0, ejectedTarget = null, tie = false;
+
+                for (let [id, count] of Object.entries(votes)) {
+                    if (count > maxVotes) { maxVotes = count; ejectedTarget = id; tie = false; } 
+                    else if (count === maxVotes) { tie = true; }
+                }
+
+                document.getElementById('meetingScreen').style.display = 'none';
+
+                if (tie || ejectedTarget === 'skip') {
+                    alert("Niemand wurde rausgeworfen (Gleichstand oder Skip).");
+                    game.resumeGame();
+                } else {
+                    let ejectedName = "", wasImpostor = false;
+
+                    if (ejectedTarget === 'player') {
+                        game.player.isAlive = false; ejectedName = game.user ? game.user.username : "Du"; wasImpostor = game.player.isImpostor;
+                    } else if (ejectedTarget === 'peer') {
+                        game.peer.isAlive = false; ejectedName = game.peer.name; wasImpostor = game.peer.isImpostor;
+                    } else {
+                        const botIndex = parseInt(ejectedTarget);
+                        game.bots[botIndex].isAlive = false; ejectedName = `Bot_${botIndex + 1}`; wasImpostor = game.bots[botIndex].isImpostor;
+                    }
+
+                    alert(`${ejectedName} wurde rausgeworfen.\n${wasImpostor ? 'War Impostor!' : 'War KEIN Impostor.'}`);
+
+                    if (game.isHost) game.checkWinCondition();
+                    if (game.state !== 'OVER') game.resumeGame();
+                }
+            },
+
+            resumeGame: () => {
+                const centerSpawn = { x: game.map.w / 2, y: game.map.h / 2 };
+                
+                if (game.player.isAlive) { game.player.x = centerSpawn.x; game.player.y = centerSpawn.y; }
+                if (game.peer.isAlive) { game.peer.x = centerSpawn.x; game.peer.y = centerSpawn.y; }
+                
+                game.bots.forEach(b => {
+                    if (b.isAlive) {
+                        b.x = centerSpawn.x + (Math.random() * 200 - 100);
+                        b.y = centerSpawn.y + (Math.random() * 200 - 100);
+                        b.tx = b.x; b.ty = b.y;
+                    }
+                });
+
+                game.deadBodies = []; 
+                document.getElementById('hud').style.display = 'block';
+                game.state = 'PLAYING';
+            },
+
+            update: () => {
+                if (game.state !== 'PLAYING') return;
+
+                if (game.player.isAlive) {
+                    if (game.keys['ArrowUp'] || game.keys['KeyW']) game.player.dy = -game.player.speed;
+                    else if (game.keys['ArrowDown'] || game.keys['KeyS']) game.player.dy = game.player.speed;
+                    else if (!('ontouchstart' in window)) game.player.dy = 0; 
+
+                    if (game.keys['ArrowLeft'] || game.keys['KeyA']) game.player.dx = -game.player.speed;
+                    else if (game.keys['ArrowRight'] || game.keys['KeyD']) game.player.dx = game.player.speed;
+                    else if (!('ontouchstart' in window)) game.player.dx = 0;
+
+                    if (game.player.dx !== 0 && !game.checkCollision(game.player.x + game.player.dx, game.player.y, game.player.size)) game.player.x += game.player.dx;
+                    if (game.player.dy !== 0 && !game.checkCollision(game.player.x, game.player.y + game.player.dy, game.player.size)) game.player.y += game.player.dy;
+
+                    game.camera.x = game.player.x - canvas.width / 2;
+                    game.camera.y = game.player.y - canvas.height / 2;
+
+                    if (game.player.killCooldown > 0) game.player.killCooldown--;
+
+                    let showActionBtn = false, showReportBtn = false;
+
+                    for (let dead of game.deadBodies) {
+                        if (Math.hypot(game.player.x - dead.x, game.player.y - dead.y) < 100 && game.hasLineOfSight(game.player.x, game.player.y, dead.x, dead.y)) {
+                            showReportBtn = true; break;
+                        }
+                    }
+
+                    if (game.player.isImpostor) {
+                        for (let b of game.bots) {
+                            if (b.isAlive && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) showActionBtn = true;
+                        }
+                        if (game.dataChannel && game.peer.isAlive && Math.hypot(game.player.x - game.peer.x, game.player.y - game.peer.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, game.peer.x, game.peer.y)) {
+                            showActionBtn = true;
+                        }
+                        if(game.player.killCooldown > 0) showActionBtn = false;
+                    } else {
+                        for (let t of game.tasks) {
+                            if (t.active && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y)) showActionBtn = true;
+                        }
+                    }
+
+                    document.getElementById('taskBtn').style.display = showActionBtn ? 'block' : 'none';
+                    document.getElementById('taskBtn').style.opacity = (game.player.isImpostor && game.player.killCooldown > 0) ? '0.5' : '1';
+                    document.getElementById('reportBtn').style.display = showReportBtn ? 'block' : 'none';
+                    
+                    if (game.keys['Space'] && showActionBtn) game.doTask();
+                }
+
+                if (game.isHost || !game.dataChannel) {
+                    for (let b of game.bots) {
+                        if (!b.isAlive) continue;
+                        let moveX = 0, moveY = 0;
+
+                        if (b.isImpostor) {
+                            if (b.killCooldown > 0) b.killCooldown--;
+
+                            let target = null;
+                            let shortestDist = Infinity;
+                            
+                            const checkTarget = (t) => {
+                                if(t && t.isAlive && game.hasLineOfSight(b.x, b.y, t.x, t.y)) {
+                                    let dist = Math.hypot(t.x - b.x, t.y - b.y);
+                                    if (dist < shortestDist) { target = t; shortestDist = dist; }
+                                }
+                            };
+
+                            checkTarget(game.player);
+                            if(game.dataChannel) checkTarget(game.peer);
+                            for (let otherBot of game.bots) {
+                                if (!otherBot.isImpostor && otherBot.isAlive) checkTarget(otherBot);
+                            }
+
+                            if (shortestDist < 400 && target) { b.tx = target.x; b.ty = target.y; }
+
+                            if (shortestDist < b.size * 2.5 && b.killCooldown <= 0 && target) {
+                                target.isAlive = false;
+                                game.deadBodies.push({x: target.x, y: target.y, color: target.color});
+                                b.killCooldown = 400; 
+
+                                game.checkWinCondition();
+                                
+                                let bestVent = game.map.vents[0];
+                                let ventDist = Infinity;
+                                for(let v of game.map.vents) {
+                                    let d = Math.hypot(b.x - v.x, b.y - v.y);
+                                    if(d < ventDist) { bestVent = v; ventDist = d; }
+                                }
+                                const otherVents = game.map.vents.filter(v => v !== bestVent);
+                                const exitVent = otherVents[Math.floor(Math.random() * otherVents.length)];
+                                b.x = exitVent.x; b.y = exitVent.y;
+                                b.tx = exitVent.x; b.ty = exitVent.y;
+                            }
+                        }
+
+                        const angle = Math.atan2(b.ty - b.y, b.tx - b.x);
+                        moveX = Math.cos(angle) * b.speed;
+                        moveY = Math.sin(angle) * b.speed;
+
+                        let moved = false;
+                        if (!game.checkCollision(b.x + moveX, b.y, b.size)) { b.x += moveX; moved = true; }
+                        if (!game.checkCollision(b.x, b.y + moveY, b.size)) { b.y += moveY; moved = true; }
+
+                        if (!moved || Math.hypot(b.tx - b.x, b.ty - b.y) < 20) b.stuckTimer++;
+                        else b.stuckTimer = 0;
+
+                        if (b.stuckTimer > 30) {
+                            const newTarget = game.getRandomSafePos();
+                            b.tx = newTarget.x; b.ty = newTarget.y;
+                            b.stuckTimer = 0;
+                        }
+                    }
+                }
+
+                if (game.dataChannel && game.dataChannel.readyState === 'open') {
+                    const now = Date.now();
+                    if (now - game.lastSync > 50) {
+                        if (game.isHost) {
+                            game.dataChannel.send(JSON.stringify({
+                                type: 'host_update',
+                                hostPlayer: { x: game.player.x, y: game.player.y, dx: game.player.dx, isAlive: game.player.isAlive },
+                                bots: game.bots, tasks: game.tasks, tasksCompleted: game.tasksCompleted, deadBodies: game.deadBodies
+                            }));
+                        } else {
+                            game.dataChannel.send(JSON.stringify({
+                                type: 'guest_update',
+                                player: { x: game.player.x, y: game.player.y, dx: game.player.dx, isAlive: game.player.isAlive }
+                            }));
+                        }
+                        game.lastSync = now;
+                    }
+                }
+                game.frame++;
+            },
+
+            draw: () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                
+                let camX = game.camera.x;
+                let camY = game.camera.y;
+                if(!game.player.isAlive) ctx.globalAlpha = 0.6; 
+
+                ctx.translate(-camX, -camY);
+
+                // Floor
+                ctx.fillStyle = '#2c3338';
+                ctx.fillRect(0, 0, game.map.w, game.map.h);
+                
+                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                ctx.lineWidth = 1;
+                for(let i=0; i<game.map.w; i+=80) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, game.map.h); ctx.stroke(); }
+                for(let i=0; i<game.map.h; i+=80) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(game.map.w, i); ctx.stroke(); }
+
+                // Vents
+                ctx.fillStyle = '#333';
+                ctx.strokeStyle = '#000';
+                for(let v of game.map.vents) {
+                    if (game.hasLineOfSight(game.player.x, game.player.y, v.x, v.y)) {
+                        ctx.fillRect(v.x - 20, v.y - 10, 40, 20);
+                        ctx.strokeRect(v.x - 20, v.y - 10, 40, 20);
+                        ctx.beginPath(); ctx.moveTo(v.x - 15, v.y); ctx.lineTo(v.x + 15, v.y); ctx.stroke();
+                    }
+                }
+
+                // Wände
+                ctx.fillStyle = '#111';
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 4;
+                for (let w of game.map.walls) {
+                    ctx.fillRect(w.x, w.y, w.w, w.h);
+                    ctx.strokeRect(w.x, w.y, w.w, w.h);
+                }
+
+                // Leichen (nur wenn sichtbar)
+                for (let dead of game.deadBodies) {
+                    if (game.hasLineOfSight(game.player.x, game.player.y, dead.x, dead.y)) {
+                        ctx.fillStyle = dead.color;
+                        ctx.beginPath(); ctx.arc(dead.x, dead.y, 14, 0, Math.PI); ctx.fill();
+                        ctx.fillStyle = '#777'; 
+                        ctx.beginPath(); ctx.arc(dead.x, dead.y - 3, 5, 0, Math.PI*2); ctx.fill();
+                    }
+                }
+
+                // Tasks (nur für lebende Crewmates & sichtbar)
+                if (!game.player.isImpostor && game.player.isAlive) {
+                    for (let t of game.tasks) {
+                        if (t.active && game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y)) {
+                            ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
+                            ctx.beginPath(); ctx.arc(t.x, t.y, 70, 0, Math.PI*2); ctx.fill();
+                            ctx.fillStyle = '#fbc02d';
+                            ctx.fillRect(t.x - 15, t.y - 15, 30, 30);
+                            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(t.x - 15, t.y - 15, 30, 30);
+                        }
+                    }
+                }
+
+                // Lebende Bots
+                for (let b of game.bots) {
+                    if (b.isAlive && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) {
+                        game.drawCharacter(b.x, b.y, b.size, b.color, false, b.isImpostor);
+                    }
+                }
+
+                // Peer (Gegenspieler)
+                if (game.dataChannel && game.peer.isAlive && game.hasLineOfSight(game.player.x, game.player.y, game.peer.x, game.peer.y)) {
+                    game.drawCharacter(game.peer.x, game.peer.y, game.peer.size, game.peer.color, true, false); 
+                }
+
+                // Spieler (immer sichtbar)
+                if (game.player.isAlive) {
+                    game.drawCharacter(game.player.x, game.player.y, game.player.size, game.player.color, true, game.player.isImpostor);
+                }
+
+                ctx.restore();
+
+                // Sichtfeld / Fog of War (Flashlight Overlay)
+                ctx.save();
+                ctx.setTransform(1, 0, 0, 1, 0, 0); 
+                let cx = canvas.width / 2;
+                let cy = canvas.height / 2;
+                
+                // Wir malen einfach einen Verlauf von Durchsichtig zu Dunkel
+                let grad = ctx.createRadialGradient(cx, cy, 80, cx, cy, 500);
+                grad.addColorStop(0, "rgba(0,0,0,0)");      // Mitte: 100% durchsichtig (Spieler sichtbar!)
+                grad.addColorStop(0.4, "rgba(0,0,0,0.2)");  // Leichter Schatten am Rand der Lampe
+                grad.addColorStop(1, "rgba(0,0,0,0.75)");   // Rand des Bildschirms: Richtig dunkel
+                
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.restore();
+            },
+
+            drawCharacter: (x, y, size, color, isRealPlayer, isImpostor) => {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.beginPath(); ctx.ellipse(x, y + size - 2, size, size/2.5, 0, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = color;
+                ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.stroke();
+
+                ctx.fillStyle = '#90caf9';
+                let lookOffset = 0;
+                if(isRealPlayer) {
+                    if(x === game.player.x && game.player.dx > 0) lookOffset = 4;
+                    if(x === game.player.x && game.player.dx < 0) lookOffset = -4;
+                    if(x === game.peer.x && game.peer.dx > 0) lookOffset = 4;
+                    if(x === game.peer.x && game.peer.dx < 0) lookOffset = -4;
+                }
+                ctx.beginPath(); ctx.ellipse(x + lookOffset, y - 3, size*0.6, size*0.35, 0, 0, Math.PI*2); ctx.fill();
+                ctx.stroke();
+
+                if (isRealPlayer) {
+                    ctx.fillStyle = isImpostor ? '#ff0000' : '#fff';
+                    ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+                    ctx.shadowColor="black"; ctx.shadowBlur=3; ctx.lineWidth=2;
+                    let displayName = (x === game.player.x) ? (game.user ? game.user.username : 'You') : game.peer.name;
+                    ctx.fillText(displayName, x, y - size - 8);
+                    ctx.shadowBlur=0;
+                }
+            },
+
+            loop: () => {
+                if (!game.running) return;
+                game.update();
+                game.draw();
+                requestAnimationFrame(game.loop);
+            },
+
+            endGame: (title, reason) => {
+                game.running = false;
+                game.state = 'OVER';
+                
+                document.getElementById('taskBtn').style.display = 'none';
+                document.getElementById('reportBtn').style.display = 'none';
+                document.getElementById('gameOverScreen').style.display = 'block';
+                document.getElementById('uiLayer').style.pointerEvents = 'auto';
+                
+                const titleEl = document.getElementById('endTitle');
+                titleEl.innerText = title;
+                titleEl.style.color = title === "VICTORY" ? "#4CAF50" : "#d32f2f";
+                document.getElementById('endReason').innerText = reason;
+            }
+        };
+
+        document.getElementById('hostBtn').onclick = game.hostLobby;
+        document.getElementById('joinBtn').onclick = game.joinLobby;
+        document.getElementById('startBtn').onclick = game.startSolo;
+
+        game.init();
+    </script>
+</body>
+</html>
