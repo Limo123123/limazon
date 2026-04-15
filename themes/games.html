@@ -280,17 +280,9 @@
         }
 
         @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         /* Snake Settings Buttons */
@@ -311,10 +303,7 @@
             font-size: 13px;
         }
 
-        .size-btn:hover {
-            background: #444;
-        }
-
+        .size-btn:hover { background: #444; }
         .size-btn.active {
             background: var(--accent);
             color: #000;
@@ -351,6 +340,19 @@
             flex-direction: column;
         }
 
+        .lb-search-container {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .lb-search-container input {
+            flex: 1;
+            padding: 8px;
+            font-size: 13px;
+            margin: 0;
+        }
+
         .lb-list {
             overflow-y: auto;
             margin-top: 15px;
@@ -365,22 +367,9 @@
             font-size: 14px;
         }
 
-        .lb-row.gold {
-            color: #FFD700;
-            font-weight: bold;
-            border-bottom: 1px solid #FFD700;
-            background: rgba(255, 215, 0, 0.1);
-        }
-
-        .lb-row.silver {
-            color: #C0C0C0;
-            font-weight: bold;
-        }
-
-        .lb-row.bronze {
-            color: #CD7F32;
-            font-weight: bold;
-        }
+        .lb-row.gold { color: #FFD700; font-weight: bold; border-bottom: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); }
+        .lb-row.silver { color: #C0C0C0; font-weight: bold; }
+        .lb-row.bronze { color: #CD7F32; font-weight: bold; }
 
         input {
             width: 100%;
@@ -394,9 +383,7 @@
             outline: none;
         }
 
-        input:focus {
-            border-color: var(--accent);
-        }
+        input:focus { border-color: var(--accent); }
     </style>
 </head>
 
@@ -435,10 +422,12 @@
             <span onclick="document.getElementById('lbModal').style.display='none'"
                 style="position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;">&times;</span>
             <h2 style="color:#2196F3; margin:0;">🏆 Top Spieler</h2>
-            <div style="margin:10px 0;">
-                <input type="text" id="lbSearch" placeholder="Spieler suchen..." onkeyup="app.loadLb(1)"
-                    style="padding:8px; font-size:13px;">
+            
+            <div class="lb-search-container">
+                <input type="text" id="lbSearch" placeholder="Spieler suchen..." onkeyup="app.loadLb(1)">
+                <input type="text" id="lbSeed" placeholder="Seed? (leer = Normal)" onkeyup="app.loadLb(1)" title="Lass dies leer für die Standard-Rangliste!">
             </div>
+            
             <div id="lbContent" class="lb-list">Lade...</div>
             <div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
                 <button class="btn btn-rank" onclick="app.lbPageChange(-1)"
@@ -497,6 +486,7 @@
             games: [
                 { id: 'flappy', title: 'Flappy Limo', desc: 'Fliege durch die Röhren.', icon: '🐦', bgClass: 'flappy', isLive: true },
                 { id: 'snake', title: 'Crypto Snake', desc: 'Friss Coins. Großes Feld = Schneller!', icon: '🐍', bgClass: '', isLive: true },
+                { id: 'limway', title: 'Limway Surfers', desc: 'Weiche Zügen aus, Custom Seeds möglich!', icon: '🚙', bgClass: '', isLive: true, url: '/games/limway.html' },
                 { id: 'slots', title: 'Limo Slots', desc: 'Einarmiger Bandit.', icon: '🎰', isLive: true, url: '/games/slots.html' },
                 { id: 'memory', title: 'Card Memory', desc: 'Finde die Paare.', icon: '🎴', isLive: true, url: '/games/memory.html' }
             ],
@@ -539,7 +529,6 @@
                     const data = await res.json();
 
                     const playDisplay = document.getElementById('gamePlays');
-                    // FIX: Fallback, falls undefined
                     if (playDisplay) playDisplay.innerText = (data.remainingPlays !== undefined) ? data.remainingPlays : '-';
 
                     if (data.tokens !== undefined) {
@@ -548,7 +537,6 @@
                     }
                 } catch (e) {
                     console.error("Stats Error:", e);
-                    // Fallback bei Fehler
                     const playDisplay = document.getElementById('gamePlays');
                     if (playDisplay) playDisplay.innerText = '-';
                 }
@@ -611,7 +599,7 @@
                 const lbBtn = document.getElementById('lbBtn');
 
                 if (id === 'flappy') {
-                    flappyEngine.init(); // Wichtig: Init resettet Events
+                    flappyEngine.init(); 
                     title.innerHTML = "FLAPPY<br>LIMO";
                     sub.innerHTML = "1 Token = 3 Versuche";
                     snakeSet.style.display = 'none';
@@ -631,7 +619,7 @@
 
             closeGame: () => {
                 document.getElementById('gameOverlay').style.display = 'none';
-                flappyEngine.stop(); // Stop Funktion nutzen
+                flappyEngine.stop(); 
                 snakeEngine.running = false;
                 app.updateGameStats();
             },
@@ -641,6 +629,7 @@
                 app.lbCurrentGame = id;
                 app.lbPage = 1;
                 document.getElementById('lbSearch').value = "";
+                document.getElementById('lbSeed').value = ""; // Felder zurücksetzen
                 document.getElementById('lbModal').style.display = 'flex';
                 app.loadLb(1);
             },
@@ -650,13 +639,14 @@
                 const div = document.getElementById('lbContent');
                 div.innerHTML = "Lade...";
                 const search = document.getElementById('lbSearch').value;
+                const seed = document.getElementById('lbSeed').value.trim() || 'random';
 
                 try {
-                    const res = await fetch(`${API}/games/leaderboard/${app.lbCurrentGame}?page=${page}&limit=10&search=${encodeURIComponent(search)}`, { credentials: 'include' });
+                    const res = await fetch(`${API}/games/leaderboard/${app.lbCurrentGame}?page=${page}&limit=10&search=${encodeURIComponent(search)}&seed=${encodeURIComponent(seed)}`, { credentials: 'include' });
                     const data = await res.json();
 
                     if (!data.scores || data.scores.length === 0) {
-                        div.innerHTML = "<p style='text-align:center; color:#888'>Keine Scores.</p>";
+                        div.innerHTML = `<p style='text-align:center; color:#888'>Keine Scores gefunden${seed !== 'random' ? ' für diesen Seed' : ''}.</p>`;
                         document.getElementById('lbPageDisplay').innerText = "1 / 1";
                         return;
                     }
@@ -705,7 +695,8 @@
             if (score <= 0) return;
             await fetch(`${API}/games/submit-score`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gameId, score }), credentials: 'include'
+                body: JSON.stringify({ gameId, score, seed: 'random' }), // Falls es von anderen Spielen aus aufgerufen wird
+                credentials: 'include'
             });
         }
 
@@ -717,19 +708,16 @@
             ctx: document.getElementById('gameCanvas').getContext('2d'),
             running: false,
             gameState: 'START',
-            bird: { x: 50, y: 150, v: 0, r: 0 }, // r = rotation
+            bird: { x: 50, y: 150, v: 0, r: 0 }, 
             pipes: [],
             score: 0,
             frame: 0,
-
-            // Skalierungsfaktor für Konsistenz (PC vs Mobile)
             scale: 1,
 
             init: () => {
                 flappyEngine.resize();
                 window.addEventListener('resize', flappyEngine.resize);
                 flappyEngine.drawStatic();
-                // Events säubern, damit wir sie sauber neu setzen können
                 flappyEngine.removeEvents();
             },
 
@@ -747,16 +735,13 @@
             resize: () => {
                 flappyEngine.cvs.width = window.innerWidth;
                 flappyEngine.cvs.height = window.innerHeight;
-
-                // WICHTIG: Wir berechnen die Physik basierend auf einer Referenzhöhe (z.B. 800px).
-                // Das sorgt dafür, dass das Spiel auf allen Geräten gleich "schnell" wirkt.
                 flappyEngine.scale = window.innerHeight / 800;
             },
 
             reset: () => {
                 const h = flappyEngine.cvs.height;
                 flappyEngine.bird = {
-                    x: window.innerWidth * 0.1, // Vogel immer bei 10% der Breite
+                    x: window.innerWidth * 0.1, 
                     y: h / 2,
                     v: 0,
                     r: 0
@@ -777,32 +762,24 @@
                 flappyEngine.reset();
                 flappyEngine.running = true;
 
-                // Event Listener hinzufügen (nur einmal!)
-                flappyEngine.removeEvents(); // Zur Sicherheit erst entfernen
+                flappyEngine.removeEvents(); 
                 window.addEventListener('keydown', flappyEngine.handleInput);
-                // Passive: false erlaubt uns preventDefault() zu nutzen
                 window.addEventListener('touchstart', flappyEngine.handleInput, { passive: false });
                 window.addEventListener('mousedown', flappyEngine.handleInput);
 
                 flappyEngine.loop();
             },
 
-            // Einheitliche Input-Behandlung für alle Geräte
             handleInput: (e) => {
-                // Verhindert Scrollen oder Zoomen bei Touch
                 if (e.type === 'touchstart') e.preventDefault();
-                // Verhindert Key-Repeat (Gedrückthalten fliegt nicht nach unten)
                 if (e.type === 'keydown' && e.repeat) return;
-                // Spacebar Check
                 if (e.type === 'keydown' && e.code !== 'Space') return;
 
                 if (!flappyEngine.running) return;
 
-                // Start aus dem Schweben
                 if (flappyEngine.gameState === 'START') {
                     flappyEngine.gameState = 'PLAYING';
                     document.getElementById('tapMsg').style.display = 'none';
-                    // Erster Sprung
                     flappyEngine.jump();
                     return;
                 }
@@ -813,7 +790,6 @@
             },
 
             jump: () => {
-                // Sprungkraft skaliert mit der Höhe!
                 flappyEngine.bird.v = -8 * flappyEngine.scale;
             },
 
@@ -826,28 +802,20 @@
 
             update: () => {
                 const h = flappyEngine.cvs.height;
-                const s = flappyEngine.scale; // Kurzform für Skalierung
+                const s = flappyEngine.scale; 
 
-                // Schwebe-Modus
                 if (flappyEngine.gameState === 'START') {
                     flappyEngine.bird.y = (h / 2) + Math.sin(Date.now() / 300) * (10 * s);
                     flappyEngine.bird.r = 0;
                     return;
                 }
 
-                // Physik
-                const gravity = 0.35 * s; // Schwerkraft skaliert
+                const gravity = 0.35 * s; 
                 flappyEngine.bird.v += gravity;
                 flappyEngine.bird.y += flappyEngine.bird.v;
-
-                // Rotation basierend auf Geschwindigkeit
                 flappyEngine.bird.r = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (flappyEngine.bird.v * 0.1)));
 
-                // Röhren Spawnen (Abstand basiert auf Höhe/Skalierung, nicht Zeit)
-                // Wir spawnen eine Röhre alle X Pixel, die wir uns "bewegt" haben, simuliert durch Frames
-                // Rohrabstand ca alle 1800ms bei 60fps, aber skaliert
                 if (flappyEngine.frame % 100 === 0) {
-                    // Gap ist fest basierend auf Scale, damit es fair bleibt
                     const gap = 190 * s;
                     const minPos = 100 * s;
                     const maxPos = h - minPos - gap;
@@ -860,33 +828,26 @@
                     });
                 }
 
-                // Röhren Bewegen & Kollision
-                const birdSize = 25 * s; // Vogelgröße skaliert
-                const pipeSpeed = 5 * s; // Geschwindigkeit skaliert (WICHTIG!)
-                const pipeWidth = 70 * s; // Röhrenbreite skaliert
+                const birdSize = 25 * s; 
+                const pipeSpeed = 5 * s; 
+                const pipeWidth = 70 * s; 
 
                 flappyEngine.pipes.forEach(p => {
-                    p.x -= pipeSpeed; // Konstante Geschwindigkeit auf allen Geräten!
+                    p.x -= pipeSpeed; 
 
-                    // Hitbox Check (Etwas verzeihender: birdSize * 0.8)
                     const hitX = flappyEngine.bird.x + birdSize * 0.6 > p.x && flappyEngine.bird.x - birdSize * 0.6 < p.x + pipeWidth;
                     const hitY = flappyEngine.bird.y - birdSize * 0.6 < p.y || flappyEngine.bird.y + birdSize * 0.6 > p.y + p.gap;
 
                     if (hitX && hitY) flappyEngine.over();
 
-                    // Score
                     if (p.x + pipeWidth < flappyEngine.bird.x && !p.passed) {
                         flappyEngine.score++;
                         p.passed = true;
                     }
                 });
 
-                // Boden/Decke Kollision
                 if (flappyEngine.bird.y + birdSize > h || flappyEngine.bird.y - birdSize < 0) flappyEngine.over();
-
-                // Röhren löschen
                 flappyEngine.pipes = flappyEngine.pipes.filter(p => p.x > -pipeWidth * 2);
-
                 flappyEngine.frame++;
             },
 
@@ -896,66 +857,53 @@
                 const h = flappyEngine.cvs.height;
                 const s = flappyEngine.scale;
 
-                // Hintergrund
                 ctx.fillStyle = "#70c5ce";
                 ctx.fillRect(0, 0, w, h);
 
-                // Röhren
                 const pipeWidth = 70 * s;
                 ctx.fillStyle = "#2E7D32";
 
                 flappyEngine.pipes.forEach(p => {
-                    // Oberes Rohr
                     ctx.fillRect(p.x, 0, pipeWidth, p.y);
-                    // Unteres Rohr
                     ctx.fillRect(p.x, p.y + p.gap, pipeWidth, h);
 
-                    // Kappen (Deko)
                     const capH = 30 * s;
                     const capW = pipeWidth + (10 * s);
-                    ctx.fillStyle = "#1B5E20"; // Dunkler Rand
-                    ctx.fillRect(p.x - (5 * s), p.y - capH, capW, capH); // Kappe oben
-                    ctx.fillRect(p.x - (5 * s), p.y + p.gap, capW, capH); // Kappe unten
+                    ctx.fillStyle = "#1B5E20"; 
+                    ctx.fillRect(p.x - (5 * s), p.y - capH, capW, capH); 
+                    ctx.fillRect(p.x - (5 * s), p.y + p.gap, capW, capH); 
 
-                    // Highlights
-                    ctx.fillStyle = "#4CAF50"; // Hellere Farbe zurück
-                    ctx.fillRect(p.x + (5 * s), 0, pipeWidth * 0.1, p.y); // Glanz oben
-                    ctx.fillRect(p.x + (5 * s), p.y + p.gap, pipeWidth * 0.1, h); // Glanz unten
+                    ctx.fillStyle = "#4CAF50"; 
+                    ctx.fillRect(p.x + (5 * s), 0, pipeWidth * 0.1, p.y); 
+                    ctx.fillRect(p.x + (5 * s), p.y + p.gap, pipeWidth * 0.1, h); 
 
-                    ctx.fillStyle = "#2E7D32"; // Reset für nächstes Rohr
+                    ctx.fillStyle = "#2E7D32"; 
                 });
 
-                // Boden
                 const groundH = 50 * s;
                 ctx.fillStyle = "#ded895";
                 ctx.fillRect(0, h - groundH, w, groundH);
-                // Graslinie
                 ctx.fillStyle = "#73bf2e";
                 ctx.fillRect(0, h - groundH, w, 10 * s);
 
-                // Vogel
                 ctx.save();
                 ctx.translate(flappyEngine.bird.x, flappyEngine.bird.y);
                 ctx.rotate(flappyEngine.bird.r);
 
                 const bSize = 25 * s;
 
-                // Körper
                 ctx.fillStyle = "#FFD700";
                 ctx.beginPath(); ctx.arc(0, 0, bSize, 0, Math.PI * 2); ctx.fill();
-                // Rand
                 ctx.strokeStyle = "#000";
                 ctx.lineWidth = 2 * s;
                 ctx.stroke();
 
-                // Auge
                 ctx.fillStyle = "#fff";
                 ctx.beginPath(); ctx.arc(bSize * 0.4, -bSize * 0.4, bSize * 0.35, 0, Math.PI * 2); ctx.fill();
-                ctx.stroke(); // Augenrand
+                ctx.stroke(); 
                 ctx.fillStyle = "#000";
                 ctx.beginPath(); ctx.arc(bSize * 0.5, -bSize * 0.4, bSize * 0.1, 0, Math.PI * 2); ctx.fill();
 
-                // Schnabel
                 ctx.fillStyle = "#f44336";
                 ctx.beginPath();
                 ctx.moveTo(bSize * 0.5, bSize * 0.1);
@@ -964,7 +912,6 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Flügel (simuliert durch Kreisbogen)
                 ctx.fillStyle = "#FBC02D";
                 ctx.beginPath();
                 ctx.arc(-bSize * 0.2, bSize * 0.1, bSize * 0.5, 0, Math.PI, false);
@@ -973,7 +920,6 @@
 
                 ctx.restore();
 
-                // Score
                 ctx.fillStyle = "white";
                 ctx.font = `bold ${60 * s}px 'Segoe UI', sans-serif`;
                 ctx.textAlign = "center";
@@ -1006,14 +952,13 @@
             tileCount: 20,
             tileSize: 0,
             gameSpeed: 100,
-            lastRenderTime: 0, // Für den neuen Loop
+            lastRenderTime: 0, 
 
             snake: [], apple: {}, vel: { x: 0, y: 0 }, score: 0,
 
             init: () => {
                 snakeEngine.resize();
                 snakeEngine.drawStatic();
-                // Event Listener säubern
                 window.onkeydown = null; window.ontouchstart = null; window.onmousedown = null; window.ontouchmove = null;
             },
 
@@ -1021,18 +966,9 @@
                 document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
 
-                if (s === 'small') {
-                    snakeEngine.tileCount = 15;
-                    snakeEngine.gameSpeed = 120;
-                }
-                if (s === 'medium') {
-                    snakeEngine.tileCount = 25;
-                    snakeEngine.gameSpeed = 90;
-                }
-                if (s === 'large') {
-                    snakeEngine.tileCount = 40;
-                    snakeEngine.gameSpeed = 60;
-                }
+                if (s === 'small') { snakeEngine.tileCount = 15; snakeEngine.gameSpeed = 120; }
+                if (s === 'medium') { snakeEngine.tileCount = 25; snakeEngine.gameSpeed = 90; }
+                if (s === 'large') { snakeEngine.tileCount = 40; snakeEngine.gameSpeed = 60; }
             },
 
             resize: () => {
@@ -1064,7 +1000,6 @@
                 snakeEngine.resize();
                 snakeEngine.running = true;
                 snakeEngine.inputs();
-                // Start des Loops
                 window.requestAnimationFrame(snakeEngine.loop);
             },
 
@@ -1078,7 +1013,6 @@
                 };
 
                 window.onkeydown = (e) => {
-                    // Verhindert Scrollen mit Pfeiltasten
                     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
                         e.preventDefault();
                     }
@@ -1090,16 +1024,12 @@
                     }
                 };
 
-                // Touch Swipe Logic
                 let tsX = 0, tsY = 0;
-
-                // WICHTIG: preventDefault bei touchstart/move verhindert Browser-Reload
                 window.ontouchstart = (e) => {
                     tsX = e.changedTouches[0].screenX;
                     tsY = e.changedTouches[0].screenY;
                 };
 
-                // Verhindert das Ziehen der Seite
                 window.addEventListener('touchmove', (e) => {
                     if (snakeEngine.running) e.preventDefault();
                 }, { passive: false });
@@ -1109,7 +1039,6 @@
                     let dX = e.changedTouches[0].screenX - tsX;
                     let dY = e.changedTouches[0].screenY - tsY;
 
-                    // Schwellenwert für Swipe, damit nicht jedes Tippen zählt
                     if (Math.abs(dX) < 30 && Math.abs(dY) < 30) return;
 
                     if (Math.abs(dX) > Math.abs(dY)) {
@@ -1120,7 +1049,6 @@
                 };
             },
 
-            // NEUER LOOP: Delta Time basierend (Kein Flackern mehr)
             loop: (currentTime) => {
                 if (!snakeEngine.running) return;
 
@@ -1140,19 +1068,16 @@
 
                 const head = { x: snakeEngine.snake[0].x + snakeEngine.vel.x, y: snakeEngine.snake[0].y + snakeEngine.vel.y };
 
-                // 1. Wand Kollision
                 if (head.x < 0 || head.x >= snakeEngine.tileCount || head.y < 0 || head.y >= snakeEngine.tileCount) {
                     snakeEngine.over(); return;
                 }
 
-                // 2. Selbst Kollision
                 for (let t of snakeEngine.snake) {
                     if (head.x === t.x && head.y === t.y) { snakeEngine.over(); return; }
                 }
 
                 snakeEngine.snake.unshift(head);
 
-                // 3. Essen
                 if (head.x === snakeEngine.apple.x && head.y === snakeEngine.apple.y) {
                     snakeEngine.score++;
                     if (snakeEngine.snake.length >= snakeEngine.tileCount * snakeEngine.tileCount) {
@@ -1177,7 +1102,6 @@
 
             draw: () => {
                 const ctx = snakeEngine.ctx; const cs = snakeEngine.tileSize;
-                // Canvas komplett reinigen verhindert Artefakte
                 ctx.clearRect(0, 0, snakeEngine.cvs.width, snakeEngine.cvs.height);
                 ctx.fillStyle = "#111"; ctx.fillRect(0, 0, snakeEngine.cvs.width, snakeEngine.cvs.height);
 
@@ -1226,8 +1150,4 @@
         app.init();
     </script>
 </body>
-
-</html>
-</body>
-
 </html>

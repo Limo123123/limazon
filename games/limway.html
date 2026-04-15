@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limway Surfers</title>
+    <style>
+        :root { --bg-color: #121212; --accent: #ff9800; --text-main: #fff; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-main); overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent; display: flex; flex-direction: column; height: 100vh; }
+        header { background: #1f1f1f; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; z-index: 50; }
+        .back-btn { color: var(--text-main); text-decoration: none; font-size: 14px; font-weight: bold; background: #333; padding: 5px 15px; border-radius: 5px; border: 1px solid #444; transition: background 0.2s; }
+        .back-btn:hover { background: #444; }
+        .stats-panel { display: flex; gap: 15px; font-weight: bold; font-size: 14px; }
+        .badge { background: #333; padding: 5px 10px; border-radius: 15px; border: 1px solid #444; color: var(--accent); }
+        #game-container { flex: 1; position: relative; background: #1a1a1a; display: flex; justify-content: center; align-items: center; }
+        canvas { display: block; width: 100%; height: 100%; object-fit: cover; touch-action: none; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+        .overlay h1 { font-size: 45px; margin: 0 0 10px 0; color: var(--accent); text-transform: uppercase; text-shadow: 3px 3px 0px #000; text-align: center; }
+        .overlay p { color: #ddd; text-align: center; margin-bottom: 25px; font-size: 16px; max-width: 320px; line-height: 1.5; }
+        .btn { background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: 2px solid #1B5E20; padding: 15px 35px; font-size: 20px; font-weight: 900; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 0 #1B5E20, 0 10px 10px rgba(0,0,0,0.5); transition: all 0.1s; text-transform: uppercase; }
+        .btn:active { transform: translateY(6px); box-shadow: 0 0 0 #1B5E20, 0 4px 4px rgba(0,0,0,0.5); }
+        .btn:disabled { background: #555; border-color: #333; box-shadow: none; transform: none; cursor: not-allowed; }
+        .score-display { position: absolute; top: 20px; width: 100%; text-align: center; font-size: 40px; font-weight: 900; color: white; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 10; pointer-events: none; }
+        #powerup-ui { display: none; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.7); padding: 10px 20px; border-radius: 30px; border: 2px solid #fff; z-index: 20; align-items: center; gap: 10px; }
+        #powerup-icon { font-size: 24px; }
+        #powerup-bar-container { width: 150px; height: 10px; background: #333; border-radius: 5px; overflow: hidden; }
+        #powerup-bar { width: 100%; height: 100%; background: #ff9800; transition: width 0.1s linear; }
+        
+        .seed-input { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 15px; border-radius: 8px; outline: none; text-align: center; width: 150px; font-weight: bold; font-family: monospace; margin-bottom: 20px; }
+        .seed-input::placeholder { color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/themes/games.html" class="back-btn">⬅ Zurück</a>
+        <div class="stats-panel">
+            <div class="badge" id="token-display">🪙 Lade...</div>
+            <div class="badge" style="color: white;">🎮 <span id="plays-display">-</span></div>
+        </div>
+    </header>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div class="score-display" id="hud-score" style="display: none;">0</div>
+
+        <button id="stopRunBtn" onclick="manualGameOver()" style="display: none; position: absolute; top: 20px; right: 20px; background: #f44336; color: white; border: 2px solid #b71c1c; padding: 8px 15px; font-size: 16px; font-weight: bold; border-radius: 8px; z-index: 20; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4);">🛑 Stopp</button>
+        
+        <div id="powerup-ui">
+            <span id="powerup-icon">🚀</span>
+            <div id="powerup-bar-container"><div id="powerup-bar"></div></div>
+        </div>
+
+        <div id="startScreen" class="overlay">
+            <h1>Limway Surfers</h1>
+            <p>Weiche aus, spring auf Züge und schnapp dir Power-Ups!<br><br><b>Steuerung:</b><br>Wische L/R oder A/D zum Lenken.<br>Wische HOCH oder W/Pfeil-Hoch zum Springen.</p>
+            
+            <input type="text" id="game-seed" class="seed-input" placeholder="Custom Seed?">
+            
+            <button class="btn" id="startBtn" onclick="startGame()">Start (1 Token)</button>
+        </div>
+
+        <div id="gameOverScreen" class="overlay" style="display: none;">
+            <h1 style="color: #ff5252;">CRASH!</h1>
+            <p style="font-size: 28px; color: white; font-weight: bold; margin-bottom: 10px;">Score: <span id="finalScore">0</span></p>
+            <p id="save-status" style="color: var(--accent); margin-bottom: 20px; font-weight: bold;">Speichere Highscore...</p>
+            <button class="btn" id="restartBtn" onclick="startGame()" style="display: none;">Nochmal</button>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://api.limazon.v6.rocks/api';
+        const fetchOpts = { credentials: 'include' };
+
+        // --- SEED GENERATOR ---
+        function mulberry32(a) {
+            return function() {
+              var t = a += 0x6D2B79F5;
+              t = Math.imul(t ^ t >>> 15, t | 1);
+              t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+              return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            }
+        }
+        function xmur3(str) {
+            let h = 1779033703 ^ str.length;
+            for(let i = 0; i < str.length; i++) {
+                h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+                h = h << 13 | h >>> 19;
+            }
+            return function() {
+                h = Math.imul(h ^ (h >>> 16), 2246822507);
+                h = Math.imul(h ^ (h >>> 13), 3266489909);
+                return (h ^= h >>> 16) >>> 0;
+            }
+        }
+
+        let currentSeedString = 'random'; // Speichert, welcher Seed gerade gespielt wird
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API}/games/status`, fetchOpts);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('token-display').innerText = `🪙 ${data.tokens}`;
+                    document.getElementById('plays-display').innerText = data.gamePlays?.limway || 0;
+                }
+            } catch (e) {}
+        }
+
+        async function startGameSession() {
+            const btn = document.getElementById('startBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            btn.disabled = true; restartBtn.disabled = true;
+
+            try {
+                const res = await fetch(`${API}/games/start`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameId: 'limway' }), ...fetchOpts
+                });
+                const data = await res.json();
+                if (!res.ok) { 
+                    alert(data.error || "Fehler beim Starten."); 
+                    btn.disabled = false; restartBtn.disabled = false;
+                    return false; 
+                }
+                
+                document.getElementById('plays-display').innerText = data.remainingPlays;
+                loadStats();
+                return true;
+            } catch (e) { 
+                btn.disabled = false; restartBtn.disabled = false;
+                return false; 
+            }
+        }
+
+        async function submitScore(score) {
+            const statusText = document.getElementById('save-status');
+            statusText.innerText = "Speichere Highscore...";
+            statusText.style.display = 'block';
+            document.getElementById('restartBtn').style.display = 'none';
+
+            if (score > 0) {
+                try {
+                    await fetch(`${API}/games/submit-score`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        // NEU: Den Seed mitsenden!
+                        body: JSON.stringify({ gameId: 'limway', score: score, seed: currentSeedString }), 
+                        ...fetchOpts
+                    });
+                    statusText.innerText = "Highscore gesichert!";
+                } catch (e) {
+                    statusText.innerText = "Fehler beim Speichern.";
+                }
+            } else {
+                statusText.style.display = 'none';
+            }
+            
+            document.getElementById('restartBtn').style.display = 'block';
+            document.getElementById('restartBtn').disabled = false;
+        }
+
+        // --- GAME ENGINE ---
+        const cvs = document.getElementById('gameCanvas');
+        const ctx = cvs.getContext('2d');
+        
+        let engine = {
+            running: false,
+            score: 0,
+            baseSpeed: 0,
+            currentSpeed: 0,
+            frameCount: 0,
+            scale: 1,
+            
+            lanes: [], 
+            laneWidth: 0,
+            currentLane: 1, 
+            
+            player: { y: 0, width: 0, height: 0, visualX: 0, z: 0, vz: 0, baseZ: 0 },
+            obstacles: [],
+            coins: [],
+            powerups: [],
+            scenery: [],
+            roadMarks: [], 
+            
+            activePowerup: null,
+            powerupTimer: 0,
+            powerupMaxTime: 600, 
+            rng: Math.random, // Standard Zufall
+            
+            touchStartX: 0,
+            touchStartY: 0,
+            animationFrameId: null
+        };
+
+        function resize() {
+            cvs.width = cvs.parentElement.clientWidth;
+            cvs.height = cvs.parentElement.clientHeight;
+            engine.scale = cvs.height / 800;
+            
+            const w = cvs.width;
+            engine.laneWidth = Math.min(w / 3.5, 120 * engine.scale);
+            const centerX = w / 2;
+            
+            engine.lanes = [centerX - engine.laneWidth, centerX, centerX + engine.laneWidth];
+            engine.player.width = engine.laneWidth * 0.65;
+            engine.player.height = engine.player.width * 1.8;
+            engine.player.y = cvs.height - engine.player.height - (50 * engine.scale);
+            
+            if (!engine.running) {
+                engine.player.visualX = engine.lanes[1];
+                drawStatic();
+            }
+        }
+
+        function drawLimo(x, y, z, w, h) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            const shadowScale = Math.max(0.3, 1 - (z / (300 * engine.scale)));
+            ctx.fillStyle = "rgba(0,0,0,0.4)";
+            ctx.beginPath(); ctx.ellipse(0, h/2 + 5, (w/1.5) * shadowScale, (h/2) * shadowScale, 0, 0, Math.PI*2); ctx.fill();
+
+            ctx.translate(0, -z);
+
+            if (engine.activePowerup === 'jetpack') {
+                ctx.fillStyle = "#ff5722";
+                ctx.beginPath();
+                ctx.moveTo(-w/3, h/2);
+                ctx.lineTo(-w/4, h/2 + 20 * engine.scale + Math.random() * 20);
+                ctx.lineTo(-w/6, h/2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(w/3, h/2);
+                ctx.lineTo(w/4, h/2 + 20 * engine.scale + Math.random() * 20);
+                ctx.lineTo(w/6, h/2);
+                ctx.fill();
+            }
+
+            const grad = ctx.createLinearGradient(-w/2, 0, w/2, 0);
+            grad.addColorStop(0, "#1a237e"); grad.addColorStop(0.5, "#3949ab"); grad.addColorStop(1, "#1a237e");
+            
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 10 * engine.scale); ctx.fill();
+            
+            ctx.fillStyle = "#80deea";
+            ctx.beginPath(); ctx.roundRect(-w/2.5, -h/3, w*0.8, h*0.2, 5 * engine.scale); ctx.fill();
+            ctx.beginPath(); ctx.roundRect(-w/2.5, h/4, w*0.8, h*0.15, 3 * engine.scale); ctx.fill();
+            
+            ctx.fillStyle = "#fff59d";
+            ctx.beginPath(); ctx.arc(-w/2.5, -h/2.2, w*0.15, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(w/2.5, -h/2.2, w*0.15, 0, Math.PI*2); ctx.fill();
+
+            ctx.fillStyle = "#f44336";
+            ctx.fillRect(-w/2.2, h/2.2, w*0.25, h*0.08);
+            ctx.fillRect(w/2.2 - w*0.25, h/2.2, w*0.25, h*0.08);
+
+            if (engine.activePowerup === 'boots') {
+                ctx.fillStyle = "#00e5ff"; ctx.shadowColor = "#00e5ff"; ctx.shadowBlur = 10;
+                ctx.fillRect(-w/2 - 2, -h/3, 4, h/4); ctx.fillRect(w/2 - 2, -h/3, 4, h/4);
+                ctx.fillRect(-w/2 - 2, h/4, 4, h/4); ctx.fillRect(w/2 - 2, h/4, 4, h/4);
+                ctx.shadowBlur = 0;
+            }
+            ctx.restore();
+        }
+
+        function drawTrain(x, y, w, l, h) {
+            ctx.save(); ctx.translate(x, y);
+            ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(-w/2 + 8, 8, w, l);
+            ctx.fillStyle = "#e53935"; ctx.fillRect(-w/2, 0, w, l);
+            ctx.fillStyle = "#ef5350"; ctx.fillRect(-w/2 + 5, -h, w - 10, l);
+            ctx.fillStyle = "#80deea"; ctx.fillRect(-w/2 + 10, l - 15, w - 20, 10);
+            ctx.fillStyle = "#b71c1c";
+            for(let i=0; i<l; i+=40 * engine.scale) ctx.fillRect(-w/2 + 10, -h + i, w - 20, 5 * engine.scale);
+            ctx.restore();
+        }
+
+        function drawRamp(x, y, w, l, h) {
+            ctx.save(); ctx.translate(x, y);
+            ctx.fillStyle = "rgba(0,0,0,0.4)";
+            ctx.beginPath(); ctx.moveTo(-w/2 + 5, l + 5); ctx.lineTo(w/2 + 5, l + 5); ctx.lineTo(w/2, 5); ctx.lineTo(-w/2, 5); ctx.fill();
+            ctx.fillStyle = "#5d4037";
+            ctx.beginPath(); ctx.moveTo(-w/2, l); ctx.lineTo(w/2, l); ctx.lineTo(w/2 - 5, 0); ctx.lineTo(-w/2 + 5, 0); ctx.fill();
+            ctx.fillStyle = "#3e2723";
+            for(let i=0; i<l; i+=25 * engine.scale) ctx.fillRect(-w/2 + 5, i, w - 10, 4 * engine.scale);
+            ctx.restore();
+        }
+
+        function drawBarrier(x, y, w) {
+            ctx.save(); ctx.translate(x, y); const h = w * 0.4;
+            ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.fillRect(-w/2 + 5, -h/2 + 5, w, h);
+            ctx.fillStyle = "#ff9800"; ctx.fillRect(-w/2, -h/2, w, h);
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.moveTo(-w/2, -h/2); ctx.lineTo(-w/4, -h/2); ctx.lineTo(-w/2, -h/4); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(0, -h/2); ctx.lineTo(w/2, -h/2); ctx.lineTo(-w/2, h/2); ctx.lineTo(-w/2, h/4); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(w/4, h/2); ctx.lineTo(w/2, h/2); ctx.lineTo(w/2, h/4); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawCoin(x, y, radius, z) {
+            ctx.save(); ctx.translate(x, y);
+            ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.arc(0, 5, radius * 0.8, 0, Math.PI*2); ctx.fill();
+            ctx.translate(0, -z);
+            const grad = ctx.createRadialGradient(0, 0, radius*0.2, 0, 0, radius);
+            grad.addColorStop(0, "#fff59d"); grad.addColorStop(0.7, "#ffb300"); grad.addColorStop(1, "#f57f17");
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI*2); ctx.fill();
+            ctx.lineWidth = 2 * engine.scale; ctx.strokeStyle = "#f57f17"; ctx.stroke();
+            ctx.fillStyle = "#e65100"; ctx.font = `bold ${radius * 1.2}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("L", 0, radius * 0.1);
+            ctx.restore();
+        }
+
+        function drawPowerup(x, y, radius, type, z) {
+            ctx.save(); ctx.translate(x, y);
+            ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.arc(0, 5, radius * 0.8, 0, Math.PI*2); ctx.fill();
+            ctx.translate(0, -z);
+            ctx.shadowColor = type === 'jetpack' ? '#ff5722' : '#00e5ff'; ctx.shadowBlur = 15;
+            ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+            ctx.font = `${radius * 1.2}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(type === 'jetpack' ? '🚀' : '🥾', 0, radius * 0.1);
+            ctx.restore();
+        }
+
+        function drawSceneryObj(x, y, type, s) {
+            ctx.save(); ctx.translate(x, y);
+            if (type === 'tree') {
+                ctx.fillStyle = "rgba(0,0,0,0.4)"; ctx.beginPath(); ctx.ellipse(0, 0, 30*s, 15*s, 0, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#5d4037"; ctx.fillRect(-5*s, -40*s, 10*s, 40*s);
+                ctx.fillStyle = "#2e7d32";
+                ctx.beginPath(); ctx.arc(0, -50*s, 30*s, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(-15*s, -30*s, 20*s, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(15*s, -30*s, 20*s, 0, Math.PI*2); ctx.fill();
+            } else if (type === 'building') {
+                ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.beginPath(); ctx.ellipse(0, 0, 45*s, 15*s, 0, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#78909c"; ctx.fillRect(-30*s, -150*s, 60*s, 150*s);
+                ctx.fillStyle = "#fff";
+                for(let i=0; i<3; i++) {
+                    for(let j=0; j<5; j++) { ctx.fillRect(-20*s + (i*15*s), -140*s + (j*25*s), 10*s, 15*s); }
+                }
+            }
+            ctx.restore();
+        }
+
+        function drawStatic() {
+            const w = cvs.width; const h = cvs.height;
+            ctx.fillStyle = "#4caf50"; ctx.fillRect(0, 0, w, h);
+            const roadW = engine.laneWidth * 3.2; const roadX = (w - roadW) / 2;
+            const roadGrad = ctx.createLinearGradient(roadX, 0, roadX + roadW, 0);
+            roadGrad.addColorStop(0, "#222"); roadGrad.addColorStop(0.5, "#3a3a3a"); roadGrad.addColorStop(1, "#222");
+            ctx.fillStyle = roadGrad; ctx.fillRect(roadX, 0, roadW, h);
+            ctx.fillStyle = "#fff"; ctx.fillRect(roadX + 10, 0, 5 * engine.scale, h); ctx.fillRect(roadX + roadW - 15 * engine.scale, 0, 5 * engine.scale, h);
+            drawLimo(engine.player.visualX, engine.player.y, engine.player.z, engine.player.width, engine.player.height);
+        }
+
+        // --- GAMEPLAY LOGIC ---
+        async function startGame() {
+            const hasStarted = await startGameSession();
+            if (!hasStarted) return;
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('hud-score').style.display = 'block';
+            document.getElementById('powerup-ui').style.display = 'none';
+            document.getElementById('stopRunBtn').style.display = 'block';
+            
+            // SEED LOGIK
+            const seedInput = document.getElementById('game-seed').value.trim();
+            if (seedInput) {
+                currentSeedString = seedInput;
+                const seedNumber = xmur3(seedInput)(); 
+                engine.rng = mulberry32(seedNumber);  
+            } else {
+                currentSeedString = 'random';
+                engine.rng = Math.random; 
+            }
+
+            engine.score = 0;
+            engine.baseSpeed = 9 * engine.scale;
+            engine.currentSpeed = engine.baseSpeed;
+            engine.frameCount = 0;
+            engine.currentLane = 1;
+            engine.player.visualX = engine.lanes[1];
+            engine.player.z = 0;
+            engine.player.vz = 0;
+            engine.player.baseZ = 0;
+            
+            engine.obstacles = [];
+            engine.coins = [];
+            engine.powerups = [];
+            engine.scenery = [];
+            engine.roadMarks = [0, 200 * engine.scale, 400 * engine.scale, 600 * engine.scale, 800 * engine.scale];
+            engine.activePowerup = null;
+            engine.powerupTimer = 0;
+            
+            engine.running = true;
+            document.getElementById('hud-score').innerText = "0";
+
+            if (engine.animationFrameId) cancelAnimationFrame(engine.animationFrameId);
+            gameLoop();
+        }
+
+        function jump() {
+            if (engine.player.z <= engine.player.baseZ + 10 * engine.scale) {
+                engine.player.vz = engine.activePowerup === 'boots' ? 26 * engine.scale : 16 * engine.scale;
+            }
+        }
+
+        function activatePowerup(type) {
+            engine.activePowerup = type;
+            engine.powerupTimer = engine.powerupMaxTime;
+            const ui = document.getElementById('powerup-ui');
+            const icon = document.getElementById('powerup-icon');
+            ui.style.display = 'flex';
+            
+            if (type === 'jetpack') {
+                icon.innerText = '🚀';
+                engine.coins = engine.coins.filter(c => c.z > 100 * engine.scale);
+                for(let i=1; i<=15; i++) {
+                    engine.coins.push({ x: engine.lanes[engine.currentLane], y: engine.player.y - (i * 60 * engine.scale), lane: engine.currentLane, radius: engine.laneWidth * 0.15, z: 250 * engine.scale });
+                }
+            } else if (type === 'boots') { icon.innerText = '🥾'; }
+        }
+
+        function gameOver() {
+            engine.running = false;
+            cancelAnimationFrame(engine.animationFrameId);
+            
+            document.getElementById('hud-score').style.display = 'none';
+            document.getElementById('powerup-ui').style.display = 'none';
+            
+            document.getElementById('stopRunBtn').style.display = 'none';
+            
+            document.getElementById('gameOverScreen').style.display = 'flex';
+            document.getElementById('finalScore').innerText = engine.score;
+            
+            submitScore(engine.score);
+        }
+
+        function manualGameOver() {
+            if (!engine.running) return;
+            gameOver();
+        }
+
+        function gameLoop() {
+            if (!engine.running) return;
+            update();
+            draw();
+            engine.animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            engine.frameCount++;
+            const s = engine.scale;
+
+            engine.currentSpeed = engine.baseSpeed + (engine.score * 0.015 * s);
+
+            if (engine.powerupTimer > 0) {
+                engine.powerupTimer--;
+                document.getElementById('powerup-bar').style.width = `${(engine.powerupTimer / engine.powerupMaxTime) * 100}%`;
+                if (engine.powerupTimer <= 0) {
+                    engine.activePowerup = null;
+                    document.getElementById('powerup-ui').style.display = 'none';
+                }
+            }
+
+            if (engine.activePowerup === 'jetpack') {
+                engine.player.baseZ = 250 * s;
+                engine.player.z += (engine.player.baseZ - engine.player.z) * 0.1; 
+                engine.player.vz = 0;
+            } else {
+                engine.player.z += engine.player.vz;
+                engine.player.vz -= 0.8 * s; 
+            }
+
+            let spawnRate = Math.floor(50 - (engine.score * 0.05));
+            if (spawnRate < 20) spawnRate = 20;
+            
+            if (engine.frameCount % spawnRate === 0) {
+                let lane = Math.floor(engine.rng() * 3);
+                let rand = engine.rng();
+                let jetpackRand = engine.rng();
+
+                // --- EASTER EGG: DER MÜNZ-SEED ---
+                if (currentSeedString.toUpperCase() === 'GELDREGEN') {
+                    rand = 0.99;
+                    jetpackRand = 0.99; 
+                }
+                
+                let blockedLanes = engine.obstacles.filter(o => o.y < 200 * s && o.type !== 'ramp').map(o => o.lane);
+                if (blockedLanes.length >= 2) {
+                    lane = [0,1,2].find(l => !blockedLanes.includes(l)) || 0;
+                }
+
+                if (engine.activePowerup === 'jetpack') {
+                    if (jetpackRand < 0.4) {
+                        engine.obstacles.push({ type: 'train', x: engine.lanes[lane], y: -300 * s, lane: lane, width: engine.laneWidth * 0.85, length: 300 * s, height: 60 * s, passed: false });
+                    } else {
+                        engine.coins.push({ x: engine.lanes[lane], y: -50, lane: lane, radius: engine.laneWidth * 0.15, z: 250 * s });
+                    }
+                } else {
+                    if (rand < 0.02) {
+                        engine.powerups.push({ x: engine.lanes[lane], y: -100, lane: lane, type: engine.rng() > 0.5 ? 'jetpack' : 'boots', radius: engine.laneWidth * 0.3, z: 15 * s });
+                    } else if (rand < 0.25) {
+                        engine.obstacles.push({ type: 'train', x: engine.lanes[lane], y: -300 * s, lane: lane, width: engine.laneWidth * 0.85, length: 300 * s, height: 60 * s, passed: false });
+                    } else if (rand < 0.45) {
+                        engine.obstacles.push({ type: 'train', x: engine.lanes[lane], y: -900 * s, lane: lane, width: engine.laneWidth * 0.85, length: 900 * s, height: 60 * s, passed: false });
+                    } else if (rand < 0.60) {
+                        let trainLength = 600 * s; let rampLength = 150 * s;
+                        engine.obstacles.push({ type: 'train', x: engine.lanes[lane], y: -trainLength - rampLength, lane: lane, width: engine.laneWidth * 0.85, length: trainLength, height: 60 * s, passed: false });
+                        engine.obstacles.push({ type: 'ramp', x: engine.lanes[lane], y: -rampLength, lane: lane, width: engine.laneWidth * 0.85, length: rampLength, height: 60 * s, passed: false });
+                    } else if (rand < 0.75) {
+                        engine.obstacles.push({ type: 'barrier', x: engine.lanes[lane], y: -50, lane: lane, width: engine.laneWidth * 0.8, length: 30 * s, height: 20 * s, passed: false });
+                    } else {
+                        const numCoins = Math.floor(engine.rng() * 8) + 5; 
+                        for(let i=0; i<numCoins; i++) {
+                            engine.coins.push({ x: engine.lanes[lane], y: -50 - (i * 60 * s), lane: lane, radius: engine.laneWidth * 0.15, z: 15 * s });
+                        }
+                    }
+                }
+            }
+
+            if (engine.activePowerup === 'jetpack' && engine.frameCount % 10 === 0) {
+                engine.coins.push({ x: engine.lanes[engine.currentLane], y: -50, lane: engine.currentLane, radius: engine.laneWidth * 0.15, z: 250 * s });
+            }
+
+            if (engine.frameCount % 15 === 0) {
+                const side = engine.rng() > 0.5 ? -1 : 1;
+                const roadEdgeX = (cvs.width / 2) + (side * (engine.laneWidth * 1.8));
+                engine.scenery.push({ x: roadEdgeX + (side * 50 * s), y: -200, type: engine.rng() > 0.5 ? 'tree' : 'building' });
+            }
+
+            for (let i = engine.scenery.length - 1; i >= 0; i--) {
+                engine.scenery[i].y += engine.currentSpeed;
+                if (engine.scenery[i].y > cvs.height + 200) engine.scenery.splice(i, 1);
+            }
+
+            for(let i=0; i<engine.roadMarks.length; i++) {
+                engine.roadMarks[i] += engine.currentSpeed;
+                if(engine.roadMarks[i] > cvs.height) engine.roadMarks[i] = -100 * s;
+            }
+
+            const hitH = engine.player.height * 0.8;
+
+            for (let i = engine.powerups.length - 1; i >= 0; i--) {
+                let p = engine.powerups[i];
+                p.y += engine.currentSpeed;
+                if (engine.currentLane === p.lane && Math.abs(p.y - engine.player.y) < hitH/2 + p.radius) {
+                    if (Math.abs(engine.player.z - p.z) < 60 * s) { 
+                        activatePowerup(p.type);
+                        engine.powerups.splice(i, 1);
+                        continue;
+                    }
+                } 
+                if (p.y > cvs.height + 100) engine.powerups.splice(i, 1);
+            }
+
+            for (let i = engine.coins.length - 1; i >= 0; i--) {
+                let c = engine.coins[i];
+                c.y += engine.currentSpeed;
+                if (engine.currentLane === c.lane && Math.abs(c.y - engine.player.y) < hitH/2 + c.radius) {
+                    if (engine.player.z <= c.z + 100 * s && engine.player.z >= c.z - 100 * s) { 
+                        engine.score += 1;
+                        document.getElementById('hud-score').innerText = engine.score;
+                        engine.coins.splice(i, 1);
+                        continue;
+                    }
+                } 
+                if (c.y > cvs.height + 100) engine.coins.splice(i, 1);
+            }
+
+            let maxBaseZ = 0;
+            let crashed = false;
+
+            for (let i = engine.obstacles.length - 1; i >= 0; i--) {
+                let o = engine.obstacles[i];
+                o.y += engine.currentSpeed;
+
+                if (engine.currentLane === o.lane && engine.player.y > o.y && engine.player.y < o.y + o.length) {
+                    if (o.type === 'train') {
+                        if (engine.player.z >= o.height - (30 * s)) { 
+                            maxBaseZ = Math.max(maxBaseZ, o.height);
+                        } else {
+                            if (engine.activePowerup !== 'jetpack') crashed = true;
+                        }
+                    } else if (o.type === 'ramp') {
+                        let progress = (o.y + o.length - engine.player.y) / o.length;
+                        progress = Math.max(0, Math.min(1, progress));
+                        let currentRampZ = progress * o.height;
+                        maxBaseZ = Math.max(maxBaseZ, currentRampZ);
+
+                        if (engine.player.z < currentRampZ && engine.activePowerup !== 'jetpack') {
+                            engine.player.z = currentRampZ;
+                            if (engine.player.vz < 0) engine.player.vz = 0;
+                        }
+                    } else if (o.type === 'barrier') {
+                        if (engine.player.z < o.height && engine.activePowerup !== 'jetpack') {
+                            crashed = true;
+                        }
+                    }
+                }
+
+                if (o.y > engine.player.y && !o.passed && o.type !== 'ramp') {
+                    o.passed = true;
+                }
+                if (o.y > cvs.height + 100) engine.obstacles.splice(i, 1);
+            }
+
+            if (crashed) { gameOver(); return; }
+
+            if (engine.activePowerup !== 'jetpack') {
+                engine.player.baseZ = maxBaseZ;
+                if (engine.player.z <= engine.player.baseZ) {
+                    engine.player.z = engine.player.baseZ;
+                    if (engine.player.vz < 0) engine.player.vz = 0;
+                }
+            }
+
+            const targetX = engine.lanes[engine.currentLane];
+            engine.player.visualX += (targetX - engine.player.visualX) * 0.35;
+        }
+
+        function draw() {
+            const w = cvs.width; const h = cvs.height; const s = engine.scale;
+
+            ctx.fillStyle = "#4caf50"; ctx.fillRect(0, 0, w, h);
+
+            const roadW = engine.laneWidth * 3.2; const roadX = (w - roadW) / 2;
+            const roadGrad = ctx.createLinearGradient(roadX, 0, roadX + roadW, 0);
+            roadGrad.addColorStop(0, "#222"); roadGrad.addColorStop(0.5, "#3a3a3a"); roadGrad.addColorStop(1, "#222");
+            ctx.fillStyle = roadGrad; ctx.fillRect(roadX, 0, roadW, h);
+
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(roadX + 10, 0, 5 * s, h); ctx.fillRect(roadX + roadW - 15 * s, 0, 5 * s, h);
+
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            const lineW = 6 * s; const lineH = 60 * s;
+            const gap1 = engine.lanes[0] + engine.laneWidth/2; const gap2 = engine.lanes[1] + engine.laneWidth/2;
+
+            engine.roadMarks.forEach(y => { ctx.fillRect(gap1 - lineW/2, y, lineW, lineH); ctx.fillRect(gap2 - lineW/2, y, lineW, lineH); });
+            engine.scenery.forEach(obj => drawSceneryObj(obj.x, obj.y, obj.type, s));
+            engine.coins.forEach(c => drawCoin(c.x, c.y, c.radius, c.z));
+            engine.powerups.forEach(p => drawPowerup(p.x, p.y, p.radius, p.type, p.z));
+            
+            engine.obstacles.forEach(o => {
+                if (o.type === 'ramp') drawRamp(o.x, o.y, o.width, o.length, o.height);
+                else if (o.type === 'barrier') drawBarrier(o.x, o.y, o.width);
+            });
+            engine.obstacles.forEach(o => { if (o.type === 'train') drawTrain(o.x, o.y, o.width, o.length, o.height); });
+
+            drawLimo(engine.player.visualX, engine.player.y, engine.player.z, engine.player.width, engine.player.height);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!engine.running) return;
+            if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(e.key)) e.preventDefault();
+            if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && engine.currentLane > 0) engine.currentLane--;
+            if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && engine.currentLane < 2) engine.currentLane++;
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') jump();
+        });
+
+        cvs.addEventListener('touchstart', (e) => {
+            if (!engine.running) return;
+            engine.touchStartX = e.changedTouches[0].screenX;
+            engine.touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        cvs.addEventListener('touchend', (e) => {
+            if (!engine.running) return;
+            let dx = e.changedTouches[0].screenX - engine.touchStartX;
+            let dy = e.changedTouches[0].screenY - engine.touchStartY;
+            if (dy < -40 && Math.abs(dy) > Math.abs(dx)) { jump(); } 
+            else {
+                if (dx < -30 && engine.currentLane > 0) engine.currentLane--;
+                if (dx > 30 && engine.currentLane < 2) engine.currentLane++;
+            }
+        }, { passive: true });
+
+        window.addEventListener('resize', resize);
+        resize(); loadStats();
+    </script>
+</body>
+</html>
