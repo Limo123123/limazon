@@ -738,19 +738,29 @@
         
         async function performDelete() {
             const pw = document.getElementById('delete-confirm-pw').value;
-            if(!pw) return;
+            if(!pw) return showNotify("Bitte Passwort eingeben.", "error"); // Kleine Verbesserung hier!
+
             try {
-                const res = await fetch(`${API_BASE}/api/account`, {
-                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: pw }), credentials: 'include'
+                // HIER IST DER FIX: /me an die URL angehängt
+                const res = await fetch(`${API_BASE}/api/account/me`, {
+                    method: 'DELETE', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pw }), 
+                    credentials: 'include'
                 });
+                
                 if(res.ok) {
                     savedAccounts = savedAccounts.filter(a => a.username.toLowerCase() !== currentUser.username.toLowerCase());
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
-                    alert("Account gelöscht.");
+                    alert("Account gelöscht. Auf Wiedersehen!");
                     window.location.reload();
-                } else showNotify("Fehler beim Löschen", "error");
-            } catch(e) {}
+                } else {
+                    const data = await res.json();
+                    showNotify(data.error || "Fehler beim Löschen", "error");
+                }
+            } catch(e) { 
+                showNotify("Netzwerkfehler", "error"); 
+            }
         }
 
         function switchTab(tabId) {
