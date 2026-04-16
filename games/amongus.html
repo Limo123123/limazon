@@ -5,99 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Among Us - Limo P2P Edition</title>
     <style>
-        :root {
-            --bg-color: #000;
-            --accent: #ff0000;
-            --text-main: #fff;
-        }
-
-        body {
-            margin: 0; font-family: 'Segoe UI', sans-serif;
-            background: var(--bg-color); color: var(--text-main);
-            overflow: hidden; user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        #uiLayer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 100;
-        }
-
-        .screen {
-            background: rgba(20, 20, 20, 0.95); padding: 30px;
-            border-radius: 15px; border: 2px solid #444; text-align: center;
-            pointer-events: auto; min-width: 320px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-        }
-
+        :root { --bg-color: #000; --accent: #ff0000; --text-main: #fff; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-main); overflow: hidden; user-select: none; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; }
+        #uiLayer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        .screen { background: rgba(20, 20, 20, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #444; text-align: center; pointer-events: auto; min-width: 320px; box-shadow: 0 0 20px rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
         h1 { color: var(--accent); margin-top: 0; text-transform: uppercase; letter-spacing: 2px; }
         p { color: #ccc; margin-bottom: 20px; }
-
-        .btn {
-            background: #4CAF50; color: white; border: none;
-            padding: 12px 20px; font-size: 16px; border-radius: 6px;
-            cursor: pointer; font-weight: bold; width: 100%;
-            margin-bottom: 10px; transition: 0.2s;
-        }
-        .btn:hover { background: #388E3C; }
-        .btn-blue { background: #2196F3; }
-        .btn-blue:hover { background: #1976D2; }
-        .btn-danger { background: #d32f2f; }
-        .btn-danger:hover { background: #b71c1c; }
-
+        .btn { background: #4CAF50; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px; transition: 0.2s; }
+        .btn:hover { background: #388E3C; } .btn-blue { background: #2196F3; } .btn-blue:hover { background: #1976D2; } .btn-danger { background: #d32f2f; } .btn-danger:hover { background: #b71c1c; } .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         #gameCanvas { display: block; background: #000; }
+        
+        #hud { position: absolute; top: 15px; left: 15px; pointer-events: none; font-size: 18px; font-weight: bold; text-shadow: 1px 1px 2px black; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px; z-index: 50; }
+        #ventHint { font-size: 14px; color: #aaa; margin-top: 5px; display: none; }
+        
+        .action-btn { position: absolute; bottom: 30px; width: 70px; height: 70px; border-radius: 50%; font-weight: bold; font-size: 14px; cursor: pointer; pointer-events: auto; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 50; }
+        .action-btn:active { transform: scale(0.95); }
+        #taskBtn { right: 20px; background: #fbc02d; color: black; border: 4px solid #f9a825; }
+        #reportBtn { right: 100px; background: #d32f2f; color: white; border: 4px solid #b71c1c; }
+        #ventBtn { right: 180px; background: #757575; color: white; border: 4px solid #424242; }
 
-        #hud {
-            position: absolute; top: 15px; left: 15px;
-            pointer-events: none; font-size: 18px; font-weight: bold;
-            text-shadow: 1px 1px 2px black;
-            background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;
-            z-index: 50;
-        }
-
-        #taskBtn, #reportBtn {
-            position: absolute; bottom: 30px; width: 80px; height: 80px; 
-            border-radius: 50%; font-weight: bold; font-size: 16px; 
-            cursor: pointer; pointer-events: auto; display: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 50;
-        }
-        #taskBtn { right: 30px; background: #fbc02d; color: black; border: 4px solid #f9a825; }
-        #reportBtn { right: 120px; background: #d32f2f; color: white; border: 4px solid #b71c1c; }
-        #taskBtn:active, #reportBtn:active { transform: scale(0.95); }
-
-        #meetingScreen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9); z-index: 3000;
-            flex-direction: column; align-items: center; justify-content: center;
-        }
-        .meeting-box {
-            background: #2a2a35; border: 2px solid #444; border-radius: 10px;
-            padding: 20px; width: 90%; max-width: 500px; text-align: center;
-            pointer-events: auto;
-        }
-        .player-vote-row {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #1e1e24; margin: 5px 0; padding: 10px; border-radius: 6px;
-            border: 1px solid #333;
-        }
+        /* Meeting & Chat */
+        #meetingScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
+        .meeting-box { background: #2a2a35; border: 2px solid #444; border-radius: 10px; padding: 20px; width: 90%; max-width: 700px; text-align: center; pointer-events: auto; display: flex; flex-direction: column; max-height: 80vh; }
+        .meeting-content { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow: hidden; margin-top: 15px; }
+        @media(min-width: 600px) { .meeting-content { flex-direction: row; } }
+        
+        .voting-area { flex: 1; overflow-y: auto; background: #1e1e24; border-radius: 8px; padding: 10px; min-width: 0; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #1e1e24; border-radius: 8px; padding: 10px; min-width: 0; }
+        
+        #chatMessages { flex: 1; overflow-y: auto; text-align: left; font-size: 13px; margin-bottom: 10px; min-height: 100px; word-break: break-word; padding-right: 5px;}
+        .chat-input-row { display: flex; gap: 5px; }
+        .chat-input-row input { flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #111; color: #fff; min-width: 0; }
+        .player-vote-row { display: flex; justify-content: space-between; align-items: center; background: #333; margin: 5px 0; padding: 10px; border-radius: 6px; border: 1px solid #444; }
         .player-vote-row.dead { opacity: 0.5; text-decoration: line-through; }
-        .vote-btn {
-            background: #4CAF50; color: white; border: none; padding: 5px 15px;
-            border-radius: 4px; cursor: pointer;
-        }
+        .vote-btn { background: #4CAF50; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; }
         .vote-btn:hover { background: #388E3C; }
+        
+        #introScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 4000; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s; }
+        .intro-role { font-size: 60px; font-weight: bold; letter-spacing: 5px; text-shadow: 0 0 20px rgba(255,0,0,0.5); }
+        .intro-crew { color: #2196F3; text-shadow: 0 0 20px rgba(33,150,243,0.5); }
+        .intro-imp { color: #f44336; text-shadow: 0 0 20px rgba(244,67,54,0.5); }
+
+        #ejectScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 5000; flex-direction: column; align-items: center; justify-content: center; }
+        @keyframes floatSpace { 0% { transform: translateX(-100vw) rotate(0deg); } 100% { transform: translateX(100vw) rotate(360deg); } }
+        .eject-text { font-size: 24px; color: #fff; margin-top: 20px; font-family: monospace; }
+        .ejected-body { font-size: 50px; animation: floatSpace 4s linear forwards; }
     </style>
 </head>
 <body>
 
     <div id="hud" style="display: none;">
-        <div>Tasks: <span id="taskCount" style="color:#fbc02d">0</span> / 5</div>
+        <div id="taskContainer">Tasks: <span id="taskCount" style="color:#fbc02d">0</span> / 0</div>
         <div id="p2pStatus" style="font-size: 12px; color: #888; margin-top: 5px;">Modus: Solo</div>
+        <div id="ventHint">⬅️ Bewegen / Wischen ➡️</div>
     </div>
     
-    <button id="taskBtn" onclick="game.doTask()">USE</button>
-    <button id="reportBtn" onclick="game.reportBody()">REPORT</button>
+    <button id="taskBtn" class="action-btn" onclick="game.doTask()">USE</button>
+    <button id="reportBtn" class="action-btn" onclick="game.reportBody()">REPORT</button>
+    <button id="ventBtn" class="action-btn" onclick="game.useVent()">VENT</button>
 
     <canvas id="gameCanvas"></canvas>
 
@@ -106,33 +71,75 @@
             <h1>Among Us<br><small style="font-size:14px; color:#888;">Limo P2P Edition</small></h1>
             <p id="userInfo">Lade Spielerdaten...</p>
             
+            <div style="background: #111; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left; font-size: 14px;">
+                <label style="display:flex; justify-content:space-between; margin-bottom:5px;">Impostors: 
+                    <select id="settingImpostors" style="background:#333; color:#fff; border:1px solid #555; padding:3px; border-radius:4px;">
+                        <option value="1">1</option><option value="2">2</option>
+                    </select>
+                </label>
+                <label style="display:flex; justify-content:space-between; margin-bottom:5px;">Kill Cooldown: 
+                    <select id="settingCooldown" style="background:#333; color:#fff; border:1px solid #555; padding:3px; border-radius:4px;">
+                        <option value="10">10s</option><option value="15" selected>15s</option><option value="25">25s</option>
+                    </select>
+                </label>
+                <label style="display:flex; justify-content:space-between;">Team Tasks (Gesamt): 
+                    <select id="settingTasks" style="background:#333; color:#fff; border:1px solid #555; padding:3px; border-radius:4px;">
+                        <option value="5">5</option><option value="10" selected>10</option><option value="15">15</option>
+                    </select>
+                </label>
+            </div>
+
             <div style="display:flex; gap:10px; margin-bottom: 10px;">
                 <button class="btn btn-blue" id="hostBtn" onclick="game.hostLobby()" disabled>Lobby Hosten</button>
                 <button class="btn btn-blue" id="joinBtn" onclick="game.joinLobby()" disabled>Beitreten</button>
             </div>
-            
             <button class="btn" id="startBtn" onclick="game.startSolo()" disabled>Solo spielen</button>
+            
+            <button class="btn" style="background:#8b5cf6;" onclick="window.location.href='/games/map_creator.html'">🛠️ Map Creator & Outfit</button>
             <button class="btn btn-danger" onclick="window.location.href='/'">Zurück zur Arcade</button>
         </div>
 
         <div id="matchmakingScreen" class="screen" style="display: none;">
-            <h2 style="margin:0 0 15px 0;">Erstelle Karte...</h2>
-            <div id="playerList" style="text-align:left; font-family:monospace; margin-bottom:10px; color:#aaa;"></div>
+            <h2 style="margin:0 0 15px 0;">Warte auf Spieler...</h2>
+            <div id="roomCodeDisplay" style="font-size:24px; color:var(--accent); font-weight:bold; margin-bottom:10px;"></div>
+            <div id="playerList" style="text-align:left; font-family:monospace; margin-bottom:15px; color:#aaa; min-height:100px; background:#111; padding:10px; border-radius:6px;"></div>
+            <button class="btn" id="forceStartBtn" onclick="game.startGame()" style="display:none;">Spiel Starten</button>
         </div>
 
         <div id="gameOverScreen" class="screen" style="display: none;">
             <h1 id="endTitle">DEFEAT</h1>
-            <p id="endReason">Du wurdest erwischt!</p>
+            <p id="endReason">...</p>
             <button class="btn" onclick="window.location.reload()">Zurück ins Menü</button>
         </div>
+    </div>
+
+    <div id="ejectScreen">
+        <div id="ejectCharacter" class="ejected-body">💀</div>
+        <div id="ejectText" class="eject-text">... wurde rausgeworfen ...</div>
+    </div>
+
+    <div id="introScreen">
+        <div id="introRole" class="intro-role">CREWMATE</div>
+        <p id="introSub" style="font-size:20px; color:#aaa;">There is 1 Impostor among us</p>
     </div>
 
     <div id="meetingScreen">
         <div class="meeting-box">
             <h1 id="meetingTitle" style="color: #ff0000; margin-bottom: 5px;">EMERGENCY MEETING</h1>
-            <p id="meetingReporter" style="margin-top: 0; color: #aaa;">Jemand hat eine Leiche gefunden!</p>
-            <div id="votingList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
-            <button class="btn btn-blue" onclick="game.castVote('skip')">Skip Vote</button>
+            <p id="meetingReporter" style="margin-top: 0; color: #aaa;">...</p>
+            <div style="font-weight:bold; color:#fbc02d" id="meetingTimer">Zeit: --s</div>
+            
+            <div class="meeting-content">
+                <div class="voting-area" id="votingList"></div>
+                <div class="chat-area">
+                    <div id="chatMessages"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chatInput" placeholder="Wer ist sus?" onkeypress="if(event.key==='Enter') game.sendChat()">
+                        <button class="btn btn-blue" style="margin:0; width:auto; padding:8px 15px;" onclick="game.sendChat()">Send</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-blue" id="skipVoteBtn" style="margin-top:15px;" onclick="game.castVote('skip')" disabled>Skip Vote</button>
         </div>
     </div>
 
@@ -141,36 +148,37 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
+        // Lade Spielerfarbe aus MapCreator/Shop
+        const savedSettings = JSON.parse(localStorage.getItem('au_settings'));
+        const myColor = savedSettings ? savedSettings.color : '#c51111';
+
         const game = {
             user: null, running: false, state: 'IDLE',
             tasksCompleted: 0, totalTasks: 5, frame: 0,
             
-            // P2P State
-            roomCode: null, isHost: false, peerConnection: null,
-            dataChannel: null, pollInterval: null, lastSync: 0,
+            // WebRTC
+            roomCode: null, isHost: false, hostId: null,
+            peers: {}, pollInterval: null, lastSync: 0, iceCandidateQueue: [],
+            settings: { impostors: 1, killCooldown: 15 * 60, totalTasks: 10 },
 
-            // Entities
-            player: { x: 0, y: 0, size: 14, speed: 4, color: '#00cc00', dx: 0, dy: 0, isImpostor: false, isAlive: true, killCooldown: 0 },
-            peer: { x: -1000, y: -1000, size: 14, color: '#0055ff', name: 'Gegner', isAlive: false, isImpostor: false, dx: 0, dy: 0 },
-            bots: [], deadBodies: [], tasks: [],
+            joystick: { active: false, id: null, originX: 0, originY: 0, currentX: 0, currentY: 0, dx: 0, dy: 0 },
+
+            player: { id: 'me', x: 0, y: 0, size: 14, speed: 5, color: myColor, dx: 0, dy: 0, isImpostor: false, isAlive: true, killCooldown: 0, inVent: false, currentVentIndex: 0 },
+            bots: [], deadBodies: [], tasks: [], 
+            meeting: { phase: 'none', timer: 0, votes: {}, hasVoted: false, reporter: '' },
+            ventSwitchCooldown: 0,
             
-            // Map
             map: { 
                 w: 2000, h: 1500,
                 walls: [
-                    {x: 0, y: 0, w: 2000, h: 20}, {x: 0, y: 1480, w: 2000, h: 20},
-                    {x: 0, y: 0, w: 20, h: 1500}, {x: 1980, y: 0, w: 20, h: 1500},
-                    {x: 400, y: 0, w: 20, h: 400}, {x: 400, y: 600, w: 20, h: 400}, 
-                    {x: 0, y: 400, w: 300, h: 20}, {x: 800, y: 300, w: 600, h: 20},
-                    {x: 800, y: 300, w: 20, h: 500}, {x: 1400, y: 300, w: 20, h: 500},
-                    {x: 800, y: 800, w: 200, h: 20}, {x: 1200, y: 800, w: 220, h: 20},
+                    {x: 0, y: 0, w: 2000, h: 20}, {x: 0, y: 1480, w: 2000, h: 20}, {x: 0, y: 0, w: 20, h: 1500}, {x: 1980, y: 0, w: 20, h: 1500},
+                    {x: 400, y: 0, w: 20, h: 400}, {x: 400, y: 600, w: 20, h: 400}, {x: 0, y: 400, w: 300, h: 20}, {x: 800, y: 300, w: 600, h: 20},
+                    {x: 800, y: 300, w: 20, h: 500}, {x: 1400, y: 300, w: 20, h: 500}, {x: 800, y: 800, w: 200, h: 20}, {x: 1200, y: 800, w: 220, h: 20},
                     {x: 400, y: 1000, w: 1000, h: 20}, {x: 400, y: 1000, w: 20, h: 500}
                 ],
                 vents: [{x: 200, y: 200}, {x: 1800, y: 200}, {x: 200, y: 1300}, {x: 1800, y: 1300}]
             },
-            iceCandidateQueue: [],
-            camera: { x: 0, y: 0 },
-            keys: {},
+            camera: { x: 0, y: 0 }, keys: {},
 
             init: async () => {
                 game.resize();
@@ -178,28 +186,48 @@
                 window.addEventListener('keydown', (e) => game.keys[e.code] = true);
                 window.addEventListener('keyup', (e) => game.keys[e.code] = false);
 
-                canvas.addEventListener('touchstart', game.handleTouch, {passive: false});
-                canvas.addEventListener('touchmove', game.handleTouch, {passive: false});
-                canvas.addEventListener('touchend', () => { game.player.dx = 0; game.player.dy = 0; });
+                canvas.addEventListener('touchstart', game.handleTouchStart, {passive: false});
+                canvas.addEventListener('touchmove', game.handleTouchMove, {passive: false});
+                canvas.addEventListener('touchend', game.handleTouchEnd, {passive: false});
+                canvas.addEventListener('touchcancel', game.handleTouchEnd, {passive: false});
 
                 await game.checkAuth();
             },
 
-            resize: () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            },
+            resize: () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; },
 
-            handleTouch: (e) => {
-                e.preventDefault();
-                if(game.state !== 'PLAYING' || !game.player.isAlive) return;
-                const touch = e.touches[0];
-                const cx = canvas.width / 2;
-                const cy = canvas.height / 2;
-                const angle = Math.atan2((touch.clientY - canvas.getBoundingClientRect().top) - cy, (touch.clientX - canvas.getBoundingClientRect().left) - cx);
-                
-                game.player.dx = Math.cos(angle) * game.player.speed;
-                game.player.dy = Math.sin(angle) * game.player.speed;
+            // --- JOYSTICK LOGIK ---
+            handleTouchStart: (e) => {
+                if(game.state !== 'PLAYING') return;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let t = e.changedTouches[i];
+                    if (t.clientX < window.innerWidth / 2 && !game.joystick.active) {
+                        game.joystick.active = true; game.joystick.id = t.identifier;
+                        game.joystick.originX = t.clientX; game.joystick.originY = t.clientY;
+                        game.joystick.currentX = t.clientX; game.joystick.currentY = t.clientY;
+                        game.joystick.dx = 0; game.joystick.dy = 0;
+                    }
+                }
+            },
+            handleTouchMove: (e) => {
+                if (!game.joystick.active) return;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let t = e.changedTouches[i];
+                    if (t.identifier === game.joystick.id) {
+                        let dx = t.clientX - game.joystick.originX, dy = t.clientY - game.joystick.originY;
+                        let dist = Math.hypot(dx, dy), maxDist = 50;
+                        if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
+                        game.joystick.dx = dx / maxDist; game.joystick.dy = dy / maxDist;
+                    }
+                }
+            },
+            handleTouchEnd: (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let t = e.changedTouches[i];
+                    if (game.joystick.active && t.identifier === game.joystick.id) {
+                        game.joystick.active = false; game.joystick.dx = 0; game.joystick.dy = 0;
+                    }
+                }
             },
 
             checkAuth: async () => {
@@ -207,17 +235,16 @@
                     const res = await fetch(`${API}/auth/me`, { credentials: 'include' });
                     if (res.ok) {
                         game.user = await res.json();
+                        game.player.id = game.user.userId;
                         document.getElementById('userInfo').innerText = `Eingeloggt als: ${game.user.username}`;
                         document.getElementById('startBtn').disabled = false;
                         document.getElementById('hostBtn').disabled = false;
                         document.getElementById('joinBtn').disabled = false;
                     }
-                } catch (e) { 
-                    document.getElementById('startBtn').disabled = false; 
-                }
+                } catch (e) { document.getElementById('startBtn').disabled = false; }
             },
 
-            // --- NEU: RAYCASTING / SICHTLINIE ---
+            // --- KOLLISION & SICHTLINIE ---
             lineIntersect: (x1, y1, x2, y2, x3, y3, x4, y4) => {
                 let dir = ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1));
                 if (dir === 0) return false;
@@ -225,7 +252,6 @@
                 let uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / dir;
                 return (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1);
             },
-
             hasLineOfSight: (x1, y1, x2, y2) => {
                 for (let w of game.map.walls) {
                     if (game.lineIntersect(x1, y1, x2, y2, w.x, w.y, w.x+w.w, w.y)) return false;
@@ -235,294 +261,431 @@
                 }
                 return true;
             },
-
             checkCollision: (x, y, size) => {
                 const px = x - size, py = y - size, pw = size * 2, ph = size * 2;
-                for (let w of game.map.walls) {
-                    if (px < w.x + w.w && px + pw > w.x && py < w.y + w.h && py + ph > w.y) return true;
-                }
+                for (let w of game.map.walls) { if (px < w.x + w.w && px + pw > w.x && py < w.y + w.h && py + ph > w.y) return true; }
                 return false;
             },
-
             getRandomSafePos: () => {
                 let x, y, safe = false, attempts = 0;
-                while (!safe && attempts < 100) {
-                    x = 50 + Math.random() * (game.map.w - 100);
-                    y = 50 + Math.random() * (game.map.h - 100);
+                while (!safe && attempts < 200) {
+                    x = 100 + Math.random() * (game.map.w - 200); y = 100 + Math.random() * (game.map.h - 200);
                     safe = !game.checkCollision(x, y, 20);
                     attempts++;
                 }
                 return {x, y};
             },
 
-            // --- WEBRTC SIGNALING ---
+            // ==========================================
+            // WEBRTC SIGNALING (STAR TOPOLOGY)
+            // ==========================================
+            createPeerConnection: (targetId) => {
+                const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+                game.peers[targetId] = { 
+                    pc: pc, dataChannel: null, iceQueue: [], 
+                    x: -1000, y: -1000, dx: 0, dy: 0, isAlive: false, isImpostor: false, inVent: false, color: '#'+Math.floor(Math.random()*16777215).toString(16), name: '...' 
+                };
+
+                pc.onicecandidate = async (e) => {
+                    if (e.candidate) {
+                        await fetch(`${API}/amongus/signal`, {
+                            method: 'POST', headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ roomCode: game.roomCode, targetId: targetId, signal: { ice: e.candidate } }), credentials: 'include'
+                        });
+                    }
+                };
+
+                pc.ondatachannel = (e) => {
+                    game.peers[targetId].dataChannel = e.channel;
+                    game.setupDataChannel(targetId);
+                };
+
+                return pc;
+            },
+
             hostLobby: async () => {
-                try {
-                    const res = await fetch(`${API}/amongus/host`, { method: 'POST', credentials: 'include' });
-                    const data = await res.json();
-                    if(data.error) return alert(data.error);
-                    game.roomCode = data.roomCode;
-                    game.isHost = true;
-                    
-                    document.getElementById('startScreen').style.display = 'none';
-                    document.getElementById('matchmakingScreen').style.display = 'block';
-                    document.getElementById('playerList').innerHTML = `Dein Raumcode: <b style="color:var(--accent); font-size:20px;">${game.roomCode}</b><br>Warte auf Mitspieler...`;
-                    game.setupWebRTC();
-                } catch(e) { alert("Server nicht erreichbar."); }
+                game.settings.impostors = parseInt(document.getElementById('settingImpostors').value);
+                game.settings.killCooldown = parseInt(document.getElementById('settingCooldown').value) * 60;
+                game.settings.totalTasks = parseInt(document.getElementById('settingTasks').value);
+
+                const res = await fetch(`${API}/amongus/host`, { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if(data.error) return alert(data.error);
+                
+                game.roomCode = data.roomCode; game.isHost = true; game.hostId = game.player.id;
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('matchmakingScreen').style.display = 'block';
+                document.getElementById('roomCodeDisplay').innerText = game.roomCode;
+                document.getElementById('forceStartBtn').style.display = 'block';
+                game.startPolling();
             },
 
             joinLobby: async () => {
                 const code = prompt("Bitte 4-stelligen Raumcode eingeben:");
                 if(!code) return;
+                const res = await fetch(`${API}/amongus/join`, { 
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ roomCode: code }), credentials: 'include' 
+                });
+                const data = await res.json();
+                if(data.error) return alert(data.error);
 
-                try {
-                    const res = await fetch(`${API}/amongus/join`, { 
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ roomCode: code }), credentials: 'include' 
-                    });
-                    const data = await res.json();
-                    if(data.error) return alert(data.error);
-
-                    game.roomCode = data.roomCode;
-                    game.isHost = false;
-                    
-                    document.getElementById('startScreen').style.display = 'none';
-                    document.getElementById('matchmakingScreen').style.display = 'block';
-                    document.getElementById('playerList').innerHTML = `Verbunden mit ${game.roomCode}. Verbindungsaufbau...`;
-                    game.setupWebRTC();
-                } catch(e) { alert("Server nicht erreichbar."); }
+                game.roomCode = data.roomCode; game.isHost = false; game.hostId = data.hostId;
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('matchmakingScreen').style.display = 'block';
+                document.getElementById('roomCodeDisplay').innerText = game.roomCode;
+                
+                const pc = game.createPeerConnection(game.hostId);
+                game.startPolling();
             },
 
-            setupWebRTC: () => {
-                game.peerConnection = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-                game.iceCandidateQueue = []; // Queue beim Start leeren
-
-                // 1. Lokale ICE Candidates sammeln und an den Pi senden
-                game.peerConnection.onicecandidate = async (event) => {
-                    if (event.candidate) {
-                        await fetch(`${API}/amongus/signal`, {
-                            method: 'POST', headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({ roomCode: game.roomCode, signal: { ice: event.candidate } }),
-                            credentials: 'include'
-                        });
-                    }
-                };
-
-                // 2. Data Channel Setup
-                if (game.isHost) {
-                    game.dataChannel = game.peerConnection.createDataChannel("gameData");
-                    game.setupDataChannel();
-                    
-                    // Host erstellt das Offer
-                    game.peerConnection.createOffer().then(async offer => {
-                        await game.peerConnection.setLocalDescription(offer);
-                        await fetch(`${API}/amongus/signal`, {
-                            method: 'POST', headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({ roomCode: game.roomCode, signal: { sdp: game.peerConnection.localDescription } }),
-                            credentials: 'include'
-                        });
-                    });
-                } else {
-                    // Guest wartet auf den Data Channel vom Host
-                    game.peerConnection.ondatachannel = (event) => {
-                        game.dataChannel = event.channel;
-                        game.setupDataChannel();
-                    };
-                }
-
-                // 3. Polling Loop (Signale vom Pi abrufen)
+            startPolling: () => {
                 game.pollInterval = setInterval(async () => {
                     try {
                         const res = await fetch(`${API}/amongus/signal/${game.roomCode}`, { credentials: 'include' });
                         const data = await res.json();
                         
-                        if (!data.signals) return;
+                        let html = `> <b>Host:</b> ${game.isHost ? 'Du' : 'Online'}<br>`;
+                        if(data.guests) {
+                            data.guests.forEach(g => {
+                                html += `> Gast: ${g.name}<br>`;
+                                if(game.isHost && !game.peers[g.id]) {
+                                    const pc = game.createPeerConnection(g.id);
+                                    const dc = pc.createDataChannel("gameData");
+                                    game.peers[g.id].dataChannel = dc;
+                                    game.setupDataChannel(g.id);
+                                    game.peers[g.id].name = g.name;
 
-                        for (let signal of data.signals) {
-                            if (signal.sdp) {
-                                // SDP erhalten -> Remote Description setzen!
-                                await game.peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-                                
-                                // Wenn wir der Guest sind und ein Offer bekommen, antworten wir
-                                if (signal.sdp.type === 'offer') {
-                                    const answer = await game.peerConnection.createAnswer();
-                                    await game.peerConnection.setLocalDescription(answer);
-                                    await fetch(`${API}/amongus/signal`, {
-                                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                                        body: JSON.stringify({ roomCode: game.roomCode, signal: { sdp: game.peerConnection.localDescription } }),
-                                        credentials: 'include'
+                                    pc.createOffer().then(async offer => {
+                                        await pc.setLocalDescription(offer);
+                                        await fetch(`${API}/amongus/signal`, {
+                                            method: 'POST', headers: {'Content-Type': 'application/json'},
+                                            body: JSON.stringify({ roomCode: game.roomCode, targetId: g.id, signal: { sdp: pc.localDescription } }), credentials: 'include'
+                                        });
                                     });
                                 }
+                            });
+                        }
+                        document.getElementById('playerList').innerHTML = html;
 
-                                // WICHTIG: Jetzt wo die RemoteDescription da ist, lassen wir alle wartenden ICE Candidates rein!
-                                while (game.iceCandidateQueue.length > 0) {
-                                    await game.peerConnection.addIceCandidate(game.iceCandidateQueue.shift());
-                                }
+                        if (!data.signals) return;
+                        for (let s of data.signals) {
+                            const senderId = s.from;
+                            if(!game.peers[senderId] && !game.isHost) { } // Guest kennt Host schon
+                            const pc = game.peers[senderId].pc;
 
-                            } else if (signal.ice) {
-                                const candidate = new RTCIceCandidate(signal.ice);
-                                // Ist die RemoteDescription schon da?
-                                if (game.peerConnection.remoteDescription) {
-                                    // Ja -> Direkt hinzufügen
-                                    await game.peerConnection.addIceCandidate(candidate);
-                                } else {
-                                    // Nein -> Ins Wartezimmer damit!
-                                    game.iceCandidateQueue.push(candidate);
+                            if (s.signal.sdp) {
+                                await pc.setRemoteDescription(new RTCSessionDescription(s.signal.sdp));
+                                if (s.signal.sdp.type === 'offer') {
+                                    const answer = await pc.createAnswer();
+                                    await pc.setLocalDescription(answer);
+                                    await fetch(`${API}/amongus/signal`, {
+                                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify({ roomCode: game.roomCode, targetId: senderId, signal: { sdp: pc.localDescription } }), credentials: 'include'
+                                    });
                                 }
+                                while (game.peers[senderId].iceQueue.length > 0) {
+                                    await pc.addIceCandidate(game.peers[senderId].iceQueue.shift());
+                                }
+                            } else if (s.signal.ice) {
+                                const candidate = new RTCIceCandidate(s.signal.ice);
+                                if (pc.remoteDescription) await pc.addIceCandidate(candidate);
+                                else game.peers[senderId].iceQueue.push(candidate);
                             }
                         }
-                    } catch (err) {
-                        console.error("Polling Fehler:", err);
-                    }
+                    } catch (err) {}
                 }, 2000);
             },
 
-            setupDataChannel: () => {
-                game.dataChannel.onopen = () => {
-                    clearInterval(game.pollInterval); 
-                    document.getElementById('playerList').innerHTML += "<br>P2P Verbindung hergestellt! Starte Spiel...";
-                    document.getElementById('p2pStatus').innerText = "Modus: Online P2P";
-                    game.peer.isAlive = true;
-                    setTimeout(game.startGame, 1000);
-                };
+            setupDataChannel: (targetId) => {
+                const dc = game.peers[targetId].dataChannel;
                 
-                game.dataChannel.onmessage = (event) => {
+                dc.onmessage = (event) => {
                     const data = JSON.parse(event.data);
+                    
                     if (game.isHost) {
                         if (data.type === 'guest_update') {
-                            game.peer.x = data.player.x; game.peer.y = data.player.y;
-                            game.peer.dx = data.player.dx; game.peer.isAlive = data.player.isAlive;
+                            let p = game.peers[targetId];
+                            if(p) { p.x = data.x; p.y = data.y; p.dx = data.dx; p.isAlive = data.isAlive; p.inVent = data.inVent; }
                         }
                         if (data.type === 'task_done') {
                             game.tasksCompleted++;
                             if(game.tasks[data.taskId]) game.tasks[data.taskId].active = false;
                             document.getElementById('taskCount').innerText = game.tasksCompleted;
+                            game.checkWinCondition();
                         }
                         if (data.type === 'call_meeting') game.startMeeting(data.reporter);
+                        if (data.type === 'kill_request') {
+                            if (data.target === 'host') {
+                                game.player.isAlive = false; game.deadBodies.push({x: game.player.x, y: game.player.y, color: game.player.color});
+                            } else if (data.target === 'peer') {
+                                let p = game.peers[data.peerId];
+                                if(p && p.isAlive) { p.isAlive = false; game.deadBodies.push({x: p.x, y: p.y, color: p.color}); }
+                            } else if (data.target === 'bot') {
+                                let b = game.bots[data.botId];
+                                if(b && b.isAlive) { b.isAlive = false; game.deadBodies.push({x: b.x, y: b.y, color: b.color}); }
+                            }
+                            game.checkWinCondition();
+                        }
+                        if (data.type === 'chat_msg') game.receiveChat(data.sender, data.msg);
+                        if (data.type === 'vote_cast') game.registerVote(data.voteTarget);
                     } else {
+                        // Guest Update
                         if (data.type === 'host_update') {
-                            game.peer.x = data.hostPlayer.x; game.peer.y = data.hostPlayer.y;
-                            game.peer.dx = data.hostPlayer.dx; game.peer.isAlive = data.hostPlayer.isAlive;
-                            game.bots = data.bots; game.tasks = data.tasks;
-                            game.tasksCompleted = data.tasksCompleted; game.deadBodies = data.deadBodies;
-                            document.getElementById('taskCount').innerText = game.tasksCompleted;
+                            for (const [id, state] of Object.entries(data.peers)) {
+                                if (id !== game.player.id) {
+                                    if(!game.peers[id]) game.peers[id] = { color: '#888', name: 'Player' };
+                                    game.peers[id].x = state.x; game.peers[id].y = state.y; game.peers[id].dx = state.dx;
+                                    game.peers[id].isAlive = state.isAlive; game.peers[id].inVent = state.inVent;
+                                    if(state.name) game.peers[id].name = state.name;
+                                    if(state.color) game.peers[id].color = state.color;
+                                }
+                            }
+                            game.bots = data.bots; game.tasks = data.tasks; game.tasksCompleted = data.tasksCompleted; game.deadBodies = data.deadBodies;
+                            
+                            if(!game.player.isImpostor) document.getElementById('taskCount').innerText = game.tasksCompleted;
                         }
                         if (data.type === 'game_setup') {
-                            game.player.isImpostor = data.guestIsImpostor;
-                            game.peer.isImpostor = data.hostIsImpostor;
-                            game.peer.name = data.hostName;
-                            if(game.player.isImpostor) {
-                                document.getElementById('taskCount').parentElement.innerHTML = '<span style="color:var(--accent)">Du bist der Impostor!</span>';
-                                document.getElementById('taskBtn').innerText = "KILL";
+                            game.player.isImpostor = data.myRole === 'impostor';
+                            Object.keys(data.peerRoles).forEach(id => {
+                                if(game.peers[id]) game.peers[id].isImpostor = data.peerRoles[id];
+                            });
+                            game.settings.killCooldown = data.settings.killCooldown;
+                            game.totalTasks = data.settings.totalTasks;
+                            if (data.map) {
+                                game.map.walls = data.map.walls;
+                                game.map.vents = data.map.vents;
+                                game.map.w = data.map.w;
+                                game.map.h = data.map.h;
                             }
+                            game.playIntro();
                         }
                         if (data.type === 'call_meeting') game.startMeeting(data.reporter);
+                        if (data.type === 'meeting_sync') game.renderMeetingUI(data.meeting);
+                        if (data.type === 'meeting_result') game.showEjection(data.msg, data.nobodyEjected);
+                        if (data.type === 'chat_msg') game.receiveChat(data.sender, data.msg);
                         if (data.type === 'game_over') game.endGame(data.title, data.reason);
                     }
                 };
             },
 
-            // --- GAMEPLAY & MEETINGS ---
+            broadcast: (dataObj) => {
+                const msg = JSON.stringify(dataObj);
+                Object.values(game.peers).forEach(p => {
+                    if (p.dataChannel && p.dataChannel.readyState === 'open') p.dataChannel.send(msg);
+                });
+            },
+
+            // ==========================================
+            // GAME LOGIC
+            // ==========================================
             startSolo: () => {
+                game.settings.impostors = parseInt(document.getElementById('settingImpostors').value);
+                game.settings.killCooldown = parseInt(document.getElementById('settingCooldown').value) * 60;
+                game.settings.totalTasks = parseInt(document.getElementById('settingTasks').value);
                 document.getElementById('startScreen').style.display = 'none';
-                game.isHost = true; 
-                game.peer.isAlive = false; 
+                game.isHost = true;
                 game.startGame();
             },
 
-            startGame: () => {
+            playIntro: () => {
                 document.getElementById('matchmakingScreen').style.display = 'none';
-                document.getElementById('hud').style.display = 'block';
-                game.state = 'PLAYING';
-                game.tasksCompleted = 0; game.deadBodies = [];
-                document.getElementById('taskCount').innerText = "0";
-
-                const spawn = game.getRandomSafePos();
-                game.player.x = spawn.x; game.player.y = spawn.y;
-                game.player.isAlive = true;
+                const intro = document.getElementById('introScreen');
+                const roleText = document.getElementById('introRole');
                 
-                if (game.isHost || !game.dataChannel) {
-                    const maxRoll = game.dataChannel ? 8 : 6; 
-                    const impostorRoll = Math.floor(Math.random() * maxRoll); 
+                intro.style.display = 'flex'; intro.style.opacity = '1';
+                
+                if (game.player.isImpostor) {
+                    roleText.innerText = "IMPOSTOR"; roleText.className = "intro-role intro-imp";
+                    document.getElementById('introSub').innerText = "Eliminiere die Crewmates.";
+                } else {
+                    roleText.innerText = "CREWMATE"; roleText.className = "intro-role intro-crew";
+                    document.getElementById('introSub').innerText = "Erledige alle Tasks.";
+                }
+
+                setTimeout(() => {
+                    intro.style.opacity = '0';
+                    setTimeout(() => { intro.style.display = 'none'; game.launchGameplay(); }, 1000);
+                }, 3000);
+            },
+
+            startGame: async () => {
+                clearInterval(game.pollInterval);
+                if (game.isHost) {
                     
-                    game.player.isImpostor = (impostorRoll === 0);
-                    game.peer.isImpostor = (impostorRoll === 1);
+                    // --- CUSTOM MAP LOAD ---
+                    try {
+                        const res = await fetch(`${API}/realestate/my-home`, { credentials: 'include' });
+                        const data = await res.json();
+                        if (data.hasHome && data.amongUsMap && data.amongUsMap.length > 0) {
+                            game.map.walls = [];
+                            game.map.vents = [];
+                            let possibleTasks = [];
 
-                    if(game.player.isImpostor) {
-                        document.getElementById('taskCount').parentElement.innerHTML = '<span style="color:var(--accent)">Du bist der Impostor!</span>';
-                        document.getElementById('taskBtn').innerText = "KILL";
-                    } else {
-                        document.getElementById('taskCount').parentElement.innerHTML = 'Tasks: <span id="taskCount" style="color:#fbc02d">0</span> / 5';
-                        document.getElementById('taskBtn').innerText = "USE";
-                    }
+                            data.amongUsMap.forEach(item => {
+                                let w = item.w, h = item.h;
+                                if (item.r === 90 || item.r === 270) { w = item.h; h = item.w; }
+                                
+                                if (item.layer === 'vent') game.map.vents.push({ x: item.x + w/2, y: item.y + h/2 });
+                                else if (item.layer === 'task') possibleTasks.push({ x: item.x + w/2, y: item.y + h/2 });
+                                else if (item.layer === 'wall' || item.layer === 'base') game.map.walls.push({ x: item.x, y: item.y, w: w, h: h, bg: item.bg, icon: item.icon });
+                            });
+                            
+                            if (possibleTasks.length > 0) game.map.customTasks = possibleTasks;
+                            
+                            game.map.w = Math.max(2000, ...game.map.walls.map(w => w.x + w.w));
+                            game.map.h = Math.max(1500, ...game.map.walls.map(w => w.y + w.h));
+                            
+                            // Map Begrenzung (Fallschutz)
+                            game.map.walls.push({x: -20, y: -20, w: game.map.w+40, h: 20});
+                            game.map.walls.push({x: -20, y: game.map.h, w: game.map.w+40, h: 20});
+                            game.map.walls.push({x: -20, y: 0, w: 20, h: game.map.h});
+                            game.map.walls.push({x: game.map.w, y: 0, w: 20, h: game.map.h});
+                        }
+                    } catch(e) { console.error("Konnte Custom Map nicht laden."); }
 
-                    const colors = ['#1e88e5', '#8e24aa', '#e53935', '#fdd835', '#8d6e63', '#00acc1'];
+                    // --- ROLLEN & BOTS ---
+                    const colors = ['#1e88e5', '#8e24aa', '#e53935', '#fdd835', '#8d6e63', '#00acc1', '#fb8c00', '#43a047'];
+                    const playerIds = [game.player.id, ...Object.keys(game.peers)];
+                    let botCount = Math.max(0, 8 - playerIds.length);
+                    
                     game.bots = [];
-                    for(let i=0; i<6; i++) {
-                        const bSpawn = game.getRandomSafePos();
+                    for(let i=0; i<botCount; i++) {
                         game.bots.push({
-                            id: i, x: bSpawn.x, y: bSpawn.y, size: 14, isAlive: true,
-                            speed: 2 + Math.random(), color: colors[i],
-                            tx: bSpawn.x, ty: bSpawn.y,
-                            isImpostor: (impostorRoll === i + (game.dataChannel ? 2 : 1)),
-                            killCooldown: 0, stuckTimer: 0
+                            id: i, x: 0, y: 0, size: 14, isAlive: true,
+                            speed: 2 + Math.random(), color: colors[i % colors.length],
+                            tx: 0, ty: 0, isImpostor: false, killCooldown: game.settings.killCooldown, stuckTimer: 0,
+                            task: 'wander' 
                         });
                     }
 
+                    // Alle in einen Topf (Player + Peers + Bots) und mischen
+                    let rolePool = [ {type:'player', id: game.player.id} ];
+                    Object.keys(game.peers).forEach(p => rolePool.push({type:'peer', id:p}));
+                    game.bots.forEach((b, i) => rolePool.push({type:'bot', id: i}));
+                    
+                    rolePool = rolePool.sort(() => 0.5 - Math.random());
+                    const impCount = Math.min(game.settings.impostors, rolePool.length);
+                    const impostors = rolePool.slice(0, impCount);
+                    const impostorIds = impostors.map(imp => imp.id);
+
+                    game.player.isImpostor = impostors.some(i => i.type === 'player');
+                    const peerRoles = {};
+                    Object.keys(game.peers).forEach(pId => {
+                        game.peers[pId].isImpostor = impostors.some(i => i.type === 'peer' && i.id === pId);
+                        peerRoles[pId] = game.peers[pId].isImpostor;
+                    });
+                    game.bots.forEach((b, i) => {
+                        b.isImpostor = impostors.some(imp => imp.type === 'bot' && imp.id === i);
+                    });
+
+                    // --- TASKS VERTEILEN ---
+                    const humanCrewIds = playerIds.filter(id => !impostorIds.includes(id));
+                    game.totalTasks = humanCrewIds.length > 0 ? game.settings.totalTasks : 0;
                     game.tasks = [];
+                    
                     for(let i=0; i<game.totalTasks; i++) {
-                        const tSpawn = game.getRandomSafePos();
-                        game.tasks.push({ id: i, x: tSpawn.x, y: tSpawn.y, active: true });
+                        let t;
+                        if (game.map.customTasks && game.map.customTasks.length > 0) {
+                            t = game.map.customTasks[Math.floor(Math.random() * game.map.customTasks.length)];
+                        } else {
+                            t = game.getRandomSafePos();
+                        }
+                        // Tasks rotierend an alle Menschen verteilen. Falls kein Crewmate da (nur Host Impostor), hat er Pech.
+                        const ownerId = humanCrewIds.length > 0 ? humanCrewIds[i % humanCrewIds.length] : game.player.id;
+                        game.tasks.push({ id: i, x: t.x, y: t.y, active: true, owner: ownerId });
                     }
 
-                    if (game.dataChannel && game.dataChannel.readyState === 'open') {
-                        game.dataChannel.send(JSON.stringify({
-                            type: 'game_setup', hostIsImpostor: game.player.isImpostor,
-                            guestIsImpostor: game.peer.isImpostor, hostName: game.user ? game.user.username : 'Host'
-                        }));
-                    }
+                    // Sende Setup & Custom Map an alle Guests
+                    Object.keys(game.peers).forEach(id => {
+                        if(game.peers[id].dataChannel) {
+                            game.peers[id].dataChannel.send(JSON.stringify({
+                                type: 'game_setup', myRole: game.peers[id].isImpostor ? 'impostor' : 'crewmate',
+                                peerRoles: peerRoles, settings: { killCooldown: game.settings.killCooldown, totalTasks: game.settings.totalTasks },
+                                map: game.map 
+                            }));
+                        }
+                    });
+
+                    game.playIntro();
+                }
+            },
+
+            launchGameplay: () => {
+                document.getElementById('hud').style.display = 'block';
+                game.state = 'PLAYING';
+                game.tasksCompleted = 0; game.deadBodies = [];
+                
+                game.resetPositions();
+                game.player.killCooldown = game.settings.killCooldown;
+
+                if(game.player.isImpostor) {
+                    document.getElementById('taskContainer').innerHTML = '<span style="color:var(--accent)">Du bist der Impostor!</span>';
+                    document.getElementById('taskBtn').innerText = Math.ceil(game.settings.killCooldown / 60);
                 } else {
-                    game.dataChannel.send(JSON.stringify({
-                        type: 'guest_update', player: { x: game.player.x, y: game.player.y, dx: 0, isAlive: true }
-                    }));
+                    document.getElementById('taskContainer').innerHTML = `Tasks: <span id="taskCount" style="color:#fbc02d">0</span> / ${game.totalTasks}`;
+                    document.getElementById('taskBtn').innerText = "USE";
                 }
 
                 game.running = true;
                 requestAnimationFrame(game.loop);
             },
 
+            resetPositions: () => {
+                const centerSpawn = () => {
+                    let p = { x: 1000 + (Math.random() * 200 - 100), y: 750 + (Math.random() * 200 - 100) };
+                    let attempts = 0;
+                    while(game.checkCollision(p.x, p.y, 20) && attempts < 100) { 
+                        p.x = 1000 + (Math.random() * 400 - 200); p.y = 750 + (Math.random() * 400 - 200); 
+                        attempts++;
+                    }
+                    if(attempts >= 100) p = game.getRandomSafePos(); // Not-Fallback
+                    return p;
+                };
+                
+                if (game.player.isAlive) { let s = centerSpawn(); game.player.x = s.x; game.player.y = s.y; game.player.inVent = false; game.player.currentVentIndex = 0; }
+                Object.values(game.peers).forEach(p => { if (p.isAlive) { let s = centerSpawn(); p.x = s.x; p.y = s.y; p.inVent = false; } });
+                game.bots.forEach(b => { if (b.isAlive) { let s = centerSpawn(); b.x = s.x; b.y = s.y; b.tx = s.x; b.ty = s.y; b.task = 'wander'; b.waitTimer = 0; } });
+
+                game.deadBodies = [];
+                document.getElementById('ventHint').style.display = 'none';
+            },
+
+            // --- INTERAKTIONEN ---
             doTask: () => {
-                if (!game.player.isAlive || game.state !== 'PLAYING') return;
+                if (game.state !== 'PLAYING') return;
 
                 if (game.player.isImpostor) {
-                    if (game.player.killCooldown > 0) return;
+                    if (!game.player.isAlive || game.player.killCooldown > 0 || game.player.inVent) return;
                     
-                    for (let b of game.bots) {
-                        if (b.isAlive && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) {
-                            b.isAlive = false;
-                            game.deadBodies.push({x: b.x, y: b.y, color: b.color});
-                            game.player.killCooldown = 300; 
-                            if(game.isHost || !game.dataChannel) game.checkWinCondition(); // FIX WIN BUG
+                    for (let id of Object.keys(game.peers)) {
+                        let p = game.peers[id];
+                        if (p.isAlive && !p.isImpostor && Math.hypot(game.player.x - p.x, game.player.y - p.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, p.x, p.y)) {
+                            game.player.killCooldown = game.settings.killCooldown; 
+                            if (game.isHost) { p.isAlive = false; game.deadBodies.push({x: p.x, y: p.y, color: p.color}); game.checkWinCondition(); }
+                            else { game.dataChannel.send(JSON.stringify({ type: 'kill_request', target: 'peer', peerId: id })); }
                             return;
                         }
                     }
-                    
-                    if (game.dataChannel && game.peer.isAlive && Math.hypot(game.player.x - game.peer.x, game.player.y - game.peer.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, game.peer.x, game.peer.y)) {
-                        game.peer.isAlive = false; 
-                        game.deadBodies.push({x: game.peer.x, y: game.peer.y, color: game.peer.color});
-                        game.player.killCooldown = 300;
-                        if(game.isHost) game.checkWinCondition();
+                    for (let i = 0; i < game.bots.length; i++) {
+                        let b = game.bots[i];
+                        if (b.isAlive && !b.isImpostor && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) {
+                            game.player.killCooldown = game.settings.killCooldown; 
+                            if (game.isHost) { b.isAlive = false; game.deadBodies.push({x: b.x, y: b.y, color: b.color}); game.checkWinCondition(); }
+                            else { game.dataChannel.send(JSON.stringify({ type: 'kill_request', target: 'bot', botId: i })); }
+                            return;
+                        }
                     }
                     return;
                 }
 
+                // Crewmate Task
                 for (let i=0; i<game.tasks.length; i++) {
                     let t = game.tasks[i];
-                    if (t.active && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y)) {
+                    if (t.active && t.owner === game.player.id && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70 && (!game.player.isAlive || game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y))) {
                         t.active = false;
                         game.tasksCompleted++;
                         document.getElementById('taskCount').innerText = game.tasksCompleted;
-                        
                         if (!game.isHost && game.dataChannel) game.dataChannel.send(JSON.stringify({ type: 'task_done', taskId: i }));
                         if (game.isHost) game.checkWinCondition();
                         break;
@@ -530,196 +693,288 @@
                 }
             },
 
-            checkWinCondition: () => {
-                if (!game.isHost) return;
+            useVent: () => {
+                if (!game.player.isAlive || !game.player.isImpostor || game.state !== 'PLAYING') return;
 
-                if (game.tasksCompleted >= game.totalTasks) {
-                    game.sendGameOver("VICTORY", "Alle Tasks erledigt! Crewmates gewinnen.");
+                if (game.player.inVent) {
+                    game.player.inVent = false;
+                    document.getElementById('ventHint').style.display = 'none';
                     return;
                 }
 
-                let livingCrewmates = 0;
-                let livingImpostors = 0;
-
-                if (game.player.isAlive) { game.player.isImpostor ? livingImpostors++ : livingCrewmates++; }
-                if (game.dataChannel && game.peer.isAlive) { game.peer.isImpostor ? livingImpostors++ : livingCrewmates++; }
-                for (let b of game.bots) {
-                    if (b.isAlive) { b.isImpostor ? livingImpostors++ : livingCrewmates++; }
-                }
-
-                if (livingImpostors >= livingCrewmates) {
-                    game.sendGameOver("DEFEAT", "Die Impostors haben gewonnen!");
-                } else if (livingImpostors === 0) {
-                    game.sendGameOver("VICTORY", "Alle Impostors wurden eliminiert!");
-                }
-            },
-
-            sendGameOver: (title, reason) => {
-                game.endGame(title, reason);
-                if (game.dataChannel && game.dataChannel.readyState === 'open') {
-                    // Guest kriegt das Gegenteil, wenn die Rollen unterschiedlich sind
-                    let guestTitle = title;
-                    if (game.player.isImpostor !== game.peer.isImpostor) {
-                        guestTitle = title === "VICTORY" ? "DEFEAT" : "VICTORY";
+                for (let i = 0; i < game.map.vents.length; i++) {
+                    let v = game.map.vents[i];
+                    if (Math.hypot(game.player.x - v.x, game.player.y - v.y) < 70) {
+                        game.player.inVent = true; 
+                        game.player.currentVentIndex = i;
+                        game.player.x = v.x; game.player.y = v.y;
+                        document.getElementById('ventHint').style.display = 'block';
+                        break;
                     }
-                    game.dataChannel.send(JSON.stringify({ type: 'game_over', title: guestTitle, reason: reason }));
                 }
             },
 
+            checkWinCondition: () => {
+                if (!game.isHost || game.state === 'OVER') return;
+
+                // 1. Sieg-Bedingung Crew: Alle Tasks erledigt
+                if (game.tasksCompleted >= game.totalTasks && game.totalTasks > 0) {
+                    game.sendGameOver("CREW_WIN", "Alle Tasks erledigt! Crewmates gewinnen.");
+                    return;
+                }
+
+                // Zähle Überlebende
+                let livingCrew = 0;
+                let livingImp = 0;
+
+                if (game.player.isAlive) { game.player.isImpostor ? livingImp++ : livingCrew++; }
+                Object.values(game.peers).forEach(p => { if(p.isAlive) p.isImpostor ? livingImp++ : livingCrew++; });
+                game.bots.forEach(b => { if(b.isAlive) b.isImpostor ? livingImp++ : livingCrew++; });
+
+                // 2. Sieg-Bedingung Impostor: Crew eliminiert
+                if (livingImp >= livingCrew) {
+                    game.sendGameOver("IMP_WIN", "Die Impostors haben die Überhand gewonnen!");
+                } 
+                // 3. Sieg-Bedingung Crew: Alle Impostors tot (z.B. durch Voting)
+                else if (livingImp === 0) {
+                    game.sendGameOver("CREW_WIN", "Alle Impostors wurden eliminiert!");
+                }
+            },
+
+            sendGameOver: (winnerTeam, reason) => {
+                let finalTitle = "DEFEAT";
+                
+                // Bestimme, ob der lokale Spieler gewonnen hat
+                if (winnerTeam === "IMP_WIN" && game.player.isImpostor) finalTitle = "VICTORY";
+                if (winnerTeam === "CREW_WIN" && !game.player.isImpostor) finalTitle = "VICTORY";
+
+                game.endGame(finalTitle, reason);
+
+                // Daten an den Guest synchronisieren
+                if (game.dataChannel && game.dataChannel.readyState === 'open') {
+                    game.dataChannel.send(JSON.stringify({ 
+                        type: 'game_over', 
+                        winnerTeam: winnerTeam, // Der Guest berechnet seinen Titel selbst basierend auf seinem Team
+                        reason: reason 
+                    }));
+                }
+            },
+
+            // --- MEETINGS & CHAT ---
             reportBody: () => {
                 if (!game.player.isAlive || game.state !== 'PLAYING') return;
-                
-                // Prüfen ob wirklich eine Leiche da ist UND wir Sicht haben
-                let canReport = false;
-                for (let dead of game.deadBodies) {
-                    if (Math.hypot(game.player.x - dead.x, game.player.y - dead.y) < 100 && game.hasLineOfSight(game.player.x, game.player.y, dead.x, dead.y)) {
-                        canReport = true; break;
-                    }
-                }
-                if(!canReport) return;
-
-                const reporterName = game.user ? game.user.username : "Du";
-                game.startMeeting(reporterName);
-                if (game.dataChannel && game.dataChannel.readyState === 'open') {
-                    game.dataChannel.send(JSON.stringify({ type: 'call_meeting', reporter: reporterName }));
-                }
+                const rName = game.user ? game.user.username : "Du";
+                if (game.isHost) { game.startMeeting(rName); game.broadcast({ type: 'call_meeting', reporter: rName }); }
+                else { game.dataChannel.send(JSON.stringify({ type: 'call_meeting', reporter: rName })); }
             },
 
             startMeeting: (reporterName) => {
-                game.state = 'MEETING';
-                game.player.dx = 0; game.player.dy = 0; 
+                game.state = 'MEETING'; game.player.dx = 0; game.player.dy = 0; game.player.inVent = false;
+                document.getElementById('ventHint').style.display = 'none';
                 
                 document.getElementById('hud').style.display = 'none';
                 document.getElementById('taskBtn').style.display = 'none';
                 document.getElementById('reportBtn').style.display = 'none';
+                document.getElementById('ventBtn').style.display = 'none';
+                
                 document.getElementById('meetingScreen').style.display = 'flex';
-                document.getElementById('meetingReporter').innerText = `${reporterName} hat eine Leiche gefunden!`;
+                document.getElementById('meetingReporter').innerText = `${reporterName} hat gerufen!`;
+                document.getElementById('chatMessages').innerHTML = '';
+
+                if (game.isHost) {
+                    game.meeting = { phase: 'discussion', timer: 15, votes: {}, hasVoted: false };
+                    game.syncMeetingLoop();
+                }
+            },
+
+            syncMeetingLoop: () => {
+                if (!game.isHost || game.state !== 'MEETING') return;
+                
+                game.meeting.timer--;
+                if (game.meeting.timer <= 0) {
+                    if (game.meeting.phase === 'discussion') {
+                        game.meeting.phase = 'voting'; game.meeting.timer = 30;
+                    } else if (game.meeting.phase === 'voting') {
+                        game.meeting.phase = 'results';
+                        game.evaluateVotes();
+                        return;
+                    }
+                }
+                
+                game.broadcast({ type: 'meeting_sync', meeting: game.meeting });
+                game.renderMeetingUI(game.meeting);
+                
+                setTimeout(game.syncMeetingLoop, 1000);
+            },
+
+            renderMeetingUI: (data) => {
+                const timerEl = document.getElementById('meetingTimer');
+                if (data.phase === 'discussion') {
+                    timerEl.innerText = `Besprechung: ${data.timer}s`; timerEl.style.color = '#fbc02d';
+                    document.getElementById('skipVoteBtn').disabled = true;
+                } else if (data.phase === 'voting') {
+                    timerEl.innerText = `Abstimmen: ${data.timer}s`; timerEl.style.color = '#ff0000';
+                    document.getElementById('skipVoteBtn').disabled = game.meeting.hasVoted || !game.player.isAlive;
+                }
 
                 const list = document.getElementById('votingList');
                 list.innerHTML = '';
 
-                list.innerHTML += `
-                    <div class="player-vote-row ${!game.player.isAlive ? 'dead' : ''}">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="width:20px; height:20px; border-radius:50%; background:${game.player.color}"></div>
-                            <span>${game.user ? game.user.username : "Du"} ${game.player.isAlive ? '' : '☠️'}</span>
-                        </div>
-                        ${game.player.isAlive ? `<button class="vote-btn" onclick="game.castVote('player')">Vote</button>` : ''}
-                    </div>
-                `;
-
-                if (game.dataChannel) {
+                const renderRow = (id, name, color, isAlive) => {
+                    const votedMe = data.votes[id] ? `<span style="background:#555; padding:2px 6px; border-radius:10px; font-size:12px;">${data.votes[id]} Votes</span>` : '';
                     list.innerHTML += `
-                        <div class="player-vote-row ${!game.peer.isAlive ? 'dead' : ''}">
+                        <div class="player-vote-row ${!isAlive ? 'dead' : ''}">
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <div style="width:20px; height:20px; border-radius:50%; background:${game.peer.color}"></div>
-                                <span>${game.peer.name} ${game.peer.isAlive ? '' : '☠️'}</span>
+                                <div style="width:20px; height:20px; border-radius:50%; background:${color}"></div>
+                                <span>${name} ${isAlive ? '' : '☠️'} ${data.phase === 'voting' ? votedMe : ''}</span>
                             </div>
-                            ${game.player.isAlive && game.peer.isAlive ? `<button class="vote-btn" onclick="game.castVote('peer')">Vote</button>` : ''}
+                            ${game.player.isAlive && isAlive && data.phase === 'voting' && !game.meeting.hasVoted ? `<button class="vote-btn" onclick="game.castVote('${id}')">Vote</button>` : ''}
                         </div>
                     `;
-                }
+                };
 
-                game.bots.forEach((b, index) => {
-                    list.innerHTML += `
-                        <div class="player-vote-row ${!b.isAlive ? 'dead' : ''}">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <div style="width:20px; height:20px; border-radius:50%; background:${b.color}"></div>
-                                <span>Bot_${index + 1} ${b.isAlive ? '' : '☠️'}</span>
-                            </div>
-                            ${game.player.isAlive && b.isAlive ? `<button class="vote-btn" onclick="game.castVote(${index})">Vote</button>` : ''}
-                        </div>
-                    `;
-                });
+                renderRow(game.player.id, game.user ? game.user.username : "Du", game.player.color, game.player.isAlive);
+                Object.keys(game.peers).forEach(id => { let p = game.peers[id]; renderRow(id, p.name, p.color, p.isAlive); });
+                game.bots.forEach((b, i) => { renderRow(`bot_${i}`, `Bot_${i+1}`, b.color, b.isAlive); });
             },
 
             castVote: (targetId) => {
-                let votes = { 'skip': 0, 'player': 0, 'peer': 0 };
-                game.bots.forEach((b, i) => votes[i] = 0);
-                
-                if(game.player.isAlive) votes[targetId]++;
+                if (game.meeting.hasVoted || !game.player.isAlive) return;
+                game.meeting.hasVoted = true;
+                document.getElementById('skipVoteBtn').disabled = true;
 
-                game.bots.forEach((b) => {
+                if (game.isHost) game.registerVote(targetId);
+                else game.dataChannel.send(JSON.stringify({ type: 'vote_cast', voteTarget: targetId }));
+            },
+
+            registerVote: (targetId) => {
+                if (!game.meeting.votes[targetId]) game.meeting.votes[targetId] = 0;
+                game.meeting.votes[targetId]++;
+            },
+
+            evaluateVotes: () => {
+                if (!game.isHost) return;
+
+                game.bots.forEach((b, i) => {
                     if (b.isAlive) {
-                        let options = ['skip'];
-                        if(game.player.isAlive) options.push('player');
-                        if(game.dataChannel && game.peer.isAlive) options.push('peer');
-                        game.bots.forEach((ob, idx) => { if(ob.isAlive) options.push(idx); });
-                        votes[options[Math.floor(Math.random() * options.length)]]++;
+                        const ops = ['skip', 'skip', game.player.id, ...Object.keys(game.peers), ...game.bots.map((_, idx)=>`bot_${idx}`)];
+                        game.registerVote(ops[Math.floor(Math.random() * ops.length)]);
                     }
                 });
 
-                let maxVotes = 0, ejectedTarget = null, tie = false;
-
-                for (let [id, count] of Object.entries(votes)) {
-                    if (count > maxVotes) { maxVotes = count; ejectedTarget = id; tie = false; } 
+                let maxVotes = 0, ejected = null, tie = false;
+                for (let [id, count] of Object.entries(game.meeting.votes)) {
+                    if (count > maxVotes) { maxVotes = count; ejected = id; tie = false; } 
                     else if (count === maxVotes) { tie = true; }
                 }
 
                 document.getElementById('meetingScreen').style.display = 'none';
 
-                if (tie || ejectedTarget === 'skip') {
-                    alert("Niemand wurde rausgeworfen (Gleichstand oder Skip).");
-                    game.resumeGame();
+                let msg = ""; let wasImp = false; let nobodyEjected = false;
+                
+                if (tie || ejected === 'skip' || !ejected) {
+                    msg = "Niemand wurde rausgeworfen (Gleichstand oder Skip).";
+                    nobodyEjected = true;
                 } else {
-                    let ejectedName = "", wasImpostor = false;
-
-                    if (ejectedTarget === 'player') {
-                        game.player.isAlive = false; ejectedName = game.user ? game.user.username : "Du"; wasImpostor = game.player.isImpostor;
-                    } else if (ejectedTarget === 'peer') {
-                        game.peer.isAlive = false; ejectedName = game.peer.name; wasImpostor = game.peer.isImpostor;
+                    if (ejected === game.player.id) {
+                        game.player.isAlive = false; msg = (game.user ? game.user.username : "Du") + " wurde rausgeworfen."; wasImp = game.player.isImpostor;
+                    } else if (ejected.startsWith('bot_')) {
+                        const idx = parseInt(ejected.split('_')[1]);
+                        game.bots[idx].isAlive = false; msg = `Bot_${idx+1} wurde rausgeworfen.`; wasImp = game.bots[idx].isImpostor;
                     } else {
-                        const botIndex = parseInt(ejectedTarget);
-                        game.bots[botIndex].isAlive = false; ejectedName = `Bot_${botIndex + 1}`; wasImpostor = game.bots[botIndex].isImpostor;
+                        game.peers[ejected].isAlive = false; msg = `${game.peers[ejected].name} wurde rausgeworfen.`; wasImp = game.peers[ejected].isImpostor;
                     }
-
-                    alert(`${ejectedName} wurde rausgeworfen.\n${wasImpostor ? 'War Impostor!' : 'War KEIN Impostor.'}`);
-
-                    if (game.isHost) game.checkWinCondition();
-                    if (game.state !== 'OVER') game.resumeGame();
+                    msg += `\n${wasImp ? 'War Impostor!' : 'War KEIN Impostor.'}`;
                 }
+                
+                game.broadcast({ type: 'meeting_result', msg: msg, nobodyEjected: nobodyEjected });
+                game.showEjection(msg, nobodyEjected);
+                
+                setTimeout(() => {
+                    game.checkWinCondition();
+                    if (game.state !== 'OVER') {
+                        game.resetPositions();
+                        game.player.killCooldown = game.settings.killCooldown;
+                        game.bots.forEach(b => b.killCooldown = game.settings.killCooldown);
+                        game.state = 'PLAYING';
+                        document.getElementById('hud').style.display = 'block';
+                    }
+                }, 4000);
             },
 
-            resumeGame: () => {
-                const centerSpawn = { x: game.map.w / 2, y: game.map.h / 2 };
+            showEjection: (msg, nobodyEjected) => {
+                document.getElementById('meetingScreen').style.display = 'none';
+                const esc = document.getElementById('ejectScreen');
+                esc.style.display = 'flex';
+                document.getElementById('ejectText').innerText = msg;
                 
-                if (game.player.isAlive) { game.player.x = centerSpawn.x; game.player.y = centerSpawn.y; }
-                if (game.peer.isAlive) { game.peer.x = centerSpawn.x; game.peer.y = centerSpawn.y; }
+                document.getElementById('ejectCharacter').style.display = nobodyEjected ? 'none' : 'block';
                 
-                game.bots.forEach(b => {
-                    if (b.isAlive) {
-                        b.x = centerSpawn.x + (Math.random() * 200 - 100);
-                        b.y = centerSpawn.y + (Math.random() * 200 - 100);
-                        b.tx = b.x; b.ty = b.y;
-                    }
-                });
+                setTimeout(() => { esc.style.display = 'none'; }, 3800);
+            },
 
-                game.deadBodies = []; 
-                document.getElementById('hud').style.display = 'block';
-                game.state = 'PLAYING';
+            sendChat: () => {
+                const input = document.getElementById('chatInput');
+                const msg = input.value.trim();
+                if(!msg || !game.player.isAlive) return;
+                input.value = "";
+                const sender = game.user ? game.user.username : "Du";
+                
+                if (game.isHost) { game.receiveChat(sender, msg); game.broadcast({ type: 'chat_msg', sender, msg }); } 
+                else { game.dataChannel.send(JSON.stringify({ type: 'chat_msg', sender, msg })); }
+            },
+
+            receiveChat: (sender, msg) => {
+                const div = document.getElementById('chatMessages');
+                div.innerHTML += `<div><b style="color:var(--accent)">${sender}:</b> ${msg}</div>`;
+                div.scrollTop = div.scrollHeight;
+                if(game.isHost && sender !== (game.user?game.user.username:"Du")) game.broadcast({ type: 'chat_msg', sender, msg });
             },
 
             update: () => {
                 if (game.state !== 'PLAYING') return;
 
+                // --- BERECHNUNG DER BEWEGUNG ---
+                let moveDx = 0, moveDy = 0;
+                if (game.keys['ArrowUp'] || game.keys['KeyW']) moveDy -= 1;
+                if (game.keys['ArrowDown'] || game.keys['KeyS']) moveDy += 1;
+                if (game.keys['ArrowLeft'] || game.keys['KeyA']) moveDx -= 1;
+                if (game.keys['ArrowRight'] || game.keys['KeyD']) moveDx += 1;
+
+                if (game.joystick.active) { moveDx = game.joystick.dx; moveDy = game.joystick.dy; }
+                if (moveDx !== 0 && moveDy !== 0 && !game.joystick.active) { let len = Math.hypot(moveDx, moveDy); moveDx /= len; moveDy /= len; }
+
+                const nextDx = moveDx * game.player.speed, nextDy = moveDy * game.player.speed;
+                game.player.dx = nextDx; 
+
+                // --- BEWEGUNG (Lebende und Geister) ---
+                if (game.player.inVent) {
+                    if (game.ventSwitchCooldown > 0) game.ventSwitchCooldown--;
+                    
+                    let switchDir = 0;
+                    if (game.keys['ArrowRight'] || game.keys['KeyD'] || game.joystick.dx > 0.5) switchDir = 1;
+                    if (game.keys['ArrowLeft'] || game.keys['KeyA'] || game.joystick.dx < -0.5) switchDir = -1;
+                    
+                    if (switchDir !== 0 && game.ventSwitchCooldown <= 0) {
+                        game.player.currentVentIndex = (game.player.currentVentIndex + switchDir + game.map.vents.length) % game.map.vents.length;
+                        let v = game.map.vents[game.player.currentVentIndex];
+                        game.player.x = v.x; game.player.y = v.y;
+                        game.ventSwitchCooldown = 15; 
+                    }
+                } else if (!game.player.isAlive) {
+                    game.player.x += nextDx; game.player.y += nextDy;
+                } else {
+                    if (nextDx !== 0 && !game.checkCollision(game.player.x + nextDx, game.player.y, game.player.size)) game.player.x += nextDx;
+                    if (nextDy !== 0 && !game.checkCollision(game.player.x, game.player.y + nextDy, game.player.size)) game.player.y += nextDy;
+                }
+
+                game.camera.x = game.player.x - canvas.width / 2;
+                game.camera.y = game.player.y - canvas.height / 2;
+
                 if (game.player.isAlive) {
-                    if (game.keys['ArrowUp'] || game.keys['KeyW']) game.player.dy = -game.player.speed;
-                    else if (game.keys['ArrowDown'] || game.keys['KeyS']) game.player.dy = game.player.speed;
-                    else if (!('ontouchstart' in window)) game.player.dy = 0; 
-
-                    if (game.keys['ArrowLeft'] || game.keys['KeyA']) game.player.dx = -game.player.speed;
-                    else if (game.keys['ArrowRight'] || game.keys['KeyD']) game.player.dx = game.player.speed;
-                    else if (!('ontouchstart' in window)) game.player.dx = 0;
-
-                    if (game.player.dx !== 0 && !game.checkCollision(game.player.x + game.player.dx, game.player.y, game.player.size)) game.player.x += game.player.dx;
-                    if (game.player.dy !== 0 && !game.checkCollision(game.player.x, game.player.y + game.player.dy, game.player.size)) game.player.y += game.player.dy;
-
-                    game.camera.x = game.player.x - canvas.width / 2;
-                    game.camera.y = game.player.y - canvas.height / 2;
-
                     if (game.player.killCooldown > 0) game.player.killCooldown--;
 
-                    let showActionBtn = false, showReportBtn = false;
+                    let showActionBtn = false, showReportBtn = false, showVentBtn = false;
 
                     for (let dead of game.deadBodies) {
                         if (Math.hypot(game.player.x - dead.x, game.player.y - dead.y) < 100 && game.hasLineOfSight(game.player.x, game.player.y, dead.x, dead.y)) {
@@ -728,108 +983,141 @@
                     }
 
                     if (game.player.isImpostor) {
-                        for (let b of game.bots) {
-                            if (b.isAlive && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) showActionBtn = true;
+                        for (let v of game.map.vents) {
+                            if (Math.hypot(game.player.x - v.x, game.player.y - v.y) < 70) { showVentBtn = true; break; }
                         }
-                        if (game.dataChannel && game.peer.isAlive && Math.hypot(game.player.x - game.peer.x, game.player.y - game.peer.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, game.peer.x, game.peer.y)) {
-                            showActionBtn = true;
+                        if (!game.player.inVent) {
+                            for (let b of game.bots) { if (b.isAlive && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) showActionBtn = true; }
+                            Object.values(game.peers).forEach(p => { if (p.isAlive && !p.isImpostor && Math.hypot(game.player.x - p.x, game.player.y - p.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, p.x, p.y)) showActionBtn = true; });
                         }
-                        if(game.player.killCooldown > 0) showActionBtn = false;
                     } else {
                         for (let t of game.tasks) {
-                            if (t.active && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y)) showActionBtn = true;
+                            if (t.active && t.owner === game.player.id && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y)) showActionBtn = true;
                         }
                     }
 
-                    document.getElementById('taskBtn').style.display = showActionBtn ? 'block' : 'none';
-                    document.getElementById('taskBtn').style.opacity = (game.player.isImpostor && game.player.killCooldown > 0) ? '0.5' : '1';
+                    const tBtn = document.getElementById('taskBtn');
+                    tBtn.style.display = showActionBtn ? 'block' : 'none';
+                    if (game.player.isImpostor) {
+                        if (game.player.killCooldown > 0) {
+                            tBtn.innerText = Math.ceil(game.player.killCooldown / 60);
+                            tBtn.style.opacity = '0.5';
+                        } else {
+                            tBtn.innerText = "KILL"; tBtn.style.opacity = '1';
+                        }
+                    } else {
+                        tBtn.innerText = "USE"; tBtn.style.opacity = '1';
+                    }
+
                     document.getElementById('reportBtn').style.display = showReportBtn ? 'block' : 'none';
+                    document.getElementById('ventBtn').style.display = showVentBtn ? 'block' : 'none';
                     
-                    if (game.keys['Space'] && showActionBtn) game.doTask();
+                    if (game.keys['Space'] && showActionBtn) { game.keys['Space'] = false; game.doTask(); }
+                    if (game.keys['KeyV'] && showVentBtn) { game.keys['KeyV'] = false; game.useVent(); }
+                } else if (!game.player.isImpostor) {
+                    // Geister können auch Tasks machen!
+                    let showActionBtn = false;
+                    for (let t of game.tasks) {
+                        if (t.active && t.owner === game.player.id && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70) showActionBtn = true;
+                    }
+                    const tBtn = document.getElementById('taskBtn');
+                    tBtn.style.display = showActionBtn ? 'block' : 'none';
+                    tBtn.innerText = "USE"; tBtn.style.opacity = '1';
+                    if (game.keys['Space'] && showActionBtn) { game.keys['Space'] = false; game.doTask(); }
                 }
 
-                if (game.isHost || !game.dataChannel) {
+                if (game.isHost) {
                     for (let b of game.bots) {
                         if (!b.isAlive) continue;
-                        let moveX = 0, moveY = 0;
+                        if (b.waitTimer > 0) { b.waitTimer--; continue; } 
 
                         if (b.isImpostor) {
                             if (b.killCooldown > 0) b.killCooldown--;
-
-                            let target = null;
-                            let shortestDist = Infinity;
                             
-                            const checkTarget = (t) => {
-                                if(t && t.isAlive && game.hasLineOfSight(b.x, b.y, t.x, t.y)) {
-                                    let dist = Math.hypot(t.x - b.x, t.y - b.y);
-                                    if (dist < shortestDist) { target = t; shortestDist = dist; }
-                                }
-                            };
-
-                            checkTarget(game.player);
-                            if(game.dataChannel) checkTarget(game.peer);
-                            for (let otherBot of game.bots) {
-                                if (!otherBot.isImpostor && otherBot.isAlive) checkTarget(otherBot);
-                            }
-
-                            if (shortestDist < 400 && target) { b.tx = target.x; b.ty = target.y; }
-
-                            if (shortestDist < b.size * 2.5 && b.killCooldown <= 0 && target) {
-                                target.isAlive = false;
-                                game.deadBodies.push({x: target.x, y: target.y, color: target.color});
-                                b.killCooldown = 400; 
-
-                                game.checkWinCondition();
-                                
-                                let bestVent = game.map.vents[0];
-                                let ventDist = Infinity;
+                            if (b.task === 'goto_vent') {
+                                let targetVent = null, ventDist = Infinity;
                                 for(let v of game.map.vents) {
                                     let d = Math.hypot(b.x - v.x, b.y - v.y);
-                                    if(d < ventDist) { bestVent = v; ventDist = d; }
+                                    if(d < ventDist) { targetVent = v; ventDist = d; }
                                 }
-                                const otherVents = game.map.vents.filter(v => v !== bestVent);
-                                const exitVent = otherVents[Math.floor(Math.random() * otherVents.length)];
-                                b.x = exitVent.x; b.y = exitVent.y;
-                                b.tx = exitVent.x; b.ty = exitVent.y;
+                                if(ventDist < 20) {
+                                    const otherVents = game.map.vents.filter(v => v !== targetVent);
+                                    const exit = otherVents[Math.floor(Math.random() * otherVents.length)];
+                                    if(exit) { b.x = exit.x; b.y = exit.y; b.tx = exit.x; b.ty = exit.y; }
+                                    b.task = 'wander';
+                                } else {
+                                    if(targetVent) { b.tx = targetVent.x; b.ty = targetVent.y; }
+                                }
+                            } 
+                            else {
+                                let target = null, shortestDist = Infinity;
+                                const checkTarget = (t) => {
+                                    if(t && t.isAlive && !t.isImpostor && game.hasLineOfSight(b.x, b.y, t.x, t.y)) {
+                                        let dist = Math.hypot(t.x - b.x, t.y - b.y);
+                                        if (dist < shortestDist) { target = t; shortestDist = dist; }
+                                    }
+                                };
+
+                                checkTarget(game.player);
+                                Object.values(game.peers).forEach(checkTarget);
+                                for (let ob of game.bots) { if (!ob.isImpostor) checkTarget(ob); }
+
+                                if (shortestDist < 300 && target) { b.tx = target.x; b.ty = target.y; }
+
+                                if (shortestDist < b.size * 2.5 && b.killCooldown <= 0 && target) {
+                                    target.isAlive = false;
+                                    game.deadBodies.push({x: target.x, y: target.y, color: target.color});
+                                    b.killCooldown = game.settings.killCooldown; 
+                                    game.checkWinCondition();
+                                    
+                                    const esc = game.getRandomSafePos(); b.tx = esc.x; b.ty = esc.y;
+                                }
                             }
                         }
 
                         const angle = Math.atan2(b.ty - b.y, b.tx - b.x);
-                        moveX = Math.cos(angle) * b.speed;
-                        moveY = Math.sin(angle) * b.speed;
-
+                        let bMoveX = Math.cos(angle) * b.speed, bMoveY = Math.sin(angle) * b.speed;
                         let moved = false;
-                        if (!game.checkCollision(b.x + moveX, b.y, b.size)) { b.x += moveX; moved = true; }
-                        if (!game.checkCollision(b.x, b.y + moveY, b.size)) { b.y += moveY; moved = true; }
+                        
+                        if (!game.checkCollision(b.x + bMoveX, b.y, b.size)) { b.x += bMoveX; moved = true; }
+                        if (!game.checkCollision(b.x, b.y + bMoveY, b.size)) { b.y += bMoveY; moved = true; }
 
                         if (!moved || Math.hypot(b.tx - b.x, b.ty - b.y) < 20) b.stuckTimer++;
                         else b.stuckTimer = 0;
 
-                        if (b.stuckTimer > 30) {
-                            const newTarget = game.getRandomSafePos();
-                            b.tx = newTarget.x; b.ty = newTarget.y;
+                        if (b.stuckTimer > 15 && b.task !== 'goto_vent') {
+                            const randAngle = Math.random() * Math.PI * 2;
+                            b.tx = b.x + Math.cos(randAngle) * 150;
+                            b.ty = b.y + Math.sin(randAngle) * 150;
                             b.stuckTimer = 0;
+                            if(!b.isImpostor && Math.random() < 0.3) b.waitTimer = 120; 
                         }
                     }
                 }
 
-                if (game.dataChannel && game.dataChannel.readyState === 'open') {
-                    const now = Date.now();
-                    if (now - game.lastSync > 50) {
-                        if (game.isHost) {
+                const now = Date.now();
+                if (now - game.lastSync > 50) {
+                    if (game.isHost) {
+                        if(game.state !== 'PLAYING') return;
+
+                        let stateData = {
+                            type: 'host_update',
+                            hostPlayer: { x: game.player.x, y: game.player.y, dx: game.player.dx, isAlive: game.player.isAlive, inVent: game.player.inVent },
+                            peers: {}, bots: game.bots, tasks: game.tasks, tasksCompleted: game.tasksCompleted, deadBodies: game.deadBodies
+                        };
+                        Object.keys(game.peers).forEach(id => {
+                            let p = game.peers[id];
+                            stateData.peers[id] = { x: p.x, y: p.y, dx: p.dx, isAlive: p.isAlive, inVent: p.inVent, name: p.name, color: p.color };
+                        });
+                        game.broadcast(stateData);
+                    } else {
+                        if(game.dataChannel && game.dataChannel.readyState === 'open') {
                             game.dataChannel.send(JSON.stringify({
-                                type: 'host_update',
-                                hostPlayer: { x: game.player.x, y: game.player.y, dx: game.player.dx, isAlive: game.player.isAlive },
-                                bots: game.bots, tasks: game.tasks, tasksCompleted: game.tasksCompleted, deadBodies: game.deadBodies
-                            }));
-                        } else {
-                            game.dataChannel.send(JSON.stringify({
-                                type: 'guest_update',
-                                player: { x: game.player.x, y: game.player.y, dx: game.player.dx, isAlive: game.player.isAlive }
+                                type: 'guest_update', player: { x: game.player.x, y: game.player.y, dx: game.player.dx, isAlive: game.player.isAlive, inVent: game.player.inVent }
                             }));
                         }
-                        game.lastSync = now;
                     }
+                    game.lastSync = now;
                 }
                 game.frame++;
             },
@@ -838,156 +1126,116 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.save();
                 
-                let camX = game.camera.x;
-                let camY = game.camera.y;
+                let camX = game.camera.x; let camY = game.camera.y;
                 if(!game.player.isAlive) ctx.globalAlpha = 0.6; 
-
                 ctx.translate(-camX, -camY);
 
-                // Floor
-                ctx.fillStyle = '#2c3338';
-                ctx.fillRect(0, 0, game.map.w, game.map.h);
-                
-                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-                ctx.lineWidth = 1;
+                ctx.fillStyle = '#2c3338'; ctx.fillRect(0, 0, game.map.w, game.map.h);
+                ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
                 for(let i=0; i<game.map.w; i+=80) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, game.map.h); ctx.stroke(); }
                 for(let i=0; i<game.map.h; i+=80) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(game.map.w, i); ctx.stroke(); }
 
-                // Vents
-                ctx.fillStyle = '#333';
-                ctx.strokeStyle = '#000';
+                ctx.fillStyle = '#333'; ctx.strokeStyle = '#000';
                 for(let v of game.map.vents) {
-                    if (game.hasLineOfSight(game.player.x, game.player.y, v.x, v.y)) {
-                        ctx.fillRect(v.x - 20, v.y - 10, 40, 20);
-                        ctx.strokeRect(v.x - 20, v.y - 10, 40, 20);
+                    if (game.player.inVent || (!game.player.isAlive) || game.hasLineOfSight(game.player.x, game.player.y, v.x, v.y)) {
+                        ctx.fillRect(v.x - 20, v.y - 10, 40, 20); ctx.strokeRect(v.x - 20, v.y - 10, 40, 20);
                         ctx.beginPath(); ctx.moveTo(v.x - 15, v.y); ctx.lineTo(v.x + 15, v.y); ctx.stroke();
+                        if (game.player.inVent && game.player.isImpostor && Math.hypot(game.player.x - v.x, game.player.y - v.y) > 10) {
+                            ctx.fillStyle = "rgba(255,0,0,0.5)"; ctx.beginPath(); ctx.arc(v.x, v.y, 30, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#333';
+                        }
                     }
                 }
 
-                // Wände
-                ctx.fillStyle = '#111';
-                ctx.strokeStyle = '#444';
-                ctx.lineWidth = 4;
-                for (let w of game.map.walls) {
-                    ctx.fillRect(w.x, w.y, w.w, w.h);
-                    ctx.strokeRect(w.x, w.y, w.w, w.h);
-                }
+                ctx.fillStyle = '#111'; ctx.strokeStyle = '#444'; ctx.lineWidth = 4;
+                for (let w of game.map.walls) { ctx.fillRect(w.x, w.y, w.w, w.h); ctx.strokeRect(w.x, w.y, w.w, w.h); }
 
-                // Leichen (nur wenn sichtbar)
                 for (let dead of game.deadBodies) {
-                    if (game.hasLineOfSight(game.player.x, game.player.y, dead.x, dead.y)) {
-                        ctx.fillStyle = dead.color;
-                        ctx.beginPath(); ctx.arc(dead.x, dead.y, 14, 0, Math.PI); ctx.fill();
-                        ctx.fillStyle = '#777'; 
-                        ctx.beginPath(); ctx.arc(dead.x, dead.y - 3, 5, 0, Math.PI*2); ctx.fill();
+                    if (!game.player.isAlive || game.hasLineOfSight(game.player.x, game.player.y, dead.x, dead.y)) {
+                        ctx.fillStyle = dead.color; ctx.beginPath(); ctx.arc(dead.x, dead.y, 14, 0, Math.PI); ctx.fill();
+                        ctx.fillStyle = '#777'; ctx.beginPath(); ctx.arc(dead.x, dead.y - 3, 5, 0, Math.PI*2); ctx.fill();
                     }
                 }
 
-                // Tasks (nur für lebende Crewmates & sichtbar)
-                if (!game.player.isImpostor && game.player.isAlive) {
+                if (!game.player.isImpostor) {
                     for (let t of game.tasks) {
-                        if (t.active && game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y)) {
-                            ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
-                            ctx.beginPath(); ctx.arc(t.x, t.y, 70, 0, Math.PI*2); ctx.fill();
-                            ctx.fillStyle = '#fbc02d';
-                            ctx.fillRect(t.x - 15, t.y - 15, 30, 30);
+                        if (t.active && t.owner === game.player.id && (!game.player.isAlive || game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y))) {
+                            ctx.fillStyle = 'rgba(255, 255, 0, 0.2)'; ctx.beginPath(); ctx.arc(t.x, t.y, 70, 0, Math.PI*2); ctx.fill();
+                            ctx.fillStyle = '#fbc02d'; ctx.fillRect(t.x - 15, t.y - 15, 30, 30);
                             ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(t.x - 15, t.y - 15, 30, 30);
                         }
                     }
                 }
 
-                // Lebende Bots
-                for (let b of game.bots) {
-                    if (b.isAlive && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) {
-                        game.drawCharacter(b.x, b.y, b.size, b.color, false, b.isImpostor);
+                const drawOthers = (obj, isBot) => {
+                    if (obj.isAlive && !obj.inVent && (!game.player.isAlive || game.hasLineOfSight(game.player.x, game.player.y, obj.x, obj.y))) {
+                        game.drawCharacter(obj.x, obj.y, obj.size || 14, obj.color, !isBot, obj.isImpostor, obj.dx);
                     }
+                };
+                game.bots.forEach(b => drawOthers(b, true));
+                Object.values(game.peers).forEach(p => drawOthers(p, false));
+
+                if (game.player.isAlive && !game.player.inVent) {
+                    game.drawCharacter(game.player.x, game.player.y, game.player.size, game.player.color, true, game.player.isImpostor, game.player.dx);
                 }
 
-                // Peer (Gegenspieler)
-                if (game.dataChannel && game.peer.isAlive && game.hasLineOfSight(game.player.x, game.player.y, game.peer.x, game.peer.y)) {
-                    game.drawCharacter(game.peer.x, game.peer.y, game.peer.size, game.peer.color, true, false); 
-                }
+                ctx.restore();
 
-                // Spieler (immer sichtbar)
                 if (game.player.isAlive) {
-                    game.drawCharacter(game.player.x, game.player.y, game.player.size, game.player.color, true, game.player.isImpostor);
+                    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); 
+                    let cx = canvas.width / 2, cy = canvas.height / 2;
+                    let grad = ctx.createRadialGradient(cx, cy, 80, cx, cy, 500);
+                    grad.addColorStop(0, "rgba(0,0,0,0)"); grad.addColorStop(0.4, "rgba(0,0,0,0.2)"); grad.addColorStop(1, "rgba(0,0,0,0.85)");
+                    ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();
                 }
 
-                ctx.restore();
-
-                // Sichtfeld / Fog of War (Flashlight Overlay)
-                ctx.save();
-                ctx.setTransform(1, 0, 0, 1, 0, 0); 
-                let cx = canvas.width / 2;
-                let cy = canvas.height / 2;
-                
-                // Wir malen einfach einen Verlauf von Durchsichtig zu Dunkel
-                let grad = ctx.createRadialGradient(cx, cy, 80, cx, cy, 500);
-                grad.addColorStop(0, "rgba(0,0,0,0)");      // Mitte: 100% durchsichtig (Spieler sichtbar!)
-                grad.addColorStop(0.4, "rgba(0,0,0,0.2)");  // Leichter Schatten am Rand der Lampe
-                grad.addColorStop(1, "rgba(0,0,0,0.75)");   // Rand des Bildschirms: Richtig dunkel
-                
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.restore();
+                if (game.joystick.active) {
+                    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); 
+                    ctx.beginPath(); ctx.arc(game.joystick.originX, game.joystick.originY, 50, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'; ctx.fill(); ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(game.joystick.originX + (game.joystick.dx * 50), game.joystick.originY + (game.joystick.dy * 50), 25, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fill(); ctx.restore();
+                }
             },
 
-            drawCharacter: (x, y, size, color, isRealPlayer, isImpostor) => {
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.beginPath(); ctx.ellipse(x, y + size - 2, size, size/2.5, 0, 0, Math.PI*2); ctx.fill();
-
-                ctx.fillStyle = color;
-                ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI*2); ctx.fill();
+            drawCharacter: (x, y, size, color, isRealPlayer, isImpostor, dx) => {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(x, y + size - 2, size, size/2.5, 0, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI*2); ctx.fill();
                 ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.stroke();
-
+                
                 ctx.fillStyle = '#90caf9';
                 let lookOffset = 0;
-                if(isRealPlayer) {
-                    if(x === game.player.x && game.player.dx > 0) lookOffset = 4;
-                    if(x === game.player.x && game.player.dx < 0) lookOffset = -4;
-                    if(x === game.peer.x && game.peer.dx > 0) lookOffset = 4;
-                    if(x === game.peer.x && game.peer.dx < 0) lookOffset = -4;
-                }
-                ctx.beginPath(); ctx.ellipse(x + lookOffset, y - 3, size*0.6, size*0.35, 0, 0, Math.PI*2); ctx.fill();
-                ctx.stroke();
+                if(dx > 0.5) lookOffset = 4;
+                else if(dx < -0.5) lookOffset = -4;
+                ctx.beginPath(); ctx.ellipse(x + lookOffset, y - 3, size*0.6, size*0.35, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
                 if (isRealPlayer) {
-                    ctx.fillStyle = isImpostor ? '#ff0000' : '#fff';
+                    const isKnownImpostor = isImpostor && (!game.player.isAlive || game.player.isImpostor);
+                    ctx.fillStyle = isKnownImpostor ? '#ff0000' : '#fff';
                     ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
                     ctx.shadowColor="black"; ctx.shadowBlur=3; ctx.lineWidth=2;
-                    let displayName = (x === game.player.x) ? (game.user ? game.user.username : 'You') : game.peer.name;
-                    ctx.fillText(displayName, x, y - size - 8);
-                    ctx.shadowBlur=0;
+                    let n = (x === game.player.x && y === game.player.y) ? (game.user ? game.user.username : 'You') : 'Player';
+                    Object.values(game.peers).forEach(p => { if(p.x === x && p.y === y) n = p.name; });
+                    ctx.fillText(n, x, y - size - 8); ctx.shadowBlur=0;
                 }
             },
 
-            loop: () => {
-                if (!game.running) return;
-                game.update();
-                game.draw();
-                requestAnimationFrame(game.loop);
-            },
-
-            endGame: (title, reason) => {
-                game.running = false;
-                game.state = 'OVER';
-                
-                document.getElementById('taskBtn').style.display = 'none';
-                document.getElementById('reportBtn').style.display = 'none';
-                document.getElementById('gameOverScreen').style.display = 'block';
-                document.getElementById('uiLayer').style.pointerEvents = 'auto';
-                
-                const titleEl = document.getElementById('endTitle');
-                titleEl.innerText = title;
-                titleEl.style.color = title === "VICTORY" ? "#4CAF50" : "#d32f2f";
-                document.getElementById('endReason').innerText = reason;
+            loop: () => { if (game.running) { game.update(); game.draw(); requestAnimationFrame(game.loop); } },
+            endGame: (t, r) => { 
+                game.running = false; game.state = 'OVER'; 
+                document.getElementById('taskBtn').style.display = 'none'; 
+                document.getElementById('reportBtn').style.display = 'none'; 
+                document.getElementById('ventBtn').style.display = 'none'; 
+                document.getElementById('uiLayer').style.pointerEvents = 'auto'; 
+                document.getElementById('gameOverScreen').style.display = 'block'; 
+                document.getElementById('endTitle').innerText = t; 
+                document.getElementById('endTitle').style.color = t==="VICTORY"?"#4CAF50":"#d32f2f"; 
+                document.getElementById('endReason').innerText = r; 
             }
         };
 
         document.getElementById('hostBtn').onclick = game.hostLobby;
         document.getElementById('joinBtn').onclick = game.joinLobby;
         document.getElementById('startBtn').onclick = game.startSolo;
-
         game.init();
     </script>
 </body>
