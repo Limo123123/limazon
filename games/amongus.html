@@ -127,6 +127,16 @@
             display: none;
         }
 
+        #p2pError {
+            color: #ff4444;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+            background: rgba(255, 0, 0, 0.2);
+            padding: 5px;
+            border-radius: 4px;
+        }
+
         .action-btn {
             position: absolute;
             bottom: 30px;
@@ -360,6 +370,7 @@
     <div id="hud" style="display: none;">
         <div id="taskContainer">Tasks: <span id="taskCount" style="color:#fbc02d">0</span> / 0</div>
         <div id="p2pStatus" style="font-size: 12px; color: #888; margin-top: 5px;">Modus: Solo</div>
+        <div id="p2pError">⚠️ P2P Verbindung fehlgeschlagen! (NAT/Firewall blockiert)</div>
         <div id="ventHint">⬅️ Bewegen / Wischen ➡️</div>
     </div>
 
@@ -468,7 +479,6 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Lade Spielerfarbe aus MapCreator/Shop
         const savedSettings = JSON.parse(localStorage.getItem('au_settings'));
         const myColor = savedSettings ? savedSettings.color : '#c51111';
 
@@ -491,12 +501,10 @@
             map: {
                 w: 2000, h: 1500,
                 walls: [
-                    { x: 0, y: 0, w: 2000, h: 20 }, { x: 0, y: 1480, w: 2000, h: 20 }, { x: 0, y: 0, w: 20, h: 1500 }, { x: 1980, y: 0, w: 20, h: 1500 },
-                    { x: 400, y: 0, w: 20, h: 400 }, { x: 400, y: 600, w: 20, h: 400 }, { x: 0, y: 400, w: 300, h: 20 }, { x: 800, y: 300, w: 600, h: 20 },
-                    { x: 800, y: 300, w: 20, h: 500 }, { x: 1400, y: 300, w: 20, h: 500 }, { x: 800, y: 800, w: 200, h: 20 }, { x: 1200, y: 800, w: 220, h: 20 },
-                    { x: 400, y: 1000, w: 1000, h: 20 }, { x: 400, y: 1000, w: 20, h: 500 }
+                    { x: 0, y: 0, w: 2000, h: 20 }, { x: 0, y: 1480, w: 2000, h: 20 }, { x: 0, y: 0, w: 20, h: 1500 }, { x: 1980, y: 0, w: 20, h: 1500 }
                 ],
-                vents: [{ x: 200, y: 200 }, { x: 1800, y: 200 }, { x: 200, y: 1300 }, { x: 1800, y: 1300 }]
+                vents: [{ x: 200, y: 200 }, { x: 1800, y: 200 }],
+                floors: [], decor: []
             },
             camera: { x: 0, y: 0 }, keys: {},
 
@@ -516,7 +524,6 @@
 
             resize: () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; },
 
-            // --- JOYSTICK LOGIK ---
             handleTouchStart: (e) => {
                 if (game.state !== 'PLAYING') return;
                 for (let i = 0; i < e.changedTouches.length; i++) {
@@ -564,7 +571,6 @@
                 } catch (e) { document.getElementById('startBtn').disabled = false; }
             },
 
-            // --- KOLLISION & SICHTLINIE ---
             lineIntersect: (x1, y1, x2, y2, x3, y3, x4, y4) => {
                 let dir = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
                 if (dir === 0) return false;
@@ -599,6 +605,14 @@
             // ==========================================
             // WEBRTC SIGNALING (STAR TOPOLOGY)
             // ==========================================
+            sendToHost: (dataObj) => {
+                if (game.isHost) return;
+                const dc = game.peers[game.hostId] ? game.peers[game.hostId].dataChannel : null;
+                if (dc && dc.readyState === 'open') {
+                    dc.send(JSON.stringify(dataObj));
+                }
+            },
+
             createPeerConnection: (targetId) => {
                 const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
                 game.peers[targetId] = {
@@ -612,6 +626,16 @@
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ roomCode: game.roomCode, targetId: targetId, signal: { ice: e.candidate } }), credentials: 'include'
                         });
+                    }
+                };
+
+                pc.oniceconnectionstatechange = () => {
+                    if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+                        document.getElementById('p2pError').style.display = 'block';
+                    } else if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+                        document.getElementById('p2pError').style.display = 'none';
+                        document.getElementById('p2pStatus').innerText = "P2P: Verbunden";
+                        document.getElementById('p2pStatus').style.color = "#4CAF50";
                     }
                 };
 
@@ -637,6 +661,7 @@
                 document.getElementById('matchmakingScreen').style.display = 'block';
                 document.getElementById('roomCodeDisplay').innerText = game.roomCode;
                 document.getElementById('forceStartBtn').style.display = 'block';
+                document.getElementById('p2pStatus').innerText = "P2P: Warte auf Spieler (Host)";
                 game.startPolling();
             },
 
@@ -654,6 +679,7 @@
                 document.getElementById('startScreen').style.display = 'none';
                 document.getElementById('matchmakingScreen').style.display = 'block';
                 document.getElementById('roomCodeDisplay').innerText = game.roomCode;
+                document.getElementById('p2pStatus').innerText = "P2P: Verbinde mit Host...";
 
                 const pc = game.createPeerConnection(game.hostId);
                 game.startPolling();
@@ -724,9 +750,15 @@
                     const data = JSON.parse(event.data);
 
                     if (game.isHost) {
+                        // --- HOST EMPFÄNGT DATEN VOM GAST ---
                         if (data.type === 'guest_update') {
                             let p = game.peers[targetId];
-                            if (p) { p.x = data.x; p.y = data.y; p.dx = data.dx; p.isAlive = data.isAlive; p.inVent = data.inVent; }
+                            if (p && data.player) {
+                                p.x = data.player.x; p.y = data.player.y; p.dx = data.player.dx;
+                                p.isAlive = data.player.isAlive; p.inVent = data.player.inVent;
+                                if (data.player.color) p.color = data.player.color;
+                                if (data.player.name) p.name = data.player.name;
+                            }
                         }
                         if (data.type === 'task_done') {
                             game.tasksCompleted++;
@@ -749,9 +781,19 @@
                         }
                         if (data.type === 'chat_msg') game.receiveChat(data.sender, data.msg);
                         if (data.type === 'vote_cast') game.registerVote(data.voteTarget);
+
                     } else {
-                        // Guest Update
+                        // --- GAST EMPFÄNGT DATEN VOM HOST ---
                         if (data.type === 'host_update') {
+                            // Den Host aktualisieren
+                            if (!game.peers[game.hostId]) game.peers[game.hostId] = { color: '#888', name: 'Host' };
+                            let hostP = game.peers[game.hostId];
+                            if (data.hostPlayer) {
+                                hostP.x = data.hostPlayer.x; hostP.y = data.hostPlayer.y; hostP.dx = data.hostPlayer.dx;
+                                hostP.isAlive = data.hostPlayer.isAlive; hostP.inVent = data.hostPlayer.inVent;
+                            }
+
+                            // Die anderen Mitspieler aktualisieren
                             for (const [id, state] of Object.entries(data.peers)) {
                                 if (id !== game.player.id) {
                                     if (!game.peers[id]) game.peers[id] = { color: '#888', name: 'Player' };
@@ -762,21 +804,16 @@
                                 }
                             }
                             game.bots = data.bots; game.tasks = data.tasks; game.tasksCompleted = data.tasksCompleted; game.deadBodies = data.deadBodies;
-
                             if (!game.player.isImpostor) document.getElementById('taskCount').innerText = game.tasksCompleted;
                         }
                         if (data.type === 'game_setup') {
                             game.player.isImpostor = data.myRole === 'impostor';
-                            Object.keys(data.peerRoles).forEach(id => {
-                                if (game.peers[id]) game.peers[id].isImpostor = data.peerRoles[id];
-                            });
-                            game.settings.killCooldown = data.settings.killCooldown;
-                            game.totalTasks = data.settings.totalTasks;
+                            Object.keys(data.peerRoles).forEach(id => { if (game.peers[id]) game.peers[id].isImpostor = data.peerRoles[id]; });
+                            game.settings.killCooldown = data.settings.killCooldown; game.totalTasks = data.settings.totalTasks;
                             if (data.map) {
-                                game.map.walls = data.map.walls;
-                                game.map.vents = data.map.vents;
-                                game.map.w = data.map.w;
-                                game.map.h = data.map.h;
+                                game.map.walls = data.map.walls; game.map.vents = data.map.vents;
+                                game.map.w = data.map.w; game.map.h = data.map.h;
+                                game.map.floors = data.map.floors || []; game.map.decor = data.map.decor || [];
                             }
                             game.playIntro();
                         }
@@ -840,10 +877,9 @@
                         if (data.hasHome && data.amongUsMap && data.amongUsMap.length > 0) {
                             game.map.walls = [];
                             game.map.vents = [];
+                            game.map.floors = [];
+                            game.map.decor = [];
                             let possibleTasks = [];
-
-                            game.map.floors = []; // NEU
-                            game.map.decor = [];  // NEU
 
                             data.amongUsMap.forEach(item => {
                                 let w = item.w, h = item.h;
@@ -890,7 +926,6 @@
                         });
                     }
 
-                    // Alle in einen Topf (Player + Peers + Bots) und mischen
                     let rolePool = [{ type: 'player', id: game.player.id }];
                     Object.keys(game.peers).forEach(p => rolePool.push({ type: 'peer', id: p }));
                     game.bots.forEach((b, i) => rolePool.push({ type: 'bot', id: i }));
@@ -906,6 +941,9 @@
                         game.peers[pId].isImpostor = impostors.some(i => i.type === 'peer' && i.id === pId);
                         peerRoles[pId] = game.peers[pId].isImpostor;
                     });
+                    // Der Host muss auch in peerRoles, damit Gäste wissen, ob er Impostor ist
+                    peerRoles[game.player.id] = game.player.isImpostor;
+
                     game.bots.forEach((b, i) => {
                         b.isImpostor = impostors.some(imp => imp.type === 'bot' && imp.id === i);
                     });
@@ -922,14 +960,13 @@
                         } else {
                             t = game.getRandomSafePos();
                         }
-                        // Tasks rotierend an alle Menschen verteilen. Falls kein Crewmate da (nur Host Impostor), hat er Pech.
                         const ownerId = humanCrewIds.length > 0 ? humanCrewIds[i % humanCrewIds.length] : game.player.id;
                         game.tasks.push({ id: i, x: t.x, y: t.y, active: true, owner: ownerId });
                     }
 
-                    // Sende Setup & Custom Map an alle Guests
+                    // Sende Setup an alle Gäste
                     Object.keys(game.peers).forEach(id => {
-                        if (game.peers[id].dataChannel) {
+                        if (game.peers[id].dataChannel && game.peers[id].dataChannel.readyState === 'open') {
                             game.peers[id].dataChannel.send(JSON.stringify({
                                 type: 'game_setup', myRole: game.peers[id].isImpostor ? 'impostor' : 'crewmate',
                                 peerRoles: peerRoles, settings: { killCooldown: game.settings.killCooldown, totalTasks: game.settings.totalTasks },
@@ -970,7 +1007,7 @@
                         p.x = 1000 + (Math.random() * 400 - 200); p.y = 750 + (Math.random() * 400 - 200);
                         attempts++;
                     }
-                    if (attempts >= 100) p = game.getRandomSafePos(); // Not-Fallback
+                    if (attempts >= 100) p = game.getRandomSafePos();
                     return p;
                 };
 
@@ -993,8 +1030,12 @@
                         let p = game.peers[id];
                         if (p.isAlive && !p.isImpostor && Math.hypot(game.player.x - p.x, game.player.y - p.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, p.x, p.y)) {
                             game.player.killCooldown = game.settings.killCooldown;
-                            if (game.isHost) { p.isAlive = false; game.deadBodies.push({ x: p.x, y: p.y, color: p.color }); game.checkWinCondition(); }
-                            else { game.dataChannel.send(JSON.stringify({ type: 'kill_request', target: 'peer', peerId: id })); }
+                            if (game.isHost) {
+                                p.isAlive = false; game.deadBodies.push({ x: p.x, y: p.y, color: p.color }); game.checkWinCondition();
+                            } else {
+                                if (id === game.hostId) { game.sendToHost({ type: 'kill_request', target: 'host' }); }
+                                else { game.sendToHost({ type: 'kill_request', target: 'peer', peerId: id }); }
+                            }
                             return;
                         }
                     }
@@ -1003,21 +1044,20 @@
                         if (b.isAlive && !b.isImpostor && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) {
                             game.player.killCooldown = game.settings.killCooldown;
                             if (game.isHost) { b.isAlive = false; game.deadBodies.push({ x: b.x, y: b.y, color: b.color }); game.checkWinCondition(); }
-                            else { game.dataChannel.send(JSON.stringify({ type: 'kill_request', target: 'bot', botId: i })); }
+                            else { game.sendToHost({ type: 'kill_request', target: 'bot', botId: i }); }
                             return;
                         }
                     }
                     return;
                 }
 
-                // Crewmate Task
                 for (let i = 0; i < game.tasks.length; i++) {
                     let t = game.tasks[i];
                     if (t.active && t.owner === game.player.id && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70 && (!game.player.isAlive || game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y))) {
                         t.active = false;
                         game.tasksCompleted++;
                         document.getElementById('taskCount').innerText = game.tasksCompleted;
-                        if (!game.isHost && game.dataChannel) game.dataChannel.send(JSON.stringify({ type: 'task_done', taskId: i }));
+                        game.sendToHost({ type: 'task_done', taskId: i });
                         if (game.isHost) game.checkWinCondition();
                         break;
                     }
@@ -1048,13 +1088,11 @@
             checkWinCondition: () => {
                 if (!game.isHost || game.state === 'OVER') return;
 
-                // 1. Sieg-Bedingung Crew: Alle Tasks erledigt
                 if (game.tasksCompleted >= game.totalTasks && game.totalTasks > 0) {
                     game.sendGameOver("CREW_WIN", "Alle Tasks erledigt! Crewmates gewinnen.");
                     return;
                 }
 
-                // Zähle Überlebende
                 let livingCrew = 0;
                 let livingImp = 0;
 
@@ -1062,11 +1100,9 @@
                 Object.values(game.peers).forEach(p => { if (p.isAlive) p.isImpostor ? livingImp++ : livingCrew++; });
                 game.bots.forEach(b => { if (b.isAlive) b.isImpostor ? livingImp++ : livingCrew++; });
 
-                // 2. Sieg-Bedingung Impostor: Crew eliminiert
                 if (livingImp >= livingCrew) {
                     game.sendGameOver("IMP_WIN", "Die Impostors haben die Überhand gewonnen!");
                 }
-                // 3. Sieg-Bedingung Crew: Alle Impostors tot (z.B. durch Voting)
                 else if (livingImp === 0) {
                     game.sendGameOver("CREW_WIN", "Alle Impostors wurden eliminiert!");
                 }
@@ -1074,20 +1110,13 @@
 
             sendGameOver: (winnerTeam, reason) => {
                 let finalTitle = "DEFEAT";
-
-                // Bestimme, ob der lokale Spieler gewonnen hat
                 if (winnerTeam === "IMP_WIN" && game.player.isImpostor) finalTitle = "VICTORY";
                 if (winnerTeam === "CREW_WIN" && !game.player.isImpostor) finalTitle = "VICTORY";
 
                 game.endGame(finalTitle, reason);
 
-                // Daten an den Guest synchronisieren
-                if (game.dataChannel && game.dataChannel.readyState === 'open') {
-                    game.dataChannel.send(JSON.stringify({
-                        type: 'game_over',
-                        winnerTeam: winnerTeam, // Der Guest berechnet seinen Titel selbst basierend auf seinem Team
-                        reason: reason
-                    }));
+                if (game.isHost) {
+                    game.broadcast({ type: 'game_over', winnerTeam: winnerTeam, reason: reason });
                 }
             },
 
@@ -1096,7 +1125,7 @@
                 if (!game.player.isAlive || game.state !== 'PLAYING') return;
                 const rName = game.user ? game.user.username : "Du";
                 if (game.isHost) { game.startMeeting(rName); game.broadcast({ type: 'call_meeting', reporter: rName }); }
-                else { game.dataChannel.send(JSON.stringify({ type: 'call_meeting', reporter: rName })); }
+                else { game.sendToHost({ type: 'call_meeting', reporter: rName }); }
             },
 
             startMeeting: (reporterName) => {
@@ -1165,16 +1194,7 @@
                 };
 
                 renderRow(game.player.id, game.user ? game.user.username : "Du", game.player.color, game.player.isAlive);
-                // Sende Setup & Custom Map an alle Guests
-                Object.keys(game.peers).forEach(id => {
-                    if (game.peers[id].dataChannel && game.peers[id].dataChannel.readyState === 'open') {
-                        game.peers[id].dataChannel.send(JSON.stringify({
-                            type: 'game_setup', myRole: game.peers[id].isImpostor ? 'impostor' : 'crewmate',
-                            peerRoles: peerRoles, settings: { killCooldown: game.settings.killCooldown, totalTasks: game.settings.totalTasks },
-                            map: game.map
-                        }));
-                    }
-                });
+                Object.keys(game.peers).forEach(id => { let p = game.peers[id]; renderRow(id, p.name, p.color, p.isAlive); });
                 game.bots.forEach((b, i) => { renderRow(`bot_${i}`, `Bot_${i + 1}`, b.color, b.isAlive); });
             },
 
@@ -1184,7 +1204,7 @@
                 document.getElementById('skipVoteBtn').disabled = true;
 
                 if (game.isHost) game.registerVote(targetId);
-                else game.dataChannel.send(JSON.stringify({ type: 'vote_cast', voteTarget: targetId }));
+                else game.sendToHost({ type: 'vote_cast', voteTarget: targetId });
             },
 
             registerVote: (targetId) => {
@@ -1261,7 +1281,7 @@
                 const sender = game.user ? game.user.username : "Du";
 
                 if (game.isHost) { game.receiveChat(sender, msg); game.broadcast({ type: 'chat_msg', sender, msg }); }
-                else { game.dataChannel.send(JSON.stringify({ type: 'chat_msg', sender, msg })); }
+                else { game.sendToHost({ type: 'chat_msg', sender, msg }); }
             },
 
             receiveChat: (sender, msg) => {
@@ -1327,7 +1347,7 @@
                             if (Math.hypot(game.player.x - v.x, game.player.y - v.y) < 70) { showVentBtn = true; break; }
                         }
                         if (!game.player.inVent) {
-                            for (let b of game.bots) { if (b.isAlive && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) showActionBtn = true; }
+                            for (let b of game.bots) { if (b.isAlive && !b.isImpostor && Math.hypot(game.player.x - b.x, game.player.y - b.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, b.x, b.y)) showActionBtn = true; }
                             Object.values(game.peers).forEach(p => { if (p.isAlive && !p.isImpostor && Math.hypot(game.player.x - p.x, game.player.y - p.y) < 70 && game.hasLineOfSight(game.player.x, game.player.y, p.x, p.y)) showActionBtn = true; });
                         }
                     } else {
@@ -1355,7 +1375,6 @@
                     if (game.keys['Space'] && showActionBtn) { game.keys['Space'] = false; game.doTask(); }
                     if (game.keys['KeyV'] && showVentBtn) { game.keys['KeyV'] = false; game.useVent(); }
                 } else if (!game.player.isImpostor) {
-                    // Geister können auch Tasks machen!
                     let showActionBtn = false;
                     for (let t of game.tasks) {
                         if (t.active && t.owner === game.player.id && Math.hypot(game.player.x - t.x, game.player.y - t.y) < 70) showActionBtn = true;
@@ -1451,11 +1470,14 @@
                         });
                         game.broadcast(stateData);
                     } else {
-                        if (game.dataChannel && game.dataChannel.readyState === 'open') {
-                            game.dataChannel.send(JSON.stringify({
-                                type: 'guest_update', player: { x: game.player.x, y: game.player.y, dx: game.player.dx, isAlive: game.player.isAlive, inVent: game.player.inVent }
-                            }));
-                        }
+                        game.sendToHost({
+                            type: 'guest_update',
+                            player: {
+                                x: game.player.x, y: game.player.y, dx: game.player.dx,
+                                isAlive: game.player.isAlive, inVent: game.player.inVent,
+                                color: game.player.color, name: game.user ? game.user.username : 'Guest'
+                            }
+                        });
                     }
                     game.lastSync = now;
                 }
@@ -1470,13 +1492,11 @@
                 if (!game.player.isAlive) ctx.globalAlpha = 0.6;
                 ctx.translate(-camX, -camY);
 
-                // 0. Weltraum-Hintergrund & Grid
                 ctx.fillStyle = '#2c3338'; ctx.fillRect(0, 0, game.map.w, game.map.h);
                 ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
                 for (let i = 0; i < game.map.w; i += 80) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, game.map.h); ctx.stroke(); }
                 for (let i = 0; i < game.map.h; i += 80) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(game.map.w, i); ctx.stroke(); }
 
-                // 1. TEPPICHE UND BÖDEN (Ganz unten!)
                 for (let f of (game.map.floors || [])) {
                     ctx.fillStyle = f.bg;
                     ctx.fillRect(f.x, f.y, f.w, f.h);
@@ -1487,7 +1507,6 @@
                     }
                 }
 
-                // 2. VENTS (Lüftungsschächte)
                 ctx.fillStyle = '#333'; ctx.strokeStyle = '#000';
                 for (let v of game.map.vents) {
                     if (game.player.inVent || (!game.player.isAlive) || game.hasLineOfSight(game.player.x, game.player.y, v.x, v.y)) {
@@ -1499,7 +1518,6 @@
                     }
                 }
 
-                // 3. WÄNDE & BASIS-MÖBEL (Tische, Betten)
                 ctx.fillStyle = '#111'; ctx.strokeStyle = '#444'; ctx.lineWidth = 4;
                 for (let w of game.map.walls) {
                     ctx.fillStyle = w.bg || '#111';
@@ -1512,7 +1530,6 @@
                     }
                 }
 
-                // 4. LEICHEN
                 for (let dead of game.deadBodies) {
                     if (!game.player.isAlive || game.hasLineOfSight(game.player.x, game.player.y, dead.x, dead.y)) {
                         ctx.fillStyle = dead.color; ctx.beginPath(); ctx.arc(dead.x, dead.y, 14, 0, Math.PI); ctx.fill();
@@ -1520,7 +1537,6 @@
                     }
                 }
 
-                // 5. TASKS (Gelbe Kreise)
                 if (!game.player.isImpostor) {
                     for (let t of game.tasks) {
                         if (t.active && t.owner === game.player.id && (!game.player.isAlive || game.hasLineOfSight(game.player.x, game.player.y, t.x, t.y))) {
@@ -1531,21 +1547,20 @@
                     }
                 }
 
-                // 6. ANDERE SPIELER & BOTS
                 const drawOthers = (obj, isBot) => {
                     if (obj.isAlive && !obj.inVent && (!game.player.isAlive || game.hasLineOfSight(game.player.x, game.player.y, obj.x, obj.y))) {
-                        game.drawCharacter(obj.x, obj.y, obj.size || 14, obj.color, !isBot, obj.isImpostor, obj.dx);
+                        game.drawCharacter(obj.x, obj.y, obj.size || 14, obj.color, !isBot, obj.isImpostor, obj.dx, obj.name);
                     }
                 };
                 game.bots.forEach(b => drawOthers(b, true));
                 Object.values(game.peers).forEach(p => drawOthers(p, false));
 
-                // 7. DER EIGENE SPIELER
+                // Der Host hat eine ID, wenn er durch die drawOthers Schleife rutscht, fehlt er bei Gästen oft. 
+                // Host wird von den Gästen in peers gespeichert, also ist er abgedeckt.
                 if (game.player.isAlive && !game.player.inVent) {
-                    game.drawCharacter(game.player.x, game.player.y, game.player.size, game.player.color, true, game.player.isImpostor, game.player.dx);
+                    game.drawCharacter(game.player.x, game.player.y, game.player.size, game.player.color, true, game.player.isImpostor, game.player.dx, game.user ? game.user.username : 'Du');
                 }
 
-                // 8. DEKO (Pflanzen, Telefone - Werden ÜBER den Spielern gezeichnet!)
                 for (let d of (game.map.decor || [])) {
                     if (d.bg && d.bg !== 'transparent') {
                         ctx.fillStyle = d.bg;
@@ -1558,9 +1573,8 @@
                     }
                 }
 
-                ctx.restore(); // Kamera-Verschiebung beenden
+                ctx.restore();
 
-                // 9. LICHTKEGEL (Sichtfeld)
                 if (game.player.isAlive) {
                     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
                     let cx = canvas.width / 2, cy = canvas.height / 2;
@@ -1569,7 +1583,6 @@
                     ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();
                 }
 
-                // 10. JOYSTICK (Mobile)
                 if (game.joystick.active) {
                     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
                     ctx.beginPath(); ctx.arc(game.joystick.originX, game.joystick.originY, 50, 0, Math.PI * 2);
@@ -1579,7 +1592,7 @@
                 }
             },
 
-            drawCharacter: (x, y, size, color, isRealPlayer, isImpostor, dx) => {
+            drawCharacter: (x, y, size, color, isRealPlayer, isImpostor, dx, nameOverride = '') => {
                 ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(x, y + size - 2, size, size / 2.5, 0, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.stroke();
@@ -1595,9 +1608,7 @@
                     ctx.fillStyle = isKnownImpostor ? '#ff0000' : '#fff';
                     ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
                     ctx.shadowColor = "black"; ctx.shadowBlur = 3; ctx.lineWidth = 2;
-                    let n = (x === game.player.x && y === game.player.y) ? (game.user ? game.user.username : 'You') : 'Player';
-                    Object.values(game.peers).forEach(p => { if (p.x === x && p.y === y) n = p.name; });
-                    ctx.fillText(n, x, y - size - 8); ctx.shadowBlur = 0;
+                    ctx.fillText(nameOverride || 'Player', x, y - size - 8); ctx.shadowBlur = 0;
                 }
             },
 
