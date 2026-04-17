@@ -1,106 +1,489 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Among Us - Map Creator & Wardrobe</title>
     <style>
-        :root { --au-red: #c51111; --au-dark: #1e1e24; --bg: #000; --panel-bg: #111; --text: #fff; }
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; }
-        
-        #top-nav { display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); padding: 10px 20px; border-bottom: 3px solid var(--au-red); z-index: 100; }
-        .logo { font-size: 1.2rem; font-weight: bold; color: var(--au-red); text-transform: uppercase; letter-spacing: 2px;}
-        .nav-actions { display: flex; gap: 10px; align-items: center; }
-        .nav-actions button { background: #333; color: white; border: 1px solid #555; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .nav-actions button.save-btn { background: var(--au-red); color: white; border: none; }
-        
-        #bal-display { color: #4CAF50; font-weight: bold; margin-right: 15px; font-family: monospace; font-size: 1.1rem; }
-
-        .main-wrapper { display: flex; flex: 1; overflow: hidden; flex-direction: row; }
-
-        #sidebar { width: 380px; background: var(--panel-bg); border-right: 2px solid #333; display: flex; flex-direction: column; z-index: 10; }
-        
-        /* Scrollbare Tabs für Mobile & iPad */
-        .tabs-container { overflow-x: auto; border-bottom: 1px solid #333; background: #000; }
-        .tabs { display: flex; width: max-content; }
-        .tab { padding: 12px 15px; text-align: center; font-weight: bold; transition: 0.2s; font-size: 0.85rem; cursor: pointer; white-space: nowrap; color: #888; border-bottom: 2px solid transparent;}
-        .tab:hover { color: #fff; }
-        .tab.active { background: var(--panel-bg); color: var(--au-red); border-bottom: 2px solid var(--au-red); }
-
-        .item-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .list-item { background: #222; margin-bottom: 10px; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333;}
-        .item-icon { font-size: 2rem; margin-right: 10px; background: #000; padding: 10px; border-radius: 8px; border: 1px solid #444; text-align:center; min-width: 40px;}
-        .item-details { flex: 1; }
-        .item-name { font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; color: #eee; }
-        
-        .buy-area { display: flex; gap: 5px; align-items: center; }
-        .buy-area input { width: 40px; padding: 6px; background: #111; border: 1px solid #555; color: white; border-radius: 4px; text-align: center;}
-        
-        .btn-place { background: #4CAF50; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight:bold; }
-        .btn-buy { background: #2196F3; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight:bold; }
-
-        /* Store Cards */
-        .store-card { background: #222; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--au-red); border-right: 1px solid #333; border-top: 1px solid #333; border-bottom: 1px solid #333;}
-        .store-title { font-weight: bold; color: var(--text); margin-bottom: 5px; font-size: 1.1rem;}
-        .store-author { font-size: 0.8rem; color: #888; margin-bottom: 10px;}
-
-        /* Wardrobe (Ankleidezimmer) */
-        .wardrobe-container { padding: 20px; text-align: center; }
-        .character-preview { width: 100px; height: 120px; margin: 0 auto 20px auto; position: relative; }
-        .color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
-        .color-swatch { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 3px solid #333; cursor: pointer; transition: 0.2s; }
-        .color-swatch:hover { transform: scale(1.1); }
-        .color-swatch.active { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.5); }
-        .color-swatch.locked { opacity: 0.3; cursor: not-allowed; position: relative; }
-        .color-swatch.locked::after { content: '🔒'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2rem; }
-
-        /* Map Area */
-        #editor-area { flex: 1; background: #0a0a0c; overflow: auto; position: relative; padding: 40px; box-sizing: border-box; }
-        #editor-tools { position: fixed; top: 80px; left: 400px; z-index: 200; display: flex; gap: 10px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px; border: 1px solid #333; }
-        .tool-btn { background: #222; color: white; border: 1px solid #444; width: 40px; height: 40px; border-radius: 8px; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .tool-btn.active { background: var(--au-red); border-color: var(--au-red); }
-
-        #room { 
-            background: #2c3338; position: relative; border: 4px solid #555; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); margin: 0 auto; 
-            background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); 
-            background-size: 20px 20px; 
+        :root {
+            --au-red: #c51111;
+            --au-dark: #1e1e24;
+            --bg: #000;
+            --panel-bg: #111;
+            --text: #fff;
         }
 
-        .map-piece { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; cursor: grab; user-select: none; touch-action: none; box-sizing: border-box; border: 2px solid rgba(255,255,255,0.1); transition: border-color 0.2s;}
-        .pan-mode .map-piece { pointer-events: none; }
-        .map-piece.dragging { cursor: grabbing; box-shadow: 0 10px 20px rgba(0,0,0,0.8); z-index: 1000 !important; filter: brightness(1.5); }
-        .map-piece.selected { border: 2px dashed var(--au-red); z-index: 999; }
-        .map-piece[data-layer="wall"] { background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.2) 10px, rgba(0,0,0,0.2) 20px); }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
 
-        #item-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 200; background: rgba(20,20,20,0.95); padding: 15px 25px; border-radius: 10px; display: none; gap: 15px; align-items: center; border: 1px solid #444; }
-        #item-controls button { background: #333; color: white; border: 1px solid #555; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
-        
-        .loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index: 5000; display:flex; justify-content:center; align-items:center; font-size: 2rem; color: var(--au-red); font-weight: bold; flex-direction: column;}
-        .spinner { border: 4px solid #333; border-top: 4px solid var(--au-red); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 10px 20px;
+            border-bottom: 3px solid var(--au-red);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--au-red);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-actions button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .nav-actions button.save-btn {
+            background: var(--au-red);
+            color: white;
+            border: none;
+        }
+
+        #bal-display {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 15px;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            flex-direction: row;
+        }
+
+        #sidebar {
+            width: 380px;
+            background: var(--panel-bg);
+            border-right: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        /* Scrollbare Tabs für Mobile & iPad */
+        .tabs-container {
+            overflow-x: auto;
+            border-bottom: 1px solid #333;
+            background: #000;
+        }
+
+        .tabs {
+            display: flex;
+            width: max-content;
+        }
+
+        .tab {
+            padding: 12px 15px;
+            text-align: center;
+            font-weight: bold;
+            transition: 0.2s;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            color: #888;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab:hover {
+            color: #fff;
+        }
+
+        .tab.active {
+            background: var(--panel-bg);
+            color: var(--au-red);
+            border-bottom: 2px solid var(--au-red);
+        }
+
+        .item-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .list-item {
+            background: #222;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #333;
+        }
+
+        .item-icon {
+            font-size: 2rem;
+            margin-right: 10px;
+            background: #000;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            text-align: center;
+            min-width: 40px;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #eee;
+        }
+
+        .buy-area {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .buy-area input {
+            width: 40px;
+            padding: 6px;
+            background: #111;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .btn-place {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-buy {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Store Cards */
+        .store-card {
+            background: #222;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--au-red);
+            border-right: 1px solid #333;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+
+        .store-title {
+            font-weight: bold;
+            color: var(--text);
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .store-author {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        /* Wardrobe (Ankleidezimmer) */
+        .wardrobe-container {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .character-preview {
+            width: 100px;
+            height: 120px;
+            margin: 0 auto 20px auto;
+            position: relative;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .color-swatch {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 3px solid #333;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+
+        .color-swatch.active {
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .color-swatch.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .color-swatch.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+        }
+
+        /* Map Area */
+        #editor-area {
+            flex: 1;
+            background: #0a0a0c;
+            overflow: auto;
+            position: relative;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        #editor-tools {
+            position: fixed;
+            top: 80px;
+            left: 400px;
+            z-index: 200;
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        .tool-btn {
+            background: #222;
+            color: white;
+            border: 1px solid #444;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .tool-btn.active {
+            background: var(--au-red);
+            border-color: var(--au-red);
+        }
+
+        #room {
+            background: #2c3338;
+            position: relative;
+            border: 4px solid #555;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            margin: 0 auto;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .map-piece {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            box-sizing: border-box;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: border-color 0.2s;
+        }
+
+        .pan-mode .map-piece {
+            pointer-events: none;
+        }
+
+        .map-piece.dragging {
+            cursor: grabbing;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+            z-index: 1000 !important;
+            filter: brightness(1.5);
+        }
+
+        .map-piece.selected {
+            border: 2px dashed var(--au-red);
+            z-index: 999;
+        }
+
+        .map-piece[data-layer="wall"] {
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.2) 10px, rgba(0, 0, 0, 0.2) 20px);
+        }
+
+        #item-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            background: rgba(20, 20, 20, 0.95);
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid #444;
+        }
+
+        #item-controls button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 5000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--au-red);
+            font-weight: bold;
+            flex-direction: column;
+        }
+
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid var(--au-red);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
         /* Toast Notifications */
         .toast {
-            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
-            background: #4CAF50; color: white; padding: 12px 24px; border-radius: 8px;
-            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 9999;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s, top 0.3s;
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, top 0.3s;
         }
-        .toast.show { opacity: 1; top: 90px; }
-        .toast.error { background: #d32f2f; }
+
+        .toast.show {
+            opacity: 1;
+            top: 90px;
+        }
+
+        .toast.error {
+            background: #d32f2f;
+        }
 
         @media (max-width: 768px) {
-            .main-wrapper { flex-direction: column; }
-            #sidebar { width: 100%; height: 45%; border-right: none; border-top: 2px solid #444; order: 2; }
-            #editor-area { height: 55%; order: 1; padding: 10px; }
-            #editor-tools { left: 10px; top: 70px; }
+            .main-wrapper {
+                flex-direction: column;
+            }
+
+            #sidebar {
+                width: 100%;
+                height: 45%;
+                border-right: none;
+                border-top: 2px solid #444;
+                order: 2;
+            }
+
+            #editor-area {
+                height: 55%;
+                order: 1;
+                padding: 10px;
+            }
+
+            #editor-tools {
+                left: 10px;
+                top: 70px;
+            }
         }
     </style>
 </head>
+
 <body>
 
-    <div id="loading" class="loading-screen"><div class="spinner"></div>Lade Map Creator...</div>
+    <div id="loading" class="loading-screen">
+        <div class="spinner"></div>Lade Map Creator...
+    </div>
     <div id="toast" class="toast">Feedback!</div>
 
     <div id="top-nav">
@@ -142,8 +525,8 @@
     </div>
 
     <script>
-        const API = 'https://api.limazon.v6.rocks/api'; 
-        
+        const API = 'https://api.limazon.v6.rocks/api';
+
         const SKIN_COLORS = [
             { id: 'c_red', hex: '#c51111', price: 0, name: 'Klassisch Rot' },
             { id: 'c_blue', hex: '#132ed1', price: 0, name: 'Dunkelblau' },
@@ -155,7 +538,7 @@
             { id: 'c_white', hex: '#d6e0f0', price: 1500, name: 'Weiß' },
             { id: 'c_purple', hex: '#6b2fbb', price: 2000, name: 'Lila' },
             { id: 'c_cyan', hex: '#38fedc', price: 2000, name: 'Cyan' },
-            { id: 'c_gold', hex: '#ffd700', price: 50000, name: 'Solid Gold' } 
+            { id: 'c_gold', hex: '#ffd700', price: 50000, name: 'Solid Gold' }
         ];
 
         const MAP_SIZES = {
@@ -169,10 +552,10 @@
         let currentTab = 'limea_shop';
         let currentMode = 'build';
         let userBalance = 0;
-        
+
         let limeaCatalog = [];
         let limeaInventory = {};
-        
+
         let playerSettings = JSON.parse(localStorage.getItem('au_settings')) || {
             color: '#c51111',
             unlockedColors: ['c_red', 'c_blue', 'c_green']
@@ -229,11 +612,11 @@
                 setupPanTool();
 
                 document.getElementById('editor-area').addEventListener('pointerdown', (e) => {
-                    if(e.target.id === 'editor-area' || e.target.id === 'room') deselectAll();
+                    if (e.target.id === 'editor-area' || e.target.id === 'room') deselectAll();
                 });
 
                 document.getElementById('loading').style.display = 'none';
-            } catch(e) {
+            } catch (e) {
                 document.getElementById('loading').style.display = 'none';
                 console.error("Init Error", e);
             }
@@ -248,7 +631,7 @@
             currentTab = tab;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
-            
+
             document.getElementById('editor-tools').style.display = (tab === 'limea_shop' || tab === 'inv' || tab === 'mapstore') ? 'flex' : 'none';
             renderSidebar();
         }
@@ -292,14 +675,14 @@
                         `;
                     }
                 });
-                if(!hasItems) list.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">Dein Lager ist leer.<br>Geh in den Store!</div>';
+                if (!hasItems) list.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">Dein Lager ist leer.<br>Geh in den Store!</div>';
             }
             else if (currentTab === 'mapstore') {
                 list.innerHTML = '<div style="color:#aaa; text-align:center; margin-top:20px;">Lade Community Maps...</div>';
                 try {
                     const storeData = await fetchApi('/limea/layouts');
                     list.innerHTML = '';
-                    if(storeData.layouts && storeData.layouts.length > 0) {
+                    if (storeData.layouts && storeData.layouts.length > 0) {
                         storeData.layouts.forEach(l => {
                             list.innerHTML += `
                                 <div class="store-card">
@@ -312,7 +695,7 @@
                     } else {
                         list.innerHTML = '<div style="color:#888; text-align:center;">Keine Maps im Store gefunden.</div>';
                     }
-                } catch(e) { list.innerHTML = '<div style="color:#ff4458; text-align:center;">Fehler beim Laden des Stores.</div>'; }
+                } catch (e) { list.innerHTML = '<div style="color:#ff4458; text-align:center;">Fehler beim Laden des Stores.</div>'; }
             }
             else if (currentTab === 'wardrobe') {
                 let html = `<div class="wardrobe-container">
@@ -321,11 +704,11 @@
                     </div>
                     <h3 style="margin-bottom: 5px;">Wähle deine Farbe</h3>
                     <div class="color-grid">`;
-                
+
                 SKIN_COLORS.forEach(c => {
                     const isUnlocked = playerSettings.unlockedColors.includes(c.id);
                     const isActive = playerSettings.color === c.hex;
-                    
+
                     if (isUnlocked) {
                         html += `<div class="color-swatch ${isActive ? 'active' : ''}" 
                                       style="background-color: ${c.hex};" 
@@ -348,7 +731,7 @@
                 let hasUnbought = false;
                 SKIN_COLORS.forEach(c => {
                     const isUnlocked = playerSettings.unlockedColors.includes(c.id);
-                    if(!isUnlocked) {
+                    if (!isUnlocked) {
                         hasUnbought = true;
                         list.innerHTML += `
                             <div class="list-item">
@@ -362,7 +745,7 @@
                         `;
                     }
                 });
-                if(!hasUnbought) {
+                if (!hasUnbought) {
                     list.innerHTML += '<div style="text-align:center; color:#4CAF50; padding:20px; font-weight:bold;">Du hast bereits alle Farben gekauft!</div>';
                 }
             }
@@ -378,7 +761,7 @@
             else {
                 limeaInventory[id] = (limeaInventory[id] || 0) + qty;
                 if (res.newBalance !== undefined) updateBalance(res.newBalance - userBalance);
-                qtyInput.value = 1; 
+                qtyInput.value = 1;
                 showToast(`Erfolgreich ${qty}x gekauft!`);
             }
         }
@@ -395,14 +778,13 @@
                 showToast(`Zu wenig Geld! Kostet $${price.toLocaleString()}.`, 'error');
                 return;
             }
-            if(price > 0) {
+            if (price > 0) {
                 try {
-                    const res = await fetchApi('/bank/transfer', 'POST', { 
-                        recipientName: 'BANK', amount: price, type: 'money', reason: `Kauf von Skin ${id}` 
-                    });
-                    if(res.error) return showToast(res.error, 'error');
+                    // Nutzt jetzt unseren neuen, sauberen Endpunkt
+                    const res = await fetchApi('/amongus/buy-skin', 'POST', { skinId: id, price: price });
+                    if (res.error) return showToast(res.error, 'error');
                     updateBalance(-price);
-                } catch(e) { return showToast("Kauf fehlgeschlagen.", 'error'); }
+                } catch (e) { return showToast("Kauf fehlgeschlagen.", 'error'); }
             }
 
             playerSettings.unlockedColors.push(id);
@@ -413,16 +795,16 @@
 
         function drawPreview(color) {
             const cvs = document.getElementById('previewCanvas');
-            if(!cvs) return;
+            if (!cvs) return;
             const ctx = cvs.getContext('2d');
             ctx.clearRect(0, 0, cvs.width, cvs.height);
-            
+
             const x = 50, y = 60, size = 35;
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(x, y + size - 2, size, size/2.5, 0, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI*2); ctx.fill();
+
+            ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(x, y + size - 2, size, size / 2.5, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fill();
             ctx.strokeStyle = '#000'; ctx.lineWidth = 4; ctx.stroke();
-            ctx.fillStyle = '#90caf9'; ctx.beginPath(); ctx.ellipse(x + 5, y - 5, size*0.6, size*0.35, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#90caf9'; ctx.beginPath(); ctx.ellipse(x + 5, y - 5, size * 0.6, size * 0.35, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         }
 
         // --- MAP BUILDER & KOLLISION ---
@@ -430,52 +812,100 @@
             let w = parseInt(el.style.width); let h = parseInt(el.style.height);
             let r = parseInt(el.dataset.rotation) || 0;
             let cx = x + w / 2; let cy = y + h / 2;
-            if (r === 90 || r === 270) return { left: cx - h/2, right: cx + h/2, top: cy - w/2, bottom: cy + w/2 };
+            if (r === 90 || r === 270) return { left: cx - h / 2, right: cx + h / 2, top: cy - w / 2, bottom: cy + w / 2 };
             return { left: x, right: x + w, top: y, bottom: y + h };
         }
 
         function checkCollision(boundsA, boundsB) {
-            return (boundsA.left < boundsB.right - 1 && boundsA.right > boundsB.left + 1 && 
-                    boundsA.top < boundsB.bottom - 1 && boundsA.bottom > boundsB.top + 1);
+            // Toleranz von 2 Pixeln, damit Sachen perfekt nebeneinander rutschen können
+            return (boundsA.left < boundsB.right - 2 && boundsA.right > boundsB.left + 2 &&
+                boundsA.top < boundsB.bottom - 2 && boundsA.bottom > boundsB.top + 2);
         }
 
         function shouldCollide(layerA, layerB) {
-            if (!layerA) layerA = 'base'; if (!layerB) layerB = 'base';
-            if (layerA === 'floor' || layerB === 'floor' || layerA === 'vent' || layerB === 'vent' || layerA === 'task' || layerB === 'task') return false;
-            // Wände dürfen sich überlappen!
-            if (layerA === 'wall' && layerB === 'wall') return false; 
+            if (!layerA) layerA = 'base';
+            if (!layerB) layerB = 'base';
+            if (layerA === 'floor' || layerB === 'floor') return false;
+
+            if (layerA === 'decor' && layerB === 'decor') return false;
+
             if ((layerA === 'decor' && layerB === 'base') || (layerA === 'base' && layerB === 'decor')) return false;
-            return true; 
+            if (layerA === 'wall' && layerB === 'wall') return false;
+            return true;
         }
 
         function placeItem(id) {
             if (currentMode === 'pan') setMode('build');
             if (limeaInventory[id] <= 0) return;
-            
+
             const itemDef = limeaCatalog.find(i => i.id === id);
             if (!itemDef) return;
-
-            limeaInventory[id]--;
-            renderSidebar();
 
             const room = document.getElementById('room');
             const editorArea = document.getElementById('editor-area');
             const editorRect = editorArea.getBoundingClientRect();
             const roomRect = room.getBoundingClientRect();
+
+            // Berechne die Mitte der aktuellen Kamera-Ansicht
             let vpCenterX = (editorRect.width / 2) - roomRect.left;
             let vpCenterY = (editorRect.height / 2) - roomRect.top;
 
             let startX = Math.round(vpCenterX / 20) * 20;
             let startY = Math.round(vpCenterY / 20) * 20;
 
+            // Suche freien Platz (Anti-Overlap & Map-Grenzen)
+            let placed = false;
+            let dummyEl = { style: { width: itemDef.w + 'px', height: itemDef.h + 'px' }, dataset: { rotation: 0, layer: itemDef.layer || 'base' } };
+
+            for (let offset = 0; offset < 600; offset += 20) {
+                const offsets = [
+                    { dx: 0, dy: 0 },
+                    { dx: offset, dy: 0 }, { dx: -offset, dy: 0 },
+                    { dx: 0, dy: offset }, { dx: 0, dy: -offset },
+                    { dx: offset, dy: offset }, { dx: -offset, dy: -offset },
+                    { dx: offset, dy: -offset }, { dx: -offset, dy: offset }
+                ];
+
+                for (let pos of offsets) {
+                    let testX = startX + pos.dx;
+                    let testY = startY + pos.dy;
+
+                    let bounds = getBounds(dummyEl, testX, testY);
+
+                    // Map-Kollision (darf nicht außerhalb spawnen!)
+                    if (bounds.left < 0 || bounds.top < 0 || bounds.right > room.clientWidth || bounds.bottom > room.clientHeight) continue;
+
+                    // Objekt-Kollision (Darf nicht in andere Möbel/Wände glitchen)
+                    let collides = false;
+                    for (let other of placedItems) {
+                        let oBounds = getBounds(other, parseInt(other.style.left), parseInt(other.style.top));
+                        if (checkCollision(bounds, oBounds) && shouldCollide(dummyEl.dataset.layer, other.dataset.layer)) {
+                            collides = true; break;
+                        }
+                    }
+
+                    if (!collides) {
+                        startX = testX;
+                        startY = testY;
+                        placed = true;
+                        break;
+                    }
+                }
+                if (placed) break;
+            }
+
+            // Abziehen und Spawnen
+            limeaInventory[id]--;
+            renderSidebar();
+
             const uid = 'map_uid_' + Date.now() + Math.floor(Math.random() * 1000);
             const el = spawnElementDOM(id, uid, startX, startY, 0);
-            selectItem(el);
+            if (el) selectItem(el);
         }
 
         function spawnElementDOM(id, uid, x, y, rotation) {
             const itemDef = limeaCatalog.find(i => i.id === id);
-            if(!itemDef) return null;
+            if (!itemDef) return null;
 
             const el = document.createElement('div');
             el.className = 'map-piece';
@@ -483,14 +913,14 @@
             el.dataset.uid = uid;
             el.dataset.rotation = rotation;
             el.innerHTML = itemDef.icon;
-            
+
             const layer = itemDef.layer || 'base';
             el.dataset.layer = layer;
-            
+
             let z = 20;
-            if(layer === 'floor' || layer === 'vent') z = 10;
-            if(layer === 'task') z = 25;
-            if(layer === 'wall') z = 30; 
+            if (layer === 'floor' || layer === 'vent') z = 10;
+            if (layer === 'task') z = 25;
+            if (layer === 'wall') z = 30;
             el.style.zIndex = z;
 
             el.style.width = itemDef.w + 'px';
@@ -535,8 +965,8 @@
         }
 
         function startDrag(e) {
-            if(currentMode === 'pan') return; 
-            if(e.target !== this && !this.contains(e.target)) return; 
+            if (currentMode === 'pan') return;
+            if (e.target !== this && !this.contains(e.target)) return;
 
             isDragging = true; dragTarget = this; selectItem(dragTarget);
             dragTarget.classList.add('dragging');
@@ -550,14 +980,54 @@
 
         function onDrag(e) {
             if (!isDragging || !dragTarget) return;
-            let dx = e.clientX - startX; let dy = e.clientY - startY;
-            let newX = Math.round((initialX + dx) / 20) * 20;
-            let newY = Math.round((initialY + dy) / 20) * 20;
-            dragTarget.style.left = newX + 'px'; dragTarget.style.top = newY + 'px';
+
+            let dx = e.clientX - startX;
+            let dy = e.clientY - startY;
+
+            let targetX = initialX + dx;
+            let targetY = initialY + dy;
+
+            // 1. Berechne den Offset der Bounding-Box bei Rotation
+            let w = parseInt(dragTarget.style.width);
+            let h = parseInt(dragTarget.style.height);
+            let r = parseInt(dragTarget.dataset.rotation) || 0;
+
+            let offsetX = 0;
+            let offsetY = 0;
+            if (r === 90 || r === 270) {
+                offsetX = (w / 2) - (h / 2);
+                offsetY = (h / 2) - (w / 2);
+            }
+
+            // 2. Wende den Offset an, um die VISUELLE obere linke Ecke zu bekommen
+            let visualX = targetX + offsetX;
+            let visualY = targetY + offsetY;
+
+            // 3. HIER IST DAS SNAPPING-GEHEIMNIS:
+            // Wenn Shift gedrückt ist, snappen wir auf 2 Pixel genau (fast fließend). Sonst auf 10 Pixel.
+            let snapSize = e.shiftKey ? 2 : 10;
+            visualX = Math.round(visualX / snapSize) * snapSize;
+            visualY = Math.round(visualY / snapSize) * snapSize;
+
+            // 4. Zurückrechnen auf die echten DOM X/Y Werte
+            let newX = visualX - offsetX;
+            let newY = visualY - offsetY;
+
+            // 5. Grenzen der Map checken (damit man es nicht aus der Map schieben kann)
+            let bounds = getBounds(dragTarget, newX, newY);
+            let room = document.getElementById('room');
+
+            if (bounds.left < 0) newX += (0 - bounds.left);
+            if (bounds.top < 0) newY += (0 - bounds.top);
+            if (bounds.right > room.clientWidth) newX -= (bounds.right - room.clientWidth);
+            if (bounds.bottom > room.clientHeight) newY -= (bounds.bottom - room.clientHeight);
+
+            dragTarget.style.left = newX + 'px';
+            dragTarget.style.top = newY + 'px';
         }
 
         function endDrag(e) {
-            isDragging = false; if(!dragTarget) return;
+            isDragging = false; if (!dragTarget) return;
             dragTarget.classList.remove('dragging');
             dragTarget.releasePointerCapture(e.pointerId);
             document.removeEventListener('pointermove', onDrag);
@@ -588,7 +1058,7 @@
         function selectItem(el) {
             if (currentMode === 'pan') return;
             deselectAll(); selectedItem = el; el.classList.add('selected');
-            
+
             const itemDef = limeaCatalog.find(i => i.id === el.dataset.id);
             document.getElementById('selected-name').innerText = itemDef ? itemDef.name : "Objekt";
             document.getElementById('item-controls').style.display = 'flex';
@@ -604,15 +1074,15 @@
             let oldR = parseInt(selectedItem.dataset.rotation) || 0;
             let newR = (oldR + 90) % 360;
             selectedItem.dataset.rotation = newR;
-            
+
             let bounds = getBounds(selectedItem, parseInt(selectedItem.style.left), parseInt(selectedItem.style.top));
             let collision = false;
-            
+
             for (let other of placedItems) {
                 if (other === selectedItem) continue;
                 let oBounds = getBounds(other, parseInt(other.style.left), parseInt(other.style.top));
-                if (checkCollision(bounds, oBounds) && shouldCollide(selectedItem.dataset.layer, other.dataset.layer)) { 
-                    collision = true; break; 
+                if (checkCollision(bounds, oBounds) && shouldCollide(selectedItem.dataset.layer, other.dataset.layer)) {
+                    collision = true; break;
                 }
             }
 
@@ -629,15 +1099,15 @@
         function removeSelected() {
             if (!selectedItem) return;
             limeaInventory[selectedItem.dataset.id] = (limeaInventory[selectedItem.dataset.id] || 0) + 1;
-            selectedItem.remove(); 
-            placedItems = placedItems.filter(el => el !== selectedItem); 
+            selectedItem.remove();
+            placedItems = placedItems.filter(el => el !== selectedItem);
             deselectAll();
-            if(currentTab === 'inv' || currentTab === 'limea_shop') renderSidebar();
+            if (currentTab === 'inv' || currentTab === 'limea_shop') renderSidebar();
         }
 
         function applyStoreLayout(layoutArray) {
-            if(!confirm("Dein jetziges Layout wird überschrieben. Fortfahren?")) return;
-            
+            if (!confirm("Dein jetziges Layout wird überschrieben. Fortfahren?")) return;
+
             placedItems.forEach(el => {
                 limeaInventory[el.dataset.id] = (limeaInventory[el.dataset.id] || 0) + 1;
                 el.remove();
@@ -657,7 +1127,7 @@
 
             if (missingItems > 0) showToast(`Layout geladen! Dir fehlten ${missingItems} Möbel aus dem Store.`, 'error');
             else showToast("Layout erfolgreich übernommen!");
-            
+
             renderSidebar();
         }
 
@@ -665,7 +1135,7 @@
             const mapData = [];
             document.querySelectorAll('.map-piece').forEach(node => {
                 const itemDef = limeaCatalog.find(c => c.id === node.dataset.id);
-                
+
                 mapData.push({
                     id: node.dataset.id,
                     uid: node.dataset.uid,
@@ -682,12 +1152,13 @@
 
             try {
                 const res = await fetchApi('/realestate/my-home/amongus-map', 'POST', { mapLayout: mapData });
-                if(res.error) showToast(res.error, 'error');
+                if (res.error) showToast(res.error, 'error');
                 else showToast("Map erfolgreich gespeichert!");
-            } catch(e) { showToast("Fehler beim Speichern.", 'error'); }
+            } catch (e) { showToast("Fehler beim Speichern.", 'error'); }
         }
 
         window.onload = init;
     </script>
 </body>
+
 </html>
