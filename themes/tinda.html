@@ -140,9 +140,10 @@
 <body>
 
     <header>
-        <button class="nav-btn" onclick="showMatches()">💬</button>
+        <button class="nav-btn" style="font-size: 1.2rem;" onclick="window.location.href='/themes/family-dashboard.html'" title="Familie">👨‍👩‍👧‍👦</button>
+        <button class="nav-btn" onclick="showMatches()" title="Chats">💬</button>
         <div class="logo">🔥 Tinda</div>
-        <button class="nav-btn active" onclick="showSwipe()">🔥</button>
+        <button class="nav-btn active" onclick="showSwipe()" title="Swipen">🔥</button>
     </header>
 
     <main>
@@ -379,9 +380,11 @@
         function renderRelationshipBar() {
             const bar = document.getElementById('relationship-bar');
             
-            // Bei Kinder- oder Familienchats keine Hochzeits-Aktionen anzeigen
+            // Bei Kinder-Chats: Shortcut zum Dashboard anbieten
             if (activeChatType === 'tinda_child' || activeChatType === 'tinda_family') {
-                bar.innerHTML = `<div style="color: #aaa; font-size: 0.9rem; padding: 5px 0;">Sonder-Chat</div>`;
+                bar.innerHTML = `
+                    <button class="rel-btn" style="background: #2ecc71; color: white;" onclick="window.location.href='/themes/family-dashboard.html'">🍼 Zum Familien-Dashboard</button>
+                `;
                 return;
             }
 
@@ -546,7 +549,38 @@
             loadMatches();
         }
 
-        window.onload = () => loadStack();
+        window.onload = async () => {
+            // URL checken: Kommen wir vom Family-Dashboard?
+            const urlParams = new URLSearchParams(window.location.search);
+            const autoOpenChatId = urlParams.get('chatId');
+
+            if (autoOpenChatId) {
+                // Wechsel direkt in die Chat-Ansicht
+                document.getElementById('swipe-view').style.display = 'none';
+                document.getElementById('matches-view').style.display = 'flex';
+                
+                // Wir müssen kurz die Chats vom Server holen, um Namen & Typ zu kennen
+                const data = await api('/api/chat/chats');
+                if (data && data.chats) {
+                    const targetChat = data.chats.find(c => c._id === autoOpenChatId);
+                    
+                    if (targetChat) {
+                        let displayName = targetChat.tindaPartnerName;
+                        if(targetChat.type === 'tinda_child') displayName = targetChat.childName;
+                        if(targetChat.type === 'tinda_family') displayName = "Familie " + targetChat.tindaPartnerName;
+                        
+                        // Öffne den Chat sofort
+                        openChat(targetChat._id, displayName, !!targetChat.isMarried, targetChat.type);
+                    } else {
+                        // Chat nicht gefunden (vielleicht Jugendamt war da?) -> Normal laden
+                        loadStack();
+                    }
+                }
+            } else {
+                // Ganz normaler Tinda-Start (Swipen)
+                loadStack();
+            }
+        };
     </script>
 </body>
 </html>

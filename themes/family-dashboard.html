@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Family & Adoption</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+        :root {
+            --bg-color: #0f111a;
+            --card-bg: rgba(30, 33, 48, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --info: #3b82f6;
+            --info-hover: #2563eb;
+            --warning: #f59e0b;
+            --warning-hover: #d97706;
+            --danger: #ef4444;
+            --nav-bg: rgba(15, 17, 26, 0.9);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, var(--bg-color), #000000);
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* 🚨 JUGENDAMT OVERLAY 🚨 */
+        #siren-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            animation: siren-flash 1s infinite;
+        }
+        body.siren-active #siren-overlay {
+            display: block;
+        }
+        @keyframes siren-flash {
+            0% { box-shadow: inset 0 0 200px rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: inset 0 0 200px rgba(59, 130, 246, 0.4); }
+            100% { box-shadow: inset 0 0 200px rgba(239, 68, 68, 0.4); }
+        }
+
+        /* --- NAVIGATION --- */
+        .navbar {
+            background: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.fire {
+            background: linear-gradient(135deg, #ef4444, #f59e0b);
+            border: none;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .nav-btn.fire:hover {
+            filter: brightness(1.1);
+        }
+
+        /* --- HAUPTBEREICH --- */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .header-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--danger);
+            color: #fca5a5;
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            padding: 15px;
+            border-radius: 12px;
+            display: none;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+            animation: pulse-warn 2s infinite;
+        }
+
+        @keyframes pulse-warn {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        /* --- KARTEN DESIGN --- */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .partner-name {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: -10px;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 10px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        /* --- FORTSCHRITTSBALKEN --- */
+        .bar-container {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+            background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+            background-size: 1rem 1rem;
+            animation: progress-stripes 1s linear infinite;
+        }
+
+        @keyframes progress-stripes {
+            from { background-position: 1rem 0; }
+            to { background-position: 0 0; }
+        }
+
+        .bar-label {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* --- BUTTONS --- */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-feed { 
+            background: var(--primary); 
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+        .btn-feed:hover { background: var(--primary-hover); }
+        
+        .btn-chat { 
+            background: var(--info); 
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+        .btn-chat:hover { background: var(--info-hover); }
+
+        .btn-adopt { 
+            background: var(--warning); 
+            color: #000;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+        }
+        .btn-adopt:hover { background: var(--warning-hover); color: white; }
+
+        /* --- TOAST --- */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+            border-left: 6px solid var(--primary);
+            font-weight: 600;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+            padding: 50px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            border: 1px dashed var(--card-border);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="siren-overlay"></div>
+
+    <nav class="navbar">
+        <div class="nav-brand">👨‍👩‍👧‍👦 Family Control</div>
+        <div class="nav-links">
+            <a href="/index.html" class="nav-btn">🏠 Home</a>
+            <a href="/themes/tinda.html" class="nav-btn fire">🔥 Tinda öffnen</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div id="jugendamt-warning" class="header-warning">
+            🚨 ACHTUNG: DAS JUGENDAMT IST AUF DEM WEG! KÜMMERE DICH UM DEINE KINDER! 🚨
+        </div>
+
+        <div class="section-title">👶 Meine Kinder</div>
+        <div id="children-grid" class="grid">
+            <div class="empty-state">Lade Daten...</div>
+        </div>
+
+        <div class="section-title" style="margin-top: 40px;">🏢 Adoptionscenter</div>
+        <p style="color: var(--text-muted); margin-top: -15px; margin-bottom: 25px;">Gib einem vom Jugendamt eingezogenen Kind ein neues Zuhause. Gebühr: $10.000</p>
+        <div id="orphanage-grid" class="grid">
+            <div class="empty-state">Lade Daten...</div>
+        </div>
+
+    </div>
+
+    <div id="toast">Nachricht hier...</div>
+
+    <script>
+        // API Base URL aktualisiert auf deinen Produktions-Server
+        const API_BASE = 'https://api.limazon.v6.rocks/api'; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDashboardData();
+            setInterval(fetchDashboardData, 30000); 
+        });
+
+        async function fetchDashboardData() {
+            await Promise.all([loadMyChildren(), loadOrphans()]);
+        }
+
+        // Gradient Farben für die Balken
+        function getGradientForValue(value) {
+            if (value > 60) return 'linear-gradient(90deg, #059669, #10b981)'; // Grün
+            if (value > 25) return 'linear-gradient(90deg, #d97706, #f59e0b)'; // Gelb
+            return 'linear-gradient(90deg, #b91c1c, #ef4444)'; // Rot
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.borderLeftColor = isError ? 'var(--danger)' : 'var(--primary)';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        }
+
+        async function loadMyChildren() {
+            try {
+                const res = await fetch(`${API_BASE}/tinda/my-children`, { credentials: 'include' });
+                if (!res.ok) throw new Error("Nicht eingeloggt oder Serverfehler");
+                const data = await res.json();
+                
+                const grid = document.getElementById('children-grid');
+                grid.innerHTML = ''; 
+
+                if (!data.children || data.children.length === 0) {
+                    grid.innerHTML = '<div class="empty-state">Du hast aktuell keine Kinder. Zeit, auf Tinda aktiv zu werden!</div>';
+                    document.body.classList.remove('siren-active');
+                    document.getElementById('jugendamt-warning').style.display = 'none';
+                    return;
+                }
+
+                let isAnyChildCritical = false;
+
+                data.children.forEach(child => {
+                    if (child.isCritical) isAnyChildCritical = true;
+
+                    // SICHERHEITS-CHECK: Werte streng zwischen 0 und 100 einklemmen!
+                    const safeHunger = Math.min(100, Math.max(0, child.hunger));
+                    const safeFun = Math.min(100, Math.max(0, child.fun));
+
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>${child.name}</h3>
+                        <div class="partner-name">Mit: ${child.partnerName}</div>
+                        
+                        <div class="bar-container" title="Hunger">
+                            <div class="bar-fill" style="width: ${safeHunger}%; background: ${getGradientForValue(safeHunger)};"></div>
+                            <span class="bar-label">Hunger</span>
+                            <span class="bar-value">${safeHunger}%</span>
+                        </div>
+
+                        <div class="bar-container" title="Spaß">
+                            <div class="bar-fill" style="width: ${safeFun}%; background: ${getGradientForValue(safeFun)};"></div>
+                            <span class="bar-label">Zuneigung</span>
+                            <span class="bar-value">${safeFun}%</span>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn-feed" onclick="feedChild('${child.chatId}')">🍼 Füttern ($50)</button>
+                            <button class="btn-chat" onclick="openChat('${child.chatId}')">💬 Kümmern</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                
+                if (isAnyChildCritical) {
+                    document.body.classList.add('siren-active');
+                    document.getElementById('jugendamt-warning').style.display = 'block';
+                } else {
+                    document.body.classList.remove('siren-active');
+                    document.getElementById('jugendamt-warning').style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('children-grid').innerHTML = '<div class="empty-state">Fehler beim Laden der Kinder.</div>';
+            }
+        }
+
+        async function loadOrphans() {
+            try {
+                const res = await fetch(`${API_BASE}/orphanage/list`, { credentials: 'include' });
+                if (!res.ok) throw new Error("Fehler beim Laden");
+                const data = await res.json();
+                
+                const grid = document.getElementById('orphanage-grid');
+                grid.innerHTML = '';
+
+                if (!data.orphans || data.orphans.length === 0) {
+                    grid.innerHTML = '<div class="empty-state">Das Kinderheim ist leer. Alle Kinder haben ein gutes Zuhause!</div>';
+                    return;
+                }
+
+                data.orphans.forEach(orphan => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>🧸 ${orphan.childName}</h3>
+                        <div class="partner-name">Gerettet vor: ${orphan.originalParentName}</div>
+                        <p style="font-size: 0.85rem; margin: 5px 0; color: var(--text-muted);">
+                            Vom Jugendamt gesichert am:<br>
+                            ${new Date(orphan.takenAwayAt).toLocaleString('de-DE')}
+                        </p>
+                        <div class="btn-group">
+                            <button class="btn-adopt" onclick="adoptChild('${orphan._id}')">🏡 Adoptieren ($10k)</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('orphanage-grid').innerHTML = '<div class="empty-state">Fehler beim Laden des Adoptionscenters.</div>';
+            }
+        }
+
+        async function feedChild(chatId) {
+            try {
+                const res = await fetch(`${API_BASE}/tinda/child/${chatId}/feed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message);
+                    loadMyChildren(); 
+                } else {
+                    showToast(data.error, true);
+                }
+            } catch (err) {
+                showToast("Fehler bei der Verbindung zum Server.", true);
+            }
+        }
+
+        async function adoptChild(orphanId) {
+            if (!confirm("Bist du sicher, dass du dieses Kind adoptieren willst? Die Gebühr beträgt $10.000.")) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/orphanage/adopt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ orphanId })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showToast(data.message);
+                    fetchDashboardData(); 
+                } else {
+                    showToast(data.error, true);
+                }
+            } catch (err) {
+                showToast("Fehler bei der Verbindung zum Server.", true);
+            }
+        }
+
+        function openChat(chatId) {
+            // Leitet direkt zur Tinda Seite weiter und übergibt die Chat ID in der URL
+            window.location.href = `/themes/tinda.html?chatId=${chatId}`;
+        }
+    </script>
+</body>
+</html>
