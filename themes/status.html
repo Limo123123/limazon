@@ -1,0 +1,112 @@
+<!DOCTYPE html><html lang="de" class="dark"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Status</title>
+    <script src="/assets_offline/1776634723683_dl_asset.css"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="w-full max-w-2xl">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold tracking-tight">Limo Status</h1>
+            <button id="themeToggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+                <span id="themeIcon">🌙</span>
+            </button>
+        </div>
+
+        <div id="mainBanner" class="rounded-xl p-6 mb-6 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center gap-4 transition-colors">
+            <div id="statusDot" class="w-4 h-4 rounded-full bg-gray-400 animate-pulse"></div>
+            <div>
+                <h2 id="systemStatusText" class="text-xl font-semibold">Lade Status...</h2>
+                <p id="serviceName" class="text-sm text-gray-500 dark:text-gray-400">Verbinde mit Server</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Datenbank (MongoDB)</p>
+                <p id="dbStatus" class="text-lg font-semibold">-</p>
+            </div>
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Uptime</p>
+                <p id="uptime" class="text-lg font-semibold">-</p>
+            </div>
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Zuletzt geprüft</p>
+                <p id="lastCheck" class="text-lg font-semibold">-</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Theme Toggle Logic ---
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+
+        // Check local storage or system preference
+        if (localStorage.theme === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.remove('dark');
+            themeIcon.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.theme = isDark ? 'dark' : 'light';
+            themeIcon.textContent = isDark ? '🌙' : '☀️';
+        });
+
+        // --- Fetch Status Logic ---
+        async function fetchStatus() {
+            try {
+                // Ruf deinen neuen API-Endpunkt auf
+                const res = await fetch('https://api.limazon.v6.rocks/api/status');
+                const data = await res.json();
+
+                // DOM Elemente
+                const banner = document.getElementById('mainBanner');
+                const dot = document.getElementById('statusDot');
+                const statusText = document.getElementById('systemStatusText');
+                
+                document.getElementById('serviceName').textContent = data.service || 'Limo Backend';
+                document.getElementById('dbStatus').textContent = data.database === 'online' ? 'Online' : 'Offline / Fehler';
+                document.getElementById('uptime').textContent = data.uptime || '-';
+                
+                const time = new Date(data.timestamp);
+                document.getElementById('lastCheck').textContent = time.toLocaleTimeString('de-DE');
+
+                // Styling basierend auf Status
+                dot.classList.remove('animate-pulse', 'bg-gray-400', 'bg-green-500', 'bg-red-500', 'bg-yellow-500');
+                
+                if (res.ok && data.system === 'operational') {
+                    dot.classList.add('bg-green-500');
+                    statusText.textContent = 'Alle Systeme laufen normal';
+                    statusText.classList.replace('text-red-500', 'text-green-500'); // Optional text color change
+                } else {
+                    dot.classList.add('bg-yellow-500');
+                    statusText.textContent = 'Systeme eingeschränkt (Degraded)';
+                }
+
+            } catch (error) {
+                // Server komplett offline
+                const dot = document.getElementById('statusDot');
+                dot.classList.remove('animate-pulse', 'bg-gray-400', 'bg-green-500', 'bg-yellow-500');
+                dot.classList.add('bg-red-500');
+                
+                document.getElementById('systemStatusText').textContent = 'Schwerer Systemausfall (Offline)';
+                document.getElementById('dbStatus').textContent = 'Keine Verbindung';
+                document.getElementById('uptime').textContent = '-';
+                document.getElementById('lastCheck').textContent = new Date().toLocaleTimeString('de-DE');
+            }
+        }
+
+        // Initialer Fetch und dann alle 30 Sekunden
+        fetchStatus();
+        setInterval(fetchStatus, 30000);
+    </script>
+
+</body></html>
