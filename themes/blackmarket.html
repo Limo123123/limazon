@@ -11,14 +11,14 @@
             font-family: 'Teko', sans-serif;
             background-color: #1a0000;
             color: #fff;
-            min-height: 100vh; /* Mindestens Bildschirmhöhe */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Zentriert Inhalt vertikal */
+            justify-content: center;
             user-select: none;
             overflow-x: hidden;
-            overflow-y: auto; /* Erlaubt Scrollen wenn Bildschirm zu klein */
+            overflow-y: auto;
         }
 
         .font-mono { font-family: 'Share Tech Mono', monospace; }
@@ -54,7 +54,6 @@
             border: 2px solid transparent;
         }
         
-        /* Desktop/Laptop Styles */
         @media (min-width: 1024px) {
             .menu-btn {
                 padding: 12px 30px; margin-bottom: 20px; font-size: 2rem;
@@ -114,7 +113,7 @@
         @media (min-width: 1024px) {
             .details-panel {
                 transform: skewX(-5deg); max-width: 450px; 
-                height: 500px; /* Etwas kleiner für Laptops */
+                height: 500px;
                 margin-bottom: 0;
             }
         }
@@ -141,7 +140,8 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #ff0000; }
     </style>
 </head>
-<body class="p-4 lg:py-10"> <div class="yakuza-bg"></div>
+<body class="p-4 lg:py-10"> 
+    <div class="yakuza-bg"></div>
     <div class="crt-overlay"></div>
 
     <div class="relative z-10 flex flex-col lg:flex-row w-full max-w-7xl items-center justify-between lg:px-10 lg:gap-10">
@@ -176,6 +176,10 @@
                     <span class="group-hover:text-black">Datenleck</span>
                     <div class="price-tag group-hover:bg-black group-hover:text-white transition">$1.0 Mio</div>
                 </div>
+                <div id="btn-schufa" class="menu-btn group" onclick="showDetails('schufa')">
+                    <span class="group-hover:text-black">Schufa Clean</span>
+                    <div class="price-tag group-hover:bg-black group-hover:text-white transition">$2.5 Mio</div>
+                </div>
                 <div id="btn-achieve" class="menu-btn group" onclick="showDetails('achieve')">
                     <span class="group-hover:text-black">Achievements</span>
                     <div class="price-tag group-hover:bg-black group-hover:text-white transition">VAR</div>
@@ -195,6 +199,7 @@
             </div>
 
             <div id="panels-container" class="w-full">
+                
                 <div id="panel-fakeid" class="details-panel justify-between">
                     <div>
                         <h3 class="text-3xl md:text-4xl text-red-600 mb-2 uppercase italic font-bold">Neue Identität</h3>
@@ -213,6 +218,18 @@
                     <input type="text" id="target-user" placeholder="ZIEL USERNAME" class="w-full bg-black border-2 border-red-900 text-white p-3 mb-4 focus:outline-none focus:border-red-500 font-mono text-center uppercase text-xl placeholder-red-900/50">
                     <button id="btn-scan" class="w-full bg-white text-black font-bold py-3 text-xl hover:bg-red-600 hover:text-white transition uppercase" onclick="buyService('leak')">SCAN STARTEN</button>
                     <div id="leak-result" class="data-dump hidden"></div>
+                </div>
+
+                <div id="panel-schufa" class="details-panel justify-between">
+                    <div>
+                        <h3 class="text-3xl md:text-4xl text-red-600 mb-2 uppercase italic font-bold">Schufa Wipe</h3>
+                        <p class="mb-6 text-lg text-gray-300">Zu tief in den Miesen? Das SEK hat dich gepfändet? Wir löschen deinen negativen Schufa-Eintrag aus den Datenbanken der Limo Bank und setzen ihn auf saubere 500 Punkte zurück.</p>
+                        <div class="border-t border-b border-gray-600 py-4 mb-6 flex justify-between items-center">
+                            <span class="text-gray-500 font-mono">KOSTEN</span>
+                            <span class="text-2xl md:text-3xl font-bold text-red-400">$2.500.000</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-white text-black font-bold py-3 md:py-4 text-xl hover:bg-red-600 hover:text-white transition transform active:scale-95 uppercase tracking-widest" onclick="buyService('schufa_hack')">Akte Löschen</button>
                 </div>
 
                 <div id="panel-achieve" class="details-panel h-[500px]">
@@ -264,6 +281,11 @@
         }
 
         async function buyService(serviceType) {
+            // Confirmation for expensive schufa hack
+            if (serviceType === 'schufa_hack') {
+                if (!confirm("Willst du wirklich $2.5 Millionen zahlen, um deine Schufa-Akte zu reinigen?")) return;
+            }
+
             const btn = event.target.closest('button');
             const originalText = btn.innerText;
             btn.innerText = "...";
@@ -294,7 +316,7 @@
                         btn.innerText = "GEKAUFT";
                         loadBalance(); loadAchievementCatalog();
                     } else {
-                        alert(data.message);
+                        alert(data.message); // Hier kommt die Erfolgsmeldung für Schufa Hack an
                         btn.innerText = "ERFOLGREICH";
                         loadBalance();
                     }
@@ -304,7 +326,7 @@
                     btn.innerText = originalText;
                 }
             } catch(e) {
-                alert("Fehler");
+                alert("Verbindungsfehler");
                 btn.innerText = originalText;
             }
             btn.disabled = false;

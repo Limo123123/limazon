@@ -205,20 +205,31 @@
 
                     let actionHtml = '';
                     
-                    // Button: Beitreten (wenn noch nicht aktiv)
-                    if (!isActive) {
-                        actionHtml = `
-                            <button onclick="joinStrike('${strike._id}')" class="w-full mt-4 bg-amber-500 text-black hover:bg-amber-400 font-bold py-3 rounded-xl transition shadow-lg active:scale-95 text-sm">
-                                ✊ Beitreten
-                            </button>`;
-                    } else {
+                    // NEU: Prüfen, ob der User bereits mitstreikt
+                    const hasJoined = currentUser && strike.strikers && strike.strikers.includes(currentUser.userId);
+
+                    // Timer anzeigen, wenn der Streik aktiv ist
+                    let timerHtml = '';
+                    if (isActive) {
                         const endTime = new Date(strike.expiresAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-                        actionHtml = `
+                        timerHtml = `
                             <div class="mt-4 w-full bg-black/20 p-3 rounded-xl border border-white/5 text-center">
                                 <span class="text-[10px] text-white/50 uppercase tracking-wider block">Blockade endet um</span>
                                 <span class="text-sm font-mono font-bold text-white">${endTime} Uhr</span>
                             </div>`;
                     }
+
+                    // Button anzeigen, wenn der User noch nicht dabei ist
+                    let joinBtnHtml = '';
+                    if (!hasJoined) {
+                        joinBtnHtml = `
+                            <button onclick="joinStrike('${strike._id}')" class="w-full mt-4 bg-amber-500 text-black hover:bg-amber-400 font-bold py-3 rounded-xl transition shadow-lg active:scale-95 text-sm">
+                                ✊ Solidarität zeigen (Beitreten)
+                            </button>`;
+                    }
+
+                    // Zusammenbauen
+                    actionHtml = timerHtml + joinBtnHtml;
 
                     // Button: Beenden (Für Admin oder Ersteller)
                     let deleteBtn = '';
