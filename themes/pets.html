@@ -38,8 +38,10 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse-danger { 0%, 100% { border-color: #ef4444; box-shadow: 0 0 15px rgba(239,68,68,0.2); } 50% { border-color: #991b1b; box-shadow: 0 0 5px rgba(239,68,68,0.1); } }
+        @keyframes pulse-ritual { 0%, 100% { box-shadow: 0 0 15px rgba(220,38,38,0.3); } 50% { box-shadow: 0 0 25px rgba(220,38,38,0.6); } }
 
         .dying-pet { animation: pulse-danger 1.5s infinite; }
+        .ritual-btn:hover { animation: pulse-ritual 1s infinite; }
 
         /* Toast Styling */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
@@ -101,6 +103,9 @@
     <script>
         const API_BASE = 'https://api.limazon.v6.rocks/api';
         const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+        
+        // Globale Variable für den aktuellen User
+        let currentUser = null;
 
         async function fetchApi(endpoint, method = 'GET', body = null) {
             const options = { ...fetchOpts, method };
@@ -113,6 +118,15 @@
             } catch (e) {
                 return { error: "Netzwerkfehler", ok: false };
             }
+        }
+
+        async function init() {
+            // Lade den User beim Start, um später den originalOwner prüfen zu können
+            const meData = await fetchApi('/auth/me');
+            if (meData.ok) {
+                currentUser = meData;
+            }
+            loadMyPets();
         }
 
         function switchTab(tabId) {
@@ -202,7 +216,6 @@
                 const pensionBtnColor = pet.inPension ? 'bg-slate-700 hover:bg-slate-600' : 'bg-amber-600 hover:bg-amber-500';
                 const pensionAction = pet.inPension ? 'retrieve' : 'deposit';
 
-                // Wenn das Tier in der Pension ist, füllen wir optisch den Balken, da es ja versorgt wird
                 const displayHunger = pet.inPension ? 100 : pet.hunger;
                 const displayBarColor = pet.inPension ? 'bg-emerald-500' : barColor;
 
@@ -223,15 +236,15 @@
                         </div>
 
                         <div class="mt-auto space-y-2">
-                            <button class="w-full ${btnColor} text-white font-bold py-2.5 rounded-xl transition active:scale-95 shadow-md text-sm flex items-center justify-center gap-2" onclick="feedPet('${pet.id}')" ${pet.inPension ? 'disabled style="opacity:0.5"' : ''}>
+                            <button class="w-full ${btnColor} text-white font-bold py-2.5 rounded-xl transition active:scale-95 shadow-md text-sm flex items-center justify-center gap-2" onclick="feedPet('${pet.id || pet._id}')" ${pet.inPension ? 'disabled style="opacity:0.5"' : ''}>
                                 ${actionWord} ($15)
                             </button>
                             
                             <div class="flex gap-2">
-                                <button class="flex-1 ${pensionBtnColor} text-white font-bold py-2 rounded-xl transition active:scale-95 text-xs" onclick="togglePension('${pet.id}', '${pensionAction}')">
+                                <button class="flex-1 ${pensionBtnColor} text-white font-bold py-2 rounded-xl transition active:scale-95 text-xs" onclick="togglePension('${pet.id || pet._id}', '${pensionAction}')">
                                     ${pensionBtnText}
                                 </button>
-                                <button class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-xl transition active:scale-95 text-xs flex items-center justify-center gap-1" onclick="transferPet('${pet.id}', '${pet.name}')" ${pet.inPension ? 'disabled style="opacity:0.5"' : ''}>
+                                <button class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-xl transition active:scale-95 text-xs flex items-center justify-center gap-1" onclick="transferPet('${pet.id || pet._id}', '${pet.name}')" ${pet.inPension ? 'disabled style="opacity:0.5"' : ''}>
                                     <span>📤</span> Transfer
                                 </button>
                             </div>
@@ -274,7 +287,7 @@
             }
         }
 
-        // --- FRIEDHOF ---
+        // --- FRIEDHOF & RITUAL ---
         async function loadCemetery() {
             const data = await fetchApi('/pets/cemetery');
             const grid = document.getElementById('cemetery-grid');
@@ -285,27 +298,65 @@
             }
 
             grid.innerHTML = data.cemetery.map(dead => {
-                const deathDate = new Date(dead.deathDate).toLocaleDateString('de-DE');
+                const deathDateObj = new Date(dead.deathDate);
+                const deathDate = deathDateObj.toLocaleDateString('de-DE');
                 const ageText = dead.ageDays === 1 ? '1 Tag' : `${dead.ageDays || 0} Tage`;
                 
+                // --- BERECHNUNG FÜR DEN SATANSKREIS ---
+                const daysDead = Math.floor((new Date() - deathDateObj) / (1000 * 60 * 60 * 24));
+                const daysLeft = 14 - daysDead;
+                let ritualHtml = '';
+
+                // Prüfen ob der Betrachter der Originalbesitzer ist und die Frist nicht abgelaufen ist
+                if (currentUser && currentUser.username === dead.ownerName && daysLeft > 0) {
+                    ritualHtml = `
+                        <div class="mt-4 pt-4 border-t border-slate-800">
+                            <p class="text-[9px] text-rose-500 font-bold mb-2 uppercase tracking-widest text-center">Noch ${daysLeft} Tage bis zur völligen Auflösung</p>
+                            <button onclick="performRitual('${dead.petId || dead.id || dead._id}')" class="ritual-btn w-full bg-rose-950/50 border border-rose-900 text-rose-400 hover:bg-rose-900 hover:text-white font-bold py-2 rounded-xl transition duration-300 shadow-lg text-sm flex items-center justify-center gap-2">
+                                <span class="text-lg">😈</span> Satanskreis Ritual ($500 Mrd)
+                            </button>
+                        </div>
+                    `;
+                }
+
                 return `
-                    <div class="glass p-5 rounded-2xl border border-slate-800 text-center relative grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition duration-500">
+                    <div class="glass p-5 rounded-2xl border border-slate-800 relative ${!ritualHtml ? 'grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition duration-500' : ''}">
                         <div class="absolute top-3 right-3 bg-slate-900 text-slate-400 text-[10px] font-bold px-2 py-1 rounded border border-slate-700 shadow-sm">
                             Wurde ${ageText} alt
                         </div>
-                        <div class="text-5xl mb-2 mt-4 opacity-50">🪦</div>
-                        <div class="text-xl font-bold text-white line-through decoration-rose-500 decoration-2 mb-1">"${dead.petName}"</div>
-                        <div class="text-xs text-slate-400 mb-3">Das geliebte ${dead.type} von <span class="text-slate-300 font-bold">${dead.ownerName}</span></div>
-                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs">
-                            <span class="text-rose-400 font-bold block mb-1">${dead.cause}</span>
-                            <span class="text-slate-500">Gestorben am: ${deathDate}</span>
+                        <div class="text-center mt-4">
+                            <div class="text-5xl mb-2 opacity-50 drop-shadow-lg">🪦</div>
+                            <div class="text-xl font-bold text-white line-through decoration-rose-500 decoration-2 mb-1">"${dead.petName}"</div>
+                            <div class="text-xs text-slate-400 mb-3">Das geliebte ${dead.type} von <span class="text-slate-300 font-bold">${dead.ownerName}</span></div>
+                            <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs text-center inline-block">
+                                <span class="text-rose-400 font-bold block mb-1">${dead.cause}</span>
+                                <span class="text-slate-500">Gestorben am: ${deathDate}</span>
+                            </div>
                         </div>
+                        ${ritualHtml}
                     </div>
                 `;
             }).join('');
         }
 
-        window.onload = loadMyPets;
+        // --- DAS DUNKLE RITUAL ---
+        async function performRitual(petId) {
+            if (!petId || petId === 'undefined') return showToast("Dunkle Magie fehgeschlagen: ID unbekannt", "error");
+            
+            if (!confirm("WARNUNG! Das dunkle Ritual kostet 500 Milliarden Dollar.\nDie Seele dieses Tieres wird zurückgezwungen und es kehrt als Zombie 🧟 zurück.\nBist du absolut sicher?")) return;
+
+            const res = await fetchApi(`/pets/${petId}/resurrect`, 'POST');
+            
+            if (res.ok) {
+                showToast("Das Ritual war erfolgreich. Es lebt...", "success");
+                setTimeout(() => document.querySelector('.tab-btn').click(), 1500); // Zurück zu den eigenen Tieren!
+            } else {
+                showToast(res.error, "error");
+            }
+        }
+
+        // Starten durch die init() Funktion, damit currentUser geladen wird
+        window.onload = init;
     </script>
 </body>
 </html>
