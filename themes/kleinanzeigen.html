@@ -131,6 +131,34 @@
 
     </main>
 
+    <div id="ad-details-modal" class="fixed inset-0 bg-black bg-opacity-80 z-[60] hidden flex flex-col items-center justify-center p-4 md:p-8">
+        <div class="bg-white rounded-xl w-full max-w-4xl flex flex-col max-h-full overflow-hidden shadow-2xl relative">
+            <button onclick="closeAdDetails()" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition z-10 font-bold">&times;</button>
+            
+            <div class="overflow-y-auto flex-grow flex flex-col md:flex-row">
+                <div class="md:w-1/2 bg-gray-900 flex items-center justify-center min-h-[300px]">
+                    <img id="modal-ad-img" class="max-w-full max-h-[500px] object-contain">
+                </div>
+                
+                <div class="p-6 md:w-1/2 flex flex-col bg-white">
+                    <span id="modal-ad-type" class="inline-block text-white text-xs font-bold px-2 py-1 rounded w-max mb-3"></span>
+                    <h3 class="text-2xl font-bold text-gray-800 leading-tight mb-2" id="modal-ad-title"></h3>
+                    <p id="modal-ad-price" class="text-3xl font-black text-brand mb-4"></p>
+                    
+                    <div class="flex items-center gap-2 mb-6 text-sm text-gray-600 border-b pb-4">
+                        <span>👤 Verkäufer: <b id="modal-ad-seller" class="text-gray-800"></b></span>
+                    </div>
+                    
+                    <h4 class="font-bold text-gray-800 mb-2">Beschreibung:</h4>
+                    <p id="modal-ad-desc" class="text-gray-700 whitespace-pre-wrap flex-grow leading-relaxed"></p>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t bg-gray-50 flex flex-wrap gap-3 items-center justify-end" id="modal-ad-actions">
+            </div>
+        </div>
+    </div>
+
     <div id="crop-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 hidden flex flex-col items-center justify-center p-4">
         <div class="bg-white p-4 rounded-lg w-full max-w-2xl flex flex-col h-[80vh]">
             <h3 class="text-xl font-bold mb-4">Bild zuschneiden</h3>
@@ -152,7 +180,8 @@
         let cropper = null;
         let activeChatId = null;
         let chatInterval = null;
-        let globalChats = []; // HIER SPEICHERN WIR DIE CHATS ZWISCHEN!
+        let globalChats = []; 
+        let currentMarketplaceAds = []; // NEU: Speichert alle geladenen Anzeigen zwischen
 
         async function init() {
             try {
@@ -248,34 +277,86 @@
                 const res = await fetch(`${API_BASE}/classifieds`, fetchOpts);
                 const data = await res.json();
                 if(data.ads?.length > 0) {
+                    currentMarketplaceAds = data.ads; // In globaler Variable merken
                     grid.innerHTML = data.ads.map(ad => {
                         const isOwner = currentUser.username === ad.sellerUsername;
                         const canDelete = isOwner || currentUser.isAdmin;
                         const img = ad.type === 'limazon' ? 'https://placehold.co/400x300/e0f2fe/1e3a8a?text=In-Game+Item' : (ad.imageUrl || 'https://placehold.co/400x300?text=Kein+Bild');
+                        
+                        // Wir machen die GESAMTE Karte klickbar. 
+                        // event.stopPropagation() auf den Buttons verhindert, dass man beim Klicken auf "Kaufen" aus Versehen auch das Modal öffnet.
                         return `
-                        <div class="bg-white border rounded-xl overflow-hidden shadow hover:shadow-lg transition flex flex-col">
-                            <div class="h-40 bg-gray-100 relative">
-                                <img src="${img}" class="w-full h-full object-cover">
+                        <div class="bg-white border rounded-xl overflow-hidden shadow hover:shadow-lg transition flex flex-col group cursor-pointer" onclick="openAdDetails('${ad._id}')">
+                            <div class="h-40 bg-gray-100 relative overflow-hidden">
+                                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                                 <span class="absolute top-2 left-2 ${ad.type === 'limazon' ? 'bg-blue-600' : 'bg-gray-800'} text-white text-xs font-bold px-2 py-1 rounded shadow">${ad.type === 'limazon' ? '💎 Digital' : '📦 Physisch'}</span>
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition flex items-center justify-center">
+                                    <span class="bg-black text-white px-3 py-1 rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition">Details ansehen</span>
+                                </div>
                             </div>
-                            <div class="p-4 flex-grow flex flex-col">
+                            <div class="p-4 flex-grow flex flex-col pb-2">
                                 <h3 class="font-bold text-lg leading-tight mb-1 truncate" title="${ad.title}">${ad.title}</h3>
                                 <p class="text-xl font-black text-brand mb-2">$${ad.price.toLocaleString()}</p>
                                 <p class="text-sm text-gray-600 line-clamp-2 flex-grow">${ad.description}</p>
-                                <div class="flex items-center justify-between mt-3 pt-3 border-t text-xs text-gray-500">
+                                <div class="flex items-center justify-between mt-3 pt-3 border-t text-xs text-gray-500 mb-2">
                                     <span>👤 ${ad.sellerUsername}</span>
-                                    ${canDelete ? `<button onclick="deleteAd('${ad._id}')" class="text-red-500 hover:underline font-bold">🗑️ Löschen</button>` : ''}
+                                    ${canDelete ? `<button onclick="event.stopPropagation(); deleteAd('${ad._id}')" class="text-red-500 hover:underline font-bold">🗑️ Löschen</button>` : ''}
                                 </div>
-                                <div class="mt-3 flex gap-2">
-                                    ${ad.type === 'limazon' && !isOwner ? `<button onclick="buyAd('${ad._id}')" class="flex-1 bg-brand text-white font-bold py-2 rounded hover:bg-brandHover">Kaufen</button>` : ''}
-                                    ${!isOwner ? `<button onclick="startChat('${ad._id}')" class="flex-1 bg-gray-100 font-bold py-2 rounded hover:bg-gray-200 border">Nachricht</button>` : ''}
-                                </div>
+                            </div>
+                            <div class="px-4 pb-4 flex gap-2">
+                                ${ad.type === 'limazon' && !isOwner ? `<button onclick="event.stopPropagation(); buyAd('${ad._id}')" class="flex-1 bg-brand text-white font-bold py-2 rounded hover:bg-brandHover shadow-sm">Kaufen</button>` : ''}
+                                ${!isOwner ? `<button onclick="event.stopPropagation(); startChat('${ad._id}')" class="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded hover:bg-gray-200 border shadow-sm">Nachricht</button>` : ''}
                             </div>
                         </div>`
                     }).join('');
-                } else grid.innerHTML = '<div class="col-span-full text-center py-10">Keine Anzeigen vorhanden.</div>';
+                } else {
+                    currentMarketplaceAds = [];
+                    grid.innerHTML = '<div class="col-span-full text-center py-10">Keine Anzeigen vorhanden.</div>';
+                }
             } catch(e) { grid.innerHTML = '<div class="text-red-500 col-span-full">Fehler beim Laden.</div>'; }
         }
+
+        // --- AD DETAILS MODAL LOGIK ---
+        function openAdDetails(adId) {
+            const ad = currentMarketplaceAds.find(a => a._id === adId);
+            if(!ad) return;
+
+            const isOwner = currentUser.username === ad.sellerUsername;
+            const canDelete = isOwner || currentUser.isAdmin;
+            const img = ad.type === 'limazon' ? 'https://placehold.co/800x600/e0f2fe/1e3a8a?text=In-Game+Item' : (ad.imageUrl || 'https://placehold.co/800x600?text=Kein+Bild');
+
+            document.getElementById('modal-ad-title').innerText = ad.title;
+            document.getElementById('modal-ad-img').src = img;
+            document.getElementById('modal-ad-type').innerText = ad.type === 'limazon' ? '💎 Digitales Item' : '📦 Physisches Objekt';
+            document.getElementById('modal-ad-type').className = `inline-block text-white text-xs font-bold px-2 py-1 rounded w-max mb-3 ${ad.type === 'limazon' ? 'bg-blue-600' : 'bg-gray-800'}`;
+            document.getElementById('modal-ad-price').innerText = `$${ad.price.toLocaleString()}`;
+            document.getElementById('modal-ad-seller').innerText = ad.sellerUsername;
+            document.getElementById('modal-ad-desc').innerText = ad.description; 
+
+            // Aktions-Buttons generieren
+            let actionsHtml = '';
+            if (canDelete) {
+                actionsHtml += `<button onclick="deleteAd('${ad._id}'); closeAdDetails();" class="text-red-500 hover:bg-red-50 px-4 py-2 rounded font-bold border border-red-200 transition">🗑️ Anzeige löschen</button>`;
+            }
+            
+            // Spacer um den Rest nach rechts zu drücken
+            actionsHtml += `<div class="flex-grow"></div>`;
+            
+            if (!isOwner) {
+                actionsHtml += `<button onclick="startChat('${ad._id}'); closeAdDetails();" class="bg-gray-800 text-white font-bold py-2 px-6 rounded hover:bg-black transition shadow">Nachricht schreiben</button>`;
+            }
+            if (ad.type === 'limazon' && !isOwner) {
+                actionsHtml += `<button onclick="buyAd('${ad._id}'); closeAdDetails();" class="bg-brand text-white font-bold py-2 px-8 rounded hover:bg-brandHover transition shadow text-lg">Direkt Kaufen</button>`;
+            }
+
+            document.getElementById('modal-ad-actions').innerHTML = actionsHtml;
+            document.getElementById('ad-details-modal').classList.remove('hidden');
+        }
+
+        function closeAdDetails() {
+            document.getElementById('ad-details-modal').classList.add('hidden');
+        }
+
 
         // --- DASHBOARD (EIGENE ANZEIGEN & CHATS) ---
         async function loadDashboard() {
@@ -309,7 +390,7 @@
                 const chatList = document.getElementById('chat-list');
 
                 if(chatData.chats?.length > 0) {
-                    globalChats = chatData.chats; // HIER ZWISCHENSPEICHERN WIR SIE
+                    globalChats = chatData.chats; 
 
                     chatList.innerHTML = globalChats.map(c => `
                         <div class="flex justify-between items-center p-3 border-b hover:bg-gray-100 transition group">
@@ -337,8 +418,8 @@
                 
                 if(res.ok) { 
                     showView('dashboard');
-                    await loadDashboard(); // Lade die Chat-Liste neu, damit der neue Chat drin ist
-                    openChat(data.chat._id); // Öffne den Chat sofort visuell!
+                    await loadDashboard(); 
+                    openChat(data.chat._id); 
                 } else {
                     alert(data.error);
                 }
@@ -359,7 +440,6 @@
             
             const offerBtn = document.getElementById('make-offer-btn');
             
-            // KUGELSICHER: Bin ich der Verkäufer?
             if (String(currentUser.id) === String(chat.sellerId)) {
                 offerBtn.classList.remove('hidden');
                 offerBtn.style.display = 'block'; 
@@ -581,7 +661,5 @@
 
         init();
     </script>
-</body>
-</html>
 </body>
 </html>
