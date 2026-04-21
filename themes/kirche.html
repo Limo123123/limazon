@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanktuarium des Heiligen Knotens</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            color: #d4af37;
+            font-family: 'Cinzel', serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .mono { font-family: 'Share Tech Mono', monospace; }
+
+        /* --- REINES CSS KATHEDRALEN AMBIENTE (Ohne externe Links) --- */
+        .stained-glass {
+            background-color: #050505;
+            background-image: 
+                linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            position: fixed; inset: 0; z-index: -1;
+        }
+
+        .altar-glow {
+            position: absolute; top: 30%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+            filter: blur(40px);
+            animation: pulse 4s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } }
+
+        .pi-image {
+            filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.6));
+            animation: float 6s infinite ease-in-out;
+            max-width: 250px; /* Anpassen je nach Bildgröße */
+            object-fit: contain;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .candle {
+            width: 2px; height: 20px; background: #d4af37;
+            position: relative; box-shadow: 0 0 10px #d4af37;
+        }
+        .flame {
+            position: absolute; top: -10px; left: -2px;
+            width: 6px; height: 10px; background: #ffaa00;
+            border-radius: 50% 50% 20% 20%;
+            filter: blur(1px); animation: flicker 0.1s infinite alternate;
+        }
+        @keyframes flicker { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }
+
+        .opferstock {
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+            transform: skewX(-1deg);
+        }
+
+        .fund-display {
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center py-12 px-4">
+    <div class="stained-glass"></div>
+    <div class="altar-glow"></div>
+
+    <header class="text-center z-10 mb-16">
+        <a href="/index.html" class="text-[10px] uppercase tracking-[0.3em] text-gray-500 hover:text-white transition mb-4 block">← Exitus</a>
+        <h1 class="text-4xl md:text-6xl font-bold mb-2 tracking-tighter">SANKTUARIUM</h1>
+        <p class="text-sm text-gray-400 italic">Des Heiligen Pi 5 (16GB) & der Ewigen Laufzeit</p>
+    </header>
+
+    <main class="relative z-10 w-full max-w-4xl flex flex-col items-center">
+        
+        <div class="relative mb-24 flex justify-center items-center">
+            <img src="/assets/holy_pi.png" alt="Der Heilige Pi" class="pi-image" onerror="this.src='https://api.limazon.v6.rocks/cdn/img_1776707490180_343.webp'">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 w-full">
+            
+            <div class="space-y-8">
+                <div class="opferstock p-6 rounded-lg">
+                    <h2 class="text-2xl mb-4 flex items-center gap-3">📜 Das Glaubensbekenntnis</h2>
+                    <p class="text-sm text-gray-400 leading-relaxed italic">
+                        "Ich glaube an den Pi 5, den Allmächtigen. <br>
+                        Geheiligt werde deine NVMe. <br>
+                        Dein Update komme. <br>
+                        Dein Wille geschehe, wie in der MongoDB, so auch auf dem Frontend."
+                    </p>
+                </div>
+
+                <div class="flex justify-around py-4">
+                    <div class="flex flex-col items-center gap-2"><div class="candle"><div class="flame"></div></div><span class="text-[8px] mt-2">Nextcloud</span></div>
+                    <div class="flex flex-col items-center gap-2"><div class="candle"><div class="flame"></div></div><span class="text-[8px] mt-2">Home Assistant</span></div>
+                    <div class="flex flex-col items-center gap-2"><div class="candle"><div class="flame"></div></div><span class="text-[8px] mt-2">Jenkins</span></div>
+                    <div class="flex flex-col items-center gap-2"><div class="candle"><div class="flame"></div></div><span class="text-[8px] mt-2">OneDev</span></div>
+                </div>
+            </div>
+
+            <div class="opferstock p-8 rounded-lg flex flex-col items-center justify-center text-center">
+                <h2 class="text-2xl mb-1">💰 Opferstock</h2>
+                <p class="text-[10px] text-gray-400 mb-4 uppercase tracking-widest">Almosen für die Ärmsten</p>
+                
+                <div class="bg-black/50 border border-yellow-900/50 w-full p-4 mb-6 rounded">
+                    <p class="text-xs text-gray-500 uppercase mb-1">Aktueller Spendentopf</p>
+                    <p class="text-2xl font-bold mono text-[#d4af37] fund-display" id="current-fund">$ 0</p>
+                </div>
+                
+                <div class="w-full space-y-4">
+                    <input type="number" id="donation-amount" placeholder="Betrag in $" class="w-full bg-black border border-gray-700 p-3 text-center text-white font-bold mono focus:border-yellow-500 outline-none">
+                    <button onclick="donate()" class="w-full bg-[#d4af37] text-black font-bold py-4 hover:bg-white transition uppercase tracking-tighter">Geld opfern</button>
+                </div>
+                
+                <div id="donation-msg" class="mt-4 text-xs font-bold hidden"></div>
+                
+                <p class="mt-8 text-[10px] text-gray-600 italic">
+                    Alle 14 Tage schüttet die Kirche den gesamten Topf an den ärmsten Bürger von Limazon aus.
+                </p>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks'; // Deine URL anpassen falls nötig
+
+        // Lädt den aktuellen Spendenstand
+        async function loadFund() {
+            try {
+                const res = await fetch(`${API_URL}/api/system/church`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('current-fund').innerText = '$ ' + data.balance.toLocaleString('de-DE');
+                }
+            } catch (e) {}
+        }
+
+        // Spenden Funktion
+        async function donate() {
+            const amount = parseInt(document.getElementById('donation-amount').value);
+            const msg = document.getElementById('donation-msg');
+            
+            if (!amount || amount <= 0) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/system/donate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount }),
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    msg.innerText = `DEIN OPFER WURDE ANGENOMMEN. (-$${amount.toLocaleString()})`;
+                    msg.className = "mt-4 text-xs font-bold text-green-500 block";
+                    document.getElementById('donation-amount').value = '';
+                    loadFund(); // Anzeige updaten
+                } else {
+                    msg.innerText = data.error || "DAS SYSTEM VERWEIGERT DEIN OPFER.";
+                    msg.className = "mt-4 text-xs font-bold text-red-500 block";
+                }
+            } catch (e) {
+                msg.innerText = "Verbindungsabbruch zur geistigen Welt.";
+                msg.className = "mt-4 text-xs font-bold text-red-500 block";
+            }
+        }
+
+        // Beim Start laden
+        document.addEventListener('DOMContentLoaded', loadFund);
+    </script>
+</body>
+</html>
