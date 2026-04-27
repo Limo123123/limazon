@@ -280,9 +280,17 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* Snake Settings Buttons */
@@ -303,7 +311,10 @@
             font-size: 13px;
         }
 
-        .size-btn:hover { background: #444; }
+        .size-btn:hover {
+            background: #444;
+        }
+
         .size-btn.active {
             background: var(--accent);
             color: #000;
@@ -367,9 +378,22 @@
             font-size: 14px;
         }
 
-        .lb-row.gold { color: #FFD700; font-weight: bold; border-bottom: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); }
-        .lb-row.silver { color: #C0C0C0; font-weight: bold; }
-        .lb-row.bronze { color: #CD7F32; font-weight: bold; }
+        .lb-row.gold {
+            color: #FFD700;
+            font-weight: bold;
+            border-bottom: 1px solid #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .lb-row.silver {
+            color: #C0C0C0;
+            font-weight: bold;
+        }
+
+        .lb-row.bronze {
+            color: #CD7F32;
+            font-weight: bold;
+        }
 
         input {
             width: 100%;
@@ -383,7 +407,9 @@
             outline: none;
         }
 
-        input:focus { border-color: var(--accent); }
+        input:focus {
+            border-color: var(--accent);
+        }
     </style>
 </head>
 
@@ -422,12 +448,13 @@
             <span onclick="document.getElementById('lbModal').style.display='none'"
                 style="position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;">&times;</span>
             <h2 style="color:#2196F3; margin:0;">🏆 Top Spieler</h2>
-            
+
             <div class="lb-search-container">
                 <input type="text" id="lbSearch" placeholder="Spieler suchen..." onkeyup="app.loadLb(1)">
-                <input type="text" id="lbSeed" placeholder="Seed? (leer = Normal)" onkeyup="app.loadLb(1)" title="Lass dies leer für die Standard-Rangliste!">
+                <input type="text" id="lbSeed" placeholder="Seed? (leer = Normal)" onkeyup="app.loadLb(1)"
+                    title="Lass dies leer für die Standard-Rangliste!">
             </div>
-            
+
             <div id="lbContent" class="lb-list">Lade...</div>
             <div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
                 <button class="btn btn-rank" onclick="app.lbPageChange(-1)"
@@ -489,7 +516,8 @@
                 { id: 'limway', title: 'Limway Surfers', desc: 'Weiche Zügen aus, Custom Seeds möglich!', icon: '🚙', bgClass: '', isLive: true, url: '/games/limway.html' },
                 { id: 'slots', title: 'Limo Slots', desc: 'Einarmiger Bandit.', icon: '🎰', isLive: true, url: '/games/slots.html' },
                 { id: 'memory', title: 'Card Memory', desc: 'Finde die Paare.', icon: '🎴', isLive: true, url: '/games/memory.html' },
-                { id: 'amongus', title: 'Amongus', desc: 'Finde den Impostor.', icon: '👽', isLive: true, url: '/games/amongus.html' }
+                { id: 'amongus', title: 'Amongus', desc: 'Finde den Impostor.', icon: '👽', isLive: true, url: '/games/amongus.html' },
+                { id: 'schnitzel', title: 'Schnitzel-Alarm', desc: 'Nimm Alice das Schnitzel weg!', icon: '🥩', bgClass: '', isLive: true, url: '/games/schnitzel.html' }
             ],
             lbCurrentGame: null,
             lbPage: 1,
@@ -600,7 +628,7 @@
                 const lbBtn = document.getElementById('lbBtn');
 
                 if (id === 'flappy') {
-                    flappyEngine.init(); 
+                    flappyEngine.init();
                     title.innerHTML = "FLAPPY<br>LIMO";
                     sub.innerHTML = "1 Token = 3 Versuche";
                     snakeSet.style.display = 'none';
@@ -620,7 +648,7 @@
 
             closeGame: () => {
                 document.getElementById('gameOverlay').style.display = 'none';
-                flappyEngine.stop(); 
+                flappyEngine.stop();
                 snakeEngine.running = false;
                 app.updateGameStats();
             },
@@ -709,7 +737,7 @@
             ctx: document.getElementById('gameCanvas').getContext('2d'),
             running: false,
             gameState: 'START',
-            bird: { x: 50, y: 150, v: 0, r: 0 }, 
+            bird: { x: 50, y: 150, v: 0, r: 0 },
             pipes: [],
             score: 0,
             frame: 0,
@@ -742,7 +770,7 @@
             reset: () => {
                 const h = flappyEngine.cvs.height;
                 flappyEngine.bird = {
-                    x: window.innerWidth * 0.1, 
+                    x: window.innerWidth * 0.1,
                     y: h / 2,
                     v: 0,
                     r: 0
@@ -763,7 +791,7 @@
                 flappyEngine.reset();
                 flappyEngine.running = true;
 
-                flappyEngine.removeEvents(); 
+                flappyEngine.removeEvents();
                 window.addEventListener('keydown', flappyEngine.handleInput);
                 window.addEventListener('touchstart', flappyEngine.handleInput, { passive: false });
                 window.addEventListener('mousedown', flappyEngine.handleInput);
@@ -803,7 +831,7 @@
 
             update: () => {
                 const h = flappyEngine.cvs.height;
-                const s = flappyEngine.scale; 
+                const s = flappyEngine.scale;
 
                 if (flappyEngine.gameState === 'START') {
                     flappyEngine.bird.y = (h / 2) + Math.sin(Date.now() / 300) * (10 * s);
@@ -811,7 +839,7 @@
                     return;
                 }
 
-                const gravity = 0.35 * s; 
+                const gravity = 0.35 * s;
                 flappyEngine.bird.v += gravity;
                 flappyEngine.bird.y += flappyEngine.bird.v;
                 flappyEngine.bird.r = Math.min(Math.PI / 4, Math.max(-Math.PI / 4, (flappyEngine.bird.v * 0.1)));
@@ -829,12 +857,12 @@
                     });
                 }
 
-                const birdSize = 25 * s; 
-                const pipeSpeed = 5 * s; 
-                const pipeWidth = 70 * s; 
+                const birdSize = 25 * s;
+                const pipeSpeed = 5 * s;
+                const pipeWidth = 70 * s;
 
                 flappyEngine.pipes.forEach(p => {
-                    p.x -= pipeSpeed; 
+                    p.x -= pipeSpeed;
 
                     const hitX = flappyEngine.bird.x + birdSize * 0.6 > p.x && flappyEngine.bird.x - birdSize * 0.6 < p.x + pipeWidth;
                     const hitY = flappyEngine.bird.y - birdSize * 0.6 < p.y || flappyEngine.bird.y + birdSize * 0.6 > p.y + p.gap;
@@ -870,15 +898,15 @@
 
                     const capH = 30 * s;
                     const capW = pipeWidth + (10 * s);
-                    ctx.fillStyle = "#1B5E20"; 
-                    ctx.fillRect(p.x - (5 * s), p.y - capH, capW, capH); 
-                    ctx.fillRect(p.x - (5 * s), p.y + p.gap, capW, capH); 
+                    ctx.fillStyle = "#1B5E20";
+                    ctx.fillRect(p.x - (5 * s), p.y - capH, capW, capH);
+                    ctx.fillRect(p.x - (5 * s), p.y + p.gap, capW, capH);
 
-                    ctx.fillStyle = "#4CAF50"; 
-                    ctx.fillRect(p.x + (5 * s), 0, pipeWidth * 0.1, p.y); 
-                    ctx.fillRect(p.x + (5 * s), p.y + p.gap, pipeWidth * 0.1, h); 
+                    ctx.fillStyle = "#4CAF50";
+                    ctx.fillRect(p.x + (5 * s), 0, pipeWidth * 0.1, p.y);
+                    ctx.fillRect(p.x + (5 * s), p.y + p.gap, pipeWidth * 0.1, h);
 
-                    ctx.fillStyle = "#2E7D32"; 
+                    ctx.fillStyle = "#2E7D32";
                 });
 
                 const groundH = 50 * s;
@@ -901,7 +929,7 @@
 
                 ctx.fillStyle = "#fff";
                 ctx.beginPath(); ctx.arc(bSize * 0.4, -bSize * 0.4, bSize * 0.35, 0, Math.PI * 2); ctx.fill();
-                ctx.stroke(); 
+                ctx.stroke();
                 ctx.fillStyle = "#000";
                 ctx.beginPath(); ctx.arc(bSize * 0.5, -bSize * 0.4, bSize * 0.1, 0, Math.PI * 2); ctx.fill();
 
@@ -953,7 +981,7 @@
             tileCount: 20,
             tileSize: 0,
             gameSpeed: 100,
-            lastRenderTime: 0, 
+            lastRenderTime: 0,
 
             snake: [], apple: {}, vel: { x: 0, y: 0 }, score: 0,
 
@@ -1151,4 +1179,5 @@
         app.init();
     </script>
 </body>
+
 </html>
