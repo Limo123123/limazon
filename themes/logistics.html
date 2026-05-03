@@ -1,0 +1,247 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo Post</title>
+    <script src="/assets_offline/1777841790818_dl_asset.css"></script>
+    <link href="/assets_offline/1777841791545_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-dark {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        /* Select Styling */
+        select option { background-color: #0f172a; color: white; }
+        select optgroup { background-color: #1e293b; color: #fb923c; font-weight: bold; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col max-w-md mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-orange-500">🚚</span> Limo Post
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Versende Items aus deinem Inventar</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow space-y-6 z-0">
+        
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-orange-400 font-bold mb-4 tracking-wider">1. Was verschicken?</h2>
+            <div class="space-y-3">
+                <select id="product-select" class="input-dark w-full p-3 rounded-xl text-sm font-medium">
+                    <option value="">Lade Inventar...</option>
+                </select>
+                <div class="flex items-center gap-3">
+                    <label class="text-slate-400 text-sm font-bold w-1/3">Menge:</label>
+                    <input type="number" id="quantity" value="1" min="1" class="input-dark w-2/3 p-3 rounded-xl text-sm font-mono text-center">
+                </div>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-orange-400 font-bold mb-4 tracking-wider">2. An wen?</h2>
+            <div class="relative">
+                <span class="absolute left-4 top-3 text-slate-400 font-bold">@</span>
+                <input type="text" id="target-username" placeholder="Username" class="input-dark w-full p-3 pl-8 rounded-xl text-sm font-medium" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-orange-400 font-bold mb-4 tracking-wider">3. Lieferdienst</h2>
+            <div id="providers-container" class="grid grid-cols-2 gap-3">
+                <p class="text-slate-500 text-sm col-span-2 text-center py-2">Lade Tarife...</p>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <button id="send-btn" onclick="sendPackage()" class="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-bold p-4 rounded-xl hover:from-orange-500 hover:to-red-500 transition shadow-lg shadow-orange-600/20 active:scale-95 flex items-center justify-center gap-2">
+                <span>📦</span> Paket kostenpflichtig absenden
+            </button>
+            
+            <button id="send-all-btn" onclick="sendAllInventory()" class="w-full bg-slate-800 text-slate-300 border border-slate-700 font-bold p-4 rounded-xl hover:bg-rose-600 hover:text-white hover:border-rose-500 transition active:scale-95 flex items-center justify-center gap-2">
+                <span>🚚</span> Kompletten Umzug starten (3x Tarif)
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        const API_BASE = 'https://api.limazon.v6.rocks/api';
+        const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+        let currentProviders = [];
+        let selectedProviderId = null;
+
+        async function init() {
+            await Promise.all([loadInventory(), loadProviders()]);
+        }
+
+        async function loadInventory() {
+            try {
+                const res = await fetch(`${API_BASE}/delivery/inventory`, fetchOpts);
+                const items = await res.json();
+                const select = document.getElementById('product-select');
+                
+                select.innerHTML = '<option value="">Bitte Item auswählen...</option>';
+                
+                if (items.length === 0) {
+                    select.innerHTML = '<option value="">Dein Inventar ist leer!</option>';
+                    document.getElementById('send-btn').disabled = true;
+                    document.getElementById('send-all-btn').disabled = true;
+                    document.getElementById('send-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                    document.getElementById('send-all-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                    return;
+                }
+
+                const categories = {};
+                items.forEach(item => {
+                    if (!categories[item.category]) categories[item.category] = [];
+                    categories[item.category].push(
+                        `<option value="${item.productId}">${item.icon} ${item.name} (Besitz: ${item.quantityOwned})</option>`
+                    );
+                });
+
+                for (const [catName, options] of Object.entries(categories)) {
+                    select.innerHTML += `<optgroup label="--- ${catName.toUpperCase()} ---">${options.join('')}</optgroup>`;
+                }
+            } catch (e) {
+                alert("Fehler beim Laden des Inventars.");
+            }
+        }
+
+        async function loadProviders() {
+            try {
+                const res = await fetch(`${API_BASE}/delivery/providers`, fetchOpts);
+                currentProviders = await res.json();
+                
+                const container = document.getElementById('providers-container');
+                container.innerHTML = '';
+                
+                currentProviders.forEach(p => {
+                    container.innerHTML += `
+                        <div class="provider-card border border-slate-700 bg-slate-800/50 p-3 rounded-xl cursor-pointer hover:border-orange-500/50 transition relative overflow-hidden group" 
+                             id="prov-${p.id}" onclick="selectProvider('${p.id}')">
+                            <div class="font-bold text-sm text-white mb-1 leading-tight">${p.name}</div>
+                            <div class="flex flex-col gap-1 mt-2">
+                                <span class="text-[11px] text-slate-400 font-mono flex items-center gap-1">⏱️ ca. ${p.timeMins} Min</span>
+                                <span class="text-[12px] text-orange-400 font-mono font-bold flex items-center gap-1">💸 $${p.cost.toLocaleString('de-DE')}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) { alert("Konnte Tarife nicht laden."); }
+        }
+
+        function selectProvider(providerId) {
+            document.querySelectorAll('.provider-card').forEach(el => {
+                el.classList.remove('border-orange-500', 'bg-orange-500/10', 'ring-2', 'ring-orange-500/50');
+                el.classList.add('border-slate-700', 'bg-slate-800/50');
+            });
+            const selected = document.getElementById(`prov-${providerId}`);
+            selected.classList.remove('border-slate-700', 'bg-slate-800/50');
+            selected.classList.add('border-orange-500', 'bg-orange-500/10', 'ring-2', 'ring-orange-500/50');
+            selectedProviderId = providerId;
+        }
+
+        async function sendPackage() {
+            const productId = document.getElementById('product-select').value;
+            const quantity = document.getElementById('quantity').value;
+            const target = document.getElementById('target-username').value.trim();
+
+            if (!productId || !target || !selectedProviderId) return alert("Bitte wähle Item, Empfänger und einen Tarif!");
+
+            const btn = document.getElementById('send-btn');
+            const ogText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin">⏳</span> Versendet...`;
+
+            try {
+                const res = await fetch(`${API_BASE}/delivery/send`, {
+                    ...fetchOpts, 
+                    method: 'POST', 
+                    body: JSON.stringify({
+                        targetUsername: target,
+                        productId: productId,
+                        quantity: quantity,
+                        providerId: selectedProviderId 
+                    })
+                });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    alert("Erfolg: " + (data.message || "Paket versendet!"));
+                    document.getElementById('target-username').value = '';
+                    document.getElementById('quantity').value = '1';
+                    selectedProviderId = null;
+                    await init(); 
+                } else {
+                    alert("Fehler: " + data.error);
+                }
+            } catch (e) { 
+                alert("Fehler beim Versand."); 
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = ogText;
+        }
+
+        async function sendAllInventory() {
+            const target = document.getElementById('target-username').value.trim();
+            if (!target || !selectedProviderId) return alert("Bitte wähle einen Empfänger und einen Lieferdienst!");
+            if (!confirm("Möchtest du wirklich dein KOMPLETTES Inventar versenden? Dies kann nicht rückgängig gemacht werden!")) return;
+
+            const btn = document.getElementById('send-all-btn');
+            const ogText = btn.innerHTML;
+            btn.disabled = true; 
+            btn.innerHTML = `<span class="animate-spin">⏳</span> LKW wird beladen...`;
+
+            try {
+                const res = await fetch(`${API_BASE}/delivery/send-all`, {
+                    ...fetchOpts, 
+                    method: 'POST', 
+                    body: JSON.stringify({ targetUsername: target, providerId: selectedProviderId })
+                });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    alert("Erfolg: " + (data.message || "Umzug beauftragt!"));
+                    document.getElementById('target-username').value = '';
+                    selectedProviderId = null;
+                    await init(); 
+                } else {
+                    alert("Fehler: " + data.error);
+                }
+            } catch (e) { 
+                alert("Fehler beim Umzug."); 
+            }
+            
+            btn.disabled = false; 
+            btn.innerHTML = ogText;
+        }
+
+        window.onload = init;
+    </script>
+
+</body></html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Schnitzel-Alarm</title>
+    <style>
+        :root {
+            --primary-red: #e74c3c;
+            --dark-bg: #1a1a1a;
+            --panel-bg: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Kein Scrollen auf dem Handy */
+            touch-action: manipulation; /* Verbessert Klick-Reaktion */
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            background: #ecf0f1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #ui-bar {
+            height: 70px;
+            background: var(--panel-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 20;
+        }
+
+        #alice-container {
+            position: absolute;
+            top: 80px; /* NEU: Unter die schwarze UI-Leiste geschoben */
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 15;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* DIE SPRECHBLASE (Jetzt unter dem Bild!) */
+        #speech-bubble {
+            background: white;
+            color: black;
+            border-radius: 15px;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 220px;
+            text-align: center;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.2s;
+            position: absolute;
+            top: 130px; /* NEU: 130px nach unten verschoben (unter das 120px Bild) */
+            z-index: 20;
+        }
+
+        /* Das kleine Dreieck zeigt jetzt nach OBEN zu Alice */
+        #speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: -10px; /* NEU: Oben an die Blase geklebt */
+            bottom: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px; /* NEU: Dreieck umgedreht */
+            border-style: solid;
+            border-color: transparent transparent white;
+        }
+
+        /* ALICES KOPF & ROT-FILTER */
+        #alice-face-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+
+        #alice-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Der Rot-Filter, der per JS gesteuert wird */
+        #alice-red-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ff0000;
+            mix-blend-mode: multiply; /* Färbt das Bild darunter rot */
+            opacity: 0; /* Startet bei 0 */
+            pointer-events: none;
+        }
+
+        /* BEBEN ANIMATION */
+        @keyframes shake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            25% { transform: translate(-2px, -3px) rotate(-2deg); }
+            50% { transform: translate(-4px, 0px) rotate(2deg); }
+            75% { transform: translate(4px, 3px) rotate(0deg); }
+            100% { transform: translate(2px, -2px) rotate(-2deg); }
+        }
+        .shaking {
+            animation: shake 0.15s infinite;
+        }
+
+        /* DIE SCHNITZEL (Riesig für Handys) */
+        .game-item {
+            position: absolute;
+            font-size: 70px; /* Schön groß zum Antippen */
+            cursor: pointer;
+            user-select: none;
+            z-index: 10;
+            filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.4));
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Erleichtert das Tippen auf Handys: */
+            width: 80px; 
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .splat {
+            position: absolute;
+            pointer-events: none;
+            animation: fadeOut 0.6s forwards;
+            font-weight: 900;
+            color: var(--primary-red);
+            font-size: 2.5rem;
+            z-index: 11;
+            text-shadow: 2px 2px 0 #fff;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+        }
+
+        #play-area {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+        }
+
+        /* OVERLAYS (Start/Ende) */
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #msg-title { font-size: 2rem; margin-bottom: 10px; color: #fff; }
+        #msg-desc { font-size: 1.2rem; color: #ccc; line-height: 1.5; }
+
+        #start-btn {
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 6px 0 #c0392b;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        #start-btn:active {
+            transform: translateY(6px);
+            box-shadow: none;
+        }
+
+        .hidden { display: none !important; }
+        #score-val { color: #f1c40f; }
+        #timer-val { color: #e74c3c; }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="overlay">
+            <h2 id="msg-title">SCHNITZEL ALARM</h2>
+            <p id="msg-desc">Rette die 🥩 vor Alice!<br>Tippe sie so schnell du kannst weg.<br><br>Achtung: Erwischst du 🥦, gibt es fette Minuspunkte!</p>
+            <button id="start-btn">SPIELEN</button>
+            <p style="margin-top:20px; font-size: 1rem; color: #888;">Kosten: 1 Token</p>
+        </div>
+
+        <div id="ui-bar">
+            <div>Score: <span id="score-val">0</span></div>
+            <div>Zeit: <span id="timer-val">30</span>s</div>
+        </div>
+
+        <div id="alice-container">
+            <div id="speech-bubble">Das lasse ich mir nicht verbieten!</div>
+            <div id="alice-face-wrapper">
+                <img id="alice-img" src="/assets_offline/1777841790981_61Yc251miDL._AC_UF894,1000_QL80_.jpg" alt="Alice">
+                <div id="alice-red-overlay"></div>
+            </div>
+        </div>
+
+        <div id="play-area"></div>
+    </div>
+
+    <script>
+        // --- KONFIGURATION ---
+        const API_BASE_URL = 'https://api.limazon.v6.rocks';
+        
+        let score = 0;
+        let timeLeft = 30;
+        let gameActive = false;
+        let spawnTimer, clockTimer;
+
+        const startBtn = document.getElementById('start-btn');
+        const overlay = document.getElementById('overlay');
+        const playArea = document.getElementById('play-area');
+        const scoreDisplay = document.getElementById('score-val');
+        const timerDisplay = document.getElementById('timer-val');
+        
+        const wrapper = document.getElementById('alice-face-wrapper');
+        const redOverlay = document.getElementById('alice-red-overlay');
+        const speech = document.getElementById('speech-bubble');
+        
+        const msgTitle = document.getElementById('msg-title');
+        const msgDesc = document.getElementById('msg-desc');
+
+        const quotes = [
+            "Das ist MEIN Schnitzel!",
+            "Verbotspartei!!",
+            "Unerhört!",
+            "Finger weg von meinem Fleisch!",
+            "Frechheit!",
+            "Tofu kommt mir nicht ins Haus!",
+            "Das wird man ja wohl noch essen dürfen!",
+            "Brokkoli ist Teufelszeug!",
+            "Die da oben wollen uns die Panade verbieten!",
+            "Für mein Schnitzel gehe ich auf die Barrikaden!",
+            "Mein Körper braucht Fleisch!",
+            "Wer hat den Tofu hier reingeschmuggelt?!",
+            "Ich rufe gleich die Polizei!",
+            "Fleisch ist mein Gemüse!",
+            "Das ist eine gezielte Schikane!",
+            "Zitronenscheibe drauf und Ruhe ist!",
+            "Ich fordere ein Schnitzel-Grundrecht!",
+            "Hör auf, mir auf dem Teller rumzutippen!",
+            "NIEMAND NIMMT MIR MEIN SCHNITZEL WEG!"
+        ];
+
+        // Verhindert Standard-Touch-Events, damit das Tippen snappier wird
+        playArea.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        
+        startBtn.addEventListener('click', initGame);
+
+        async function initGame() {
+            startBtn.innerText = "LÄDT...";
+            startBtn.disabled = true;
+
+            // 1. API Call: Token abziehen (WICHTIG: credentials 'include' für Cookies!)
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/games/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', 
+                    body: JSON.stringify({ gameId: 'schnitzel' })
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || "Nicht genug Tokens oder Serverfehler!");
+                    startBtn.innerText = "SPIELEN";
+                    startBtn.disabled = false;
+                    return;
+                }
+            } catch (err) {
+                alert("Verbindung zu api.limazon.v6.rocks fehlgeschlagen.");
+                startBtn.innerText = "SPIELEN";
+                startBtn.disabled = false;
+                return;
+            }
+
+            startGame();
+        }
+
+        function startGame() {
+            gameActive = true;
+            score = 0;
+            timeLeft = 30;
+            startBtn.disabled = false;
+            
+            overlay.classList.add('hidden');
+            playArea.innerHTML = '';
+            scoreDisplay.innerText = score;
+            timerDisplay.innerText = timeLeft;
+            
+            // Alice Reset
+            wrapper.style.transform = 'scale(1)';
+            wrapper.classList.remove('shaking');
+            redOverlay.style.opacity = 0;
+            speech.style.opacity = 0;
+
+            clockTimer = setInterval(tick, 1000);
+            spawnTimer = setInterval(spawnItem, 600); // Handyspieler sind oft schneller, daher 600ms
+        }
+
+        function tick() {
+            timeLeft--;
+            timerDisplay.innerText = timeLeft;
+            if (timeLeft <= 0) endGame();
+        }
+
+        function spawnItem() {
+            if (!gameActive) return;
+
+            const item = document.createElement('div');
+            item.className = 'game-item';
+            
+            // 85% Chance auf Schnitzel, 15% auf Brokkoli
+            const isSchnitzel = Math.random() > 0.15;
+            item.innerText = isSchnitzel ? '🥩' : '🥦';
+            
+            // Sichere Zufallskoordinaten für Handys berechnen
+            const itemSize = 80; 
+            // Halte Abstand von oben (UI Bar + Gesicht)
+            const minY = 240; 
+            const maxX = playArea.clientWidth - itemSize;
+            const maxY = playArea.clientHeight - itemSize - 20;
+            
+            const x = Math.max(0, Math.random() * maxX);
+            const y = Math.max(minY, Math.random() * maxY);
+            
+            item.style.left = x + 'px';
+            item.style.top = y + 'px';
+
+            // 'touchstart' reagiert auf Handys ein paar Millisekunden schneller als 'click'
+            item.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Verhindert doppelten Klick
+                handleHit(item, isSchnitzel, e.touches[0].clientX, e.touches[0].clientY);
+            });
+            item.addEventListener('mousedown', (e) => {
+                handleHit(item, isSchnitzel, e.clientX, e.clientY);
+            });
+
+            playArea.appendChild(item);
+
+            // Item verschwindet wieder (je mehr Punkte, desto schneller verschwinden sie)
+            const lifespan = Math.max(700, 1500 - (score * 15)); 
+            setTimeout(() => {
+                if (item.parentNode) item.remove();
+            }, lifespan);
+        }
+
+        function handleHit(item, isSchnitzel, x, y) {
+            if (!gameActive) return;
+            
+            if (isSchnitzel) {
+                score++;
+                createFeedback("+1", x, y, "#2ecc71");
+                updateAlice(true);
+            } else {
+                score = Math.max(0, score - 5); // Harte Strafe für Veggie-Klick
+                createFeedback("-5", x, y, "#e74c3c");
+                updateAlice(false);
+            }
+            
+            scoreDisplay.innerText = score;
+            item.remove();
+        }
+
+        function updateAlice(wasGood) {
+            if (wasGood) {
+                // Wut-Faktor berechnen (Max bei ca. 50 Punkten)
+                let rageLevel = Math.min(score / 50, 1);
+                
+                // Rotfilter hochdrehen (bis max 80% Deckkraft, damit man das Bild noch sieht)
+                redOverlay.style.opacity = rageLevel * 0.8;
+                
+                // Gesicht wird größer
+                wrapper.style.transform = `scale(${1 + (rageLevel * 0.4)})`;
+                
+                // Ab Score 15 fängt sie an zu beben
+                if (score > 15) {
+                    wrapper.classList.add('shaking');
+                }
+
+                // Sprechblase zufällig anzeigen lassen
+                if (Math.random() > 0.7) showQuote();
+            } else {
+                // Beruhigt sich kurz bei Tofu
+                redOverlay.style.opacity = 0;
+                wrapper.classList.remove('shaking');
+                wrapper.style.transform = 'scale(1)';
+                
+                speech.innerText = "Na also, geht doch!";
+                speech.style.opacity = 1;
+                setTimeout(() => { if(gameActive) speech.style.opacity = 0; }, 1500);
+            }
+        }
+
+        function showQuote() {
+            speech.innerText = quotes[Math.floor(Math.random() * quotes.length)];
+            speech.style.opacity = 1;
+            setTimeout(() => { speech.style.opacity = 0; }, 1500);
+        }
+
+        function createFeedback(text, x, y, color) {
+            const splat = document.createElement('div');
+            splat.className = 'splat';
+            splat.innerText = text;
+            // Etwas versetzt über dem Finger anzeigen
+            splat.style.left = (x - 20) + 'px';
+            splat.style.top = (y - 50) + 'px';
+            splat.style.color = color;
+            document.body.appendChild(splat);
+            setTimeout(() => splat.remove(), 600);
+        }
+
+        async function endGame() {
+            gameActive = false;
+            clearInterval(clockTimer);
+            clearInterval(spawnTimer);
+            wrapper.classList.remove('shaking');
+            redOverlay.style.opacity = 0;
+
+            // Score ans Backend senden
+            try {
+                await fetch(`${API_BASE_URL}/api/games/submit-score`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ gameId: 'schnitzel', score: score, seed: 'random' })
+                });
+            } catch (err) {
+                console.error("Konnte Score nicht speichern.");
+            }
+
+            // UI für Spielende
+            msgTitle.innerText = "ZEIT ABGELAUFEN!";
+            msgDesc.innerHTML = `Du hast <b>${score}</b> Schnitzel in Sicherheit gebracht!<br><br>Alice' Blutdruck ist auf 240.`;
+            startBtn.innerText = "NOCHMAL SPIELEN";
+            overlay.classList.remove('hidden');
+        }
+    </script>
+
+</body></html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo Gewerkschaft ✊</title>
+    <script src="/assets_offline/1777841790818_dl_asset.css"></script>
+    <link href="/assets_offline/1777841791545_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .input-dark {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .input-dark:focus {
+            outline: none;
+            border-color: #ef4444; /* Roter Fokus für die Gewerkschaft */
+            background: #0f172a;
+        }
+
+        /* Animationen aus der Bank */
+        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-in { animation: fadeIn 0.2s ease-out; }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Spezifische Gewerkschafts-Karten */
+        .card-rebel {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 50%, #991b1b 100%);
+            box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
+        }
+
+        .card-pending {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+        }
+
+        .strike-item {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .strike-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 hide-scroll">
+
+    <header class="p-6 flex justify-between items-center z-10 sticky top-0 bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-800">
+        <div>
+            <a href="/index.html" class="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 font-bold mb-1 block transition">← Zurück zum Portal</a>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                Gewerkschaft ✊
+            </h1>
+            <p class="text-xs text-slate-400">Organisierter Widerstand</p>
+        </div>
+        <div id="user-avatar" class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-sm border-2 border-slate-700 shadow-lg transition">?</div>
+    </header>
+
+    <main class="flex-grow px-4 pt-6 pb-24 overflow-y-auto hide-scroll z-0">
+
+        <div id="alert-box" class="hidden mb-6 text-center p-4 rounded-xl font-bold text-sm shadow-lg fade-in"></div>
+
+        <div class="glass rounded-2xl p-6 shadow-2xl relative overflow-hidden mb-8 border border-white/10 slide-up">
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none"></div>
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <h2 class="text-xl font-bold text-white mb-1">Neuen Streik ausrufen</h2>
+                <p class="text-xs text-slate-400 mb-6">Wähle ein Modul und sammle Mitstreiter.</p>
+
+                <form onsubmit="proposeStrike(event)">
+                    <div class="mb-4">
+                        <label class="text-[10px] uppercase text-red-400 font-bold mb-2 block tracking-wider">Ziel-Modul</label>
+                        <select id="strike-module" class="input-dark w-full p-4 rounded-xl text-sm font-medium" required="">
+                            <option value="teachermon">Teachermon 🃏</option>
+                            <option value="limonews">Limo News (LNN) 📰</option>
+                            <option value="casino">Casino 🎰</option>
+                            <option value="restaurant">Restaurant 🍔</option>
+                            <option value="jobs">Jobcenter 💼</option>
+                            <option value="crime">Verbrechen / Überfälle 🦹</option>
+                            <option value="gangs">Gangs 🏴‍☠️</option>
+                            <option value="limterest">Limterest 📌</option>
+                            <option value="realestate">Immobilien 🏠</option>
+                            <option value="auctions">Auktionshaus 🔨</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="text-[10px] uppercase text-red-400 font-bold mb-2 block tracking-wider">Forderung / Grund</label>
+                        <input type="text" id="strike-reason" class="input-dark w-full p-4 rounded-xl text-sm" placeholder="Z.B. Bessere Drop-Raten!" required="" autocomplete="off">
+                        <p class="text-[10px] text-slate-500 mt-2 font-medium">Achte auf deine Wortwahl. Der Auto-Filter ist aktiv.</p>
+                    </div>
+
+                    <button type="submit" id="btn-propose" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold p-4 rounded-xl transition shadow-lg shadow-red-500/20 active:scale-95">
+                        Protest starten 🚩
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mb-4 flex justify-between items-end px-1 slide-up" style="animation-delay: 0.1s;">
+            <h3 class="text-lg font-bold text-white">Laufende Proteste</h3>
+            <button onclick="loadStrikes()" class="text-xs text-red-400 hover:text-red-300 font-bold bg-red-400/10 px-2 py-1 rounded transition">Aktualisieren ↻</button>
+        </div>
+
+        <div id="strikes-list" class="space-y-4 slide-up" style="animation-delay: 0.2s;">
+            <div class="p-8 rounded-xl text-center border border-dashed border-slate-700 text-slate-500 text-sm">Lade Akten...</div>
+        </div>
+
+    </main>
+
+    <script src="js/limo-global.js?v=1" data-page="gewerkschaft"></script>
+
+    <script>
+        const API_BASE_URL = 'https://api.limazon.v6.rocks';
+        let currentUser = null;
+
+        // Init: User laden, dann Streiks laden
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    currentUser = await res.json();
+                    document.getElementById('user-avatar').innerText = currentUser.username.substring(0, 2).toUpperCase();
+                } else {
+                    window.location.href = 'index.html'; // Fallback falls nicht eingeloggt
+                }
+            } catch (e) { console.error(e); }
+            
+            loadStrikes();
+        });
+
+        // Hilfsfunktion für Fetch mit Cookies
+        async function fetchAuth(url, options = {}) {
+            options.credentials = 'include';
+            return fetch(url, options);
+        }
+
+        // Alert Box anzeigen (Bank Style)
+        function showAlert(msg, isError = false) {
+            const box = document.getElementById('alert-box');
+            box.innerText = msg;
+            box.className = `mb-6 text-center p-4 rounded-xl font-bold text-sm block shadow-lg fade-in ${isError ? 'bg-red-900/30 text-red-400 border border-red-500/30' : 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/30'}`;
+            setTimeout(() => { box.classList.add('hidden'); }, 5000);
+        }
+
+        // Streiks vom Server laden
+        async function loadStrikes() {
+            const list = document.getElementById('strikes-list');
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/strikes`);
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error);
+
+                if (data.strikes.length === 0) {
+                    list.innerHTML = `
+                        <div class="glass p-8 rounded-xl text-center flex flex-col items-center justify-center opacity-70">
+                            <span class="text-4xl mb-3">🕊️</span>
+                            <span class="text-slate-400 text-sm font-medium">Die Straßen sind friedlich.<br>Aktuell keine Proteste.</span>
+                        </div>`;
+                    return;
+                }
+
+                list.innerHTML = '';
+                data.strikes.forEach(strike => {
+                    const isActive = strike.status === 'active';
+                    const isCreator = currentUser && strike.strikers && strike.strikers[0] === currentUser.userId;
+                    const isAdmin = currentUser && currentUser.isAdmin;
+
+                    // Design je nach Status (Pending = Orange, Active = Rot)
+                    const statusClass = isActive ? 'card-rebel' : 'glass border-l-4 border-amber-500';
+                    const statusBadge = isActive 
+                        ? `<span class="bg-black/30 text-white px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Blockiert</span>` 
+                        : `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase">Wartet auf Hilfe</span>`;
+
+                    let actionHtml = '';
+                    
+                    // NEU: Prüfen, ob der User bereits mitstreikt
+                    const hasJoined = currentUser && strike.strikers && strike.strikers.includes(currentUser.userId);
+
+                    // Timer anzeigen, wenn der Streik aktiv ist
+                    let timerHtml = '';
+                    if (isActive) {
+                        const endTime = new Date(strike.expiresAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                        timerHtml = `
+                            <div class="mt-4 w-full bg-black/20 p-3 rounded-xl border border-white/5 text-center">
+                                <span class="text-[10px] text-white/50 uppercase tracking-wider block">Blockade endet um</span>
+                                <span class="text-sm font-mono font-bold text-white">${endTime} Uhr</span>
+                            </div>`;
+                    }
+
+                    // Button anzeigen, wenn der User noch nicht dabei ist
+                    let joinBtnHtml = '';
+                    if (!hasJoined) {
+                        joinBtnHtml = `
+                            <button onclick="joinStrike('${strike._id}')" class="w-full mt-4 bg-amber-500 text-black hover:bg-amber-400 font-bold py-3 rounded-xl transition shadow-lg active:scale-95 text-sm">
+                                ✊ Solidarität zeigen (Beitreten)
+                            </button>`;
+                    }
+
+                    // Zusammenbauen
+                    actionHtml = timerHtml + joinBtnHtml;
+
+                    // Button: Beenden (Für Admin oder Ersteller)
+                    let deleteBtn = '';
+                    if (isCreator || isAdmin) {
+                        deleteBtn = `
+                            <button onclick="cancelStrike('${strike._id}')" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl transition text-xs border border-slate-700">
+                                ❌ Streik abbrechen
+                            </button>`;
+                    }
+
+                    list.innerHTML += `
+                        <div class="${statusClass} p-5 rounded-2xl strike-item relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-lg font-bold text-white uppercase tracking-tight">${strike.module}</h3>
+                                ${statusBadge}
+                            </div>
+                            
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5 mb-3">
+                                <p class="text-white/90 text-sm font-medium italic">"${strike.reason}"</p>
+                            </div>
+                            
+                            <p class="text-xs text-white/60 mb-2 leading-relaxed">
+                                <b class="text-white/80">Streikende:</b> ${strike.strikerNames.join(', ')}
+                            </p>
+                            
+                            ${actionHtml}
+                            ${deleteBtn}
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                list.innerHTML = `<div class="text-red-400 bg-red-900/20 border border-red-500/20 p-4 rounded-xl text-center text-sm">${e.message || "Verbindung zur Gewerkschaft fehlgeschlagen."}</div>`;
+            }
+        }
+
+        // Einen neuen Streik einreichen
+        async function proposeStrike(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-propose');
+            const moduleName = document.getElementById('strike-module').value;
+            const reason = document.getElementById('strike-reason').value;
+
+            btn.disabled = true;
+            btn.innerText = "Sende Antrag...";
+
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/strikes/propose`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ moduleName, reason })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showAlert(data.message);
+                    document.getElementById('strike-reason').value = '';
+                    loadStrikes();
+                } else {
+                    showAlert(data.error, true);
+                }
+            } catch (e) {
+                showAlert("Ein Verbindungsfehler ist aufgetreten.", true);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Protest starten 🚩";
+            }
+        }
+
+        // Einem offenen Streik beitreten
+        async function joinStrike(id) {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/strikes/join/${id}`, { method: 'POST' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showAlert(data.message);
+                    loadStrikes();
+                } else {
+                    showAlert(data.error, true);
+                }
+            } catch (e) {
+                showAlert("Fehler beim Beitreten.", true);
+            }
+        }
+
+        // Admin / Ersteller: Streik beenden
+        async function cancelStrike(id) {
+            if(!confirm("Bist du sicher, dass du den Streik auflösen willst? Die Arbeiter werden nicht erfreut sein!")) return;
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/strikes/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showAlert(data.message);
+                    loadStrikes();
+                } else {
+                    showAlert(data.error, true);
+                }
+            } catch(e) { 
+                showAlert("Fehler beim Beenden des Streiks.", true); 
+            }
+        }
+    </script>
+
+</body></html>

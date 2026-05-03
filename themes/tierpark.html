@@ -1,0 +1,234 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Tierpark</title>
+    <script src="/assets_offline/1777841790818_dl_asset.css"></script>
+    <link href="/assets_offline/1777841791545_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        select option { background-color: #0f172a; color: white; }
+
+        @keyframes float { 
+            0%, 100% { transform: translateY(0px); } 
+            50% { transform: translateY(-12px); } 
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        
+        /* Die Wiese */
+        .park-wiese {
+            background: radial-gradient(circle at center, #34d399 0%, #10b981 60%, #059669 100%);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-emerald-500">🌳</span> Tierpark
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Lass deine Tiere auf der Wiese spielen</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow space-y-6 z-0">
+        
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-emerald-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                🎟️ Park-Eingang
+            </h2>
+            
+            <select id="pet-select" class="w-full bg-slate-900 border border-slate-700 text-white p-3 rounded-xl text-sm mb-4 focus:outline-none focus:border-emerald-500 transition font-medium appearance-none">
+                <option value="">Lade deine Tiere...</option>
+            </select>
+            
+            <div class="flex gap-3">
+                <button onclick="sendToPark()" class="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/20 active:scale-95 text-sm flex justify-center items-center gap-2">
+                    <span>🐾</span> Reinlassen
+                </button>
+                <button onclick="callHome()" class="flex-1 bg-rose-500/20 text-rose-400 border border-rose-500/50 font-bold py-3 rounded-xl hover:bg-rose-500 hover:text-white transition active:scale-95 text-sm flex justify-center items-center gap-2">
+                    <span>🏠</span> Heim rufen
+                </button>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm uppercase text-emerald-400 font-bold tracking-wider">Live-Wiese</h2>
+                <button onclick="observeAnimals()" class="bg-blue-500/20 text-blue-400 border border-blue-500/50 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition active:scale-95 flex items-center gap-1">
+                    <span>👀</span> Beobachten
+                </button>
+            </div>
+            
+            <div id="park-wiese" class="park-wiese rounded-xl min-h-[250px] p-5 flex flex-wrap gap-4 justify-center items-center relative overflow-hidden border border-green-700/50">
+                <p class="text-green-900 font-bold text-lg drop-shadow-sm flex items-center gap-2">
+                    <span class="animate-spin">⏳</span> Lade Park...
+                </p>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-emerald-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                📻 Park-Funk
+            </h2>
+            <div id="event-log" class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 max-h-48 overflow-y-auto hide-scroll text-sm font-mono space-y-3">
+                <p class="text-slate-500 text-center py-2">Warte auf Ereignisse...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const API_BASE = 'https://api.limazon.v6.rocks/api';
+        const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+
+        // 1. Eigene Tiere für das Dropdown laden
+        async function loadMyPetsForDropdown() {
+            const select = document.getElementById('pet-select');
+            try {
+                const res = await fetch(`${API_BASE}/pets/my`, fetchOpts);
+                const { pets } = await res.json();
+
+                if (!pets || pets.length === 0) {
+                    select.innerHTML = '<option value="">Du besitzt keine Tiere.</option>';
+                    select.disabled = true;
+                    return;
+                }
+
+                select.innerHTML = '<option value="">-- Wähle ein Tier aus --</option>';
+                pets.forEach(pet => {
+                    const status = pet.isDying ? ' (Sehr Hungrig!)' : ` (${pet.hunger}% Satt)`;
+                    select.innerHTML += `<option value="${pet.id}">${pet.icon} ${pet.name} ${status}</option>`;
+                });
+                select.disabled = false;
+            } catch (e) {
+                select.innerHTML = '<option value="">Fehler beim Laden.</option>';
+            }
+        }
+
+        // 2. Tier in den Park schicken
+        async function sendToPark() {
+            const petId = document.getElementById('pet-select').value;
+            if (!petId) return alert("Bitte wähle zuerst ein Tier aus!");
+
+            try {
+                const resEquip = await fetch(`${API_BASE}/pets/equip`, { ...fetchOpts, method: 'POST', body: JSON.stringify({ petId }) });
+                if (!resEquip.ok) return alert("Fehler beim Ausrüsten des Tiers.");
+
+                const resToggle = await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
+                const data = await resToggle.json();
+                
+                if(resToggle.ok) {
+                    alert("Erfolg: Dein Tier ist jetzt auf der Wiese!");
+                    loadPark(); 
+                } else alert(data.error);
+            } catch (e) { alert("Verbindung fehlgeschlagen."); }
+        }
+
+        // 3. Tier zurückholen
+        async function callHome() {
+            try {
+                const res = await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    if (data.inPark === true) {
+                        await fetch(`${API_BASE}/park/toggle`, { ...fetchOpts, method: 'POST' });
+                    }
+                    alert("Dein Tier wurde nach Hause geholt!");
+                    loadPark();
+                } else alert(data.error);
+            } catch (e) { alert("Fehler beim Zurückrufen."); }
+        }
+
+        // 4. Die Wiese laden
+        async function loadPark() {
+            const wiese = document.getElementById('park-wiese');
+            try {
+                const res = await fetch(`${API_BASE}/park/pets`, fetchOpts);
+                const pets = await res.json();
+
+                if (pets.length === 0) {
+                    wiese.innerHTML = '<p class="text-green-900 font-bold text-center">Der Park ist leer.<br><span class="text-sm font-normal opacity-80">Schick ein Tier rein!</span></p>';
+                    return;
+                }
+
+                wiese.innerHTML = '';
+                pets.forEach(p => {
+                    // Zufälliges Delay für die Float-Animation, damit sie nicht synchron hüpfen
+                    const delay = (Math.random() * 2).toFixed(2);
+                    
+                    wiese.innerHTML += `
+                        <div class="bg-white/95 text-slate-900 p-3 rounded-2xl text-center w-24 shadow-xl border-b-4 border-slate-300 animate-float" style="animation-delay: ${delay}s">
+                            <span class="text-4xl block mb-1 drop-shadow-md">${p.petIcon}</span>
+                            <div class="text-[11px] font-bold truncate leading-tight">${p.petName}</div>
+                            <div class="text-[9px] text-slate-500 truncate uppercase tracking-wider mt-1">${p.username}</div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                wiese.innerHTML = '<p class="text-red-800 font-bold">Störung im Park.</p>';
+            }
+        }
+
+        // 5. Zufalls-Event auslösen
+        async function observeAnimals(isAuto = false) {
+            const log = document.getElementById('event-log');
+            try {
+                const res = await fetch(`${API_BASE}/park/interact`, { ...fetchOpts, method: 'POST' });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    if(data.message.includes("komplett leer") && isAuto) return;
+                    if(log.innerHTML.includes("Warte auf Ereignisse")) log.innerHTML = '';
+
+                    const entry = document.createElement('div');
+                    entry.className = 'border-b border-slate-800/50 pb-3 flex gap-3 items-start animate-[fadeIn_0.3s_ease-out]';
+                    entry.innerHTML = `
+                        <span class="text-2xl mt-1">${data.icon || '🐾'}</span>
+                        <div>
+                            <span class="text-emerald-400 text-[10px] font-bold tracking-wider">[${new Date().toLocaleTimeString()}]</span>
+                            <p class="text-slate-300 mt-0.5 leading-snug">${data.message}</p>
+                        </div>
+                    `;
+                    
+                    log.prepend(entry);
+                    loadPark(); 
+                } else {
+                    if(!isAuto) alert(data.error); 
+                }
+            } catch (e) { 
+                if(!isAuto) alert("Du konntest nichts erkennen."); 
+            }
+        }
+
+        // Start-Logik mit Random-Events
+        window.onload = () => {
+            loadMyPetsForDropdown();
+            loadPark();
+            
+            // Live-Wiese alle 10 Sek. aktualisieren
+            setInterval(loadPark, 10000); 
+
+            // Automatischer Event-Generator (alle 30s)
+            setInterval(() => {
+                if (Math.random() > 0.5) observeAnimals(true);
+            }, 30000);
+        };
+    </script>
+
+</body></html>

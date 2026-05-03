@@ -1,0 +1,304 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Das Limische Gesetzbuch (LGB)</title>
+    <script src="/assets_offline/1777841790818_dl_asset.css"></script>
+    <link href="/assets_offline/1777841792350_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0a0a0a; 
+            color: #e2e8f0; 
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(212, 175, 55, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.05), transparent 25%);
+            min-height: 100vh;
+        }
+        
+        .serif { font-family: 'Playfair Display', serif; }
+        
+        .law-card {
+            background: rgba(20, 20, 25, 0.8);
+            border-left: 4px solid #d4af37; /* Goldener Rand */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .law-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 25px rgba(212, 175, 55, 0.1);
+        }
+
+        .gold-text {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Wachssiegel-Effekt für den Header */
+        .seal {
+            width: 80px; height: 80px;
+            background: #990000;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 5px 15px rgba(0,0,0,0.5);
+            font-size: 2rem;
+            border: 3px solid #770000;
+            margin: 0 auto 20px auto;
+            cursor: pointer; /* Zeigt an, dass man klicken kann */
+            user-select: none;
+            transition: transform 0.1s;
+        }
+        .seal:active { transform: scale(0.9); }
+
+        /* GEHEIMNIS 1: Hover Reveal */
+        .hover-ghost {
+            opacity: 0.02;
+            transition: opacity 1.5s ease-in-out;
+            border-color: #333;
+        }
+        .hover-ghost:hover {
+            opacity: 1;
+            border-color: #fff;
+        }
+
+        /* GEHEIMNIS 2: Unsichtbare Tinte (Nur bei Markierung sichtbar) */
+        .invisible-ink {
+            color: #0a0a0a; /* Gleiche Farbe wie Hintergrund */
+            cursor: default;
+        }
+        .invisible-ink::selection {
+            background-color: #d4af37;
+            color: #000;
+        }
+
+        /* Beben Animation für das Ritual */
+        @keyframes earthquake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-screen { animation: earthquake 0.5s; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-4xl mx-auto">
+        
+        <a href="/index.html" class="inline-flex items-center text-gray-400 hover:text-white transition mb-8">
+            <span class="mr-2">←</span> Zurück zum Hub
+        </a>
+
+        <header class="text-center mb-16">
+            <!-- 5x klicken aktiviert das Secret! -->
+            <div class="seal" onclick="triggerSealRitual()" title="Sigillum Serveris">⚖️</div>
+            <h1 class="text-5xl md:text-6xl font-bold serif gold-text mb-4">Das Limische Gesetzbuch</h1>
+            <p class="text-xl text-gray-400 italic serif">"Geld regiert die Welt. Der Server regiert das Geld."</p>
+        </header>
+
+        <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-8 mb-12 text-center text-lg leading-relaxed shadow-inner">
+            <h2 class="text-2xl font-bold serif text-white mb-4">Präambel</h2>
+            <p class="text-gray-300">
+                Im Bewusstsein seiner Verantwortung vor dem System und dem heiligen Quellcode, <br>
+                von dem Willen beseelt, als gleichberechtigtes Glied in einem geeinten Server dem wirtschaftlichen Ruin entgegenzutreten, <br>
+                hat sich das Volk von Limazon kraft seiner verbleibenden CPU-Leistung dieses Grundgesetz gegeben.
+            </p>
+        </div>
+
+        <div class="space-y-6">
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 1</span> Absolute Systemhoheit</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Die Würde des Servers ist unantastbar. Sie zu achten und zu schützen ist Verpflichtung aller Spieler.<br>
+                    (2) Der Admin zahlt die Stromrechnung. Seine Entscheidungen sind absolut, endgültig und nicht anfechtbar.<br>
+                    (3) Das Ausnutzen von Glitches wird mit dem Entzug des Reichtums, der Schufa-Zerstörung oder der sofortigen Verbannung aus dem Universum bestraft. Bug-Hunter werden stattdessen mit Delta-Coins (∆) entlohnt.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 2</span> Die unsoziale Marktwirtschaft</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Jeder Spieler hat das Recht auf freie wirtschaftliche Entfaltung, sofern er nicht pleitegeht.<br>
+                    (2) Steuern sind die Lebensader der Gesellschaft. Das Finanzamt ist berechtigt, Vermögensabgaben ab $100.000.000 ohne Vorwarnung einzuziehen.<br>
+                    (3) Wer seine Kredite bei der Limo Bank nicht fristgerecht tilgt, verliert seine Bonität, erhält Pfändungen durch das Inkassobüro und verliert seinen Schufa-Score.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 3</span> Recht auf Kriminalität</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Überfälle und Raubzüge sind als legitime Einkommensquellen anerkannt.<br>
+                    (2) Wer beim Versuch eines Verbrechens vom System (SEK) erwischt wird, muss drastische finanzielle Strafen dulden.<br>
+                    (3) Die Staatskasse (The Heist) wird durch eine Firewall geschützt. Das Hacken dieser Systeme geschieht auf eigene Gefahr und kann zu schweren Geldstrafen führen.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl border-l-red-600">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-red-500">§ 4</span> Diplomatische Immunität (Raid Boss)</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) System-Administratoren und der amtierende Bürgermeister genießen diplomatische Immunität.<br>
+                    (2) Ein Raubüberfall auf einen Administrator gilt als hochgradiger "Boss-Raid". Die Erfolgschance liegt bei minimalen 5%.<br>
+                    (3) Schlägt der Angriff auf die Obrigkeit fehl, rückt das Sondereinsatzkommando (SEK) an. Der Täter verliert sofort <strong>50% seines gesamten Kontostands</strong> und seine Schufa wird ruiniert.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 5</span> Familiäre Pflichten (Jugendschutz)</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Ehen, die über Tinda oder das Standesamt geschlossen werden, verpflichten zur gegenseitigen Fürsorge. Scheidungen sind rechtmäßig, jedoch mit Anwaltskosten von $5.000 verbunden.<br>
+                    (2) Kinder sind das höchste Gut. Der Spaß- und Hunger-Balken ist von den Eltern zwingend aufrechtzuerhalten.<br>
+                    (3) <strong>Eingreifen des Jugendamtes:</strong> Wird ein Kind 24 Stunden nicht gefüttert oder 48 Stunden ignoriert, schreitet das Jugendamt Limazon ein. Das Kind wird ins Waisenhaus überführt, der Vormund zahlt $15.000 Strafe und erhält einen Schufa-Eintrag. Ab 3 Vergehen droht eine lebenslange Adoptionssperre.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 6</span> Tierschutzgesetz</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Wer ein Tier im Adoptionscenter aufnimmt, verpflichtet sich zu dessen Pflege.<br>
+                    (2) Tiere, die ihr Verhunger-Limit erreichen, sterben unwiderruflich und landen auf dem Tierfriedhof. Das System erstattet keine Anschaffungskosten.<br>
+                    (3) Um Tierleid zu verhindern, stehen staatlich anerkannte Tierpensionen gegen Gebühr zur Verfügung. Nekromantie durch Admins ist nur in absoluten Server-Krisen zulässig.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 7</span> Immobilien- und Mietrecht</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Immobilien sind Privateigentum. Der Besitzer genießt das alleinige Recht, die Limea-Inneneinrichtung zu gestalten.<br>
+                    (2) Mitbewohner (Roommates) sind verpflichtet, ihre anteilige Miete an den Hausbesitzer zu entrichten. Der Einzug erfolgt automatisch alle 24 Stunden.<br>
+                    (3) <strong>Räumungsklausel:</strong> Kann ein Mitbewohner die Miete nicht aufbringen, wird er vom System fristlos und ohne Kündigungsschutz vor die Tür gesetzt.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 8</span> Bandenkriminalität &amp; Kartelle</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Die Gründung von Gangs (Clans) ist ein anerkanntes Mittel der Marktkonsolidierung. Die Gründungsgebühr beträgt $5.000.000.<br>
+                    (2) Revierkämpfe um die Pixel Arcade, das Royal Casino oder die Central Bank gelten als "aggressive Geschäftsverhandlungen".<br>
+                    (3) Gang-Kriege unterliegen einem Cooldown. Friendly Fire ist deaktiviert.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 9</span> Das Limische Justizsystem</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Jeder Bürger hat das Recht, gegen eine Gebühr von $5.000 Zivilklage vor dem Limo Court einzureichen.<br>
+                    (2) Die Jury besteht aus dem Volk. Die Abstimmung erfordert Anti-Smurf-Verifizierung (Geräte-Sperre). Wer schuldig gesprochen wird, verliert 10% seines Vermögens.<br>
+                    (3) Der Bürgermeister hat das Recht auf präsidentielle Begnadigung und kann laufende Prozesse per Veto beenden.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 10</span> Gesundheitswesen &amp; Suchtprävention</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Chronischer Verlust im Coinflip wird als anerkannte Lifestyle-Entscheidung gewertet. Einsätze, die verloren gehen, füllen den staatlichen Lotto-Jackpot.<br>
+                    (2) Psychologische Betreuung wird ausschließlich von Dr. Limo durchgeführt. Die Krankenkasse übernimmt keine Behandlungskosten, da die Sitzungen kostenlos, jedoch von zweifelhaftem therapeutischen Nutzen sind.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-[#d4af37]">§ 11</span> Demokratie &amp; Streikrecht</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    (1) Das Volk hat das Recht, sich gewerkschaftlich zu organisieren und Teilsysteme durch Streiks zu blockieren, sofern die Mindestanzahl an Streikenden erreicht ist.<br>
+                    (2) Petitionen sind das legitime Mittel, um den Entwickler zur Arbeit zu zwingen. Erreicht eine Petition das Quorum, landet sie zwingend auf dem Schreibtisch des Admins.<br>
+                    (3) Der Bürgermeister wird demokratisch gewählt und hat die Macht, Steuersätze zwischen 0.1% und 1.5% festzulegen sowie Konjunkturpakete auszuschütten.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl border-l-purple-600 bg-purple-950/10">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-purple-500">§ 12</span> The Void</h3>
+                <p class="text-gray-400 leading-relaxed opacity-70 font-mono text-sm">
+                    [DATENSATZ BESCHÄDIGT] ... Es gibt keinen Schwarzmarkt in Limazon. Die Yakuza existiert nicht. Wer behauptet, man könne seine Schufa für $2.5 Millionen hacken lassen oder fremde Daten leaken, macht sich der Verbreitung von Verschwörungstheorien strafbar.
+                </p>
+            </div>
+
+            <div class="law-card p-6 rounded-r-xl border-l-blue-500 bg-blue-950/10">
+                <h3 class="text-2xl font-bold serif text-white mb-2"><span class="text-blue-400">§ 13</span> Die Heilige Hardware</h3>
+                <p class="text-gray-400 leading-relaxed italic">
+                    (1) Alle Existenz in Limazon verdanken wir der göttlichen Engine: Dem Raspberry Pi 5 mit seinen geheiligten 16GB RAM.<br>
+                    (2) Die MongoDB ist das allwissende Gedächtnis unserer Welt. Jegliche Lästerung gegen die Server-Struktur, Nextcloud oder Home Assistant wird als Ketzerei betrachtet.<br>
+                    (3) Fällt der Server aus, ist dies kein Bug, sondern eine spirituelle Prüfung.
+                </p>
+            </div>
+
+            <!-- GEHEIMES GESETZ 1: Hover Reveal (Wird erst beim Drüberfahren hell) -->
+            <div class="law-card p-6 rounded-r-xl hover-ghost mt-6">
+                <h3 class="text-2xl font-bold serif text-gray-300 mb-2">§ 404 Der Schnitzel-Erlass</h3>
+                <p class="text-gray-400 leading-relaxed font-mono text-sm">
+                    (1) Wer Alice ihr rechtmäßiges Schnitzel wegnimmt, macht sich nicht strafbar, sondern erntet Ruhm und Ehre im globalen Highscore.<br>
+                    (2) Wer hingegen auf den Brokkoli klickt, verwirkt sein Anrecht auf kulinarische Würde und wird mit massivem Punktabzug bestraft.
+                </p>
+            </div>
+
+            <!-- GEHEIMES GESETZ 2: Klick-Trigger (Startet versteckt) -->
+            <div id="secret-law-666" class="law-card p-6 rounded-r-xl border-l-red-900 bg-red-950/30 mt-6 hidden transition-all duration-1000 opacity-0">
+                <h3 class="text-2xl font-bold serif text-red-600 mb-2">§ 666 Der Satanskreis &amp; Nekromantie</h3>
+                <p class="text-red-400/80 leading-relaxed font-mono text-sm">
+                    (1) Wer sich in den Satanskreis begibt und 50 seiner Lehrer opfert, dem wird finstere Macht zuteil. Jegliche Haftung für verlorene Seelen ist ausgeschlossen.<br>
+                    (2) Ein totes Haustier, das auf dem Friedhof ruht, kann durch ein dunkles Ritual für $500.000.000.000 als Zombie zurückgeholt werden. Was tot ist, kann niemals sterben.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="mt-16 text-center text-gray-600 text-sm pb-10">
+            Gezeichnet und in Kraft gesetzt durch den Server-Administrator.<br>
+            Ahaus, April 2026<br><br>
+            
+            <!-- GEHEIMES GESETZ 3: Unsichtbare Tinte (Nur lesbar beim Markieren) -->
+            <span class="invisible-ink font-mono text-xs">
+                § 0 Die absolute Wahrheit: Wer diesen Text liest, hat zu viel Zeit. Oder er sucht nach Exploits. 
+                Gangs können Zonen mieten, Paparazzi können Ehen zerstören, das Jugendamt ist korrupt. Vertraue niemandem, nicht einmal dem Quellcode.
+            </span>
+        </div>
+
+    </div>
+
+    <script>
+        let sealClickCount = 0;
+        let sealTimeout;
+
+        function triggerSealRitual() {
+            sealClickCount++;
+            
+            // Wenn man aufhört zu klicken, setzt sich der Zähler nach 2 Sekunden zurück
+            clearTimeout(sealTimeout);
+            sealTimeout = setTimeout(() => { sealClickCount = 0; }, 2000);
+
+            if (sealClickCount === 5) {
+                const darkLaw = document.getElementById('secret-law-666');
+                
+                // Falls es schon offen ist, nichts tun
+                if (!darkLaw.classList.contains('hidden')) return;
+
+                // Screen wackeln lassen
+                document.body.classList.add('shake-screen');
+                setTimeout(() => document.body.classList.remove('shake-screen'), 500);
+
+                // Das dunkle Gesetz sichtbar machen
+                darkLaw.classList.remove('hidden');
+                
+                // Kurze Verzögerung für den Fade-In Effekt
+                setTimeout(() => {
+                    darkLaw.classList.remove('opacity-0');
+                }, 50);
+
+                // Reset Klicks
+                sealClickCount = 0;
+            }
+        }
+    </script>
+
+</body></html>
