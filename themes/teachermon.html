@@ -734,7 +734,10 @@
 
             let skillHtml = '';
             if (!isItem) {
-                skillHtml = `<div class="mt-2 md:mt-3 text-center"><span class="text-[8px] md:text-[10px] text-gray-500 uppercase">Skill</span><br><span class="text-[10px] md:text-sm text-purple-300 italic truncate block" title="${card.skills}">"${card.skills}"</span></div>`;
+                skillHtml = `<div class="mt-2 md:mt-3 text-center w-full">
+                                <span class="text-[8px] md:text-[10px] text-gray-500 uppercase font-bold tracking-wider">Skill</span><br>
+                                <span class="text-[10px] md:text-xs text-purple-300 italic leading-snug line-clamp-3 overflow-hidden text-ellipsis block mx-auto break-words" title="${card.skills}">"${card.skills}"</span>
+                             </div>`;
             }
 
             // Universums-Badge oben links
