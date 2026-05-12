@@ -87,7 +87,7 @@
 
         /* --- LOGIN SCREEN --- */
         #login-view {
-            display: none; /* Standardmäßig versteckt */
+            display: none;
             flex: 1;
             justify-content: center;
             align-items: center;
@@ -241,7 +241,7 @@
 <body>
 
     <div class="sidebar" id="account-sidebar">
-        </div>
+    </div>
 
     <div class="main-content">
         
@@ -286,6 +286,11 @@
                         <div class="stat-box">
                             <span class="stat-val" id="stat-tokens">...</span>
                             <span class="stat-lbl">Tokens</span>
+                        </div>
+                        <!-- NEU: Schufa Score Anzeige -->
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-schufa">...</span>
+                            <span class="stat-lbl">Schufa</span>
                         </div>
                     </div>
 
@@ -600,7 +605,7 @@
             document.getElementById('profile-role').textContent = currentUser.isAdmin ? 'Administrator 🛡️' : 'Mitglied';
             document.getElementById('profile-id').textContent = 'ID: ' + currentUser.userId;
 
-            // Stats
+            // Stats (Balance & Tokens)
             const balEl = document.getElementById('stat-balance');
             balEl.textContent = formatNumber(currentUser.balance, true);
             balEl.title = '$' + currentUser.balance.toLocaleString();
@@ -608,6 +613,17 @@
             const tokEl = document.getElementById('stat-tokens');
             tokEl.textContent = formatNumber(currentUser.tokens, false);
             tokEl.title = currentUser.tokens.toLocaleString();
+
+            // NEU: Schufa Score rendern
+            const schufaEl = document.getElementById('stat-schufa');
+            if (schufaEl) {
+                const score = currentUser.schufaScore || 500;
+                schufaEl.textContent = score;
+                // Farben je nach Wert setzen
+                if(score < 400) schufaEl.style.color = 'var(--danger)';
+                else if(score > 750) schufaEl.style.color = 'var(--success)';
+                else schufaEl.style.color = 'var(--text-main)';
+            }
 
             // Settings Fields
             document.getElementById('settings-bio').value = currentUser.bio || '';
@@ -666,7 +682,8 @@
 
         async function changeUsername() {
             const newName = document.getElementById('new-username').value;
-            if(newName.length < 3) return showNotify("Zu kurz", "error");
+            if(newName.length < 3) return showNotify("Der Name ist zu kurz.", "error");
+            
             const pw = prompt("Passwort zur Bestätigung:");
             if(!pw) return;
 
@@ -675,6 +692,7 @@
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ newUsername: newName, password: pw }), credentials: 'include'
                 });
+                
                 if(res.ok) {
                     showNotify("Geändert! Bitte neu einloggen.", "success");
                     // Update LocalStorage
@@ -684,15 +702,21 @@
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
                     }
                     setTimeout(() => handleLogout(), 1500);
-                } else showNotify("Fehler", "error");
-            } catch(e) { showNotify("Fehler", "error"); }
+                } else {
+                    // NEU: Backend Fehlermeldung auslesen und anzeigen
+                    const errData = await res.json();
+                    showNotify(errData.error || "Fehler beim Ändern", "error");
+                }
+            } catch(e) { 
+                showNotify("Serverfehler", "error"); 
+            }
         }
 
         async function changePassword() {
             const cur = document.getElementById('current-pw').value;
             const n = document.getElementById('new-pw').value;
             const c = document.getElementById('confirm-pw').value;
-            if(n !== c) return showNotify("Passwörter ungleich", "error");
+            if(n !== c) return showNotify("Passwörter stimmen nicht überein.", "error");
 
             try {
                 const res = await fetch(`${API_BASE}/api/account/password`, {
@@ -738,10 +762,9 @@
         
         async function performDelete() {
             const pw = document.getElementById('delete-confirm-pw').value;
-            if(!pw) return showNotify("Bitte Passwort eingeben.", "error"); // Kleine Verbesserung hier!
+            if(!pw) return showNotify("Bitte Passwort eingeben.", "error");
 
             try {
-                // HIER IST DER FIX: /me an die URL angehängt
                 const res = await fetch(`${API_BASE}/api/account/me`, {
                     method: 'DELETE', 
                     headers: { 'Content-Type': 'application/json' },
@@ -767,7 +790,7 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            // Einfache Logik für aktive Buttons
+            
             const btns = document.querySelectorAll('.tab-btn');
             if(tabId==='overview') btns[0].classList.add('active');
             if(tabId==='security') btns[1].classList.add('active');
