@@ -47,7 +47,48 @@
             font-size: 2rem;
             border: 3px solid #770000;
             margin: 0 auto 20px auto;
+            cursor: pointer; /* Zeigt an, dass man klicken kann */
+            user-select: none;
+            transition: transform 0.1s;
         }
+        .seal:active { transform: scale(0.9); }
+
+        /* GEHEIMNIS 1: Hover Reveal */
+        .hover-ghost {
+            opacity: 0.02;
+            transition: opacity 1.5s ease-in-out;
+            border-color: #333;
+        }
+        .hover-ghost:hover {
+            opacity: 1;
+            border-color: #fff;
+        }
+
+        /* GEHEIMNIS 2: Unsichtbare Tinte (Nur bei Markierung sichtbar) */
+        .invisible-ink {
+            color: #0a0a0a; /* Gleiche Farbe wie Hintergrund */
+            cursor: default;
+        }
+        .invisible-ink::selection {
+            background-color: #d4af37;
+            color: #000;
+        }
+
+        /* Beben Animation für das Ritual */
+        @keyframes earthquake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-screen { animation: earthquake 0.5s; }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0a0a0a; }
@@ -63,7 +104,8 @@
         </a>
 
         <header class="text-center mb-16">
-            <div class="seal">⚖️</div>
+            <!-- 5x klicken aktiviert das Secret! -->
+            <div class="seal" onclick="triggerSealRitual()" title="Sigillum Serveris">⚖️</div>
             <h1 class="text-5xl md:text-6xl font-bold serif gold-text mb-4">Das Limische Gesetzbuch</h1>
             <p class="text-xl text-gray-400 italic serif">"Geld regiert die Welt. Der Server regiert das Geld."</p>
         </header>
@@ -193,14 +235,72 @@
                 </p>
             </div>
 
+            <!-- GEHEIMES GESETZ 1: Hover Reveal (Wird erst beim Drüberfahren hell) -->
+            <div class="law-card p-6 rounded-r-xl hover-ghost mt-6">
+                <h3 class="text-2xl font-bold serif text-gray-300 mb-2">§ 404 Der Schnitzel-Erlass</h3>
+                <p class="text-gray-400 leading-relaxed font-mono text-sm">
+                    (1) Wer Alice ihr rechtmäßiges Schnitzel wegnimmt, macht sich nicht strafbar, sondern erntet Ruhm und Ehre im globalen Highscore.<br>
+                    (2) Wer hingegen auf den Brokkoli klickt, verwirkt sein Anrecht auf kulinarische Würde und wird mit massivem Punktabzug bestraft.
+                </p>
+            </div>
+
+            <!-- GEHEIMES GESETZ 2: Klick-Trigger (Startet versteckt) -->
+            <div id="secret-law-666" class="law-card p-6 rounded-r-xl border-l-red-900 bg-red-950/30 mt-6 hidden transition-all duration-1000 opacity-0">
+                <h3 class="text-2xl font-bold serif text-red-600 mb-2">§ 666 Der Satanskreis & Nekromantie</h3>
+                <p class="text-red-400/80 leading-relaxed font-mono text-sm">
+                    (1) Wer sich in den Satanskreis begibt und 50 seiner Lehrer opfert, dem wird finstere Macht zuteil. Jegliche Haftung für verlorene Seelen ist ausgeschlossen.<br>
+                    (2) Ein totes Haustier, das auf dem Friedhof ruht, kann durch ein dunkles Ritual für $500.000.000.000 als Zombie zurückgeholt werden. Was tot ist, kann niemals sterben.
+                </p>
+            </div>
+
         </div>
 
         <div class="mt-16 text-center text-gray-600 text-sm pb-10">
             Gezeichnet und in Kraft gesetzt durch den Server-Administrator.<br>
-            Ahaus, April 2026
+            Ahaus, April 2026<br><br>
+            
+            <!-- GEHEIMES GESETZ 3: Unsichtbare Tinte (Nur lesbar beim Markieren) -->
+            <span class="invisible-ink font-mono text-xs">
+                § 0 Die absolute Wahrheit: Wer diesen Text liest, hat zu viel Zeit. Oder er sucht nach Exploits. 
+                Gangs können Zonen mieten, Paparazzi können Ehen zerstören, das Jugendamt ist korrupt. Vertraue niemandem, nicht einmal dem Quellcode.
+            </span>
         </div>
 
     </div>
 
+    <script>
+        let sealClickCount = 0;
+        let sealTimeout;
+
+        function triggerSealRitual() {
+            sealClickCount++;
+            
+            // Wenn man aufhört zu klicken, setzt sich der Zähler nach 2 Sekunden zurück
+            clearTimeout(sealTimeout);
+            sealTimeout = setTimeout(() => { sealClickCount = 0; }, 2000);
+
+            if (sealClickCount === 5) {
+                const darkLaw = document.getElementById('secret-law-666');
+                
+                // Falls es schon offen ist, nichts tun
+                if (!darkLaw.classList.contains('hidden')) return;
+
+                // Screen wackeln lassen
+                document.body.classList.add('shake-screen');
+                setTimeout(() => document.body.classList.remove('shake-screen'), 500);
+
+                // Das dunkle Gesetz sichtbar machen
+                darkLaw.classList.remove('hidden');
+                
+                // Kurze Verzögerung für den Fade-In Effekt
+                setTimeout(() => {
+                    darkLaw.classList.remove('opacity-0');
+                }, 50);
+
+                // Reset Klicks
+                sealClickCount = 0;
+            }
+        }
+    </script>
 </body>
 </html>
