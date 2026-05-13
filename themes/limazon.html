@@ -1281,12 +1281,21 @@
             const sellPrice = parseFloat(sellPriceInput.value); 
             const originalPriceNumeric = parseFloat((product.price || "$0").replace(/[^0-9.]/g, '')) || 1; 
             
-            let probability = 1.0; 
+            // Zurücksetzen von Warn-Klassen
+            probabilityEl.classList.remove('text-red-500');
+
             if (isNaN(sellPrice) || sellPrice <= 0) { 
                 probabilityEl.textContent = "?%"; 
                 return; 
             } 
             
+            if (sellPrice > originalPriceNumeric * 3) {
+                probabilityEl.textContent = "0% (Zu teuer!)";
+                probabilityEl.classList.add('text-red-500');
+                return;
+            }
+
+            let probability = 1.0; 
             if (sellPrice > originalPriceNumeric) { 
                 probability = originalPriceNumeric / sellPrice; 
             } else if (sellPrice < originalPriceNumeric * 0.5) { 
