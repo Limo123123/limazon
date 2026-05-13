@@ -286,6 +286,11 @@
                             <span class="stat-val" id="stat-tokens">...</span>
                             <span class="stat-lbl">Tokens</span>
                         </div>
+                        <!-- NEU: Schufa Score Anzeige -->
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-schufa">...</span>
+                            <span class="stat-lbl">Schufa</span>
+                        </div>
                     </div>
 
                     <div style="margin-top: 20px; text-align: left;">
@@ -609,6 +614,7 @@
             document.getElementById('profile-role').textContent = currentUser.isAdmin ? 'Administrator 🛡️' : 'Mitglied';
             document.getElementById('profile-id').textContent = 'ID: ' + currentUser.userId;
 
+            // Stats (Balance & Tokens)
             const balEl = document.getElementById('stat-balance');
             balEl.textContent = formatNumber(currentUser.balance, true);
             balEl.title = '$' + currentUser.balance.toLocaleString();
@@ -616,6 +622,17 @@
             const tokEl = document.getElementById('stat-tokens');
             tokEl.textContent = formatNumber(currentUser.tokens, false);
             tokEl.title = currentUser.tokens.toLocaleString();
+
+            // NEU: Schufa Score rendern
+            const schufaEl = document.getElementById('stat-schufa');
+            if (schufaEl) {
+                const score = currentUser.schufaScore || 500;
+                schufaEl.textContent = score;
+                // Farben je nach Wert setzen
+                if(score < 400) schufaEl.style.color = 'var(--danger)';
+                else if(score > 750) schufaEl.style.color = 'var(--success)';
+                else schufaEl.style.color = 'var(--text-main)';
+            }
 
             document.getElementById('settings-bio').value = currentUser.bio || '';
             document.getElementById('settings-public-inv').checked = !!currentUser.isInventoryPublic;
@@ -673,7 +690,8 @@
 
         async function changeUsername() {
             const newName = document.getElementById('new-username').value;
-            if(newName.length < 3) return showNotify("Zu kurz", "error");
+            if(newName.length < 3) return showNotify("Der Name ist zu kurz.", "error");
+            
             const pw = prompt("Passwort zur Bestätigung:");
             if(!pw) return;
 
@@ -682,6 +700,7 @@
                     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ newUsername: newName, password: pw }), credentials: 'include'
                 });
+                
                 if(res.ok) {
                     showNotify("Geändert! Bitte neu einloggen.", "success");
                     const idx = savedAccounts.findIndex(a => a.username.toLowerCase() === currentUser.username.toLowerCase());
@@ -690,15 +709,21 @@
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
                     }
                     setTimeout(() => handleLogout(), 1500);
-                } else showNotify("Fehler", "error");
-            } catch(e) { showNotify("Fehler", "error"); }
+                } else {
+                    // NEU: Backend Fehlermeldung auslesen und anzeigen
+                    const errData = await res.json();
+                    showNotify(errData.error || "Fehler beim Ändern", "error");
+                }
+            } catch(e) { 
+                showNotify("Serverfehler", "error"); 
+            }
         }
 
         async function changePassword() {
             const cur = document.getElementById('current-pw').value;
             const n = document.getElementById('new-pw').value;
             const c = document.getElementById('confirm-pw').value;
-            if(n !== c) return showNotify("Passwörter ungleich", "error");
+            if(n !== c) return showNotify("Passwörter stimmen nicht überein.", "error");
 
             try {
                 const res = await fetch(`${API_BASE}/api/account/password`, {

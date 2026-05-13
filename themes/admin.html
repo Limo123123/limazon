@@ -320,6 +320,7 @@
                     <td class="p-3 text-amber-400">${tok} T</td>
                     <td class="p-3">${badges}</td>
                     <td class="p-3 text-right whitespace-nowrap">
+                        <button onclick="impersonateUser('${u._id}', '${u.username}')" class="text-green-400 hover:text-white mr-3" title="Als User einloggen (Impersonate)">🎭</button>
                         <button onclick="fineUser('${u._id}', '${u.username}')" class="text-yellow-500 hover:text-yellow-300 mr-3" title="Strafe">🚓</button>
                         <button onclick="openEditUser('${u._id}')" class="text-blue-400 hover:text-white mr-3" title="Bearbeiten">✏️</button>
                         <button onclick="deleteUser('${u._id}')" class="text-red-500 hover:text-white mr-3" title="Löschen">🗑️</button>
@@ -327,6 +328,52 @@
                     </td>
                 </tr>`;
             }).join('');
+        }
+
+        // ========================
+        // 🚨 IMPERSONATE (Als User einloggen)
+        // ========================
+        async function impersonateUser(targetId, targetUsername) {
+            const adminPw = prompt(`🎭 IMPERSONATION\nMöchtest du dich als "${targetUsername}" einloggen?\n\nBitte bestätige dies mit DEINEM Admin-Passwort:`);
+            if (!adminPw) return;
+
+            try {
+                // 1. Temp-Code vom Backend anfordern
+                const genRes = await fetch(`${API}/api/admin/users/${targetId}/temp-login-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminPassword: adminPw }),
+                    credentials: 'include'
+                });
+
+                const genData = await genRes.json();
+                if (!genRes.ok) {
+                    return alert(genData.error || "Fehler beim Generieren des Codes.");
+                }
+
+                const tempCode = genData.tempCode;
+
+                // 2. Mit dem erhaltenen Temp-Code den Login ausführen
+                const loginRes = await fetch(`${API}/api/auth/temp-login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: targetUsername, tempCode: tempCode }),
+                    credentials: 'include'
+                });
+
+                const loginData = await loginRes.json();
+                if (!loginRes.ok) {
+                    return alert(loginData.error || "Fehler beim Temp-Login.");
+                }
+
+                // 3. Bei Erfolg -> Abflug auf die Hauptseite!
+                alert(`✅ Erfolgreich als ${targetUsername} eingeloggt!\nDu wirst nun zum Hub weitergeleitet.`);
+                window.location.href = '/'; 
+
+            } catch (err) {
+                console.error(err);
+                alert("Netzwerk- oder Serverfehler bei der Impersonation.");
+            }
         }
 
         function openEditUser(id) {
