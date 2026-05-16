@@ -1,0 +1,225 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⭐ Limazon Rezensionen</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #eab308; /* Yellow for stars */
+            --primary-hover: #ca8a04;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid var(--border); }
+        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 5px; }
+
+        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        
+        select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; background: #0b1120; border: 1px solid var(--border); color: white; border-radius: 8px; font-size: 1rem; }
+        
+        button { background: var(--primary); color: #000; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1rem; transition: 0.2s; }
+        button:hover { background: var(--primary-hover); }
+        .btn-danger { background: #ef4444; color: white; width: auto; padding: 5px 10px; font-size: 0.8rem;}
+
+        .star-rating { display: flex; flex-direction: row-reverse; justify-content: center; gap: 5px; margin-bottom: 15px; }
+        .star-rating input { display: none; }
+        .star-rating label { font-size: 2rem; color: var(--border); cursor: pointer; transition: 0.2s; }
+        .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: var(--primary); }
+
+        .review-item { border-bottom: 1px solid var(--border); padding: 15px 0; }
+        .review-item:last-child { border-bottom: none; }
+        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .review-stars { color: var(--primary); }
+        .review-date { font-size: 0.8rem; color: var(--text-muted); }
+        .service-stats { text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+        .big-score { font-size: 3rem; font-weight: bold; color: var(--primary); line-height: 1; }
+        
+        /* Optgroups schön machen */
+        optgroup { color: var(--primary); font-style: normal; font-weight: bold; background: #1e293b; }
+        option { color: white; font-weight: normal; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>⭐ Limazon Rezensionen</h1>
+        <p style="color: var(--text-muted);">Lass deinen Frust raus oder verteile Lob.</p>
+    </header>
+
+    <div class="card">
+        <select id="service-select" onchange="loadReviews()">
+            <optgroup label="--- SHOPPING &amp; WIRTSCHAFT ---">
+                <option value="shop_classic">Shop Classic (Standard)</option>
+                <option value="shop_super">Shop Super (Neu)</option>
+                <option value="stonks">LimoStonks (Börse)</option>
+                <option value="bank">Limo Bank</option>
+                <option value="logistics">Limo Post / Logistik</option>
+                <option value="limea">Limea Möbelhaus</option>
+                <option value="realestate">Immobilienmarkt &amp; WGs</option>
+            </optgroup>
+            
+            <optgroup label="--- UNTERHALTUNG &amp; SPIELE ---">
+                <option value="casino">Royal Casino</option>
+                <option value="teachermon">Teachermon Shop</option>
+                <option value="teachermon_arena">Teachermon Arena</option>
+                <option value="pets">Tierhandlung &amp; Tamagotchi</option>
+                <option value="tierpark">Tierpark</option>
+            </optgroup>
+            
+            <optgroup label="--- COMMUNITY &amp; SOCIAL ---">
+                <option value="tinda">Tinda (Dating)</option>
+                <option value="standesamt">Standesamt</option>
+                <option value="whatslim">WhatsLim (Chat)</option>
+                <option value="limterest">Limterest (Bilder)</option>
+                <option value="dbm">Don't Blame Me (Beichten)</option>
+            </optgroup>
+            
+            <optgroup label="--- SYSTEM &amp; STAAT ---">
+                <option value="lnn">LNN News</option>
+                <option value="jobcenter">Jobcenter</option>
+                <option value="mayor">Rathaus / Bürgermeister</option>
+                <option value="court">Gerichtshof</option>
+                <option value="diner">Limo's Diner</option>
+                <option value="mail">Limo Mail (Postfach)</option>
+            </optgroup>
+            
+            <optgroup label="--- SCHATTEN &amp; HILFE ---">
+                <option value="dr_limo">Dr. Limo (Therapie)</option>
+                <option value="underground">Untergrund / Yakuza</option>
+                <option value="ideabox">Ideenbox</option>
+                <option value="bugbounty">Bug Bounty / Delta Shop</option>
+            </optgroup>
+        </select>
+
+        <div id="service-stats" class="service-stats hidden">
+            <div class="big-score" id="avg-score">0.0</div>
+            <div class="review-stars">★★★★★</div>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Basierend auf <span id="review-count">0</span> Bewertungen</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Deine Bewertung</h2>
+        <form id="review-form" onsubmit="submitReview(event)">
+            <div class="star-rating">
+                <input type="radio" id="star5" name="stars" value="5" required=""><label for="star5">★</label>
+                <input type="radio" id="star4" name="stars" value="4"><label for="star4">★</label>
+                <input type="radio" id="star3" name="stars" value="3"><label for="star3">★</label>
+                <input type="radio" id="star2" name="stars" value="2"><label for="star2">★</label>
+                <input type="radio" id="star1" name="stars" value="1"><label for="star1">★</label>
+            </div>
+            <textarea id="review-text" rows="3" placeholder="Was denkst du darüber? (Min. 5 Zeichen)" required="" minlength="5" maxlength="500"></textarea>
+            <button type="submit">Bewertung abschicken</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Community Stimmen</h2>
+        <div id="reviews-list">
+            <p style="color: var(--text-muted); text-align: center;">Wähle einen Service aus.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'https://api.limazon.v6.rocks/api';
+    const fetchOpts = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+    let isAdmin = false;
+
+    // Check if user is admin (hacky but works for UI)
+    fetch(`${API_BASE}/auth/me`, fetchOpts).then(r => r.json()).then(u => { if(u && u.isAdmin) isAdmin = true; });
+
+    async function loadReviews() {
+        const serviceId = document.getElementById('service-select').value;
+        const list = document.getElementById('reviews-list');
+        const stats = document.getElementById('service-stats');
+
+        list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Lade...</p>';
+        stats.classList.add('hidden');
+
+        try {
+            const res = await fetch(`${API_BASE}/reviews/${serviceId}`);
+            const data = await res.json();
+
+            document.getElementById('avg-score').textContent = data.average;
+            document.getElementById('review-count').textContent = data.count;
+            stats.classList.remove('hidden');
+
+            if (data.reviews.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Noch keine Bewertungen.</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            data.reviews.forEach(r => {
+                const date = new Date(r.createdAt).toLocaleDateString('de-DE');
+                const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+                const deleteBtn = isAdmin ? `<button class="btn-danger" onclick="deleteReview('${r._id}')">Löschen</button>` : '';
+
+                list.innerHTML += `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div>
+                                <strong>${r.username}</strong> 
+                                <span class="review-stars ml-2">${stars}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="review-date">${date}</span>
+                                ${deleteBtn}
+                            </div>
+                        </div>
+                        <p>${r.text}</p>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            list.innerHTML = '<p style="color: red; text-align: center;">Fehler beim Laden.</p>';
+        }
+    }
+
+    async function submitReview(e) {
+        e.preventDefault();
+        const serviceId = document.getElementById('service-select').value;
+        const stars = document.querySelector('input[name="stars"]:checked')?.value;
+        const text = document.getElementById('review-text').value;
+
+        if (!stars || !text) return alert("Bitte Sterne und Text angeben.");
+
+        try {
+            const res = await fetch(`${API_BASE}/reviews`, {
+                ...fetchOpts, method: 'POST', body: JSON.stringify({ serviceId, stars, text })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                alert(data.message);
+                document.getElementById('review-text').value = '';
+                document.querySelector('input[name="stars"]:checked').checked = false;
+                loadReviews();
+            } else {
+                alert(data.error);
+            }
+        } catch (e) { alert("Fehler beim Senden."); }
+    }
+
+    async function deleteReview(id) {
+        if (!confirm("Bewertung wirklich löschen?")) return;
+        try {
+            const res = await fetch(`${API_BASE}/admin/reviews/${id}`, { ...fetchOpts, method: 'DELETE' });
+            if (res.ok) loadReviews();
+            else alert("Fehler beim Löschen.");
+        } catch (e) { alert("Netzwerkfehler."); }
+    }
+
+    window.onload = loadReviews;
+</script>
+
+</body></html>

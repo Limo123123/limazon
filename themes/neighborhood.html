@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nachbarschaft</title>
+    <style>
+        :root { --bg: #111418; --card: #1f2329; --primary: #4CAF50; --text: #fff; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); }
+        
+        .header { background: #222; padding: 20px; text-align: center; border-bottom: 2px solid var(--primary); }
+        .header h1 { margin: 0; color: var(--primary); }
+        .back-btn { position: absolute; left: 20px; top: 20px; background: #333; border: none; color: white; padding: 5px 15px; border-radius: 5px; cursor: pointer;}
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        
+        .house-card { background: var(--card); border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .house-icon { font-size: 4rem; margin-bottom: 10px; }
+        .house-title { font-weight: bold; font-size: 1.2rem; color: var(--primary); margin-bottom: 5px; }
+        .house-owner { color: #aaa; font-size: 0.9rem; margin-bottom: 15px; }
+        
+        .visit-btn { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s;}
+        .visit-btn:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='/'">🔙 Stadt</button>
+        <h1>🏘️ Die Nachbarschaft</h1>
+        <p style="color:#888; margin-top:5px;">Schau dir an, wie andere sich eingerichtet haben.</p>
+    </div>
+
+    <div class="grid" id="house-list">
+        <div style="text-align: center; color: #888;">Lade Häuser...</div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://api.limazon.v6.rocks'; 
+
+        async function loadNeighborhood() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/realestate/neighborhood`, { credentials: 'include' });
+                const data = await res.json();
+
+                const container = document.getElementById('house-list');
+                
+                if (data.error) {
+                    container.innerHTML = `<div style="color:red;">${data.error}</div>`;
+                    return;
+                }
+
+                if (data.neighborhood.length === 0) {
+                    container.innerHTML = `<div style="color:#aaa;">Niemand hat ein Haus gebaut. Die Straßen sind leer.</div>`;
+                    return;
+                }
+
+                container.innerHTML = data.neighborhood.map(h => `
+                    <div class="house-card">
+                        <div class="house-icon">${h.icon}</div>
+                        <div class="house-title">${h.name}</div>
+                        <div class="house-owner">Eigentümer: <b>${h.ownerName}</b><br>(${h.roommatesCount} Mitbewohner)</div>
+                        <button class="visit-btn" onclick="visitHouse('${h.id}')">🔔 Klingeln</button>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function visitHouse(houseId) {
+            // Leitet weiter auf die Limea HTML und gibt die Haus-ID mit
+            window.location.href = `/themes/limea.html?visit=${houseId}`;
+        }
+
+        window.onload = loadNeighborhood;
+    </script>
+
+</body></html>
