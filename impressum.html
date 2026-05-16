@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Impressum oder so</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+             }
+
+            body {
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-family: "Segoe UI", sans-serif;
+                
+                background: linear-gradient(135deg, #0f172a, #1e293b);
+             }
+             .container { 
+                backdrop-filter: blur(15px);
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 15px;
+                padding: 40px;
+                width: 400px;
+                
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+
+                text-align: center;
+                color: white;
+             }
+            .container:hover {
+                box-shadow: 0 0 15px #067474;
+                transform: translateY(-2px);
+             }
+             .bold {
+             font-weight: bold;
+             margin-top: 20px;
+             }
+</style>
+    </head>
+    <body>
+        <div class="container">
+             <h2>Impressum</h2>
+             <div class="text">
+                 <p class="bold">Angaben gemäß §§ 5 DDG</p>
+                 <p>Nico-Alexander Schülting<br>
+                 Berlinerstr. 24<br>
+                 48683 Ahaus-Alstätte
+                 </p>
+
+                 <p class="bold">Kontakt</p>
+                 <p>E-Mail: schueltingnico@gmail.com<br>
+                 Telefon: +49 1517 2368356
+                 </p>
+
+                 <p class="bold">Verantwortlich für den Inhalt nach §§ 18 Abs. 2 MStV</p>
+                 <p>Nico-Alexander Schülting<br>
+                 Berlinerstr. 24<br>
+                 48683 Ahaus-Alstätte<br>
+                 </p>
+             </div>
+        </div>
+    </body>
+</html>
