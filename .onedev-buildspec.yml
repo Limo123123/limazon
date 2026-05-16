@@ -1,15 +1,16 @@
-version: 40
+version: 47
 jobs:
 - name: Publish Site
   steps:
-  - !CheckoutStep
+  - type: CheckoutStep
     name: Get Code
-    cloneCredential: !DefaultCredential {}
+    cloneCredential:
+      type: DefaultCredential
     withLfs: false
     withSubmodules: false
     condition: SUCCESSFUL
     optional: false
-  - !PublishSiteStep
+  - type: PublishSiteStep
     name: Publish Site
     artifacts: '*'
     condition: SUCCESSFUL
@@ -20,14 +21,15 @@ jobs:
   timeout: 14400
 - name: Push to Github
   steps:
-  - !CheckoutStep
+  - type: CheckoutStep
     name: Get Code
-    cloneCredential: !DefaultCredential {}
+    cloneCredential:
+      type: DefaultCredential
     withLfs: false
     withSubmodules: false
     condition: SUCCESSFUL
     optional: false
-  - !PushRepository
+  - type: PushRepository
     name: Push to Github
     remoteUrl: https://github.com/Limo123123/limazon
     userName: Limo123123
@@ -36,7 +38,9 @@ jobs:
     condition: SUCCESSFUL
     optional: false
   triggers:
-  - !BranchUpdateTrigger {}
+  - type: BranchUpdateTrigger
+    userMatch: anyone
+    projects: limazon
   retryCondition: never
   maxRetries: 3
   retryDelay: 30
