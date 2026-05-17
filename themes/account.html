@@ -348,7 +348,9 @@
                             <h3>🔑 Zugangsdaten</h3>
                             <div class="form-group">
                                 <label>Benutzernamen ändern</label>
-                                <input type="text" id="new-username" placeholder="Neuer Username">
+                                <input type="text" id="new-username" placeholder="Neuer Username" style="margin-bottom: 10px;">
+                                <!-- NEU: Das versteckte Passwort-Feld -->
+                                <input type="password" id="username-confirm-pw" placeholder="Passwort zur Bestätigung">
                                 <button class="action-btn" style="margin-top: 10px;" onclick="changeUsername()">Ändern</button>
                             </div>
                             <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
@@ -361,7 +363,7 @@
                             </div>
                         </div>
 
-                        <!-- NEU: DSGVO Sektion & Visualisierer -->
+                        <!-- DSGVO Sektion & Visualisierer -->
                         <div class="settings-section">
                             <h3>📦 Daten & Datenschutz (DSGVO)</h3>
                             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
@@ -689,11 +691,12 @@
         }
 
         async function changeUsername() {
-            const newName = document.getElementById('new-username').value;
-            if(newName.length < 3) return showNotify("Der Name ist zu kurz.", "error");
+            const newNameInput = document.getElementById('new-username').value;
+            const newName = newNameInput ? newNameInput.trim() : ""; // Sichert uns ab, dass keine Leerzeichen übergeben werden
+            const pw = document.getElementById('username-confirm-pw').value;
             
-            const pw = prompt("Passwort zur Bestätigung:");
-            if(!pw) return;
+            if(newName.length < 3) return showNotify("Der Name ist zu kurz.", "error");
+            if(!pw) return showNotify("Bitte Passwort zur Bestätigung eingeben.", "error");
 
             try {
                 const res = await fetch(`${API_BASE}/api/account/username`, {
@@ -708,9 +711,13 @@
                         savedAccounts[idx].username = newName;
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedAccounts));
                     }
+                    
+                    // Felder leeren
+                    document.getElementById('username-confirm-pw').value = '';
+                    document.getElementById('new-username').value = '';
+                    
                     setTimeout(() => handleLogout(), 1500);
                 } else {
-                    // NEU: Backend Fehlermeldung auslesen und anzeigen
                     const errData = await res.json();
                     showNotify(errData.error || "Fehler beim Ändern", "error");
                 }
