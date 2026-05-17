@@ -1,0 +1,43 @@
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-dark {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        .tab-btn { transition: all 0.2s; }
+        .tab-btn.active { background-color: #10b981; color: white; border-color: #10b981; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-danger { 0%, 100% { border-color: #ef4444; box-shadow: 0 0 15px rgba(239,68,68,0.2); } 50% { border-color: #991b1b; box-shadow: 0 0 5px rgba(239,68,68,0.1); } }
+        @keyframes pulse-ritual { 0%, 100% { box-shadow: 0 0 15px rgba(220,38,38,0.3); } 50% { box-shadow: 0 0 25px rgba(220,38,38,0.6); } }
+
+        .dying-pet { animation: pulse-danger 1.5s infinite; }
+        .ritual-btn:hover { animation: pulse-ritual 1s infinite; }
+
+        /* Toast Styling */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(12px); border-left: 4px solid #10b981; color: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; animation: toast-fadein 0.3s forwards; font-size: 0.875rem; font-weight: bold; }
+        .toast.error { border-left-color: #ef4444; }
+        @keyframes toast-fadein { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+    

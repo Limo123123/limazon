@@ -1,0 +1,22 @@
+
+        body {
+            background: #050505;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pot-glow {
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .ticket-card {
+            background: linear-gradient(135deg, #1e1e1e 0%, #111 100%);
+            border-left: 4px solid #3b82f6;
+        }
+    

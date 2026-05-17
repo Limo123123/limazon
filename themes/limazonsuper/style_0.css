@@ -1,0 +1,15 @@
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px); }
+        
+        /* Toast Notification Styling */
+        .toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        
+        /* Close Button Styling */
+        .close-btn { font-size: 1.5rem; line-height: 1; color: #9ca3af; transition: color 0.2s; cursor: pointer; padding: 0.5rem; }
+        .close-btn:hover { color: #ef4444; }
+
+        /* Card Hover */
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    

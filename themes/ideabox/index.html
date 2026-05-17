@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideenbox 💡</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=fiItC1ks">
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="bg-glow"></div>
+
+    <div class="max-w-4xl mx-auto">
+        
+        <header class="text-center mb-12 mt-4">
+            <a href="/" class="text-xs text-blue-400 hover:text-blue-300 tracking-widest mb-4 inline-block uppercase font-bold transition-colors">← Zurück zum Portal</a>
+            <h1 class="text-5xl md:text-7xl font-bold mb-4 tracking-tight text-white drop-shadow-lg">
+                Ideenbox
+            </h1>
+            <p class="text-blue-200/60 text-lg">
+                Gestalte die Zukunft von Limazon. Deine Stimme zählt.
+            </p>
+        </header>
+
+        <div id="submission-container" class="glass-panel p-6 md:p-8 rounded-2xl mb-12">
+            <div id="login-warning" class="hidden text-center py-8">
+                <p class="text-gray-400 mb-4">Du musst eingeloggt sein, um Ideen einzureichen.</p>
+                <a href="../../index.html" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors">Zum Login</a>
+            </div>
+
+            <form id="idea-form" class="hidden space-y-4">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <span class="text-blue-500">✨</span> Neue Idee einreichen
+                </h3>
+                
+                <div>
+                    <input type="text" id="idea-title" placeholder="Titel (kurz & knackig)" 
+                        class="input-holo w-full p-4 rounded-xl text-lg font-bold placeholder-gray-600" required minlength="5" maxlength="100">
+                </div>
+                
+                <div>
+                    <textarea id="idea-description" rows="4" placeholder="Beschreibe deine Idee. Wie funktioniert sie? Warum ist sie cool?" 
+                        class="input-holo w-full p-4 rounded-xl placeholder-gray-600 resize-none" required minlength="10" maxlength="2000"></textarea>
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                    <div id="form-msg" class="text-sm font-bold"></div>
+                    <button type="submit" id="btn-submit" class="btn-submit px-8 py-3 rounded-xl uppercase tracking-wider text-sm shadow-lg">
+                        Absenden
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div>
+            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-blue-500 pl-4">Community Vorschläge</h2>
+            
+            <div id="ideas-list" class="space-y-4">
+                <div class="text-center text-gray-600 py-10">Lade Daten...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script_0.js?v=Cq1W7GHy"></script>
+</body>
+</html>

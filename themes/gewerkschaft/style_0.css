@@ -1,0 +1,63 @@
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .input-dark {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .input-dark:focus {
+            outline: none;
+            border-color: #ef4444; /* Roter Fokus für die Gewerkschaft */
+            background: #0f172a;
+        }
+
+        /* Animationen aus der Bank */
+        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-in { animation: fadeIn 0.2s ease-out; }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Spezifische Gewerkschafts-Karten */
+        .card-rebel {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 50%, #991b1b 100%);
+            box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3);
+        }
+
+        .card-pending {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+        }
+
+        .strike-item {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .strike-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+        }
+    

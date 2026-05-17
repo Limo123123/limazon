@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=7JPBNCoh">
+</head>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24">
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-sky-400">📝</span> Support Center
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Formulare & Anträge</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow space-y-8 z-0">
+        
+        <div class="glass p-6 rounded-2xl shadow-xl">
+            <h2 class="text-lg font-bold text-white mb-4">Neuen Antrag stellen</h2>
+            <form id="requestForm" class="space-y-4">
+                <div>
+                    <label class="text-xs uppercase text-sky-400 font-bold mb-2 block tracking-wider">Art des Antrags</label>
+                    <select id="reqType" class="input-dark w-full p-3 rounded-xl text-sm font-medium" required>
+                        <option value="refund">Geld zurückerstatten / Entschädigung</option>
+                        <option value="bug_bounty">Bug Bounty Prämie einfordern</option>
+                        <option value="delete_account">Account löschen</option>
+                        <option value="other">Sonstiges</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs uppercase text-sky-400 font-bold mb-2 block tracking-wider">Betrag (Optional, sonst 0)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3 text-slate-400 font-bold">$</span>
+                        <input type="number" id="reqAmount" value="0" min="0" step="1" class="input-dark w-full p-3 pl-8 rounded-xl text-sm font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs uppercase text-sky-400 font-bold mb-2 block tracking-wider">Begründung</label>
+                    <textarea id="reqReason" rows="3" class="input-dark w-full p-3 rounded-xl text-sm" required placeholder="Bitte erkläre dein Anliegen genau..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-sky-600 text-white font-bold p-4 rounded-xl hover:bg-sky-500 transition shadow-lg shadow-sky-500/20 active:scale-95">
+                    Antrag absenden ➜
+                </button>
+            </form>
+        </div>
+
+        <div id="adminPanel" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-rose-400 flex items-center gap-2">🛡️ Admin: Offene Anträge</h2>
+                <button onclick="loadAdminRequests()" class="text-xs text-slate-400 hover:text-white bg-slate-800 px-2 py-1 rounded">↻ Refresh</button>
+            </div>
+            <div id="ticketList" class="space-y-4">
+                <p class="text-slate-500 text-sm text-center py-4">Lade...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script_0.js?v=430FPCUY"></script>
+</body>
+</html>

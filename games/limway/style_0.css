@@ -1,0 +1,25 @@
+
+        :root { --bg-color: #121212; --accent: #ff9800; --text-main: #fff; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-main); overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent; display: flex; flex-direction: column; height: 100vh; }
+        header { background: #1f1f1f; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; z-index: 50; }
+        .back-btn { color: var(--text-main); text-decoration: none; font-size: 14px; font-weight: bold; background: #333; padding: 5px 15px; border-radius: 5px; border: 1px solid #444; transition: background 0.2s; }
+        .back-btn:hover { background: #444; }
+        .stats-panel { display: flex; gap: 15px; font-weight: bold; font-size: 14px; }
+        .badge { background: #333; padding: 5px 10px; border-radius: 15px; border: 1px solid #444; color: var(--accent); }
+        #game-container { flex: 1; position: relative; background: #1a1a1a; display: flex; justify-content: center; align-items: center; }
+        canvas { display: block; width: 100%; height: 100%; object-fit: cover; touch-action: none; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+        .overlay h1 { font-size: 45px; margin: 0 0 10px 0; color: var(--accent); text-transform: uppercase; text-shadow: 3px 3px 0px #000; text-align: center; }
+        .overlay p { color: #ddd; text-align: center; margin-bottom: 25px; font-size: 16px; max-width: 320px; line-height: 1.5; }
+        .btn { background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white; border: 2px solid #1B5E20; padding: 15px 35px; font-size: 20px; font-weight: 900; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 0 #1B5E20, 0 10px 10px rgba(0,0,0,0.5); transition: all 0.1s; text-transform: uppercase; }
+        .btn:active { transform: translateY(6px); box-shadow: 0 0 0 #1B5E20, 0 4px 4px rgba(0,0,0,0.5); }
+        .btn:disabled { background: #555; border-color: #333; box-shadow: none; transform: none; cursor: not-allowed; }
+        .score-display { position: absolute; top: 20px; width: 100%; text-align: center; font-size: 40px; font-weight: 900; color: white; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 10; pointer-events: none; }
+        #powerup-ui { display: none; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.7); padding: 10px 20px; border-radius: 30px; border: 2px solid #fff; z-index: 20; align-items: center; gap: 10px; }
+        #powerup-icon { font-size: 24px; }
+        #powerup-bar-container { width: 150px; height: 10px; background: #333; border-radius: 5px; overflow: hidden; }
+        #powerup-bar { width: 100%; height: 100%; background: #ff9800; transition: width 0.1s linear; }
+        
+        .seed-input { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 15px; border-radius: 8px; outline: none; text-align: center; width: 150px; font-weight: bold; font-family: monospace; margin-bottom: 20px; }
+        .seed-input::placeholder { color: #aaa; }
+    

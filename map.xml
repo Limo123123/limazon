@@ -1,0 +1,268 @@
+<?xml version="1.0" ?>
+<MonolithMap>
+  <File original="data-manager.html" new_html="data-manager/index.html" is_root="False">
+    <CSS path="data-manager/style_0.css"/>
+    <CSS path="data-manager/style_1.css"/>
+    <JS path="data-manager/script_0.js"/>
+  </File>
+  <File original="dsgvo.html" new_html="dsgvo/index.html" is_root="False">
+    <CSS path="dsgvo/style_0.css"/>
+  </File>
+  <File original="impressum.html" new_html="impressum/index.html" is_root="False">
+    <CSS path="impressum/style_0.css"/>
+  </File>
+  <File original="index.html" new_html="index.html" is_root="True">
+    <CSS path="index_assets/style_0.css"/>
+    <JS path="index_assets/script_0.js"/>
+  </File>
+  <File original="oldindex.html" new_html="oldindex/index.html" is_root="False">
+    <CSS path="oldindex/style_0.css"/>
+    <JS path="oldindex/script_0.js"/>
+  </File>
+  <File original="games/amongus.html" new_html="games/amongus/index.html" is_root="False">
+    <CSS path="games/amongus/style_0.css"/>
+    <JS path="games/amongus/script_0.js"/>
+  </File>
+  <File original="games/limway.html" new_html="games/limway/index.html" is_root="False">
+    <CSS path="games/limway/style_0.css"/>
+    <JS path="games/limway/script_0.js"/>
+  </File>
+  <File original="games/map_creator.html" new_html="games/map_creator/index.html" is_root="False">
+    <CSS path="games/map_creator/style_0.css"/>
+    <JS path="games/map_creator/script_0.js"/>
+  </File>
+  <File original="games/memory.html" new_html="games/memory/index.html" is_root="False">
+    <CSS path="games/memory/style_0.css"/>
+    <JS path="games/memory/script_0.js"/>
+  </File>
+  <File original="games/schnitzel.html" new_html="games/schnitzel/index.html" is_root="False">
+    <CSS path="games/schnitzel/style_0.css"/>
+    <JS path="games/schnitzel/script_0.js"/>
+  </File>
+  <File original="games/slots.html" new_html="games/slots/index.html" is_root="False">
+    <CSS path="games/slots/style_0.css"/>
+    <JS path="games/slots/script_0.js"/>
+  </File>
+  <File original="ot/tcg/index.html" new_html="ot/tcg/index.html" is_root="True">
+    <CSS path="ot/tcg/index_assets/style_0.css"/>
+    <CSS path="ot/tcg/index_assets/style_1.css"/>
+    <JS path="ot/tcg/index_assets/script_0.js"/>
+  </File>
+  <File original="themes/account.html" new_html="themes/account/index.html" is_root="False">
+    <CSS path="themes/account/style_0.css"/>
+    <JS path="themes/account/script_0.js"/>
+  </File>
+  <File original="themes/admin.html" new_html="themes/admin/index.html" is_root="False">
+    <CSS path="themes/admin/style_0.css"/>
+    <JS path="themes/admin/script_0.js"/>
+  </File>
+  <File original="themes/admin_logs.html" new_html="themes/admin_logs/index.html" is_root="False">
+    <CSS path="themes/admin_logs/style_0.css"/>
+    <JS path="themes/admin_logs/script_0.js"/>
+  </File>
+  <File original="themes/bank.html" new_html="themes/bank/index.html" is_root="False">
+    <CSS path="themes/bank/style_0.css"/>
+    <JS path="themes/bank/script_0.js"/>
+  </File>
+  <File original="themes/blackmarket.html" new_html="themes/blackmarket/index.html" is_root="False">
+    <CSS path="themes/blackmarket/style_0.css"/>
+    <JS path="themes/blackmarket/script_0.js"/>
+  </File>
+  <File original="themes/bugbounty.html" new_html="themes/bugbounty/index.html" is_root="False">
+    <CSS path="themes/bugbounty/style_0.css"/>
+    <JS path="themes/bugbounty/script_0.js"/>
+  </File>
+  <File original="themes/casino.html" new_html="themes/casino/index.html" is_root="False">
+    <CSS path="themes/casino/style_0.css"/>
+    <JS path="themes/casino/script_0.js"/>
+  </File>
+  <File original="themes/cdn.html" new_html="themes/cdn/index.html" is_root="False">
+    <CSS path="themes/cdn/style_0.css"/>
+    <JS path="themes/cdn/script_0.js"/>
+  </File>
+  <File original="themes/console.html" new_html="themes/console/index.html" is_root="False">
+    <CSS path="themes/console/style_0.css"/>
+    <JS path="themes/console/script_0.js"/>
+  </File>
+  <File original="themes/court.html" new_html="themes/court/index.html" is_root="False">
+    <CSS path="themes/court/style_0.css"/>
+    <JS path="themes/court/script_0.js"/>
+  </File>
+  <File original="themes/crime.html" new_html="themes/crime/index.html" is_root="False">
+    <CSS path="themes/crime/style_0.css"/>
+    <JS path="themes/crime/script_0.js"/>
+  </File>
+  <File original="themes/dont-blame-me.html" new_html="themes/dont-blame-me/index.html" is_root="False">
+    <CSS path="themes/dont-blame-me/style_0.css"/>
+    <JS path="themes/dont-blame-me/script_0.js"/>
+  </File>
+  <File original="themes/family-dashboard.html" new_html="themes/family-dashboard/index.html" is_root="False">
+    <CSS path="themes/family-dashboard/style_0.css"/>
+    <JS path="themes/family-dashboard/script_0.js"/>
+  </File>
+  <File original="themes/finance.html" new_html="themes/finance/index.html" is_root="False">
+    <CSS path="themes/finance/style_0.css"/>
+    <JS path="themes/finance/script_0.js"/>
+  </File>
+  <File original="themes/form.html" new_html="themes/form/index.html" is_root="False">
+    <CSS path="themes/form/style_0.css"/>
+    <JS path="themes/form/script_0.js"/>
+  </File>
+  <File original="themes/games.html" new_html="themes/games/index.html" is_root="False">
+    <CSS path="themes/games/style_0.css"/>
+    <JS path="themes/games/script_0.js"/>
+  </File>
+  <File original="themes/gangs.html" new_html="themes/gangs/index.html" is_root="False">
+    <CSS path="themes/gangs/style_0.css"/>
+    <JS path="themes/gangs/script_0.js"/>
+  </File>
+  <File original="themes/gesetzbuch.html" new_html="themes/gesetzbuch/index.html" is_root="False">
+    <CSS path="themes/gesetzbuch/style_0.css"/>
+    <JS path="themes/gesetzbuch/script_0.js"/>
+  </File>
+  <File original="themes/gewerkschaft.html" new_html="themes/gewerkschaft/index.html" is_root="False">
+    <CSS path="themes/gewerkschaft/style_0.css"/>
+    <JS path="themes/gewerkschaft/script_0.js"/>
+  </File>
+  <File original="themes/hall-of-fame.html" new_html="themes/hall-of-fame/index.html" is_root="False">
+    <CSS path="themes/hall-of-fame/style_0.css"/>
+    <JS path="themes/hall-of-fame/script_0.js"/>
+  </File>
+  <File original="themes/ideabox.html" new_html="themes/ideabox/index.html" is_root="False">
+    <CSS path="themes/ideabox/style_0.css"/>
+    <JS path="themes/ideabox/script_0.js"/>
+  </File>
+  <File original="themes/jobs.html" new_html="themes/jobs/index.html" is_root="False">
+    <CSS path="themes/jobs/style_0.css"/>
+    <JS path="themes/jobs/script_0.js"/>
+  </File>
+  <File original="themes/kirche.html" new_html="themes/kirche/index.html" is_root="False">
+    <CSS path="themes/kirche/style_0.css"/>
+    <JS path="themes/kirche/script_0.js"/>
+  </File>
+  <File original="themes/kleinanzeigen.html" new_html="themes/kleinanzeigen/index.html" is_root="False">
+    <JS path="themes/kleinanzeigen/script_0.js"/>
+    <JS path="themes/kleinanzeigen/script_1.js"/>
+  </File>
+  <File original="themes/l-shop.html" new_html="themes/l-shop/index.html" is_root="False">
+    <CSS path="themes/l-shop/style_0.css"/>
+    <JS path="themes/l-shop/script_0.js"/>
+  </File>
+  <File original="themes/limazon.html" new_html="themes/limazon/index.html" is_root="False">
+    <CSS path="themes/limazon/style_0.css"/>
+    <JS path="themes/limazon/script_0.js"/>
+  </File>
+  <File original="themes/limazonsuper.html" new_html="themes/limazonsuper/index.html" is_root="False">
+    <CSS path="themes/limazonsuper/style_0.css"/>
+    <JS path="themes/limazonsuper/script_0.js"/>
+    <JS path="themes/limazonsuper/script_1.js"/>
+  </File>
+  <File original="themes/limea.html" new_html="themes/limea/index.html" is_root="False">
+    <CSS path="themes/limea/style_0.css"/>
+    <JS path="themes/limea/script_0.js"/>
+  </File>
+  <File original="themes/limoplus.html" new_html="themes/limoplus/index.html" is_root="False">
+    <CSS path="themes/limoplus/style_0.css"/>
+    <JS path="themes/limoplus/script_0.js"/>
+  </File>
+  <File original="themes/limterest.html" new_html="themes/limterest/index.html" is_root="False">
+    <CSS path="themes/limterest/style_0.css"/>
+    <JS path="themes/limterest/script_0.js"/>
+  </File>
+  <File original="themes/logistics.html" new_html="themes/logistics/index.html" is_root="False">
+    <CSS path="themes/logistics/style_0.css"/>
+    <JS path="themes/logistics/script_0.js"/>
+  </File>
+  <File original="themes/lottery.html" new_html="themes/lottery/index.html" is_root="False">
+    <CSS path="themes/lottery/style_0.css"/>
+    <JS path="themes/lottery/script_0.js"/>
+  </File>
+  <File original="themes/mail.html" new_html="themes/mail/index.html" is_root="False">
+    <CSS path="themes/mail/style_0.css"/>
+    <JS path="themes/mail/script_0.js"/>
+  </File>
+  <File original="themes/neighborhood.html" new_html="themes/neighborhood/index.html" is_root="False">
+    <CSS path="themes/neighborhood/style_0.css"/>
+    <JS path="themes/neighborhood/script_0.js"/>
+  </File>
+  <File original="themes/news.html" new_html="themes/news/index.html" is_root="False">
+    <CSS path="themes/news/style_0.css"/>
+    <JS path="themes/news/script_0.js"/>
+  </File>
+  <File original="themes/petitions.html" new_html="themes/petitions/index.html" is_root="False">
+    <CSS path="themes/petitions/style_0.css"/>
+    <JS path="themes/petitions/script_0.js"/>
+  </File>
+  <File original="themes/pets.html" new_html="themes/pets/index.html" is_root="False">
+    <CSS path="themes/pets/style_0.css"/>
+    <JS path="themes/pets/script_0.js"/>
+  </File>
+  <File original="themes/profile.html" new_html="themes/profile/index.html" is_root="False">
+    <CSS path="themes/profile/style_0.css"/>
+    <JS path="themes/profile/script_0.js"/>
+  </File>
+  <File original="themes/rathaus.html" new_html="themes/rathaus/index.html" is_root="False">
+    <CSS path="themes/rathaus/style_0.css"/>
+    <JS path="themes/rathaus/script_0.js"/>
+  </File>
+  <File original="themes/realestate.html" new_html="themes/realestate/index.html" is_root="False">
+    <CSS path="themes/realestate/style_0.css"/>
+    <JS path="themes/realestate/script_0.js"/>
+  </File>
+  <File original="themes/report.html" new_html="themes/report/index.html" is_root="False">
+    <CSS path="themes/report/style_0.css"/>
+    <JS path="themes/report/script_0.js"/>
+  </File>
+  <File original="themes/restaurant.html" new_html="themes/restaurant/index.html" is_root="False">
+    <CSS path="themes/restaurant/style_0.css"/>
+    <JS path="themes/restaurant/script_0.js"/>
+  </File>
+  <File original="themes/reviews.html" new_html="themes/reviews/index.html" is_root="False">
+    <CSS path="themes/reviews/style_0.css"/>
+    <JS path="themes/reviews/script_0.js"/>
+  </File>
+  <File original="themes/rights.html" new_html="themes/rights/index.html" is_root="False">
+    <CSS path="themes/rights/style_0.css"/>
+    <JS path="themes/rights/script_0.js"/>
+  </File>
+  <File original="themes/standesamt.html" new_html="themes/standesamt/index.html" is_root="False">
+    <CSS path="themes/standesamt/style_0.css"/>
+    <JS path="themes/standesamt/script_0.js"/>
+  </File>
+  <File original="themes/stats.html" new_html="themes/stats/index.html" is_root="False">
+    <CSS path="themes/stats/style_0.css"/>
+    <JS path="themes/stats/script_0.js"/>
+  </File>
+  <File original="themes/status.html" new_html="themes/status/index.html" is_root="False">
+    <JS path="themes/status/script_0.js"/>
+    <JS path="themes/status/script_1.js"/>
+  </File>
+  <File original="themes/taxes.html" new_html="themes/taxes/index.html" is_root="False">
+    <CSS path="themes/taxes/style_0.css"/>
+    <JS path="themes/taxes/script_0.js"/>
+  </File>
+  <File original="themes/teachermon.html" new_html="themes/teachermon/index.html" is_root="False">
+    <CSS path="themes/teachermon/style_0.css"/>
+    <JS path="themes/teachermon/script_0.js"/>
+  </File>
+  <File original="themes/therapy.html" new_html="themes/therapy/index.html" is_root="False">
+    <CSS path="themes/therapy/style_0.css"/>
+    <JS path="themes/therapy/script_0.js"/>
+  </File>
+  <File original="themes/tierpark.html" new_html="themes/tierpark/index.html" is_root="False">
+    <CSS path="themes/tierpark/style_0.css"/>
+    <JS path="themes/tierpark/script_0.js"/>
+  </File>
+  <File original="themes/tinda.html" new_html="themes/tinda/index.html" is_root="False">
+    <CSS path="themes/tinda/style_0.css"/>
+    <JS path="themes/tinda/script_0.js"/>
+  </File>
+  <File original="themes/wanted.html" new_html="themes/wanted/index.html" is_root="False">
+    <CSS path="themes/wanted/style_0.css"/>
+    <JS path="themes/wanted/script_0.js"/>
+  </File>
+  <File original="themes/wheel.html" new_html="themes/wheel/index.html" is_root="False">
+    <CSS path="themes/wheel/style_0.css"/>
+    <JS path="themes/wheel/script_0.js"/>
+  </File>
+</MonolithMap>

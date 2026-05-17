@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Tierpark</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=aPekKc1U">
+</head>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-emerald-500">🌳</span> Tierpark
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Lass deine Tiere auf der Wiese spielen</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow space-y-6 z-0">
+        
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-emerald-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                🎟️ Park-Eingang
+            </h2>
+            
+            <select id="pet-select" class="w-full bg-slate-900 border border-slate-700 text-white p-3 rounded-xl text-sm mb-4 focus:outline-none focus:border-emerald-500 transition font-medium appearance-none">
+                <option value="">Lade deine Tiere...</option>
+            </select>
+            
+            <div class="flex gap-3">
+                <button onclick="sendToPark()" class="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/20 active:scale-95 text-sm flex justify-center items-center gap-2">
+                    <span>🐾</span> Reinlassen
+                </button>
+                <button onclick="callHome()" class="flex-1 bg-rose-500/20 text-rose-400 border border-rose-500/50 font-bold py-3 rounded-xl hover:bg-rose-500 hover:text-white transition active:scale-95 text-sm flex justify-center items-center gap-2">
+                    <span>🏠</span> Heim rufen
+                </button>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm uppercase text-emerald-400 font-bold tracking-wider">Live-Wiese</h2>
+                <button onclick="observeAnimals()" class="bg-blue-500/20 text-blue-400 border border-blue-500/50 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition active:scale-95 flex items-center gap-1">
+                    <span>👀</span> Beobachten
+                </button>
+            </div>
+            
+            <div id="park-wiese" class="park-wiese rounded-xl min-h-[250px] p-5 flex flex-wrap gap-4 justify-center items-center relative overflow-hidden border border-green-700/50">
+                <p class="text-green-900 font-bold text-lg drop-shadow-sm flex items-center gap-2">
+                    <span class="animate-spin">⏳</span> Lade Park...
+                </p>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-emerald-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                📻 Park-Funk
+            </h2>
+            <div id="event-log" class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 max-h-48 overflow-y-auto hide-scroll text-sm font-mono space-y-3">
+                <p class="text-slate-500 text-center py-2">Warte auf Ereignisse...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script_0.js?v=AaLA23mj"></script>
+</body>
+</html>

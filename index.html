@@ -7,106 +7,7 @@
     <title>Limazon Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #050505;
-            color: white;
-        }
-
-        .glass-panel {
-            background: rgba(20, 20, 25, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .theme-card {
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .theme-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
-            z-index: 10;
-        }
-
-        .card-icon {
-            transition: transform 0.4s ease;
-        }
-
-        .theme-card:hover .card-icon {
-            transform: scale(1.15) rotate(5deg);
-        }
-
-        .pattern-grid {
-            background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.05) 1px, transparent 1px);
-            background-size: 60px 60px;
-        }
-
-        .search-glow:focus {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-            border-color: rgba(59, 130, 246, 0.5);
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0a0a0a;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* --- STREIK-ANZEIGE (AGGRESSIV) --- */
-        .strike-active-card {
-            border: 3px solid #ff0000 !important;
-            box-shadow: 0 0 40px rgba(255, 0, 0, 0.7) !important;
-            animation: strike-pulse 1.5s infinite !important;
-        }
-
-        @keyframes strike-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important; }
-            100% { transform: scale(1); }
-        }
-
-        .strike-label {
-            position: absolute;
-            top: 20px;
-            right: -40px;
-            background: #ff0000;
-            color: white;
-            font-size: 14px;
-            font-weight: 900;
-            padding: 8px 50px;
-            transform: rotate(45deg);
-            z-index: 50;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            border: 2px solid white;
-            letter-spacing: 2px;
-            pointer-events: none;
-        }
-
-        /* --- FLOATING AD BANNER --- */
-        .ad-pulse {
-            animation: ad-glow 3s infinite alternate;
-        }
-
-        @keyframes ad-glow {
-            0% { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1); }
-            100% { box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4); border-color: rgba(59, 130, 246, 0.6); }
-        }
-    </style>
+    <link rel="stylesheet" href="index_assets/style_0.css?v=TzmDK4QL">
 </head>
 
 <body class="min-h-screen selection:bg-blue-500 selection:text-white overflow-y-scroll relative">
@@ -163,7 +64,7 @@
         <div id="appsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/limazon.html')" data-module="shop" data-tags="shop kaufen klassik economy">
+                onclick="nav('themes/limazon/index.html')" data-module="shop" data-tags="shop kaufen klassik economy">
                 <div
                     class="h-32 bg-gradient-to-br from-blue-900 to-slate-900 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🛒</span>
@@ -175,7 +76,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/rathaus.html')" data-module="rathaus"
+                onclick="nav('themes/rathaus/index.html')" data-module="rathaus"
                 data-tags="rathaus bürgermeister wahl steuern gesetz politik">
                 <div
                     class="h-32 bg-gradient-to-br from-blue-800 via-indigo-900 to-black flex items-center justify-center relative">
@@ -192,7 +93,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/gesetzbuch.html')" data-tags="gesetz regeln wiki law recht admin">
+                onclick="nav('themes/gesetzbuch/index.html')" data-tags="gesetz regeln wiki law recht admin">
                 <div
                     class="h-32 bg-gradient-to-br from-yellow-800 to-amber-950 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">⚖️</span>
@@ -204,7 +105,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/limazonsuper.html')" data-tags="shop kaufen super modern beta 3d">
+                onclick="nav('themes/limazonsuper/index.html')" data-tags="shop kaufen super modern beta 3d">
                 <div
                     class="h-32 bg-gradient-to-br from-green-900 via-emerald-900 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">🧪</span>
@@ -220,7 +121,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/bank.html')" data-module="bank" data-tags="geld finanzen bank überweisen">
+                onclick="nav('themes/bank/index.html')" data-module="bank" data-tags="geld finanzen bank überweisen">
                 <div class="h-32 bg-gradient-to-br from-cyan-900 to-blue-950 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🏦</span>
                 </div>
@@ -231,7 +132,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/finance.html')" data-tags="krypto crypto aktien stocks geld finance exchange">
+                onclick="nav('themes/finance/index.html')" data-tags="krypto crypto aktien stocks geld finance exchange">
                 <div class="h-32 bg-gradient-to-br from-blue-900 to-indigo-950 flex items-center justify-center">
                     <span class="text-6xl card-icon">📈</span>
                 </div>
@@ -242,7 +143,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/taxes.html')" data-tags="steuern finanzamt rich economy system">
+                onclick="nav('themes/taxes/index.html')" data-tags="steuern finanzamt rich economy system">
                 <div
                     class="h-32 bg-gradient-to-br from-slate-700 to-gray-900 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🏛️</span>
@@ -254,7 +155,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/realestate.html')" data-module="realestate"
+                onclick="nav('themes/realestate/index.html')" data-module="realestate"
                 data-tags="haus immobilien wg wohnen miete schutz">
                 <div
                     class="h-32 bg-gradient-to-br from-blue-700 via-indigo-900 to-slate-900 flex items-center justify-center relative">
@@ -267,7 +168,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/neighborhood.html')" data-tags="nachbarn stadt map häuser besuchen street">
+                onclick="nav('themes/neighborhood/index.html')" data-tags="nachbarn stadt map häuser besuchen street">
                 <div
                     class="h-32 bg-gradient-to-br from-teal-700 via-cyan-900 to-slate-900 flex items-center justify-center">
                     <span class="text-6xl card-icon">🏘️</span>
@@ -279,7 +180,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/limea.html')" data-tags="moebel möbel einrichten ikea haus bauen editor design">
+                onclick="nav('themes/limea/index.html')" data-tags="moebel möbel einrichten ikea haus bauen editor design">
                 <div
                     class="h-32 bg-gradient-to-br from-blue-600 via-yellow-600 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">🪑</span>
@@ -291,7 +192,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/pets.html')" data-module="pets"
+                onclick="nav('themes/pets/index.html')" data-module="pets"
                 data-tags="haustier hund katze füttern tier adoptieren">
                 <div
                     class="h-32 bg-gradient-to-br from-amber-600 via-orange-800 to-black flex items-center justify-center relative">
@@ -304,7 +205,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/tierpark.html')" data-tags="tiere park spielen haustiere zoo">
+                onclick="nav('themes/tierpark/index.html')" data-tags="tiere park spielen haustiere zoo">
                 <div class="h-32 bg-gradient-to-br from-green-500 to-emerald-800 flex items-center justify-center">
                     <span class="text-6xl card-icon">🌳</span>
                 </div>
@@ -315,7 +216,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/jobs.html')" data-module="jobs" data-tags="arbeit job geld verdienen economy">
+                onclick="nav('themes/jobs/index.html')" data-module="jobs" data-tags="arbeit job geld verdienen economy">
                 <div
                     class="h-32 bg-gradient-to-br from-orange-800 to-amber-900 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">💼</span>
@@ -327,7 +228,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/restaurant.html')" data-module="restaurant"
+                onclick="nav('themes/restaurant/index.html')" data-module="restaurant"
                 data-tags="essen food hunger pizza burger energie">
                 <div
                     class="h-32 bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center relative">
@@ -340,7 +241,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/teachermon.html')" data-module="teachermon"
+                onclick="nav('themes/teachermon/index.html')" data-module="teachermon"
                 data-tags="karten sammeln spiel lehrer teachermon gacha">
                 <div
                     class="h-32 bg-gradient-to-br from-fuchsia-800 to-purple-900 flex items-center justify-center relative">
@@ -353,7 +254,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/casino.html')" data-module="casino" data-tags="glücksspiel geld wetten casino">
+                onclick="nav('themes/casino/index.html')" data-module="casino" data-tags="glücksspiel geld wetten casino">
                 <div
                     class="h-32 bg-gradient-to-br from-yellow-600 to-amber-800 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🎰</span>
@@ -365,7 +266,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/games.html')" data-tags="spiele games zocken snake flappy arcade">
+                onclick="nav('themes/games/index.html')" data-tags="spiele games zocken snake flappy arcade">
                 <div class="h-32 bg-gradient-to-br from-indigo-800 to-violet-900 flex items-center justify-center">
                     <span class="text-6xl card-icon">🎮</span>
                 </div>
@@ -376,7 +277,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/wheel.html')" data-tags="glücksrad wheel tokens win">
+                onclick="nav('themes/wheel/index.html')" data-tags="glücksrad wheel tokens win">
                 <div class="h-32 bg-gradient-to-br from-purple-800 to-fuchsia-900 flex items-center justify-center">
                     <span class="text-6xl card-icon">🎡</span>
                 </div>
@@ -387,7 +288,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/lottery.html')" data-tags="lotto lottery jackpot lose gewinnen">
+                onclick="nav('themes/lottery/index.html')" data-tags="lotto lottery jackpot lose gewinnen">
                 <div
                     class="h-32 bg-gradient-to-br from-emerald-600 via-teal-800 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">🎟️</span>
@@ -399,7 +300,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/standesamt.html')" data-tags="heiraten hochzeit liebe ringe standesamt steuern">
+                onclick="nav('themes/standesamt/index.html')" data-tags="heiraten hochzeit liebe ringe standesamt steuern">
                 <div class="h-32 bg-gradient-to-br from-pink-600 to-rose-900 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">💒</span>
                 </div>
@@ -410,7 +311,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/tinda.html')" data-tags="dating liebe match tinder social">
+                onclick="nav('themes/tinda/index.html')" data-tags="dating liebe match tinder social">
                 <div class="h-32 bg-gradient-to-br from-pink-700 to-rose-900 flex items-center justify-center">
                     <span class="text-6xl card-icon">🔥</span>
                 </div>
@@ -421,7 +322,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/family-dashboard.html')"
+                onclick="nav('themes/family-dashboard/index.html')"
                 data-tags="familie family kinder tinda adoptieren baby jugendamt">
                 <div class="h-32 bg-gradient-to-br from-pink-800 to-rose-950 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">👨‍👩‍👧‍👦</span>
@@ -433,7 +334,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/news.html')" data-tags="nachrichten news zeitung info system">
+                onclick="nav('themes/news/index.html')" data-tags="nachrichten news zeitung info system">
                 <div class="h-32 bg-gradient-to-br from-red-900 to-rose-950 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">📰</span>
                 </div>
@@ -444,7 +345,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/limterest.html')" data-module="limterest"
+                onclick="nav('themes/limterest/index.html')" data-module="limterest"
                 data-tags="bilder social fotos pinterest">
                 <div class="h-32 bg-gradient-to-br from-rose-700 to-pink-800 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">📌</span>
@@ -467,7 +368,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/dont-blame-me.html')" data-tags="beichten blame fun confessions">
+                onclick="nav('themes/dont-blame-me/index.html')" data-tags="beichten blame fun confessions">
                 <div class="h-32 bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">⚖️</span>
                 </div>
@@ -478,7 +379,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/therapy.html')" data-tags="hilfe therapie sucht casino doktor">
+                onclick="nav('themes/therapy/index.html')" data-tags="hilfe therapie sucht casino doktor">
                 <div
                     class="h-32 bg-gradient-to-br from-cyan-800 via-blue-900 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">🛋️</span>
@@ -490,7 +391,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/crime.html')" data-module="crime" data-tags="verbrechen überfall raub crime">
+                onclick="nav('themes/crime/index.html')" data-module="crime" data-tags="verbrechen überfall raub crime">
                 <div class="h-32 bg-gradient-to-br from-red-950 to-black flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🦹</span>
                 </div>
@@ -501,7 +402,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/wanted.html')" data-tags="bounty kopfgeld wanted rache crime">
+                onclick="nav('themes/wanted/index.html')" data-tags="bounty kopfgeld wanted rache crime">
                 <div
                     class="h-32 bg-gradient-to-br from-red-900 via-stone-900 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">🎯</span>
@@ -513,7 +414,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/court.html')" data-tags="gericht court recht gesetz anklage crime">
+                onclick="nav('themes/court/index.html')" data-tags="gericht court recht gesetz anklage crime">
                 <div class="h-32 bg-gradient-to-br from-yellow-900 to-stone-950 flex items-center justify-center">
                     <span class="text-6xl card-icon">🔨</span>
                 </div>
@@ -524,7 +425,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/gangs.html')" data-module="gangs" data-tags="gang clan war clans">
+                onclick="nav('themes/gangs/index.html')" data-module="gangs" data-tags="gang clan war clans">
                 <div
                     class="h-32 bg-gradient-to-br from-violet-900 to-purple-950 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🏴‍☠️</span>
@@ -536,7 +437,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/mail.html')" data-tags="mail postfach inbox belohnung">
+                onclick="nav('themes/mail/index.html')" data-tags="mail postfach inbox belohnung">
                 <div class="h-32 bg-gradient-to-br from-indigo-800 via-blue-900 flex items-center justify-center">
                     <span class="text-6xl card-icon">📬</span>
                 </div>
@@ -547,7 +448,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/logistics.html')" data-tags="logistik post versenden paket senden dhl">
+                onclick="nav('themes/logistics/index.html')" data-tags="logistik post versenden paket senden dhl">
                 <div class="h-32 bg-gradient-to-br from-orange-600 via-orange-800 flex items-center justify-center">
                     <span class="text-6xl card-icon">🚚</span>
                 </div>
@@ -558,7 +459,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/kleinanzeigen.html')" data-tags="verkaufen kaufen ebay marktplatz">
+                onclick="nav('themes/kleinanzeigen/index.html')" data-tags="verkaufen kaufen ebay marktplatz">
                 <div
                     class="h-32 bg-gradient-to-br from-amber-700 via-orange-900 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">🏷️</span>
@@ -570,7 +471,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/gewerkschaft.html')" data-tags="streik gewerkschaft protest blockade rebellion">
+                onclick="nav('themes/gewerkschaft/index.html')" data-tags="streik gewerkschaft protest blockade rebellion">
                 <div
                     class="h-32 bg-gradient-to-br from-red-600 via-orange-900 to-black flex items-center justify-center relative overflow-hidden">
                     <span class="text-6xl card-icon">✊</span>
@@ -586,7 +487,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/petitions.html')" data-tags="petition unterschriften demokratie volk vorschläge">
+                onclick="nav('themes/petitions/index.html')" data-tags="petition unterschriften demokratie volk vorschläge">
                 <div
                     class="h-32 bg-gradient-to-br from-yellow-600 via-amber-800 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">📜</span>
@@ -602,7 +503,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/profile.html')" data-tags="profil ich user settings limo id">
+                onclick="nav('themes/profile/index.html')" data-tags="profil ich user settings limo id">
                 <div class="h-32 bg-gradient-to-br from-fuchsia-900 to-purple-950 flex items-center justify-center">
                     <span class="text-6xl card-icon">💳</span>
                 </div>
@@ -613,7 +514,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/limoplus.html')" data-tags="abo prime plus vip boost">
+                onclick="nav('themes/limoplus/index.html')" data-tags="abo prime plus vip boost">
                 <div
                     class="h-32 bg-gradient-to-br from-cyan-600 via-blue-800 to-black flex items-center justify-center relative overflow-hidden">
                     <span class="text-6xl card-icon">💎</span>
@@ -628,7 +529,7 @@
                 </div>
             </div>
 
-            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/kirche.html')" data-tags="kirche gott pi religion spenden hardware">
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/kirche/index.html')" data-tags="kirche gott pi religion spenden hardware">
                 <div class="h-32 bg-gradient-to-br from-indigo-950 via-purple-950 to-black flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🕯️</span>
                 </div>
@@ -642,7 +543,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/form.html')" data-tags="support hilfe ticket antrag geld">
+                onclick="nav('themes/form/index.html')" data-tags="support hilfe ticket antrag geld">
                 <div
                     class="h-32 bg-gradient-to-br from-sky-800 via-blue-900 to-slate-900 flex items-center justify-center relative overflow-hidden">
                     <span class="text-6xl card-icon">📝</span>
@@ -658,7 +559,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/cdn.html')"
+                onclick="nav('themes/cdn/index.html')"
                 data-tags="bilder upload cdn fotos crop zuschneiden hosting system tools">
                 <div class="h-32 bg-gradient-to-br from-sky-800 to-blue-900 flex items-center justify-center relative">
                     <span class="text-6xl card-icon">☁️</span>
@@ -670,7 +571,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/reviews.html')" data-tags="bewertung review sterne feedback">
+                onclick="nav('themes/reviews/index.html')" data-tags="bewertung review sterne feedback">
                 <div class="h-32 bg-gradient-to-br from-yellow-500 to-amber-700 flex items-center justify-center">
                     <span class="text-6xl card-icon">⭐</span>
                 </div>
@@ -681,7 +582,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/bugbounty.html')" data-tags="bugs fehler melden reward">
+                onclick="nav('themes/bugbounty/index.html')" data-tags="bugs fehler melden reward">
                 <div class="h-32 bg-gradient-to-br from-green-900 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">🐛</span>
                 </div>
@@ -692,7 +593,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/ideabox.html')" data-tags="ideen vorschläge feedback">
+                onclick="nav('themes/ideabox/index.html')" data-tags="ideen vorschläge feedback">
                 <div class="h-32 bg-gradient-to-br from-amber-800 to-orange-900 flex items-center justify-center">
                     <span class="text-6xl card-icon">💡</span>
                 </div>
@@ -703,7 +604,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/rights.html')" data-tags="admin rechte system sicherheit ban rights">
+                onclick="nav('themes/rights/index.html')" data-tags="admin rechte system sicherheit ban rights">
                 <div class="h-32 bg-gradient-to-br from-red-800 to-rose-950 flex items-center justify-center">
                     <span class="text-6xl card-icon">🛡️</span>
                 </div>
@@ -714,7 +615,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/stats.html')" data-tags="system status ping info admin metrics">
+                onclick="nav('themes/stats/index.html')" data-tags="system status ping info admin metrics">
                 <div class="h-32 bg-gradient-to-br from-emerald-900 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">📈</span>
                 </div>
@@ -725,7 +626,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/status.html')" data-tags="system status ping info admin">
+                onclick="nav('themes/status/index.html')" data-tags="system status ping info admin">
                 <div class="h-32 bg-gradient-to-br from-slate-800 to-black flex items-center justify-center">
                     <span class="text-6xl card-icon">_></span>
                 </div>
@@ -747,7 +648,7 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/hall-of-fame.html')" data-tags="rangliste top bestenliste">
+                onclick="nav('themes/hall-of-fame/index.html')" data-tags="rangliste top bestenliste">
                 <div class="h-32 bg-gradient-to-br from-yellow-700 to-orange-900 flex items-center justify-center">
                     <span class="text-6xl card-icon">🏆</span>
                 </div>
@@ -761,104 +662,16 @@
 
         <footer class="mt-auto py-6 border-t border-gray-800 flex justify-center items-center text-sm text-gray-500">
             <div class="flex flex-wrap justify-center gap-4">
-                <a href="themes/account.html" class="hover:text-white transition">Konto</a>
-                <a href="themes/status.html" class="hover:text-white transition">Netzwerk</a>
-                <a href="themes/admin.html" class="hover:text-red-400 transition">Management</a>
+                <a href="themes/account/index.html" class="hover:text-white transition">Konto</a>
+                <a href="themes/status/index.html" class="hover:text-white transition">Netzwerk</a>
+                <a href="themes/admin/index.html" class="hover:text-red-400 transition">Management</a>
                 <a href="/impressum.html" class="hover:text-white transition">Impressum</a>
                 <a href="/dsgvo.html" class="hover:text-white transition">Datenschutz</a>
             </div>
         </footer>
     </div>
 
-    <script>
-        const API_URL = 'https://api.limazon.v6.rocks';
-        let currentAdLink = "";
-
-        window.onload = function () {
-            if (!localStorage.getItem('limazon_consent_2026')) {
-                document.getElementById('cookieOverlay').classList.remove('hidden');
-            }
-            checkActiveStrikes();
-            loadAd(); 
-        };
-
-        function acceptCookies() {
-            localStorage.setItem('limazon_consent_2026', 'true');
-            document.getElementById('cookieOverlay').classList.add('hidden');
-        }
-
-        function nav(url) { window.location.href = url; }
-
-        function filterApps() {
-            const input = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.theme-card');
-            cards.forEach(card => {
-                const tags = card.getAttribute('data-tags') || "";
-                const title = card.querySelector('h3').innerText.toLowerCase();
-                card.style.display = (tags.includes(input) || title.includes(input)) ? 'block' : 'none';
-            });
-        }
-
-        async function checkActiveStrikes() {
-            try {
-                const res = await fetch(`${API_URL}/api/strikes/public`);
-                if (!res.ok) return;
-
-                const data = await res.json();
-                if (!data.strikes || data.strikes.length === 0) return;
-
-                data.strikes.forEach(strike => {
-                    const card = document.querySelector(`[data-module="${strike.module}"]`);
-                    if (card) {
-                        card.classList.add('strike-active-card');
-                        const banner = document.createElement('div');
-                        banner.className = 'strike-label';
-                        banner.innerHTML = 'STREIK';
-                        card.appendChild(banner);
-                    }
-                });
-            } catch (e) {
-                console.log("Streik-Status nicht verfügbar.");
-            }
-        }
-
-        // NEU: Die Funktion, um das Werbebanner zu laden (Mit Login-Prüfung!)
-        async function loadAd() {
-            try {
-                const res = await fetch(`${API_URL}/api/ads/random`, { credentials: 'include' });
-                if (res.ok) {
-                    const data = await res.json();
-                    
-                    // Wenn der Server sagt, der User ist werbefrei (Limazon Prime)
-                    if (data.isAdFree) {
-                        console.log("User hat Limazon Prime. Werbung wird geblockt.");
-                        return;
-                    }
-                    
-                    if (data.ad) {
-                        const banner = document.getElementById('ad-banner');
-                        document.getElementById('ad-icon').textContent = data.ad.icon;
-                        document.getElementById('ad-title').textContent = data.ad.title;
-                        document.getElementById('ad-text').textContent = data.ad.text;
-                        currentAdLink = data.ad.link;
-                        
-                        banner.classList.remove('hidden');
-                    }
-                }
-            } catch (e) {
-                console.log("Werbe-Server nicht erreichbar oder durch Adblocker blockiert.");
-            }
-        }
-
-        function closeAd(event) {
-            event.stopPropagation(); // WICHTIG: Verhindert, dass der Klick auf das "X" auch die Werbung öffnet
-            document.getElementById('ad-banner').style.display = 'none';
-        }
-
-        function navToAd() {
-            if(currentAdLink) nav(currentAdLink);
-        }
-    </script>
+    <script src="index_assets/script_0.js?v=BUY7v6LZ"></script>
 </body>
 
 </html>

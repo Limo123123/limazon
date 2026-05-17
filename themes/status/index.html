@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Status & Metriken</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script_0.js?v=d7GZdBCB"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col items-center p-6">
+
+    <div class="w-full max-w-5xl"> <div class="flex justify-between items-center mb-8 mt-4">
+            <h1 class="text-3xl font-bold tracking-tight">Limo Status</h1>
+            <button id="themeToggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+                <span id="themeIcon">🌙</span>
+            </button>
+        </div>
+
+        <div id="mainBanner" class="rounded-xl p-6 mb-6 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center gap-4 transition-colors">
+            <div id="statusDot" class="w-4 h-4 rounded-full bg-gray-400 animate-pulse"></div>
+            <div>
+                <h2 id="systemStatusText" class="text-xl font-semibold">Lade Status...</h2>
+                <p id="serviceName" class="text-sm text-gray-500 dark:text-gray-400">Verbinde mit Server</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Datenbank</p>
+                <p id="dbStatus" class="text-lg font-semibold">-</p>
+            </div>
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Uptime (Server)</p>
+                <p id="uptime" class="text-lg font-semibold">-</p>
+            </div>
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Worker Threads</p>
+                <p id="workers" class="text-lg font-semibold">-</p>
+            </div>
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Zuletzt geprüft</p>
+                <p id="lastCheck" class="text-lg font-semibold">-</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <h3 class="text-lg font-semibold mb-4">CPU Auslastung (%)</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="cpuChart"></canvas>
+                </div>
+            </div>
+            <div class="rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                <h3 class="text-lg font-semibold mb-4">RAM Auslastung (%)</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="ramChart"></canvas>
+                </div>
+                <p id="ramDetails" class="text-xs text-gray-500 mt-3 text-center">-</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script_1.js?v=2RyBPve2"></script>
+</body>
+</html>

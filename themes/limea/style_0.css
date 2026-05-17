@@ -1,0 +1,82 @@
+
+        :root {
+            --limea-blue: #0058a3;
+            --limea-yellow: #fcc200;
+            --bg: #1e1e1e;
+            --panel-bg: #2d2d2d;
+            --text: #fff;
+        }
+
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        #top-nav { display: flex; justify-content: space-between; align-items: center; background: var(--limea-blue); padding: 10px 20px; border-bottom: 4px solid var(--limea-yellow); z-index: 100; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--limea-yellow); }
+        .nav-actions { display: flex; gap: 10px; }
+        .nav-actions button { background: #222; color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .nav-actions button.save-btn { background: #44db95; color: black; border: none; }
+
+        .main-wrapper { display: flex; flex: 1; overflow: hidden; flex-direction: row; }
+
+        #sidebar { width: 350px; background: var(--panel-bg); border-right: 2px solid #444; display: flex; flex-direction: column; z-index: 10; }
+        .sidebar-header { padding: 15px; text-align: center; border-bottom: 1px solid #444; }
+        
+        .tabs { display: flex; cursor: pointer; }
+        .tab { flex: 1; padding: 12px 5px; text-align: center; background: #222; font-weight: bold; transition: 0.2s; font-size: 0.9rem;}
+        .tab.active { background: var(--panel-bg); color: var(--limea-yellow); border-bottom: 2px solid var(--limea-yellow); }
+
+        .search-bar { padding: 10px; background: #222; border-bottom: 1px solid #444; }
+        .search-bar input { width: 100%; padding: 8px; border-radius: 5px; border: none; background: #111; color: white; box-sizing: border-box; }
+
+        .item-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .list-item { background: #3a3a3a; margin-bottom: 10px; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .item-icon { font-size: 2rem; margin-right: 10px; }
+        .item-details { flex: 1; }
+        .item-name { font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        .item-price { color: #44db95; font-size: 0.85rem; }
+        .item-qty { color: #aaa; font-size: 0.8rem; }
+        
+        .buy-area { display: flex; gap: 5px; align-items: center; }
+        .buy-area input { width: 40px; padding: 5px; background: #111; border: 1px solid #555; color: white; border-radius: 4px; text-align: center;}
+        
+        .buy-btn { background: var(--limea-blue); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; }
+        .btn-place { background: var(--limea-yellow); color: #000; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight:bold; }
+        .btn-place:disabled { background: #555; color: #888; cursor: not-allowed; }
+
+        .store-card { background: #444; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--limea-yellow);}
+        .store-title { font-weight: bold; color: var(--limea-yellow); margin-bottom: 5px;}
+        .store-author { font-size: 0.8rem; color: #aaa; margin-bottom: 10px;}
+        .store-missing { font-size: 0.8rem; color: #ff4458; margin-bottom: 10px; font-weight:bold;}
+
+        #editor-area { flex: 1; background: #111; overflow: auto; position: relative; padding: 40px; box-sizing: border-box; }
+
+        #editor-tools { position: fixed; top: 80px; left: 370px; z-index: 200; display: flex; gap: 10px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        
+        #tools-drag-handle { display: flex; align-items: center; justify-content: center; color: #888; font-size: 1.5rem; cursor: grab; padding: 0 5px; user-select: none; touch-action: none; }
+        #tools-drag-handle:active { cursor: grabbing; color: #fff; }
+
+        .tool-btn { background: #333; color: white; border: 1px solid #555; width: 40px; height: 40px; border-radius: 8px; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .tool-btn.active { background: var(--limea-yellow); color: black; border-color: var(--limea-yellow); }
+        .tool-btn:hover { filter: brightness(1.2); }
+
+        #room { background: #e0e0e0; position: relative; border: 10px solid #555; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background-image: linear-gradient(#ccc 1px, transparent 1px), linear-gradient(90deg, #ccc 1px, transparent 1px); background-size: 10px 10px; margin: 0 auto; }
+
+        .furniture-piece { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 2rem; cursor: grab; user-select: none; touch-action: none; box-sizing: border-box; box-shadow: 2px 5px 10px rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.2); transition: box-shadow 0.1s, border 0.1s; }
+        .pan-mode .furniture-piece { pointer-events: none; }
+        .furniture-piece.dragging { cursor: grabbing; box-shadow: 5px 15px 25px rgba(0,0,0,0.7); z-index: 1000 !important; }
+        .furniture-piece.selected { border: 2px dashed var(--limea-yellow); }
+        .visitor-mode .furniture-piece { cursor: default; pointer-events: none; } 
+
+        #item-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 200; background: rgba(0,0,0,0.9); padding: 15px 25px; border-radius: 30px; display: none; gap: 15px; align-items: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        #item-controls button { background: #333; color: white; border: 1px solid #555; padding: 8px 15px; border-radius: 20px; cursor: pointer; }
+        #item-controls button:hover { background: #444; }
+
+        .loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index: 1000; display:flex; justify-content:center; align-items:center; font-size: 2rem; color: var(--limea-yellow); font-weight: bold; }
+
+        @media (max-width: 768px) {
+            .main-wrapper { flex-direction: column; }
+            #sidebar { width: 100%; height: 40%; border-right: none; border-top: 2px solid #444; order: 2; }
+            #editor-area { height: 60%; order: 1; padding: 10px; }
+            #editor-tools { left: 10px; top: 70px; flex-direction: row; flex-wrap: wrap; max-width: 90%;}
+            #item-controls { bottom: 42%; width: 90%; justify-content: center; }
+        }
+    

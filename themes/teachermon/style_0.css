@@ -1,0 +1,218 @@
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 2rem;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 70%);
+        }
+
+        .glass-panel {
+            background: rgba(20, 25, 30, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .input-holo {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .input-holo:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+            outline: none;
+        }
+
+        .btn-buy {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transition: all 0.2s;
+        }
+
+        .btn-buy:hover:not(:disabled) {
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
+            transform: scale(1.02);
+        }
+
+        .btn-daily {
+            background: linear-gradient(135deg, #10b981, #15803d);
+            transition: all 0.2s;
+        }
+
+        .btn-daily:hover:not(:disabled) {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            transform: scale(1.02);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #a855f7, #7e22ce);
+            transition: all 0.2s;
+        }
+
+        .btn-admin:hover:not(:disabled) {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            transform: scale(1.02);
+        }
+
+        .card-wrapper {
+            transition: transform 0.2s ease-out;
+        }
+
+        @media (hover: hover) {
+            .card-wrapper:hover {
+                transform: translateY(-5px);
+                z-index: 10;
+            }
+        }
+
+        .rarity-common {
+            border-color: rgba(160, 82, 45, 0.5);
+            box-shadow: 0 4px 15px rgba(160, 82, 45, 0.1);
+        }
+
+        .rarity-rare {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .rarity-premium {
+            border-color: rgba(234, 179, 8, 0.6);
+            box-shadow: 0 4px 20px rgba(234, 179, 8, 0.3);
+        }
+
+        .rarity-episch {
+            border-color: rgba(34, 197, 94, 0.7);
+            box-shadow: 0 4px 25px rgba(34, 197, 94, 0.4);
+        }
+
+        .rarity-legendaer {
+            border: 2px solid #a855f7;
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rarity-legendaer::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            animation: glitter 3s infinite linear;
+            pointer-events: none;
+        }
+
+        @keyframes glitter {
+            0% {
+                transform: translateX(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(100%) rotate(45deg);
+            }
+        }
+
+        .card-locked {
+            opacity: 0.35;
+            filter: grayscale(100%);
+        }
+
+        .tab-btn {
+            padding: 12px 16px;
+            font-weight: bold;
+            color: #9ca3af;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 768px) {
+            .tab-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            color: #a855f7;
+            border-bottom: 2px solid #a855f7;
+        }
+
+        .tab-btn.satan-btn.active {
+            color: #ef4444;
+            border-bottom: 2px solid #ef4444;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #pack-modal {
+            backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.85);
+        }
+
+        .reveal-anim {
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        @keyframes popIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    

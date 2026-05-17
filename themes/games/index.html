@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo Arcade</title>
+    <link rel="stylesheet" href="style_0.css?v=mcngb8NT">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">🎮 Limo Arcade</div>
+        <div class="user-panel" id="userPanel">
+            <button class="btn btn-play" onclick="app.showLogin()" style="padding: 5px 15px;">Login</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Spiel suchen..." onkeyup="app.renderGames()">
+            </div>
+        </div>
+        <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+    <div id="loginModal">
+        <div class="modal-box" style="text-align: center;">
+            <span onclick="document.getElementById('loginModal').style.display='none'"
+                style="position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;">&times;</span>
+            <h2 style="color:var(--accent); margin-top:0;">Login</h2>
+            <input type="text" id="lUser" placeholder="Benutzername">
+            <input type="password" id="lPass" placeholder="Passwort">
+            <button class="btn btn-play" style="width:100%; margin-top:10px;" onclick="app.login()">Einloggen</button>
+            <p id="lError" style="color:#ff5252; margin-top:10px; font-size:13px;"></p>
+        </div>
+    </div>
+
+    <div id="lbModal">
+        <div class="modal-box">
+            <span onclick="document.getElementById('lbModal').style.display='none'"
+                style="position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;">&times;</span>
+            <h2 style="color:#2196F3; margin:0;">🏆 Top Spieler</h2>
+
+            <div class="lb-search-container">
+                <input type="text" id="lbSearch" placeholder="Spieler suchen..." onkeyup="app.loadLb(1)">
+                <input type="text" id="lbSeed" placeholder="Seed? (leer = Normal)" onkeyup="app.loadLb(1)"
+                    title="Lass dies leer für die Standard-Rangliste!">
+            </div>
+
+            <div id="lbContent" class="lb-list">Lade...</div>
+            <div style="margin-top:10px; display:flex; justify-content:center; gap:10px;">
+                <button class="btn btn-rank" onclick="app.lbPageChange(-1)"
+                    style="flex:0; padding:5px 15px;">&lt;</button>
+                <span id="lbPageDisplay" style="align-self:center; font-size:12px; color:#888;">1 / 1</span>
+                <button class="btn btn-rank" onclick="app.lbPageChange(1)"
+                    style="flex:0; padding:5px 15px;">&gt;</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameOverlay">
+        <div class="game-header">
+            <div class="close-btn" onclick="app.closeGame()">✕</div>
+            <div class="ingame-badge">Freispiele: <span id="gamePlays">-</span></div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="game-ui" id="gameUI">
+
+            <div id="startScreen">
+                <h1 class="game-title" id="gameTitleDisplay">GAME</h1>
+                <p id="gameSubText" style="margin-bottom: 15px; color:#ddd;">Info...</p>
+
+                <div id="snakeSettings" class="snake-settings" style="display:none;">
+                    <div class="size-btn" onclick="snakeEngine.setSize('small', 1, this)">Klein<br>(x1)</div>
+                    <div class="size-btn active" onclick="snakeEngine.setSize('medium', 1.5, this)">Mittel<br>(x1.5)
+                    </div>
+                    <div class="size-btn" onclick="snakeEngine.setSize('large', 2, this)">Groß<br>(x2)</div>
+                </div>
+
+                <button class="btn btn-play" id="startBtn"
+                    style="padding: 12px 30px; font-size: 18px; width:100%;">START</button>
+                <button class="btn btn-rank" id="lbBtn" style="margin-top:10px; width:100%;">🏆 Rangliste</button>
+            </div>
+
+            <div id="gameOverScreen" style="display:none;">
+                <h1 class="game-title" style="color:#ff5252">GAME OVER</h1>
+                <h2 id="finalScore" style="font-size:30px; margin:10px 0;">Score: 0</h2>
+                <button class="btn btn-play" style="padding: 12px 30px; font-size: 18px; width:100%;"
+                    onclick="document.getElementById('startBtn').click()">NOCHMAL</button>
+                <button class="btn btn-rank" style="margin-top:10px; width:100%;"
+                    onclick="app.closeGame()">BEENDEN</button>
+            </div>
+
+            <div class="tap-msg" id="tapMsg" style="display:none;">TAP TO START</div>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=NiIMDgJT"></script>
+</body>
+
+</html>

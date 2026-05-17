@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Admin - Datenmanipulation</title>
+    <link rel="stylesheet" href="style_0.css?v=FtpqLRUj">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Limazon Admin - Datenmanipulation</h1>
+
+        <!-- Authentifizierungssektionen bleiben gleich -->
+        <div class="form-section">
+            <h3>Stufe 1 & 2: Lokale Admin Authentifizierung</h3>
+            <div class="input-group"><label for="adminUsername">Lokaler Admin Benutzername:</label><input type="text"
+                    id="adminUsername" value="admin"></div>
+            <div class="input-group"><label for="adminPassword">Lokales Admin Passwort:</label><input type="password"
+                    id="adminPassword" placeholder="Passwort des lokalen Admins"></div>
+        </div>
+        <div class="form-section">
+            <h3>Stufe 3: OneDev Admin Authentifizierung</h3>
+            <div class="input-group"><label for="oneDevUrl">OneDev Server URL:</label><input type="text" id="oneDevUrl"
+                    value="http://reason-nurse.gl.at.ply.gg:21182"></div>
+            <div class="input-group"><label for="oneDevAdminUsername">OneDev Admin Benutzername:</label><input
+                    type="text" id="oneDevAdminUsername" value="admin"></div>
+            <div class="input-group"><label for="oneDevAdminPassword">OneDev Admin Passwort:</label><input
+                    type="password" id="oneDevAdminPassword" placeholder="Passwort des OneDev Admins"></div>
+        </div>
+
+        <div class="form-section">
+            <h3>Collection & Operation</h3>
+            <div class="input-group">
+                <label for="collectionName">Collection Name:</label>
+                <select id="collectionName">
+                    <option value="limChats">limChats</option>
+                    <option value="limMessages">limMessages</option>
+                    <option value="limUserChatSettings">limUserChatSettings</option>
+                    <option value="products">products</option>
+                    <option value="users">users</option>
+                    <option value="orders">orders</option>
+                    <option value="userInventories">userInventories</option>
+                    <option value="wheels">wheels</option>
+                    <option value="tokenCodes">tokenCodes</option>
+                    <option value="tokenTransactions">tokenTransactions</option>
+                    <option value="sessions">sessions</option>
+					<option value="dontBlameMePosts">Dont blame me</option>
+                </select>
+            </div>
+            <!-- Einfache Suche -->
+            <div class="input-group">
+                <label for="searchTerm">Einfache Textsuche (optional, für 'find'):</label>
+                <input type="text" id="searchTerm" placeholder="Sucht in Standardfeldern (z.B. name, username)">
+            </div>
+            <div class="action-button-group">
+                <button id="btnFindAll">Alle Dokumente anzeigen (find)</button>
+                <button id="btnSearch">Suche ausführen (find)</button>
+                <button id="btnAdvancedToggle">Erweiterte Operationen anzeigen/verstecken</button>
+            </div>
+        </div>
+
+        <div id="advancedOperationsSection" class="form-section hidden">
+            <h3>Erweiterte Datenbank Operation</h3>
+            <div class="input-group">
+                <label for="operation">Operation:</label>
+                <select id="operation">
+                    <option value="find">find (Liste)</option>
+                    <option value="findOne">findOne (Einzelnes Dokument)</option>
+                    <option value="insertOne">insertOne (Dokument einfügen)</option>
+                    <option value="insertMany">insertMany (Mehrere einfügen)</option>
+                    <option value="updateOne">updateOne (Dokument aktualisieren)</option>
+                    <option value="updateMany">updateMany (Mehrere aktualisieren)</option>
+                    <option value="deleteOne">deleteOne (Dokument löschen)</option>
+                    <option value="deleteMany">deleteMany (Mehrere löschen)</option>
+                    <option value="countDocuments">countDocuments (Anzahl)</option>
+                    <option value="aggregate">aggregate (Pipeline)</option>
+                </select>
+            </div>
+            <div id="queryGroup" class="input-group">
+                <label for="query">Query (MongoDB Filter - JSON):</label>
+                <textarea id="query" placeholder='{ "key": "value" }'></textarea>
+            </div>
+            <div id="documentGroup" class="input-group hidden">
+                <label for="document">Document (für insertOne - JSON):</label>
+                <textarea id="document" placeholder='{ "key1": "value1", "key2": "value2" }'></textarea>
+            </div>
+            <div id="documentsGroup" class="input-group hidden">
+                <label for="documents">Documents (Array für insertMany - JSON):</label>
+                <textarea id="documents" placeholder='[ { "key": "val" }, { "key2": "val2" } ]'></textarea>
+            </div>
+            <div id="updateGroup" class="input-group hidden">
+                <label for="update">Update (MongoDB Update Operatoren - JSON):</label>
+                <textarea id="update" placeholder='{ "$set": { "key": "newValue" } }'></textarea>
+            </div>
+            <div id="pipelineGroup" class="input-group hidden">
+                <label for="pipeline">Pipeline (Array für aggregate - JSON):</label>
+                <textarea id="pipeline"
+                    placeholder='[ { "$match": { "key": "value" } }, { "$group": { "_id": "$field" } } ]'></textarea>
+            </div>
+            <div id="optionsGroup" class="input-group">
+                <label for="options">Options (z.B. projection, sort, limit - JSON):</label>
+                <textarea id="options" placeholder='{ "sort": { "field": -1 }, "limit": 10 }'></textarea>
+            </div>
+            <button id="submitAdvancedBtn">Erweiterte Operation Ausführen</button>
+        </div>
+
+        <div id="loader" class="loader hidden"></div>
+        <div id="result-area">
+            <div id="result-docs" class="hidden"></div>
+            <div id="result-raw" class="hidden"></div>
+        </div>
+
+        <div id="editModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal()">×</span>
+                <h2>Dokument bearbeiten</h2>
+                <input type="hidden" id="editDocId">
+                <input type="hidden" id="editDocCollection">
+                <textarea id="editDocContent"></textarea>
+                <button id="saveEditBtn">Änderungen Speichern</button>
+            </div>
+        </div>
+
+    </div>
+    <link rel="stylesheet" href="style_1.css?v=o31DerSq">
+
+    <script src="script_0.js?v=uAmqAKS8"></script>
+</body>
+
+</html>

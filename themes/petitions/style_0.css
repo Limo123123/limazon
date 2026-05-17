@@ -1,0 +1,45 @@
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .input-dark {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .input-dark:focus {
+            outline: none;
+            border-color: #818cf8;
+            background: #0f172a;
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* Progress Bar Animation */
+        .progress-bar {
+            transition: width 0.5s ease-out;
+        }
+    

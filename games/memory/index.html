@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory - Limo Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=UmoYt6UG">
+</head>
+<body>
+
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-black mb-1 italic tracking-tighter uppercase">Memory <span class="text-blue-500">Master</span></h1>
+        <div class="flex justify-center gap-6 items-baseline">
+            <div class="text-zinc-500 text-xs font-bold uppercase tracking-widest">Punkte: <span id="score" class="text-white text-xl ml-1">1000</span></div>
+            <div class="text-zinc-500 text-xs font-bold uppercase tracking-widest">Matches: <span id="matches" class="text-white text-xl ml-1">0/8</span></div>
+        </div>
+    </div>
+
+    <div id="gameGrid" class="grid">
+        </div>
+
+    <div class="mt-8 flex flex-col gap-4 w-64">
+        <button id="startBtn" onclick="startGame()" class="btn-limo py-4 rounded-2xl font-bold text-lg transition uppercase tracking-widest">
+            Spiel Starten
+        </button>
+        <button onclick="window.location.href='../../themes/games/index.html'" class="text-zinc-600 text-sm font-bold hover:text-zinc-400 transition">
+            ZURÜCK ZUR ARCADE
+        </button>
+    </div>
+
+    <script src="script_0.js?v=6cGGweP0"></script>
+</body>
+</html>

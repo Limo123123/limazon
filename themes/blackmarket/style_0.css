@@ -1,0 +1,133 @@
+
+        body {
+            font-family: 'Teko', sans-serif;
+            background-color: #1a0000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .font-mono { font-family: 'Share Tech Mono', monospace; }
+
+        /* --- BACKGROUND --- */
+        .yakuza-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background-color: #2b0000;
+            background-image: 
+                radial-gradient(circle at 50% 0, #4a0000 25%, transparent 26%),
+                radial-gradient(circle at 50% 100%, #4a0000 25%, transparent 26%);
+            background-size: 40px 80px;
+            opacity: 0.5;
+            animation: bgScroll 40s linear infinite;
+        }
+        
+        .crt-overlay {
+            position: fixed; inset: 0; pointer-events: none; z-index: 50;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            box-shadow: inset 0 0 150px rgba(0,0,0,1);
+        }
+
+        /* --- MENÜ BUTTONS --- */
+        .menu-btn {
+            position: relative; background: #fff; color: #000; width: 100%; 
+            padding: 12px 20px; margin-bottom: 15px; 
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px; transform: skewX(-10deg); cursor: pointer; transition: all 0.1s;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.6);
+            border: 2px solid transparent;
+        }
+        
+        @media (min-width: 1024px) {
+            .menu-btn {
+                padding: 12px 30px; margin-bottom: 20px; font-size: 2rem;
+                transform: skewX(-15deg);
+                box-shadow: 10px 10px 0px rgba(0,0,0,0.6);
+            }
+        }
+
+        .menu-btn span { display: block; transform: skewX(10deg); }
+        @media (min-width: 1024px) { .menu-btn span { transform: skewX(15deg); } }
+        
+        .menu-btn:hover, .menu-btn.active-btn {
+            background: #e60000; color: #fff; transform: skewX(-10deg) translate(-2px, -2px);
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.8); border-color: #fff;
+        }
+        @media (min-width: 1024px) {
+            .menu-btn:hover, .menu-btn.active-btn {
+                transform: skewX(-15deg) translate(-5px, -5px);
+            }
+        }
+
+        .price-tag {
+            font-size: 1rem; background: #000; color: #fff; padding: 2px 8px; transform: skewX(10deg);
+            font-family: 'Share Tech Mono', monospace;
+        }
+        @media (min-width: 1024px) { .price-tag { font-size: 1.2rem; transform: skewX(15deg); } }
+
+        /* --- MASKE --- */
+        .mask-container {
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+            animation: float 6s ease-in-out infinite;
+            position: relative;
+        }
+        .mask-glitch { animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+
+        @keyframes bgScroll { from { background-position: 0 0; } to { background-position: 0 800px; } }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(2deg); } }
+        
+        @keyframes glitch-anim {
+            0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+            5% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+            10% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+            15% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+            20% { clip-path: inset(10% 0 60% 0); transform: translate(-1px, 1px); }
+            100% { clip-path: inset(0 0 0 0); transform: translate(0, 0); }
+        }
+
+        /* --- PANELS --- */
+        .details-panel {
+            display: none; background: rgba(10, 0, 0, 0.95); border: 2px solid #fff; padding: 20px;
+            transform: skewX(-2deg); width: 100%; 
+            min-height: 400px; 
+            position: relative; box-shadow: 0 0 30px rgba(255, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        @media (min-width: 1024px) {
+            .details-panel {
+                transform: skewX(-5deg); max-width: 450px; 
+                height: 500px;
+                margin-bottom: 0;
+            }
+        }
+
+        .details-panel.active { 
+            display: flex; flex-direction: column; 
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Data Dump Style */
+        .data-dump {
+            font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: #0f0;
+            background: #000; padding: 10px; border: 1px solid #333; flex-grow: 1; overflow-y: auto;
+            white-space: pre-wrap; margin-top: 15px; box-shadow: inset 0 0 20px rgba(0,255,0,0.1);
+            max-height: 300px;
+        }
+        .data-key { color: #666; } .data-val { color: #fff; font-weight: bold; } .data-alert { color: #f00; text-shadow: 0 0 5px #f00; }
+
+        /* Scrollbar */
+        .custom-scrollbar { overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ff0000 #1a0000; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1a0000; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ff0000; }
+    

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Schnitzel-Alarm</title>
+    <link rel="stylesheet" href="style_0.css?v=Itjbq3bG">
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="overlay">
+            <h2 id="msg-title">SCHNITZEL ALARM</h2>
+            <p id="msg-desc">Rette die 🥩 vor Alice!<br>Tippe sie so schnell du kannst weg.<br><br>Achtung: Erwischst du 🥦, gibt es fette Minuspunkte!</p>
+            <button id="start-btn">SPIELEN</button>
+            <p style="margin-top:20px; font-size: 1rem; color: #888;">Kosten: 1 Token</p>
+        </div>
+
+        <div id="ui-bar">
+            <div>Score: <span id="score-val">0</span></div>
+            <div>Zeit: <span id="timer-val">30</span>s</div>
+        </div>
+
+        <div id="alice-container">
+            <div id="speech-bubble">Das lasse ich mir nicht verbieten!</div>
+            <div id="alice-face-wrapper">
+                <img id="alice-img" src="https://m.media-amazon.com/images/I/61Yc251miDL._AC_UF894,1000_QL80_.jpg" alt="Alice">
+                <div id="alice-red-overlay"></div>
+            </div>
+        </div>
+
+        <div id="play-area"></div>
+    </div>
+
+    <script src="script_0.js?v=HbkfpzcX"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Limo Engine Admin v2</title>
+    <link rel="stylesheet" href="style_0.css?v=cWvyIWVR">
+</head>
+<body>
+
+    <h1>⚙️ Limo Engine Explorer</h1>
+
+    <div class="controls">
+        <div class="group">
+    <label>Collection auswählen</label>
+    <select id="colSelect" onchange="loadData()">
+        <optgroup label="Core & Users">
+            <option value="users">Benutzer (users)</option>
+            <option value="sessions">Sessions</option>
+            <option value="authCodes">OAuth Codes</option>
+            <option value="banned_ips">Banned IPs</option>
+            <option value="systemSettings">System Settings</option>
+            <option value="botApiKeys">Bot API Keys</option>
+            <option value="activityLogs">Admin Activity Logs</option>
+            <option value="mails">Posteingang (mails)</option>
+        </optgroup>
+        <optgroup label="Wirtschaft & Shop">
+            <option value="products">Produkte (products)</option>
+            <option value="orders">Bestellungen (orders)</option>
+            <option value="userInventories">Inventare (userInventories)</option>
+            <option value="portfolios">Aktien-Portfolios (portfolios)</option>
+            <option value="tokenCodes">Token Codes</option>
+            <option value="tokenTransactions">Token Logs</option>
+            <option value="bankTransactions">Bank Überweisungen</option>
+            <option value="classifieds">Kleinanzeigen (classifieds)</option>
+        </optgroup>
+        <optgroup label="Haustiere & Zoo">
+            <option value="pets">Haustiere & Friedhof (pets)</option>
+        </optgroup>
+        <optgroup label="Social & Chat">
+            <option value="limChats">Chats</option>
+            <option value="limMessages">Nachrichten (limMessages)</option>
+            <option value="limUserChatSettings">Chat Settings</option>
+            <option value="ideas">Ideenbox</option>
+            <option value="dontBlameMePosts">Don't Blame Me Posts</option>
+            <option value="limterestPins">Limterest Pins</option>
+        </optgroup>
+        <optgroup label="Crime & Recht">
+            <option value="robberyLogs">Raub-Logs</option>
+            <option value="courtCases">Gerichtsfälle</option>
+            <option value="gangs">Gangs</option>
+            <option value="zones">Gang-Zonen</option>
+        </optgroup>
+        <optgroup label="Teachermon">
+            <option value="teachermonCards">Karten (Cards)</option>
+            <option value="teachermonInventories">User Karten-Besitz</option>
+            <option value="teachermonTrades">Offene Trades</option>
+            <option value="teachermonBattles">Arena Kämpfe</option>
+            <option value="teachermonUniverses">Universen</option>
+        </optgroup>
+        <optgroup label="Immobilien & Gastro">
+            <option value="properties">Haus-Katalog (properties)</option>
+            <option value="ownedProperties">User Häuser (owned)</option>
+            <option value="propertyInvites">WG-Einladungen</option>
+            <option value="restaurantOrders">Restaurant Bestellungen</option>
+        </optgroup>
+        <optgroup label="Entertainment">
+            <option value="wheels">Glücksräder (wheels)</option>
+            <option value="highscores">Highscores</option>
+            <option value="humans">Human Grades Personen</option>
+            <option value="ratings">Human Grades Bewertungen</option>
+            <option value="tindaSwipes">Tinda Swipes</option>
+            <option value="news">LNN News Network</option>
+            <option value="bugReports">Bug Reports</option>
+        </optgroup>
+    </select>
+</div>
+        <div class="group">
+            <label>Suche (Name/Username/ID)</label>
+            <input type="text" id="searchInput" placeholder="Suchwort...">
+        </div>
+        <button onclick="loadData()">DATEN LADEN</button>
+        <button class="secondary" onclick="openEditModal(null)">+ NEUER EINTRAG</button>
+    </div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <thead><tr id="tableHeader"><th>Warte auf Eingabe...</th></tr></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Bearbeiten</h2>
+            <textarea id="jsonEdit"></textarea>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button onclick="saveEntry()">SPEICHERN</button>
+                <button class="secondary" onclick="closeModal()">ABBRECHEN</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=3hDEyytd"></script>
+</body>
+</html>

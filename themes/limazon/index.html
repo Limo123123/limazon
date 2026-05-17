@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Limazon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="style_0.css?v=LSilHFpY">
+</head>
+
+<body class="bg-gray-100 font-roboto">
+
+    <header class="bg-blue-600 p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="text-white text-2xl font-bold">Limazon</div>
+        <div class="text-white text-lg font-semibold hidden md:block">Buy Your Human Now</div>
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <div id="user-info" class="text-white text-sm md:text-base">Hallo, <span id="customer-name"
+                    class="font-semibold">Gast</span><span id="user-balance-display" class="ml-2 hidden">(<i
+                        class="fas fa-coins text-yellow-300"></i> $<span id="user-balance">0.00</span>)</span></div>
+            <div id="auth-buttons"><button
+                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 md:px-4 md:py-2 rounded text-sm md:text-base"
+                    onclick="openAuthModal('login')">Login</button><button
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded text-sm md:text-base"
+                    onclick="openAuthModal('register')">Registrieren</button></div>
+            <div id="user-actions" class="hidden items-center space-x-1 md:space-x-2">
+                <button class="bg-white text-blue-600 px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="openAccountModal()">Konto</button>
+                <button
+                    class="bg-teal-400 hover:bg-teal-500 text-black px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="showMyInventory()">Inventar</button>
+                <button
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="openAuctionHouse()">Auktionshaus</button>
+                <button
+                    class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="openStonkMarket()">LimoStonks</button>
+                <!-- NEU: Mein Portfolio Button -->
+                <button
+                    class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="openMyPortfolio()">Mein Portfolio</button>
+                <button
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="showMyTokenCodes()">Meine Token Codes</button> <!-- NEU -->
+                <button
+                    class="bg-yellow-400 hover:bg-yellow-500 text-black px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="showOrderHistory()">Bestellungen</button>
+                <button id="admin-reset-stock-button"
+                    class="bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 md:px-4 md:py-2 rounded hidden text-xs md:text-sm"
+                    onclick="resetProductStock(false)">Lager Reset</button>
+                <button id="admin-zero-stock-button"
+                    class="bg-red-700 hover:bg-red-800 text-white px-2 py-1 md:px-4 md:py-2 rounded hidden text-xs md:text-sm"
+                    onclick="resetProductStock(true)">Lager Nullen</button>
+                <button id="admin-generate-tokens-button"
+                    class="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 md:px-4 md:py-2 rounded hidden text-xs md:text-sm"
+                    onclick="openGenerateTokenCodesModal()">Token Codes Gen. (Admin)</button> <!-- NEU -->
+                <button
+                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 md:px-4 md:py-2 rounded text-xs md:text-sm"
+                    onclick="logout()">Logout</button>
+            </div>
+            <button class="relative" onclick="viewCart()"><i class="fas fa-shopping-cart text-white text-2xl"></i><span
+                    id="cart-count"
+                    class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">0</span></button>
+        </div>
+    </header>
+
+    <main class="p-4">
+        <h1 class="text-2xl font-bold mb-6 text-center">Produktliste</h1>
+        <div class="w-full max-w-md mb-6 mx-auto text-center"><input id="search" type="text"
+                placeholder="Produkt suchen (Name oder ID)..." class="border rounded p-2 w-full shadow-sm"></div>
+        <div id="loading-status" class="text-center py-10 hidden">
+            <p id="loading-status-message" class="text-lg font-semibold text-blue-600"></p>
+        </div>
+        <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        <div id="pagination-controls" class="w-full flex justify-center mt-8"><button id="prev"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mr-2 disabled:opacity-50 disabled:cursor-not-allowed">«
+                Zurück</button><span id="page-info" class="px-4 py-2"></span><button id="next"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded ml-2 disabled:opacity-50 disabled:cursor-not-allowed">Weiter
+                »</button></div>
+        <div class="mt-8 text-center">
+            <button id="add-product-button" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded hidden"
+                onclick="openAddProductModal()">+ Neues Produkt hinzufügen (Admin)</button>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="cart-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[60]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-lg md:max-w-xl">
+            <h2 class="text-xl font-bold mb-4 text-center">Warenkorb</h2>
+            <div id="cart-items" class="mb-4"></div>
+            <div class="text-right font-bold text-lg mb-4">Total: $<span id="cart-total">0.00</span></div>
+            <div class="mt-4 flex justify-between border-t pt-4"><button
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded" onclick="closeCart()">Weiter
+                    einkaufen</button><button id="cart-checkout-button"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    onclick="checkout()">Zur Kasse</button></div>
+        </div>
+    </div>
+    <div id="checkout-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[70]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4 text-center">Checkout</h2>
+            <div id="checkout-items" class="mb-4"></div>
+            <div class="checkout-footer">
+                <div class="text-right font-bold text-lg">Total: $<span id="checkout-total">0.00</span></div>
+                <div class="mt-4 flex justify-between"><button
+                        class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+                        onclick="closeCheckout()">Abbrechen</button><button id="confirm-purchase-button"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center justify-center disabled:opacity-50"
+                        onclick="confirmPurchase()"><span class="button-text">Kauf bestätigen</span><span
+                            class="button-spinner hidden"></span></button></div>
+            </div>
+        </div>
+    </div>
+    <div id="thank-you-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4 text-center">Danke für deinen Einkauf!</h2>
+            <p id="thank-you-message" class="text-center mb-6">Deine Bestellung wurde erfolgreich bestätigt.</p>
+            <div class="flex justify-center space-x-4"><button
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                    onclick="generateInvoice()">Rechnung (PDF)</button><button
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    onclick="document.getElementById('thank-you-modal').classList.add('hidden');">Schließen</button>
+            </div>
+        </div>
+    </div>
+    <div id="profile-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[60]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-6 text-center">Profil bearbeiten (Veraltet)</h2>
+            <p class="text-center text-gray-600">Nutze das "Konto"-Menü für Einstellungen.</p>
+            <div class="mt-6 flex justify-center"><button
+                    class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+                    onclick="closeProfile()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="add-product-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[60]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-6 text-center">Neues Produkt hinzufügen (Admin)</h2>
+            <div class="modal-content"><input id="product-name" type="text" placeholder="Produktname"
+                    class="border rounded p-2 w-full mb-3"><input id="product-image" type="text" placeholder="Bild-URL"
+                    class="border rounded p-2 w-full mb-3"><input id="product-price" type="text"
+                    placeholder="Preis (z.B. $12.99)" class="border rounded p-2 w-full mb-3"><input id="product-stock"
+                    type="number" placeholder="Anfangsbestand" class="border rounded p-2 w-full mb-4" value="20"
+                    min="0"></div>
+            <div class="modal-footer flex justify-between"><button
+                    class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+                    onclick="closeAddProductModal()">Abbrechen</button><button id="submit-product-button"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center disabled:opacity-50"
+                    onclick="submitProduct(event)"><span class="button-text">Produkt hinzufügen</span><span
+                        class="button-spinner hidden"></span></button></div>
+        </div>
+    </div>
+    <div id="product-detail-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[70]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-3/4 md:w-2/3 lg:w-1/2 relative flex flex-col"><button
+                class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl leading-none"
+                onclick="closeProductDetails()">×</button>
+            <div class="flex-grow overflow-y-auto p-2">
+                <h2 id="detail-name" class="text-2xl font-bold mb-4 text-center">Produkt Detail</h2>
+                <div class="md:flex md:space-x-6">
+                    <div class="md:w-1/2 mb-4 md:mb-0 flex justify-center items-center"><img id="detail-image"
+                            src="https://placehold.co/400x300.png?text=Produktbild" alt="Produktbild"
+                            class="w-full h-auto object-contain rounded max-h-96"></div>
+                    <div class="md:w-1/2 flex flex-col">
+                        <p class="text-sm text-gray-500 mb-2">ID: <span id="detail-id">N/A</span></p>
+                        <p id="detail-price" class="text-3xl font-bold text-blue-600 mb-4">$?.??</p>
+                        <div class="text-sm mb-4">
+                            <p class="font-semibold">Verfügbarkeit:</p>
+                            <p id="detail-stock-available">?</p>
+                            <p id="detail-stock-cart" class="text-xs text-blue-500">(0 bereits in Ihrem Warenkorb)</p>
+                        </div>
+                        <div class="mt-auto">
+                            <div class="flex items-center space-x-2 mb-4"><label for="detail-qty"
+                                    class="text-sm font-medium">Menge:</label><input id="detail-qty" type="number"
+                                    min="1" value="1" class="border rounded p-1 w-16 text-center"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-footer flex space-x-2 mt-4"><button id="detail-add-to-cart"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex-1 disabled:opacity-50"
+                    onclick="">In Korb</button><button id="detail-buy-now"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex-1 disabled:opacity-50"
+                    onclick="">Direkt Kaufen</button></div>
+        </div>
+    </div>
+    <div id="order-history-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-3/4 md:w-2/3 lg:w-3/4 relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeOrderHistory()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Meine Bestellungen</h2>
+            <div id="order-history-content" class="overflow-y-auto flex-grow" style="max-height: calc(80vh - 120px);">
+                <p class="text-center text-gray-500 py-4">Noch keine Bestellungen vorhanden.</p>
+            </div>
+            <div class="modal-footer text-right mt-4 flex-shrink-0 border-t pt-2"><button
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                    onclick="clearOrderHistory()">Verlauf löschen</button><button
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded ml-2"
+                    onclick="closeOrderHistory()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="account-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[60]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative"><button
+                class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeAccountModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Kontoeinstellungen</h2>
+            <div class="modal-content">
+                <div class="mb-4">
+                    <p><strong>Benutzername:</strong> <span id="account-username"></span></p>
+                    <p><strong>Guthaben (Dollar):</strong> $<span id="account-balance"></span></p>
+                    <p><strong>Guthaben (Tokens):</strong> <i class="fas fa-coins text-yellow-400"></i> <span
+                            id="account-tokens">0</span> Tokens</p>
+                </div>
+
+                <div class="mb-6 border-t pt-4">
+                    <label id="infinity-money-label" class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" id="account-infinity-money" onchange="updateAccountSettings()"
+                            class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                        <span class="text-gray-700">"Infinity Money"-Modus</span>
+                    </label>
+                    <p id="infinity-money-unlock-info" class="text-xs text-gray-500 mt-1 hidden">Kaufe das teuerste
+                        Produkt im Shop, um dies freizuschalten!</p>
+                </div>
+
+                <div class="mb-6 border-t pt-4">
+                    <h3 class="text-lg font-semibold mb-2">Token Management</h3>
+
+                    <div class="mb-4">
+                        <label for="redeem-token-code" class="block text-sm font-medium text-gray-700 mb-1">Token-Code
+                            einlösen:</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="redeem-token-code" placeholder="LMTKN-ABCDE-FGHIJ"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                            <button onclick="redeemTokenCode()"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded">Einlösen</button>
+                        </div>
+                        <p id="redeem-message" class="text-sm mt-1"></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="dollars-to-tokens-amount"
+                            class="block text-sm font-medium text-gray-700 mb-1">Dollar in Tokens umwandeln:</label>
+                        <div class="flex space-x-2">
+                            <input type="number" id="dollars-to-tokens-amount" placeholder="Dollar Betrag" min="1"
+                                step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                            <button onclick="convertDollarsToTokens()"
+                                class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded">Umwandeln</button>
+                        </div>
+                        <p id="dollars-to-tokens-message" class="text-sm mt-1"></p>
+                    </div>
+
+                    <div>
+                        <label for="tokens-to-dollars-amount"
+                            class="block text-sm font-medium text-gray-700 mb-1">Tokens in Dollar umwandeln:</label>
+                        <div class="flex space-x-2">
+                            <input type="number" id="tokens-to-dollars-amount" placeholder="Token Anzahl" min="1"
+                                step="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                            <button onclick="convertTokensToDollars()"
+                                class="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded">Umwandeln</button>
+                        </div>
+                        <p id="tokens-to-dollars-message" class="text-sm mt-1"></p>
+                    </div>
+                </div>
+
+                <p id="account-message" class="text-green-600 text-sm mb-4 hidden"></p>
+            </div>
+            <div class="modal-footer flex justify-end"><button
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    onclick="closeAccountModal()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="auth-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm relative"><button
+                class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeAuthModal()">×</button>
+            <h2 id="auth-modal-title" class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <div class="modal-content">
+                <form id="auth-form" onsubmit="handleAuthFormSubmit(event)">
+                    <div class="mb-4"><label for="auth-username"
+                            class="block text-sm font-medium text-gray-700 mb-1">Benutzername (min 3)</label><input
+                            type="text" id="auth-username" name="username" required minlength="3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="mb-6"><label for="auth-password"
+                            class="block text-sm font-medium text-gray-700 mb-1">Passwort (min 6)</label><input
+                            type="password" id="auth-password" name="password" required minlength="1"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="mb-4"><label class="flex items-center"><input type="checkbox" id="auth-remember-me"
+                                name="rememberMe" class="form-checkbox h-4 w-4 text-blue-600 rounded"><span
+                                class="ml-2 text-sm text-gray-600">Angemeldet bleiben</span></label></div>
+                    <p id="auth-error-message" class="text-red-500 text-sm mb-4 hidden"></p><button
+                        id="auth-submit-button" type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center disabled:opacity-50"><span
+                            class="button-text">Login</span><span class="button-spinner hidden"></span></button>
+                </form>
+                <p class="text-sm text-center mt-4"><span id="auth-switch-text">Noch kein Konto?</span> <button
+                        id="auth-switch-button" type="button" class="font-medium text-blue-600 hover:text-blue-500"
+                        onclick="switchAuthMode()">Jetzt registrieren</button></p>
+            </div>
+        </div>
+    </div>
+    <div id="inventory-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-3/4 md:w-2/3 lg:w-3/4 relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeMyInventory()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Mein Inventar (Gegenstände)</h2>
+            <div id="inventory-content" class="overflow-y-auto flex-grow" style="max-height: calc(80vh - 80px);">
+                <p class="text-center text-gray-500 py-4">Dein Inventar ist leer.</p>
+            </div>
+            <div class="modal-footer flex justify-end"><button
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    onclick="closeMyInventory()">Schließen</button></div>
+        </div>
+    </div>
+    <div id="sell-product-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative"><button
+                class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeSellProductModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Produkt Verkaufen</h2>
+            <div class="modal-content">
+                <div class="mb-4">
+                    <p>Produkt: <strong id="sell-product-name"></strong></p>
+                    <p class="text-sm">Aktueller Shop-Preis: <span id="sell-product-original-price"></span></p>
+                    <p class="text-sm">Dein Bestand: <span id="sell-product-user-stock">0</span> Stk.</p>
+                </div>
+                <div class="mb-4"><label for="sell-quantity" class="block text-sm font-medium text-gray-700 mb-1">Menge
+                        zu verkaufen:</label><input type="number" id="sell-quantity" value="1" min="1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></div>
+                <div class="mb-4"><label for="sell-price" class="block text-sm font-medium text-gray-700 mb-1">Dein
+                        Verkaufspreis pro Stück ($)</label><input type="number" id="sell-price" step="0.01" min="0.01"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></div>
+                <div class="mb-2 text-sm text-center">Geschätzte Verkaufschance: <span id="sell-probability"
+                        class="font-semibold">?%</span></div>
+                <p id="sell-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
+                <p id="sell-cooldown-message" class="text-blue-500 text-sm mb-4 hidden"></p>
+            </div>
+            <div class="modal-footer flex justify-between"><button
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                    onclick="closeSellProductModal()">Abbrechen</button><button id="confirm-sell-button"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center disabled:opacity-50"><span
+                        class="button-text">Verkaufen</span><span class="button-spinner hidden"></span></button></div>
+        </div>
+    </div>
+
+    <!-- NEU: Auction House Modal -->
+    <div id="auction-house-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[80]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-4xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeAuctionHouse()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Auktionshaus</h2>
+            <div id="auction-house-content"
+                class="overflow-y-auto flex-grow grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
+                <p class="text-center text-gray-500 py-4 col-span-full">Lade Auktionen...</p>
+            </div>
+            <div class="modal-footer flex justify-end">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    onclick="closeAuctionHouse()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Auction Detail Modal -->
+    <div id="auction-detail-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-2xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="document.getElementById('auction-detail-modal').classList.add('hidden')">×</button>
+            <h2 id="auction-detail-name" class="text-2xl font-bold mb-4 text-center flex-shrink-0">Auktion Details</h2>
+
+            <div class="flex-grow overflow-y-auto p-2">
+                <div class="md:flex md:space-x-6">
+                    <!-- Linke Seite: Bild & Infos -->
+                    <div class="md:w-1/2 mb-4 md:mb-0">
+                        <img id="auction-detail-image" src="" alt="Produktbild"
+                            class="w-full h-64 object-cover rounded mx-auto mb-2">
+                        <p class="text-sm text-gray-500">Verkäufer: <span id="auction-detail-seller"
+                                class="font-semibold"></span></p>
+                        <p class="text-sm text-gray-500">Verbleibende Zeit: <span id="auction-detail-time"
+                                class="font-semibold"></span></p>
+                        <hr class="my-3">
+                        <p class="text-2xl font-bold text-blue-600">Aktuelles Gebot: $<span
+                                id="auction-detail-bid"></span></p>
+                        <p class="text-sm text-gray-600">Höchstbietender: <span id="auction-detail-highest-bidder"
+                                class="font-semibold"></span></p>
+                    </div>
+
+                    <!-- Rechte Seite: Gebot abgeben & Historie -->
+                    <div class="md:w-1/2 flex flex-col">
+                        <div class="bg-gray-100 p-3 rounded-lg border">
+                            <h3 class="text-lg font-semibold mb-2">Dein Gebot abgeben</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-lg font-semibold">$</span>
+                                <input type="number" id="bid-amount"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                    placeholder="z.B. 5500.00">
+                            </div>
+                            <button id="confirm-bid-button"
+                                class="mt-2 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
+                                <span class="button-text">Bieten</span>
+                                <span class="button-spinner hidden"></span>
+                            </button>
+                            <p id="auction-detail-error" class="text-red-500 text-sm mt-2 text-center"></p>
+                        </div>
+
+                        <h4 class="font-semibold mt-4 mb-2">Gebotshistorie</h4>
+                        <div id="auction-bid-history"
+                            class="text-xs overflow-y-auto border rounded bg-gray-50 p-2 flex-grow min-h-[100px]">
+                            <p class="text-gray-500">Noch keine Gebote.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: LimoStonks Market Modal -->
+    <div id="stonks-market-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center hidden z-[85]">
+        <div class="bg-gray-100 p-4 rounded-lg shadow-2xl w-full max-w-6xl relative max-h-[90vh] flex flex-col">
+
+            <!-- Header Container -->
+            <div class="flex justify-between items-center mb-4 border-b border-gray-300 pb-3 relative">
+                <h2 class="text-3xl font-bold text-gray-800">LimoStonks Börse</h2>
+                <div id="stonks-next-update-timer" class="text-sm text-gray-600 bg-white px-3 py-1 rounded-full shadow">
+                    Nächstes Preis-Update in: <span class="font-bold">--:--</span>
+                </div>
+                <button class="absolute -top-2 -right-2 text-gray-500 hover:text-red-600 text-3xl"
+                    onclick="closeStonkMarket()">×</button>
+            </div>
+
+            <!-- NEU: Such- und Filter-Leiste -->
+            <div class="my-2 p-2 bg-white rounded shadow flex items-center space-x-4">
+                <input type="text" id="stonk-search-input" class="w-full px-3 py-1 border border-gray-300 rounded-full"
+                    placeholder="Aktie suchen (Name oder ID)...">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-semibold">Sortieren:</span>
+                    <button id="sort-stonk-name"
+                        class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Name</button>
+                    <button id="sort-stonk-price"
+                        class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Preis</button>
+                    <button id="sort-stonk-change"
+                        class="px-3 py-1 text-xs bg-gray-200 hover:bg-blue-500 hover:text-white rounded-full">Änderung</button>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div id="stonks-market-content"
+                class="overflow-y-auto flex-grow grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2 bg-white rounded shadow-inner">
+                <p class="text-center text-gray-500 py-4 col-span-full">Lade Aktienkurse...</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer flex justify-end mt-4">
+                <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                    onclick="closeStonkMarket()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Stonk Detail/Trade Modal -->
+    <div id="stonk-detail-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[95]">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-xl relative">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="document.getElementById('stonk-detail-modal').classList.add('hidden')">×</button>
+            <h2 id="stonk-detail-name" class="text-2xl font-bold mb-4 text-center">Aktien Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Linke Seite: Infos & Portfolio -->
+                <div>
+                    <img id="stonk-detail-image" src="" class="w-full h-40 object-cover rounded-lg mb-4 shadow">
+                    <p class="text-3xl font-bold text-blue-600">$<span id="stonk-detail-price">--.--</span></p>
+                    <p class="text-sm text-gray-500 mb-4">Aktueller Marktpreis</p>
+
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <h4 class="font-semibold text-blue-800">Dein Portfolio</h4>
+                        <p class="text-sm">Anteile im Besitz: <strong id="stonk-portfolio-quantity"
+                                class="text-lg">0</strong></p>
+                        <p class="text-sm">Ø Einkaufspreis: <strong id="stonk-portfolio-avg-price">$0.00</strong></p>
+                        <p class="text-sm">Gesamtwert: <strong id="stonk-portfolio-total-value">$0.00</strong></p>
+                    </div>
+                </div>
+                <!-- Rechte Seite: Handeln -->
+                <div>
+                    <!-- NACHHER: Überarbeitetes Handels-Panel mit besserem Layout -->
+                    <div id="stonk-trade-panel" class="p-4 rounded-lg bg-gray-50 border">
+                        <h3 class="text-lg font-semibold mb-3 text-center">Handeln</h3>
+
+                        <!-- Flex-Container für die Handels-Aktionen -->
+                        <div class="flex items-center space-x-2">
+                            <!-- Input-Feld (nimmt jetzt weniger Platz ein) -->
+                            <input type="number" id="stonk-trade-quantity" min="1"
+                                class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black text-center"
+                                placeholder="Menge">
+
+                            <!-- Container für die beiden Buttons -->
+                            <div class="flex-grow flex flex-col space-y-2">
+                                <button id="stonk-buy-button"
+                                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded w-full">Kaufen</button>
+                                <button id="stonk-sell-button"
+                                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded w-full">Verkaufen</button>
+                            </div>
+                        </div>
+
+                        <p class="text-center text-sm mt-2">Geschätzter Wert: <strong
+                                id="stonk-trade-estimated-value">$0.00</strong></p>
+                        <p id="stonk-trade-error" class="text-red-500 text-sm mt-3 text-center h-4"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: My Portfolio Modal -->
+    <div id="my-portfolio-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[87]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-full max-w-4xl relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeMyPortfolio()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Mein Aktien-Portfolio</h2>
+            <div class="overflow-y-auto flex-grow">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                        <tr>
+                            <th scope="col" class="px-4 py-3">Aktie</th>
+                            <th scope="col" class="px-4 py-3 text-right">Anteile</th>
+                            <th scope="col" class="px-4 py-3 text-right">Ø Kaufpreis</th>
+                            <th scope="col" class="px-4 py-3 text-right">Akt. Marktpreis</th>
+                            <th scope="col" class="px-4 py-3 text-right">Gesamtwert</th>
+                            <th scope="col" class="px-4 py-3 text-right">Gewinn / Verlust</th>
+                            <th scope="col" class="px-4 py-3 text-center">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="my-portfolio-content">
+                        <!-- Inhalt wird per JS geladen -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="my-portfolio-footer" class="modal-footer flex justify-between items-center mt-4 border-t pt-2">
+                <p class="text-lg">Gesamtwert Portfolio: <strong id="portfolio-total-value"
+                        class="text-blue-600">$0.00</strong></p>
+                <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    onclick="closeMyPortfolio()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEU: Create Auction Modal -->
+    <div id="create-auction-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[95]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeCreateAuctionModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Item Versteigern</h2>
+            <div class="modal-content">
+                <div class="mb-4 text-center">
+                    <img id="create-auction-product-image" src="" class="w-24 h-24 object-cover rounded mx-auto mb-2">
+                    <p>Produkt: <strong id="create-auction-product-name"></strong></p>
+                    <p class="text-sm">Dein Bestand: <span id="create-auction-user-stock">0</span> Stk.</p>
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-quantity" class="block text-sm font-medium text-gray-700 mb-1">Menge zu
+                        versteigern:</label>
+                    <input type="number" id="create-auction-quantity" value="1" min="1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-start-bid"
+                        class="block text-sm font-medium text-gray-700 mb-1">Startgebot ($):</label>
+                    <input type="number" id="create-auction-start-bid" step="0.01" min="0.01"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="create-auction-duration"
+                        class="block text-sm font-medium text-gray-700 mb-1">Auktionsdauer:</label>
+                    <select id="create-auction-duration"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        <option value="12">12 Stunden</option>
+                        <option value="24" selected>24 Stunden</option>
+                        <option value="48">48 Stunden</option>
+                    </select>
+                </div>
+                <p id="create-auction-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
+            </div>
+            <div class="modal-footer flex justify-between">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                    onclick="closeCreateAuctionModal()">Abbrechen</button>
+                <button id="confirm-create-auction-button"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center">
+                    <span class="button-text">Auktion starten</span>
+                    <span class="button-spinner hidden"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Token Code Generation Modal -->
+    <div id="generate-token-codes-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[90]">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative"><button
+                class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeGenerateTokenCodesModal()">×</button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Token Codes generieren (Admin)</h2>
+            <div class="modal-content">
+                <div class="mb-4">
+                    <label for="generate-token-amount" class="block text-sm font-medium text-gray-700 mb-1">Token-Wert
+                        pro Code:</label>
+                    <input type="number" id="generate-token-amount" value="100" min="1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="generate-token-count" class="block text-sm font-medium text-gray-700 mb-1">Anzahl der
+                        Codes:</label>
+                    <input type="number" id="generate-token-count" value="1" min="1" max="100"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <p id="generate-token-codes-message" class="text-sm mt-1 mb-3"></p>
+                <div id="generated-codes-display" class="text-xs bg-gray-100 p-2 rounded max-h-32 overflow-y-auto">
+                    <!-- Hier werden generierte Codes angezeigt -->
+                </div>
+            </div>
+            <div class="modal-footer flex justify-between mt-4">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                    onclick="closeGenerateTokenCodesModal()">Abbrechen</button>
+                <button id="confirm-generate-token-codes-button"
+                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center disabled:opacity-50"
+                    onclick="handleGenerateTokenCodes()">
+                    <span class="button-text">Codes generieren</span>
+                    <span class="button-spinner hidden"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User's Purchased Token Codes Modal -->
+    <div id="my-token-codes-modal"
+        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-[85]">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-3/4 md:w-2/3 lg:w-1/2 relative max-h-[85vh] flex flex-col">
+            <button class="absolute top-2 right-3 text-gray-600 hover:text-red-600 text-2xl"
+                onclick="closeMyTokenCodesModal()">×</button>
+            <h2 class="text-2xl font-bold mb-4 text-center flex-shrink-0">Meine Token Guthaben Codes</h2>
+            <p class="text-xs text-center text-gray-500 mb-3">Diese Codes kannst du selbst einlösen (im Konto-Menü) oder
+                an Freunde weitergeben.</p>
+            <div id="my-token-codes-content" class="overflow-y-auto flex-grow" style="max-height: calc(80vh - 120px);">
+                <p class="text-center text-gray-500 py-4">Du hast keine unbenutzten Token Codes.</p>
+            </div>
+            <!-- START: New Merge Section -->
+            <div class="border-t pt-4 mt-4">
+                <h3 class="text-lg font-semibold mb-2 text-center">Token Codes zusammenführen</h3>
+                <div class="flex items-center justify-center space-x-2">
+                    <select id="merge-token-value" class="border rounded p-2">
+                        <option value="10">10 Tokens</option>
+                        <option value="50">50 Tokens</option>
+                        <option value="100">100 Tokens</option>
+                        <option value="500">500 Tokens</option>
+                        <option value="1000">1000 Tokens</option>
+                    </select>
+                    <input id="merge-token-count" type="number" placeholder="Anzahl" min="2"
+                        class="border rounded p-2 w-24 text-center">
+                    <button id="merge-token-button"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center"
+                        onclick="mergeTokenCodes()">
+                        <span class="button-text">Zusammenführen</span>
+                        <span class="button-spinner hidden"></span>
+                    </button>
+                </div>
+                <p id="merge-token-message" class="text-sm mt-2 text-center"></p>
+            </div>
+            <!-- END: New Merge Section -->
+            <div class="modal-footer flex justify-end">
+                <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    onclick="closeMyTokenCodesModal()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="mt-12 py-6 border-t border-gray-800 text-center text-gray-500 text-xs">
+        <div class="flex items-center justify-center gap-2">
+            <span>© 2026 Limazon Universe</span>
+            <span class="text-gray-700">|</span>
+            <span id="cluster-display" class="font-mono opacity-50">Cluster: Offline</span>
+        </div>
+    </footer>
+
+    <script src="script_0.js?v=kxvpa2mj"></script>
+</body>
+
+</html>

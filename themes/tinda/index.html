@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tinda - Find your Match</title>
+    <link rel="stylesheet" href="style_0.css?v=ZPNOHpVO">
+</head>
+<body>
+
+    <header>
+        <button class="nav-btn" style="font-size: 1.2rem;" onclick="window.location.href='/themes/family-dashboard.html'" title="Familie">👨‍👩‍👧‍👦</button>
+        <button class="nav-btn" onclick="showMatches()" title="Chats">💬</button>
+        <div class="logo">🔥 Tinda</div>
+        <button class="nav-btn active" onclick="showSwipe()" title="Swipen">🔥</button>
+    </header>
+
+    <main>
+        <div id="swipe-view">
+            <div class="card-container" id="stack-container">
+                <div class="loading">Lade Profile...</div>
+            </div>
+            <div class="controls">
+                <button class="control-btn btn-nope" onclick="swipe('left')">✖️</button>
+                <button class="control-btn btn-reset" onclick="resetNopes()" title="Reset Swipes">↻</button>
+                <button class="control-btn btn-like" onclick="swipe('right')">❤️</button>
+            </div>
+        </div>
+
+        <div id="matches-view">
+            <div class="search-area">
+                <input type="text" class="search-input" placeholder="Suche Personen..." oninput="searchPeople(this.value)">
+                <div class="search-results" id="search-results"></div>
+            </div>
+            <div class="match-list" id="match-list-container">
+                </div>
+        </div>
+    </main>
+
+    <div id="chat-window">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <button class="back-btn" onclick="closeChat()">⬅️</button>
+                <img id="chat-header-img" class="match-avatar" src="" alt="">
+                <div class="match-name" id="chat-header-name">Name</div>
+            </div>
+            <button class="delete-chat-btn" onclick="deleteCurrentChat()">🗑️</button>
+        </div>
+        <div class="relationship-bar" id="relationship-bar"></div>
+        
+        <div class="chat-messages" id="messages-container"></div>
+        <div class="chat-input-area">
+            <button class="money-btn" onclick="sendMoneyPrompt()" title="Geld senden">💸</button>
+            <input type="text" class="chat-input" id="msg-input" placeholder="Schreib was..." onkeypress="handleEnter(event)">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <div id="match-overlay" class="overlay">
+        <div class="match-popup">
+            <h1>IT'S A MATCH!</h1>
+            <p>Du und <span id="match-partner-name">...</span> mögt euch.</p>
+            <button class="match-btn" onclick="closeMatchPopup()">Weiter swipen</button>
+            <br><br>
+            <button class="match-btn" style="background:transparent; border: 1px solid white;" onclick="goToMatches()">Zum Chat</button>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=NNuVBpDY"></script>
+</body>
+</html>

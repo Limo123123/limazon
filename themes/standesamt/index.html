@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Standesamt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=YLPAdmGO">
+</head>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
+
+    <div id="toast-container"></div>
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-rose-500">💒</span> Standesamt
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Die Steuerklasse 3 erwartet dich</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow space-y-6 z-0">
+
+        <div class="glass p-5 rounded-2xl shadow-xl relative overflow-hidden border-t-4 border-t-rose-500">
+            <div class="absolute -right-10 -top-10 text-9xl opacity-5 drop-shadow-2xl pointer-events-none">💍</div>
+            
+            <h2 class="text-sm uppercase text-rose-400 font-bold mb-2 tracking-wider flex items-center gap-2">
+                Antrag stellen
+            </h2>
+            <p class="text-xs text-slate-400 mb-5 leading-relaxed">
+                <span class="text-emerald-400 font-bold">Tipp:</span> Polygamie ist erlaubt! Jede Heirat verringert die Steuerlast durch Ehegattensplitting.
+            </p>
+            
+            <div class="space-y-4 relative z-10">
+                <div class="relative">
+                    <span class="absolute left-4 top-3 text-slate-400 font-bold">@</span>
+                    <input type="text" id="target-username" placeholder="Username" class="input-dark w-full p-3 pl-8 rounded-xl text-sm font-medium" autocomplete="off">
+                </div>
+                
+                <select id="ring-select" class="input-dark w-full p-3 rounded-xl text-sm font-medium appearance-none">
+                    <option value="">-- Ring auswählen --</option>
+                </select>
+                
+                <button onclick="propose()" class="w-full bg-rose-600 text-white font-bold p-4 rounded-xl hover:bg-rose-500 transition shadow-lg shadow-rose-600/20 active:scale-95 flex items-center justify-center gap-2">
+                    Auf die Knie gehen 🧎
+                </button>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <h2 class="text-sm uppercase text-rose-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                💌 Offene Anträge
+            </h2>
+            <div id="incoming-list" class="space-y-3">
+                <p class="text-slate-500 text-sm text-center py-4">Lade Akten...</p>
+            </div>
+        </div>
+
+        <div class="glass p-5 rounded-2xl shadow-xl">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-sm uppercase text-rose-400 font-bold tracking-wider flex items-center gap-2">
+                    👪 Deine Ehen
+                </h2>
+                <div id="tax-badge" class="hidden bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase">
+                    Steuerklasse 3
+                </div>
+            </div>
+            
+            <div id="spouses-list" class="space-y-3">
+                <p class="text-slate-500 text-sm text-center py-4">Lade Akten...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script_0.js?v=oLYnjzSF"></script>
+</body>
+</html>

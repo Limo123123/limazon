@@ -1,0 +1,233 @@
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #ccc;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'Courier Prime', monospace;
+        }
+
+        /* Background Grid */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.15;
+            background-image: linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Glass Panels */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 50, 50, 0.15);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Tabs */
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            color: #666;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            color: #ef4444;
+            /* Red for crime */
+            border-color: #ef4444;
+            background: linear-gradient(to top, rgba(239, 68, 68, 0.1), transparent);
+        }
+
+        .tab-btn.active-heist {
+            color: #eab308;
+            /* Yellow for heist */
+            border-color: #eab308;
+            background: linear-gradient(to top, rgba(234, 179, 8, 0.1), transparent);
+        }
+
+        /* Inputs */
+        .cyber-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: #ef4444;
+            font-family: 'Courier Prime', monospace;
+            transition: 0.3s;
+        }
+
+        .cyber-input:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+            outline: none;
+        }
+
+        /* Buttons */
+        .btn-glitch {
+            position: relative;
+            overflow: hidden;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .btn-glitch:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-glitch:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Heist Terminal */
+        .terminal {
+            background: #080808;
+            border: 1px solid #333;
+            padding: 15px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.85rem;
+            color: #22c55e;
+            height: 150px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        .terminal::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Firewall Bar */
+        .fw-bar-container {
+            background: #111;
+            height: 24px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        .fw-bar-fill {
+            height: 100%;
+            background: repeating-linear-gradient(45deg, #b91c1c, #b91c1c 10px, #991b1b 10px, #991b1b 20px);
+            transition: width 0.5s ease;
+        }
+
+        .fw-open .fw-bar-fill {
+            background: #22c55e;
+            box-shadow: 0 0 20px #22c55e;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Geheimer Glitch Effekt für den Zugang */
+        @keyframes secret-shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+                filter: hue-rotate(90deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+                filter: invert(1);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+                filter: hue-rotate(45deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+                filter: invert(0);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .trigger-active {
+            animation: secret-shake 0.2s infinite;
+            cursor: pointer;
+        }
+
+        /* Flash Overlay für den Übergang */
+        #secret-flash {
+            position: fixed;
+            inset: 0;
+            background: red;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+    

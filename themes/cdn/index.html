@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon CDN ☁️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <link rel="stylesheet" href="style_0.css?v=EniISlRl">
+</head>
+
+<body class="p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-10 relative">
+            <a href="/"
+                class="absolute left-0 top-0 text-xs text-blue-400 hover:text-blue-300 tracking-widest mb-4 inline-block uppercase font-bold transition-colors">←
+                Portal</a>
+            <h1 class="text-4xl font-bold mb-2">☁️ Limazon CDN</h1>
+            <p class="text-gray-400">Lade Bilder hoch, schneide sie zu und kopiere den Link.</p>
+        </header>
+
+        <div class="glass-panel p-6 rounded-2xl mb-8 border-t-4 border-blue-500">
+            <h2 class="text-xl font-bold mb-4 text-white">1. Bild auswählen & zuschneiden</h2>
+
+            <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp"
+                class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 mb-4 cursor-pointer" />
+
+            <div id="image-preview-container" class="bg-black rounded-xl overflow-hidden mb-4 border border-white/10">
+                <img id="image-preview" src="">
+            </div>
+
+            <button id="btn-upload"
+                class="hidden w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg">
+                ☁️ Zuschneiden & Hochladen
+            </button>
+            <p id="upload-status" class="text-center mt-2 font-bold"></p>
+        </div>
+
+        <div class="glass-panel p-6 rounded-2xl">
+            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                <h2 class="text-xl font-bold border-l-4 border-blue-500 pl-3">2. Server Galerie</h2>
+                <button onclick="loadGallery()"
+                    class="text-sm bg-white/10 px-4 py-2 rounded-lg hover:bg-white/20 transition-colors font-bold">🔄
+                    Aktualisieren</button>
+            </div>
+
+            <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            </div>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=YBlOkOvJ"></script>
+</body>
+
+</html>

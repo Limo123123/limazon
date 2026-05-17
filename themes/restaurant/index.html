@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo's Diner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=h8HESbdb">
+</head>
+
+<body class="min-h-screen flex flex-col pb-24 lg:pb-0">
+
+    <nav class="sticky top-0 z-50 glass-panel border-b border-white/10 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-4">
+                    <button onclick="window.location.href='/'"
+                        class="w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition text-gray-400 hover:text-white">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <h1 class="text-2xl font-brand font-bold uppercase tracking-widest text-white italic">
+                        Limo's <span class="text-pink-500">Diner</span>
+                    </h1>
+                </div>
+
+                <div class="hidden lg:flex space-x-4">
+                    <button onclick="switchView('menu')" id="nav-menu"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition bg-pink-600 text-white shadow-lg shadow-pink-900/50">SPEISEKARTE</button>
+                    <button onclick="switchView('history')" id="nav-history"
+                        class="px-4 py-2 rounded-lg text-sm font-bold transition bg-white/5 text-gray-400 hover:text-white">BESTELLUNGEN</button>
+                </div>
+
+                <div class="lg:hidden text-right">
+                    <div class="text-[10px] text-gray-500 uppercase font-bold">Budget</div>
+                    <div class="font-mono font-bold text-green-400" id="mobile-balance">$ ---</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+
+        <div class="flex lg:hidden mb-6 bg-white/5 p-1 rounded-xl">
+            <button onclick="switchView('menu')" id="mob-nav-menu"
+                class="flex-1 py-2 rounded-lg text-sm font-bold text-center bg-pink-600 text-white shadow">Karte</button>
+            <button onclick="switchView('history')" id="mob-nav-history"
+                class="flex-1 py-2 rounded-lg text-sm font-bold text-center text-gray-400">Verlauf</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <div class="lg:col-span-8 space-y-6" id="view-menu">
+
+                <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                    <button onclick="filterMenu('all', this)"
+                        class="cat-btn active-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition">Alle</button>
+                    <button onclick="filterMenu('burger', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white">🍔
+                        Burger</button>
+                    <button onclick="filterMenu('pizza', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white">🍕
+                        Pizza</button>
+                    <button onclick="filterMenu('side', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white">🍟
+                        Sides</button>
+                    <button onclick="filterMenu('drink', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition hover:text-white">🥤
+                        Drinks</button>
+                    <button onclick="filterMenu('luxury', this)"
+                        class="cat-btn inactive-tab border px-4 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap transition text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/10">💎
+                        Luxus</button>
+                </div>
+
+                <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="col-span-full py-20 text-center text-gray-500 animate-pulse">Lade Küche...</div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 hidden" id="view-history">
+                <h2 class="text-xl font-brand font-bold text-white mb-4 border-b border-white/10 pb-2">Deine letzten
+                    Mahlzeiten</h2>
+                <div id="history-list" class="space-y-4">
+                </div>
+            </div>
+
+            <div class="hidden lg:block lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+
+                <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none">
+                    </div>
+
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Dein Guthaben</span>
+                        <span class="font-mono font-bold text-green-400 text-lg" id="desktop-balance">$ ---</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs text-gray-300">
+                            <span>Energie</span>
+                            <span id="energy-text" class="font-bold">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                            <div id="energy-bar"
+                                class="bg-gradient-to-r from-yellow-600 to-yellow-400 h-full rounded-full transition-all duration-500"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-[10px] text-gray-500 pt-1">Iss etwas, um Energie für deinen Job zu tanken.</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6 border-t-4 border-t-pink-500">
+                    <h3 class="font-brand font-bold text-lg text-white mb-4 flex items-center gap-2">
+                        <span>🛒</span> Warenkorb
+                    </h3>
+
+                    <div id="desktop-cart-list" class="space-y-3 mb-6 max-h-[300px] overflow-y-auto pr-1">
+                        <div class="text-sm text-gray-500 text-center py-4">Wähle Gerichte aus.</div>
+                    </div>
+
+                    <div class="border-t border-white/10 pt-4 space-y-4">
+                        <div class="flex justify-between items-end">
+                            <span class="text-sm text-gray-400">Summe</span>
+                            <span class="text-2xl font-mono font-bold text-white" id="desktop-cart-total">$ 0.00</span>
+                        </div>
+                        <button onclick="placeOrder()" id="desktop-order-btn"
+                            class="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl transition shadow-lg shadow-pink-900/30 disabled:opacity-50 disabled:cursor-not-allowed">
+                            KOSTENPFLICHTIG BESTELLEN
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="mobile-cart"
+        class="fixed bottom-0 left-0 right-0 glass-panel border-t border-pink-500/30 p-4 lg:hidden z-40 transform translate-y-full transition-transform duration-300">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <div class="flex flex-col">
+                <span class="text-[10px] text-gray-400 uppercase font-bold">Summe</span>
+                <span class="text-xl font-mono font-bold text-white" id="mobile-cart-total">$ 0.00</span>
+            </div>
+            <button onclick="placeOrder()" id="mobile-order-btn"
+                class="bg-pink-600 hover:bg-pink-500 text-white font-bold py-2 px-6 rounded-lg shadow-lg">
+                BESTELLEN (<span id="mobile-cart-count">0</span>)
+            </button>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=Qorw15bR"></script>
+    <script src="js/limo-global.js?v=3" data-page="restaurant"></script>
+</body>
+
+</html>

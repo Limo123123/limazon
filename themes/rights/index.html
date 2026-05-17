@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Admin - Rechteverwaltung</title>
+    <link rel="stylesheet" href="style_0.css?v=3JZ9G0aT">
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Nutzer</h2>
+            <input type="text" id="searchInput" placeholder="Suchen..." style="width: 100%; box-sizing: border-box; padding: 8px; border-radius: 4px; background: #2a2a2a; color: white; border: 1px solid var(--border);">
+        </div>
+        <div class="user-list" id="userList">
+            </div>
+    </div>
+
+    <div class="main-content">
+        <div class="editor-panel" id="editorPanel" style="display: none;">
+            <h2 id="editUserName">Nutzer bearbeiten</h2>
+            
+            <div class="form-group">
+                <label>Gruppe / Rolle</label>
+                <select id="roleSelect"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Individuelle Rechte (Nur bei Rolle "Custom" wählbar)</label>
+                <div class="permissions-grid" id="permissionsGrid">
+                    </div>
+            </div>
+
+            <button class="btn-save" onclick="saveUser()">Speichern</button>
+        </div>
+        
+        <div class="empty-state" id="emptyState">
+            <h2>👈 Wähle einen Nutzer aus</h2>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=2h4g5SCP"></script>
+</body>
+</html>

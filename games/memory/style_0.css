@@ -1,0 +1,52 @@
+
+        body { 
+            background: #0a0a0c; 
+            color: white; 
+            font-family: 'Outfit', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0;
+            overflow: hidden;
+        }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 12px; 
+            max-width: 450px; 
+            width: 95%;
+            padding: 20px;
+            perspective: 1000px;
+        }
+        .card { 
+            aspect-ratio: 1/1;
+            background: #1a1a1f; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2.5rem; 
+            border-radius: 16px; 
+            cursor: pointer; 
+            border: 2px solid #222; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        .card:hover { border-color: #3b82f6; transform: scale(1.02); }
+        .card.flipped { transform: rotateY(180deg); background: #3b82f6; border-color: #60a5fa; }
+        .card.matched { background: #10b981; border-color: #34d399; cursor: default; transform: rotateY(180deg) scale(0.95); opacity: 0.8; }
+        
+        .card-inner { position: absolute; pointer-events: none; }
+        
+        #score-display { font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        
+        .btn-limo {
+            background: #3b82f6;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s;
+        }
+        .btn-limo:hover { background: #2563eb; transform: translateY(-2px); }
+        .btn-limo:active { transform: translateY(0); }
+    

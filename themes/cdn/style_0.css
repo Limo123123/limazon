@@ -1,0 +1,36 @@
+
+        body {
+            background-color: #050505;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(20, 25, 30, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        #image-preview-container {
+            max-height: 400px;
+            width: 100%;
+            display: none;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        .gallery-img {
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .gallery-item:hover .gallery-img {
+            transform: scale(1.05);
+        }
+    

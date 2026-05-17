@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo News Network</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style_0.css?v=mpBoOB9z">
+</head>
+
+<body class="bg-gray-100 text-gray-900">
+
+    <header class="bg-white p-4 shadow-md sticky top-0 z-50 font-sans">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tighter text-red-700">LNN LIVE</h1>
+            <div id="nav-auth">
+                <button onclick="window.location.href='/'" class="text-sm font-bold hover:underline">← Zurück zum
+                    Hub</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4 max-w-4xl mt-6">
+
+        <div class="text-center newspaper-header">
+            <h1 class="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-2">Limo News</h1>
+            <p
+                class="font-sans text-sm text-gray-500 uppercase tracking-widest flex justify-between border-t border-b border-gray-300 py-1 mt-4">
+                <span>Die Wahrheit™</span>
+                <span id="date-display"></span>
+                <span>Unabhängig & KI-Generiert</span>
+            </p>
+        </div>
+
+        <div id="admin-box" class="hidden bg-white p-6 rounded-lg shadow-lg mb-8 font-sans border-l-4 border-red-600">
+            <h3 class="font-bold text-lg mb-4 flex justify-between items-center">
+                Redaktion (Admin)
+                <button onclick="triggerAiNews()" id="btn-ai-trigger"
+                    class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-1">
+                    <span>🤖</span> AI News generieren
+                </button>
+            </h3>
+            <input type="text" id="admin-headline" placeholder="Schlagzeile" class="w-full p-2 border rounded mb-2">
+            <textarea id="admin-content" placeholder="Artikel Text..."
+                class="w-full p-2 border rounded mb-4 h-24"></textarea>
+            <div class="flex justify-end">
+                <button onclick="postAdminNews()"
+                    class="bg-red-700 text-white px-6 py-2 rounded font-bold hover:bg-red-800 transition">Veröffentlichen</button>
+            </div>
+        </div>
+
+        <div id="news-feed" class="grid grid-cols-1 gap-8">
+            <div class="text-center py-20 font-sans text-gray-400">Lade Nachrichten...</div>
+        </div>
+
+    </div>
+
+    <script src="script_0.js?v=gjSraUmn"></script>
+    <script src="js/limo-global.js?v=3" data-page="limonews"></script>
+</body>
+
+</html>

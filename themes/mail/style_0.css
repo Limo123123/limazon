@@ -1,0 +1,27 @@
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-dark {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: #6366f1; /* Indigo */
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        select option { background-color: #0f172a; color: white; }
+    

@@ -1,0 +1,25 @@
+
+        body { font-family: 'Rajdhani', sans-serif; background-color: #050505; color: #e5e5e5; overflow-x: hidden; }
+        .cyber-grid { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(circle at center, black 40%, transparent 100%); }
+        .font-mono { font-family: 'Share Tech Mono', monospace; }
+        
+        .panel { background: rgba(15, 15, 20, 0.95); border: 1px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+        .panel-header { background: rgba(139, 92, 246, 0.1); border-bottom: 1px solid rgba(139, 92, 246, 0.3); padding: 10px 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; color: #a78bfa; display: flex; justify-content: space-between; align-items: center; }
+        
+        .chat-container { height: 400px; overflow-y: auto; display: flex; flex-direction: column-reverse; padding: 15px; gap: 8px; background: #0a0a0a; }
+        .msg { font-size: 0.9rem; padding: 5px 10px; border-left: 2px solid #333; animation: fadeIn 0.2s; }
+        .msg.private { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.05); }
+        .msg.system { border-color: #ef4444; color: #ef4444; font-weight: bold; }
+        .tag-badge { background: #333; color: #fff; padding: 0 4px; border-radius: 2px; font-size: 0.7rem; margin-right: 5px; font-family: monospace; }
+        
+        .btn-cyber { background: #111; border: 1px solid #8b5cf6; color: #8b5cf6; text-transform: uppercase; font-weight: bold; padding: 8px 16px; transition: all 0.2s; cursor: pointer; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+        .btn-cyber:hover { background: #8b5cf6; color: #000; box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+        .btn-cyber:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+        .btn-gold { border-color: #f59e0b; color: #f59e0b; } .btn-gold:hover { background: #f59e0b; color: #000; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+        
+        .input-cyber { background: #050505; border: 1px solid #333; color: white; padding: 8px; width: 100%; font-family: 'Share Tech Mono', monospace; outline: none; transition: border-color 0.3s; }
+        .input-cyber:focus { border-color: #8b5cf6; }
+        
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #000; } ::-webkit-scrollbar-thumb { background: #333; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+    

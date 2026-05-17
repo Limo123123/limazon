@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Among Us - Map Creator & Wardrobe</title>
+    <link rel="stylesheet" href="style_0.css?v=Ku6WRHal">
+</head>
+
+<body>
+
+    <div id="loading" class="loading-screen">
+        <div class="spinner"></div>Lade Map Creator...
+    </div>
+    <div id="toast" class="toast">Feedback!</div>
+
+    <div id="top-nav">
+        <div class="logo">MAP CREATOR</div>
+        <div class="nav-actions">
+            <span id="bal-display">$0</span>
+            <button onclick="window.location.href='/games/amongus.html'">Zum Spiel</button>
+            <button class="save-btn" onclick="saveMap()">💾 Speichern</button>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div id="sidebar">
+            <div class="tabs-container">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('limea_shop')" id="tab-limea_shop">Limea Store 🛒</div>
+                    <div class="tab" onclick="switchTab('inv')" id="tab-inv">Inventar 📦</div>
+                    <div class="tab" onclick="switchTab('mapstore')" id="tab-mapstore">Map-Store ☁️</div>
+                    <div class="tab" onclick="switchTab('wardrobe')" id="tab-wardrobe">Outfit 👔</div>
+                    <div class="tab" onclick="switchTab('shop')" id="tab-shop">Drip-Store 💸</div>
+                </div>
+            </div>
+            <div class="item-list" id="sidebar-list"></div>
+        </div>
+
+        <div id="editor-area">
+            <div id="editor-tools">
+                <div class="tool-btn active" id="tool-build" onclick="setMode('build')" title="Bauen & Bewegen">🔨</div>
+                <div class="tool-btn" id="tool-pan" onclick="setMode('pan')" title="Kamera bewegen">🤚</div>
+            </div>
+            <div id="room"></div>
+        </div>
+    </div>
+
+    <div id="item-controls">
+        <span id="selected-name" style="color:var(--au-red); font-weight:bold; margin-right: 10px;"></span>
+        <button onclick="rotateSelected()">🔄 Drehen</button>
+        <button onclick="removeSelected()" style="color: #ff4458; border-color: #ff4458;">❌ Wegpacken</button>
+    </div>
+
+    <script src="script_0.js?v=ofwiq7L6"></script>
+</body>
+
+</html>

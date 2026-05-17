@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limea - Interior Design</title>
+    <link rel="stylesheet" href="style_0.css?v=xK0zhtyI">
+</head>
+<body>
+
+    <div id="loading" class="loading-screen">Lade Limea...</div>
+
+    <div id="top-nav">
+        <div class="logo" id="header-logo">LIMEA</div>
+        <div class="nav-actions">
+            <button onclick="history.back()">Zurück</button>
+            <button class="save-btn" id="save-btn" onclick="saveLayout()">💾 Speichern</button>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <span style="font-size: 1rem; color:#44db95; font-weight:bold;" id="bal-display">$0</span>
+            </div>
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('shop')" id="tab-shop">Katalog</div>
+                <div class="tab" onclick="switchTab('inv')" id="tab-inv">Besitz</div>
+                <div class="tab" onclick="switchTab('store')" id="tab-store">Store 🌐</div>
+            </div>
+            <div class="search-bar" id="search-bar-container">
+                <input type="text" id="search-input" placeholder="Suchen..." oninput="renderSidebar()">
+            </div>
+            <div class="item-list" id="sidebar-list"></div>
+        </div>
+
+        <div id="editor-area">
+            <div id="editor-tools">
+                <div id="tools-drag-handle" title="Werkzeugleiste verschieben">⋮⋮</div>
+                <div class="tool-btn active" id="tool-build" onclick="setMode('build')" title="Bauen & Bewegen">🔨</div>
+                <div class="tool-btn" id="tool-pan" onclick="setMode('pan')" title="Ansicht verschieben (Hand/PC)">🤚</div>
+                
+                <div class="tool-btn" onclick="document.getElementById('import-file').click()" title="Lokales JSON laden">📂</div>
+                <div class="tool-btn" onclick="exportLayout()" title="Als JSON speichern">💾</div>
+                
+                <div class="tool-btn" style="background:#0058a3;" onclick="publishLayout()" title="In den Online-Store stellen">☁️</div>
+                <div class="tool-btn" style="background:#8b5cf6;" onclick="magicAutoFill()" title="Smarte KI Einrichtung ✨">✨</div>
+
+                <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importLayout(event)">
+            </div>
+            
+            <div id="room"></div>
+        </div>
+    </div>
+
+    <div id="item-controls">
+        <span id="selected-name" style="color:var(--limea-yellow); font-weight:bold; margin-right: 10px;"></span>
+        <button onclick="rotateSelected()">🔄 Drehen</button>
+        <button onclick="removeSelected()" style="color: #ff4458; border-color: #ff4458;">❌ Wegpacken</button>
+    </div>
+
+    <script src="script_0.js?v=Hzlo7jNE"></script>
+</body>
+</html>

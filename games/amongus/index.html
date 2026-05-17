@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Among Us - Limo P2P Edition</title>
+    <link rel="stylesheet" href="style_0.css?v=J3CBkOlf">
+</head>
+
+<body>
+
+    <div id="hud" style="display: none;">
+        <div id="taskContainer">Tasks: <span id="taskCount" style="color:#fbc02d">0</span> / 0</div>
+        <div id="p2pStatus" style="font-size: 12px; color: #888; margin-top: 5px;">Modus: Solo</div>
+        <div id="p2pError">⚠️ P2P Verbindung getrennt/verzögert.</div>
+        <div id="ventHint">⬅️ Bewegen / Wischen ➡️</div>
+    </div>
+
+    <button id="taskBtn" class="action-btn" onclick="game.doTask()">USE</button>
+    <button id="reportBtn" class="action-btn" onclick="game.reportBody()">REPORT</button>
+    <button id="ventBtn" class="action-btn" onclick="game.useVent()">VENT</button>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="uiLayer">
+        <div id="startScreen" class="screen">
+            <h1>Among Us<br><small style="font-size:14px; color:#888;">Limo P2P Edition</small></h1>
+            <p id="userInfo">Lade Spielerdaten...</p>
+
+            <div
+                style="background: #111; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left; font-size: 14px;">
+                <label style="display:flex; justify-content:space-between; margin-bottom:5px;">Impostors:
+                    <select id="settingImpostors"
+                        style="background:#333; color:#fff; border:1px solid #555; padding:3px; border-radius:4px;">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select>
+                </label>
+                <label style="display:flex; justify-content:space-between; margin-bottom:5px;">Kill Cooldown:
+                    <select id="settingCooldown"
+                        style="background:#333; color:#fff; border:1px solid #555; padding:3px; border-radius:4px;">
+                        <option value="10">10s</option>
+                        <option value="15" selected>15s</option>
+                        <option value="25">25s</option>
+                    </select>
+                </label>
+                <label style="display:flex; justify-content:space-between;">Team Tasks (Gesamt):
+                    <select id="settingTasks"
+                        style="background:#333; color:#fff; border:1px solid #555; padding:3px; border-radius:4px;">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                    </select>
+                </label>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                <button class="btn btn-blue" id="hostBtn" onclick="game.hostLobby()" disabled>Lobby Hosten</button>
+                <button class="btn btn-blue" id="joinBtn" onclick="game.joinLobby()" disabled>Beitreten</button>
+            </div>
+            <button class="btn" id="startBtn" onclick="game.startSolo()" disabled>Solo spielen</button>
+
+            <button class="btn" style="background:#8b5cf6;" onclick="window.location.href='/games/map_creator.html'">🛠️
+                Map Creator & Outfit</button>
+            <button class="btn btn-danger" onclick="window.location.href='/'">Zurück zur Arcade</button>
+        </div>
+
+        <div id="matchmakingScreen" class="screen" style="display: none;">
+            <h2 style="margin:0 0 15px 0;">Warte auf Spieler...</h2>
+            <div id="roomCodeDisplay"
+                style="font-size:24px; color:var(--accent); font-weight:bold; margin-bottom:10px;"></div>
+            <div id="playerList"
+                style="text-align:left; font-family:monospace; margin-bottom:15px; color:#aaa; min-height:100px; background:#111; padding:10px; border-radius:6px;">
+            </div>
+            <button class="btn" id="forceStartBtn" onclick="game.startGame()" style="display:none;">Spiel Starten</button>
+        </div>
+
+        <div id="gameOverScreen" class="screen" style="display: none;">
+            <h1 id="endTitle">DEFEAT</h1>
+            <p id="endReason">...</p>
+            <button class="btn" onclick="window.location.reload()">Zurück ins Menü</button>
+        </div>
+    </div>
+
+    <div id="ejectScreen">
+        <div id="ejectCharacter" class="ejected-body">💀</div>
+        <div id="ejectText" class="eject-text">... wurde rausgeworfen ...</div>
+    </div>
+
+    <div id="introScreen">
+        <div id="introRole" class="intro-role">CREWMATE</div>
+        <p id="introSub" style="font-size:20px; color:#aaa;">There is 1 Impostor among us</p>
+    </div>
+
+    <div id="meetingScreen">
+        <div class="meeting-box">
+            <h1 id="meetingTitle" style="color: #ff0000; margin-bottom: 5px;">EMERGENCY MEETING</h1>
+            <p id="meetingReporter" style="margin-top: 0; color: #aaa;">...</p>
+            <div style="font-weight:bold; color:#fbc02d" id="meetingTimer">Zeit: --s</div>
+
+            <div class="meeting-content">
+                <div class="voting-area" id="votingList"></div>
+                <div class="chat-area">
+                    <div id="chatMessages"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chatInput" placeholder="Wer ist sus?"
+                            onkeypress="if(event.key==='Enter') game.sendChat()">
+                        <button class="btn btn-blue" style="margin:0; width:auto; padding:8px 15px;"
+                            onclick="game.sendChat()">Send</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-blue" id="skipVoteBtn" style="margin-top:15px;" onclick="game.castVote('skip')"
+                disabled>Skip Vote</button>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=ZRhhOykM"></script>
+</body>
+
+</html>

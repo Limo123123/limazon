@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limterest 2.0 ✨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=J3UfD8ne">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo" onclick="resetFeed()">Limterest</div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="Suchen...">
+        </div>
+        <div class="nav-actions">
+            <button class="btn-icon" onclick="openAddModal()">+</button>
+            <button class="btn-primary" onclick="openMyProfile()">Profil</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 id="page-title" style="margin-bottom: 20px; font-weight: 400; color: #aaa;">Entdecken</h2>
+        <div id="grid" class="masonry"></div>
+    </div>
+
+    <div id="modalAdd" class="modal">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeModals()">×</button>
+            <h2>Pin erstellen</h2>
+            <input type="text" id="inpTitle" class="add-input" placeholder="Titel">
+            <input type="text" id="inpUrl" class="add-input" placeholder="Bild-URL (https://...)">
+            <input type="text" id="inpTags" class="add-input" placeholder="Tags (Komma getrennt)">
+            <button class="btn-primary" style="width:100%" onclick="submitPin()">Veröffentlichen</button>
+        </div>
+    </div>
+
+    <div id="modalProfile" class="modal">
+        <div class="modal-box" style="max-width: 600px;">
+            <button class="close-btn" onclick="closeModals()">×</button>
+            <div class="profile-header">
+                <img id="profAvatar" class="profile-avatar" src="">
+                <h2 id="profName" class="profile-name">Username</h2>
+                <p id="profBio" style="color:#888;">Bio...</p>
+                <div class="stats-row">
+                    <div class="stat-item"><span id="statPins" class="stat-val">0</span><span
+                            class="stat-label">Pins</span></div>
+                    <div class="stat-item"><span id="statFollowers" class="stat-val">0</span><span
+                            class="stat-label">Follower</span></div>
+                </div>
+                <button id="btnFollow" class="btn-follow" onclick="toggleFollow()">Folgen</button>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+            <div id="profileTabs" class="profile-tabs" style="display:none;">
+                <button class="tab-btn active" onclick="switchProfileTab('created')">Erstellt</button>
+                <button class="tab-btn" onclick="switchProfileTab('saved')">Gemerkt</button>
+            </div>
+
+            <h3 id="profileGridTitle" style="text-align: left; margin-bottom: 15px;">Pins</h3>
+            <div id="userPinGrid" class="masonry" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <div id="modalPinDetail" class="modal">
+        <div class="modal-box pin-detail-box">
+            <button class="close-btn" onclick="closeModals()"
+                style="z-index: 20; background: rgba(0,0,0,0.5); border-radius: 50%; width: 40px; height: 40px; top: 10px; right: 10px;">×</button>
+
+            <div class="pin-detail-img-wrapper">
+                <img id="detailImg" class="pin-detail-img" src="">
+            </div>
+
+            <div class="pin-detail-info">
+                <div class="pin-detail-header">
+                    <div style="display: flex; align-items: center; gap: 10px; position: relative;">
+                        <button class="btn-icon" onclick="togglePinMenu()">•••</button>
+                        <div id="pinMenu" class="dropdown-menu">
+                            <button class="menu-item" onclick="shareCurrentPin()">🔗 Link kopieren</button>
+                            <button class="menu-item" onclick="downloadCurrentPin()">💾 Bild speichern</button>
+                            <button class="menu-item danger" onclick="reportPin()">🚩 Melden</button>
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="btnSave" onclick="saveCurrentPin()">Merken</button>
+                </div>
+
+                <div class="pin-detail-title" id="detailTitle">Titel</div>
+                <p id="detailDesc" class="pin-detail-desc">Keine Beschreibung.</p>
+
+                <div class="user-tag" id="detailUserTag" style="margin-bottom: 20px;">
+                    <img id="detailUserAvatar" class="user-avatar-small" style="width: 40px; height: 40px;">
+                    <span id="detailUsername" style="font-weight: bold; font-size: 1rem;">Username</span>
+                </div>
+
+                <div id="detailTags" class="pin-detail-tags"></div>
+                <a id="detailLink" href="#" target="_blank" class="btn-visit">Original öffnen ↗</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=6SxhiOoZ"></script>
+    <script src="js/limo-global.js?v=3" data-page="limterest"></script>
+</body>
+
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Postfach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=z2SxkD3b">
+</head>
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-indigo-500">📬</span> Postfach
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Nachrichten & System-Belohnungen</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow space-y-6 z-0">
+        
+        <div id="admin-panel" class="glass p-5 rounded-2xl shadow-xl border-l-4 border-l-rose-500 hidden">
+            <h2 class="text-sm uppercase text-rose-400 font-bold mb-4 tracking-wider flex items-center gap-2">
+                🛠️ Neue System-Mail
+            </h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block uppercase tracking-wider">Empfänger</label>
+                    <select id="mail-target" class="input-dark w-full p-3 rounded-xl text-sm font-medium">
+                        <option value="active">Aktive Spieler (letzte 7 Tage)</option>
+                        <option value="all">An absolut alle User</option>
+                        <option value="single">Spezieller User</option>
+                    </select>
+                </div>
+                
+                <div id="mail-target-name-container" class="hidden">
+                    <input type="text" id="mail-target-name" placeholder="Username eingeben" class="input-dark w-full p-3 rounded-xl text-sm font-medium">
+                </div>
+
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block uppercase tracking-wider">Betreff</label>
+                    <input type="text" id="mail-subject" placeholder="z.B. Entschuldigung für den Ausfall!" class="input-dark w-full p-3 rounded-xl text-sm font-medium">
+                </div>
+
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block uppercase tracking-wider">Nachricht</label>
+                    <textarea id="mail-content" rows="4" placeholder="Schreibe deine Nachricht..." class="input-dark w-full p-3 rounded-xl text-sm font-medium"></textarea>
+                </div>
+
+                <div class="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl">
+                    <h3 class="text-xs uppercase text-amber-400 font-bold mb-3 tracking-wider flex items-center gap-2">
+                        🎁 Belohnungen anhängen (Optional)
+                    </h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="number" id="mail-reward-money" placeholder="Geld ($)" class="input-dark w-full p-2 rounded-lg text-xs font-mono text-center">
+                        <input type="number" id="mail-reward-tokens" placeholder="Tokens (T)" class="input-dark w-full p-2 rounded-lg text-xs font-mono text-center">
+                        <input type="text" id="mail-reward-badge" placeholder="Badge-ID" class="input-dark w-full p-2 rounded-lg text-xs text-center">
+                    </div>
+                </div>
+
+                <button onclick="sendAdminMail()" class="w-full bg-rose-600 text-white font-bold p-3 rounded-xl hover:bg-rose-500 transition shadow-lg shadow-rose-600/20 active:scale-95 flex items-center justify-center gap-2 text-sm">
+                    <span>📨</span> System-Mail absenden
+                </button>
+            </div>
+        </div>
+
+        <div id="inbox-container" class="space-y-4">
+            <p class="text-center text-slate-500 text-sm font-medium py-8">Lade E-Mails...</p>
+        </div>
+
+    </main>
+
+    <script src="script_0.js?v=7F4MwcwZ"></script>
+</body>
+</html>

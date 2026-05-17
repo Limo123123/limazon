@@ -1,0 +1,24 @@
+
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #f3f4f6;
+        }
+
+        .font-sans {
+            font-family: 'Arial', sans-serif;
+        }
+
+        .newspaper-header {
+            border-bottom: 3px double #333;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .news-card {
+            transition: transform 0.2s;
+        }
+
+        .news-card:hover {
+            transform: translateY(-3px);
+        }
+    

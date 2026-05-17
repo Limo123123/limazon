@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⭐ Limazon Rezensionen</title>
+    <link rel="stylesheet" href="style_0.css?v=sPXoQp95">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>⭐ Limazon Rezensionen</h1>
+        <p style="color: var(--text-muted);">Lass deinen Frust raus oder verteile Lob.</p>
+    </header>
+
+    <div class="card">
+        <select id="service-select" onchange="loadReviews()">
+            <optgroup label="--- SHOPPING & WIRTSCHAFT ---">
+                <option value="shop_classic">Shop Classic (Standard)</option>
+                <option value="shop_super">Shop Super (Neu)</option>
+                <option value="stonks">LimoStonks (Börse)</option>
+                <option value="bank">Limo Bank</option>
+                <option value="logistics">Limo Post / Logistik</option>
+                <option value="limea">Limea Möbelhaus</option>
+                <option value="realestate">Immobilienmarkt & WGs</option>
+            </optgroup>
+            
+            <optgroup label="--- UNTERHALTUNG & SPIELE ---">
+                <option value="casino">Royal Casino</option>
+                <option value="teachermon">Teachermon Shop</option>
+                <option value="teachermon_arena">Teachermon Arena</option>
+                <option value="pets">Tierhandlung & Tamagotchi</option>
+                <option value="tierpark">Tierpark</option>
+            </optgroup>
+            
+            <optgroup label="--- COMMUNITY & SOCIAL ---">
+                <option value="tinda">Tinda (Dating)</option>
+                <option value="standesamt">Standesamt</option>
+                <option value="whatslim">WhatsLim (Chat)</option>
+                <option value="limterest">Limterest (Bilder)</option>
+                <option value="dbm">Don't Blame Me (Beichten)</option>
+            </optgroup>
+            
+            <optgroup label="--- SYSTEM & STAAT ---">
+                <option value="lnn">LNN News</option>
+                <option value="jobcenter">Jobcenter</option>
+                <option value="mayor">Rathaus / Bürgermeister</option>
+                <option value="court">Gerichtshof</option>
+                <option value="diner">Limo's Diner</option>
+                <option value="mail">Limo Mail (Postfach)</option>
+            </optgroup>
+            
+            <optgroup label="--- SCHATTEN & HILFE ---">
+                <option value="dr_limo">Dr. Limo (Therapie)</option>
+                <option value="underground">Untergrund / Yakuza</option>
+                <option value="ideabox">Ideenbox</option>
+                <option value="bugbounty">Bug Bounty / Delta Shop</option>
+            </optgroup>
+        </select>
+
+        <div id="service-stats" class="service-stats hidden">
+            <div class="big-score" id="avg-score">0.0</div>
+            <div class="review-stars">★★★★★</div>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Basierend auf <span id="review-count">0</span> Bewertungen</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Deine Bewertung</h2>
+        <form id="review-form" onsubmit="submitReview(event)">
+            <div class="star-rating">
+                <input type="radio" id="star5" name="stars" value="5" required><label for="star5">★</label>
+                <input type="radio" id="star4" name="stars" value="4"><label for="star4">★</label>
+                <input type="radio" id="star3" name="stars" value="3"><label for="star3">★</label>
+                <input type="radio" id="star2" name="stars" value="2"><label for="star2">★</label>
+                <input type="radio" id="star1" name="stars" value="1"><label for="star1">★</label>
+            </div>
+            <textarea id="review-text" rows="3" placeholder="Was denkst du darüber? (Min. 5 Zeichen)" required minlength="5" maxlength="500"></textarea>
+            <button type="submit">Bewertung abschicken</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Community Stimmen</h2>
+        <div id="reviews-list">
+            <p style="color: var(--text-muted); text-align: center;">Wähle einen Service aus.</p>
+        </div>
+    </div>
+</div>
+
+<script src="script_0.js?v=fBOfzIVs"></script>
+</body>
+</html>

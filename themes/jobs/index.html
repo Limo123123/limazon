@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Job Center</title>
+    <link rel="stylesheet" href="style_0.css?v=AikmLoJ1">
+</head>
+<body>
+
+    <div class="container">
+        <h1>💼 Job Center</h1>
+
+        <div class="my-office" id="office-container">
+            <div id="no-job-msg" style="display:none;">
+                <h2>Du bist arbeitslos.</h2>
+                <p style="color:#94a3b8;">Wähle unten einen Job aus, um Geld zu verdienen!</p>
+            </div>
+
+            <div id="active-job-ui">
+                <span class="job-level">Level <span id="current-level">1</span></span>
+                <div class="job-title-large" id="current-job-title">Lade...</div>
+                <div style="margin-bottom: 20px; color: #94a3b8;">Gehalt: <span id="current-salary" class="text-green-400">---</span></div>
+
+                <button id="btn-work" class="btn-work" onclick="doWork()">ARBEITEN</button>
+                <div id="cooldown-display" class="cooldown-text"></div>
+            </div>
+        </div>
+
+        <div class="section-title">Karriereleiter & Stellenmarkt</div>
+        <div class="job-grid" id="job-list">
+            <div style="color:#64748b;">Lade Angebote...</div>
+        </div>
+
+        <a href="/" class="back-link">← Zurück zum Dashboard</a>
+    </div>
+
+    <script src="script_0.js?v=mOlQL933"></script>
+    <script src="js/limo-global.js?v=3" data-page="jobs"></script>
+</body>
+</html>

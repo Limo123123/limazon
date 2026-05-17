@@ -1,0 +1,64 @@
+
+        body {
+            background-color: #050505;
+            color: #d4af37;
+            font-family: 'Cinzel', serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .mono { font-family: 'Share Tech Mono', monospace; }
+
+        /* --- REINES CSS KATHEDRALEN AMBIENTE (Ohne externe Links) --- */
+        .stained-glass {
+            background-color: #050505;
+            background-image: 
+                linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            position: fixed; inset: 0; z-index: -1;
+        }
+
+        .altar-glow {
+            position: absolute; top: 30%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+            filter: blur(40px);
+            animation: pulse 4s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } }
+
+        .pi-image {
+            filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.6));
+            animation: float 6s infinite ease-in-out;
+            max-width: 250px; /* Anpassen je nach Bildgröße */
+            object-fit: contain;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .candle {
+            width: 2px; height: 20px; background: #d4af37;
+            position: relative; box-shadow: 0 0 10px #d4af37;
+        }
+        .flame {
+            position: absolute; top: -10px; left: -2px;
+            width: 6px; height: 10px; background: #ffaa00;
+            border-radius: 50% 50% 20% 20%;
+            filter: blur(1px); animation: flicker 0.1s infinite alternate;
+        }
+        @keyframes flicker { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }
+
+        .opferstock {
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+            transform: skewX(-1deg);
+        }
+
+        .fund-display {
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+    

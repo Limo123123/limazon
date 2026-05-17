@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon+</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=ajwaF7T2">
+</head>
+<body class="min-h-screen flex flex-col max-w-3xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
+
+    <div id="toast-container"></div>
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-cyan-400">💎</span> Limazon<span class="text-cyan-400">+</span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Hol dir die täglichen Boosts</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <main class="flex-grow z-0">
+        
+        <div class="glass p-6 rounded-2xl shadow-xl mb-6 border-t-4 border-t-cyan-500 relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 text-9xl opacity-5 drop-shadow-2xl pointer-events-none">✨</div>
+            <h2 class="text-sm uppercase text-cyan-400 font-bold mb-2 tracking-wider flex items-center gap-2">
+                Automatische Abrechnung
+            </h2>
+            <p class="text-xs text-slate-400 leading-relaxed max-w-lg">
+                Die Kosten für deine aktiven Abonnements werden <strong class="text-white">jeden Tag automatisch</strong> von deinem Konto abgebucht. Ist dein Konto nicht gedeckt, werden die Abos sofort storniert.
+            </p>
+        </div>
+
+        <div id="subs-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <p class="col-span-full text-center text-slate-500 text-sm py-8">Lade Angebote...</p>
+        </div>
+
+    </main>
+
+    <script src="script_0.js?v=VnaJEtjH"></script>
+</body>
+</html>

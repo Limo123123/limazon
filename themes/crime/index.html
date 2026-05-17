@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Underground 💀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Courier+Prime&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=bzEI5fEQ">
+</head>
+
+<body class="flex flex-col items-center min-h-screen p-4">
+
+    <div class="bg-grid"></div>
+
+    <div class="w-full max-w-2xl flex justify-between items-center mb-8 mt-4">
+        <div class="flex items-center gap-3">
+            <div id="secret-skull"
+                class="w-10 h-10 bg-red-900/20 border border-red-500/50 rounded flex items-center justify-center text-2xl cursor-pointer select-none active:scale-95 transition-transform">
+                💀
+            </div>
+            <div id="secret-flash"></div>
+            <h1 class="text-2xl font-bold text-white tracking-wider">UNDERGROUND</h1>
+            <p class="text-xs text-red-500 font-mono">CONNECTION: ENCRYPTED</p>
+        </div>
+    </div>
+    <a href="/" class="text-gray-500 hover:text-white transition-colors text-sm">← DASHBOARD</a>
+    </div>
+
+    <div class="glass-panel w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col min-h-[600px]">
+
+        <div class="flex border-b border-white/10 bg-black/40">
+            <button onclick="switchTab('rob')" id="tab-rob-btn"
+                class="tab-btn flex-1 py-4 font-bold text-sm uppercase tracking-widest active">
+                🔫 Überfall
+            </button>
+            <button onclick="switchTab('heist')" id="tab-heist-btn"
+                class="tab-btn flex-1 py-4 font-bold text-sm uppercase tracking-widest">
+                💰 The Heist
+            </button>
+            <button onclick="switchTab('security')" id="tab-security-btn"
+                class="tab-btn flex-1 py-4 font-bold text-sm uppercase tracking-widest">
+                🛡️ Security
+            </button>
+        </div>
+
+        <div id="tab-rob" class="p-8 flex flex-col gap-6 fade-in">
+            <div class="text-center mb-4">
+                <h2 class="text-3xl font-bold text-white mb-2">TARGET ACQUISITION</h2>
+                <p class="text-gray-400 text-sm">PvP Zone. Raube andere User aus.<br>Hohes Risiko, hohe Belohnung.</p>
+            </div>
+
+            <div class="bg-black/30 p-6 rounded-xl border border-white/5">
+                <label class="block text-xs font-mono text-red-400 mb-2 uppercase">Ziel-Benutzername</label>
+                <input type="text" id="target-name" placeholder="Name eingeben..."
+                    class="cyber-input w-full p-4 rounded text-lg text-center">
+            </div>
+
+            <button id="btn-start-rob" onclick="commitCrime()"
+                class="btn-glitch w-full py-4 bg-red-600 hover:bg-red-500 text-black rounded font-bold text-lg shadow-lg shadow-red-900/20">
+                EXECUTE ROBBERY
+            </button>
+
+            <div id="rob-result" class="hidden p-4 rounded border text-center animate-pulse">
+            </div>
+        </div>
+
+        <div id="tab-heist" class="p-8 flex flex-col gap-6 hidden">
+            <div class="flex justify-between items-end border-b border-white/10 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-yellow-500">STAATSKASSE</h2>
+                    <p class="text-xs text-gray-500 font-mono">TARGET: CENTRAL BANK</p>
+                </div>
+                <div id="heist-pot" class="text-3xl font-mono text-white font-bold tracking-widest">$---</div>
+            </div>
+
+            <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                    <span id="fw-status-text" class="text-red-400">FIREWALL INTEGRITY</span>
+                    <span id="fw-percent" class="text-white">100%</span>
+                </div>
+                <div id="firewall-container" class="fw-bar-container">
+                    <div id="fw-bar" class="fw-bar-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button id="btn-hack" onclick="doHack()"
+                    class="btn-glitch bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white py-6 rounded flex flex-col items-center gap-1">
+                    <span class="text-2xl">💻</span>
+                    <span class="text-xs font-mono">BRUTE FORCE ($500)</span>
+                </button>
+
+                <button id="btn-raid" onclick="doRaid()" disabled
+                    class="btn-glitch bg-black border border-yellow-600/30 text-yellow-600/50 py-6 rounded flex flex-col items-center gap-1 cursor-not-allowed">
+                    <span class="text-2xl">💣</span>
+                    <span class="text-xs font-mono" id="raid-subtext">LOCKED</span>
+                </button>
+            </div>
+
+            <div class="terminal rounded" id="heist-console">
+                <div class="mb-1 text-gray-500">> System initialized...</div>
+                <div class="mb-1 text-gray-500">> Connected to Limazon Underground Network.</div>
+                <div class="mb-1 text-green-500">> Ready for input_</div>
+            </div>
+        </div>
+
+        <div id="tab-security" class="p-8 flex flex-col gap-6 hidden">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-white">HOME DEFENSE</h2>
+                <p class="text-gray-400 text-sm">Überwache deine Sicherheit.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-900/50 p-4 rounded border border-white/5 text-center">
+                    <div class="text-xs text-gray-500 uppercase mb-1">Risiko-Level</div>
+                    <div id="risk-display" class="text-3xl font-bold text-green-400">0%</div>
+                </div>
+                <div class="bg-slate-900/50 p-4 rounded border border-white/5 text-center flex flex-col justify-center">
+                    <div id="risk-details" class="text-xs text-gray-400">Lade Status...</div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-bold text-white mb-3 uppercase tracking-wider border-b border-white/10 pb-2">
+                    Vorfall-Protokoll</h3>
+                <div id="log-list" class="space-y-2 max-h-[250px] overflow-y-auto pr-2">
+                    <div class="text-center text-gray-600 text-xs py-4">Lade Logs...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script_0.js?v=CG1ZCtnT"></script>
+    <script src="js/limo-global.js?v=3" data-page="crime"></script>
+</body>
+
+</html>

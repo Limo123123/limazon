@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Blame Me 🖤</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,900&family=Inter:wght@300;500;800&family=Cinzel:wght@700&family=Old+Standard+TT:ital,wght@1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=tDkyl3i4">
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="bg-grain"></div>
+
+    <div class="w-full max-w-[1800px] mx-auto">
+        
+        <header class="text-center mb-12 mt-4">
+            <a href="/" class="text-xs text-red-500/70 hover:text-red-400 tracking-widest mb-6 inline-block uppercase font-bold transition-colors">← Zurück zum Portal</a>
+            <h1 class="text-6xl md:text-8xl font-serif font-black italic mb-4 tracking-tight text-gradient-crimson drop-shadow-2xl">
+                Don't Blame Me
+            </h1>
+            <p class="text-gray-400 font-light text-lg md:text-xl tracking-wide max-w-2xl mx-auto">
+                Schieb die Schuld auf den Code, das Wetter oder den Lag. <br>Hier glaubt dir jeder.
+            </p>
+        </header>
+
+        <div id="user-area" class="max-w-2xl mx-auto mb-24 hidden fade-in">
+            <form id="post-form" class="glass-panel p-2 rounded-3xl relative group transition-all focus-within:ring-2 ring-red-900/50">
+                <textarea id="reason-input" rows="3" maxlength="140"
+                    placeholder="Ich war's nicht, weil..." 
+                    class="input-area w-full bg-transparent text-white p-6 rounded-2xl border border-transparent resize-none text-2xl placeholder-gray-700 focus:placeholder-red-400/50 leading-normal"></textarea>
+                
+                <div class="flex justify-between items-center px-6 pb-4 pt-2">
+                    <span id="char-count" class="text-xs text-gray-500 font-mono">0/140</span>
+                    <button id="submit-btn" type="submit" class="btn-submit-crimson px-8 py-3 rounded-full text-sm uppercase tracking-widest">
+                        Veröffentlichen
+                    </button>
+                </div>
+            </form>
+            <div id="error-message" class="text-red-400 text-center mt-4 text-sm font-mono bg-red-950/50 border border-red-900/50 py-2 rounded hidden"></div>
+        </div>
+
+        <div id="guest-area" class="text-center mb-20">
+            <div class="glass-panel inline-block px-10 py-6 rounded-full border border-red-900/30">
+                <p class="text-gray-300 text-lg">🔒 <a href="#" onclick="openLogin()" class="text-red-500 font-bold underline decoration-2 underline-offset-4 hover:text-red-400 transition-colors">Logge dich ein</a>, um deine Unschuld zu beweisen.</p>
+            </div>
+        </div>
+
+        <div id="posts-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+            <div class="text-center col-span-full text-gray-600 py-20 text-xl">Lade die Akten...</div>
+        </div>
+
+    </div>
+
+    <script src="script_0.js?v=cxzjFEbz"></script>
+</body>
+</html>

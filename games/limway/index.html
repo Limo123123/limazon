@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limway Surfers</title>
+    <link rel="stylesheet" href="style_0.css?v=xFPrL5UK">
+</head>
+<body>
+
+    <header>
+        <a href="/themes/games.html" class="back-btn">⬅ Zurück</a>
+        <div class="stats-panel">
+            <div class="badge" id="token-display">🪙 Lade...</div>
+            <div class="badge" style="color: white;">🎮 <span id="plays-display">-</span></div>
+        </div>
+    </header>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div class="score-display" id="hud-score" style="display: none;">0</div>
+
+        <button id="stopRunBtn" onclick="manualGameOver()" style="display: none; position: absolute; top: 20px; right: 20px; background: #f44336; color: white; border: 2px solid #b71c1c; padding: 8px 15px; font-size: 16px; font-weight: bold; border-radius: 8px; z-index: 20; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.4);">🛑 Stopp</button>
+        
+        <div id="powerup-ui">
+            <span id="powerup-icon">🚀</span>
+            <div id="powerup-bar-container"><div id="powerup-bar"></div></div>
+        </div>
+
+        <div id="startScreen" class="overlay">
+            <h1>Limway Surfers</h1>
+            <p>Weiche aus, spring auf Züge und schnapp dir Power-Ups!<br><br><b>Steuerung:</b><br>Wische L/R oder A/D zum Lenken.<br>Wische HOCH oder W/Pfeil-Hoch zum Springen.</p>
+            
+            <input type="text" id="game-seed" class="seed-input" placeholder="Custom Seed?">
+            
+            <button class="btn" id="startBtn" onclick="startGame()">Start (1 Token)</button>
+        </div>
+
+        <div id="gameOverScreen" class="overlay" style="display: none;">
+            <h1 style="color: #ff5252;">CRASH!</h1>
+            <p style="font-size: 28px; color: white; font-weight: bold; margin-bottom: 10px;">Score: <span id="finalScore">0</span></p>
+            <p id="save-status" style="color: var(--accent); margin-bottom: 20px; font-weight: bold;">Speichere Highscore...</p>
+            <button class="btn" id="restartBtn" onclick="startGame()" style="display: none;">Nochmal</button>
+        </div>
+    </div>
+
+    <script src="script_0.js?v=su5eAHlN"></script>
+</body>
+</html>

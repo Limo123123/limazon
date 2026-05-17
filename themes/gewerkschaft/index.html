@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo Gewerkschaft ✊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=yIgSXYWI">
+</head>
+
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 hide-scroll">
+
+    <header class="p-6 flex justify-between items-center z-10 sticky top-0 bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-800">
+        <div>
+            <a href="/index.html" class="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 font-bold mb-1 block transition">← Zurück zum Portal</a>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                Gewerkschaft ✊
+            </h1>
+            <p class="text-xs text-slate-400">Organisierter Widerstand</p>
+        </div>
+        <div id="user-avatar" class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-sm border-2 border-slate-700 shadow-lg transition">?</div>
+    </header>
+
+    <main class="flex-grow px-4 pt-6 pb-24 overflow-y-auto hide-scroll z-0">
+
+        <div id="alert-box" class="hidden mb-6 text-center p-4 rounded-xl font-bold text-sm shadow-lg fade-in"></div>
+
+        <div class="glass rounded-2xl p-6 shadow-2xl relative overflow-hidden mb-8 border border-white/10 slide-up">
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none"></div>
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <h2 class="text-xl font-bold text-white mb-1">Neuen Streik ausrufen</h2>
+                <p class="text-xs text-slate-400 mb-6">Wähle ein Modul und sammle Mitstreiter.</p>
+
+                <form onsubmit="proposeStrike(event)">
+                    <div class="mb-4">
+                        <label class="text-[10px] uppercase text-red-400 font-bold mb-2 block tracking-wider">Ziel-Modul</label>
+                        <select id="strike-module" class="input-dark w-full p-4 rounded-xl text-sm font-medium" required>
+                            <option value="teachermon">Teachermon 🃏</option>
+                            <option value="limonews">Limo News (LNN) 📰</option>
+                            <option value="casino">Casino 🎰</option>
+                            <option value="restaurant">Restaurant 🍔</option>
+                            <option value="jobs">Jobcenter 💼</option>
+                            <option value="crime">Verbrechen / Überfälle 🦹</option>
+                            <option value="gangs">Gangs 🏴‍☠️</option>
+                            <option value="limterest">Limterest 📌</option>
+                            <option value="realestate">Immobilien 🏠</option>
+                            <option value="auctions">Auktionshaus 🔨</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="text-[10px] uppercase text-red-400 font-bold mb-2 block tracking-wider">Forderung / Grund</label>
+                        <input type="text" id="strike-reason" class="input-dark w-full p-4 rounded-xl text-sm" placeholder="Z.B. Bessere Drop-Raten!" required autocomplete="off">
+                        <p class="text-[10px] text-slate-500 mt-2 font-medium">Achte auf deine Wortwahl. Der Auto-Filter ist aktiv.</p>
+                    </div>
+
+                    <button type="submit" id="btn-propose" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold p-4 rounded-xl transition shadow-lg shadow-red-500/20 active:scale-95">
+                        Protest starten 🚩
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mb-4 flex justify-between items-end px-1 slide-up" style="animation-delay: 0.1s;">
+            <h3 class="text-lg font-bold text-white">Laufende Proteste</h3>
+            <button onclick="loadStrikes()" class="text-xs text-red-400 hover:text-red-300 font-bold bg-red-400/10 px-2 py-1 rounded transition">Aktualisieren ↻</button>
+        </div>
+
+        <div id="strikes-list" class="space-y-4 slide-up" style="animation-delay: 0.2s;">
+            <div class="p-8 rounded-xl text-center border border-dashed border-slate-700 text-slate-500 text-sm">Lade Akten...</div>
+        </div>
+
+    </main>
+
+    <script src="js/limo-global.js?v=1" data-page="gewerkschaft"></script>
+
+    <script src="script_0.js?v=SpwOHrsO"></script>
+</body>
+</html>

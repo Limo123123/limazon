@@ -1,0 +1,27 @@
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+
+        /* Toast Styling */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(12px); border-left: 4px solid #10b981; color: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; animation: fadein 0.3s forwards; font-size: 0.875rem; font-weight: bold; }
+        .toast.error { border-left-color: #ef4444; }
+        @keyframes fadein { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+
+        /* Glow für aktive Abos */
+        .active-sub {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+            background: linear-gradient(145deg, rgba(16, 185, 129, 0.05), rgba(30, 41, 59, 0.7));
+        }
+    

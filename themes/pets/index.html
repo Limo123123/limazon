@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Haustiere</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style_0.css?v=M3HOfg8t">
+</head>
+<body class="min-h-screen flex flex-col max-w-4xl mx-auto relative overflow-y-auto bg-slate-900 p-4 pb-24 hide-scroll">
+
+    <div id="toast-container"></div>
+
+    <header class="py-6 flex justify-between items-center z-10 border-b border-slate-800 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-emerald-500">🐾</span> Haustiere
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Dein persönlicher Zoo</p>
+        </div>
+        <button onclick="window.history.back()" class="text-sm font-bold text-slate-400 hover:text-white transition bg-slate-800 px-3 py-1.5 rounded-lg">Zurück</button>
+    </header>
+
+    <div class="flex gap-2 mb-6 overflow-x-auto hide-scroll pb-2">
+        <button class="tab-btn active flex-1 whitespace-nowrap bg-slate-800 border border-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl text-sm" onclick="switchTab('myPets')">Meine Gehege</button>
+        <button class="tab-btn flex-1 whitespace-nowrap bg-slate-800 border border-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl text-sm" onclick="switchTab('shop')">Tierhandlung</button>
+        <button class="tab-btn flex-1 whitespace-nowrap bg-slate-800 border border-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl text-sm" onclick="switchTab('cemetery')">Friedhof 🪦</button>
+    </div>
+
+    <main class="flex-grow z-0">
+        
+        <div id="myPets" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="my-pets-grid">
+                <p class="col-span-full text-center text-slate-500 text-sm py-8">Lade Tiere...</p>
+            </div>
+        </div>
+
+        <div id="shop" class="tab-content">
+            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-6 text-center">
+                <p class="text-xs text-emerald-400 font-bold">Jedes Tier hat einen eigenen Magen. Pass auf, dass der Balken nie auf 0 fällt!</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="shop-grid">
+                <p class="col-span-full text-center text-slate-500 text-sm py-8">Lade Katalog...</p>
+            </div>
+        </div>
+
+        <div id="cemetery" class="tab-content">
+            <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-8 mb-6 text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_0,transparent_70%)]"></div>
+                <h2 class="text-2xl font-bold text-slate-400 mb-2 relative z-10">Ruhet in Frieden</h2>
+                <p class="text-xs text-slate-500 relative z-10">Hier liegen die Opfer vernachlässigter Fütterungspflichten.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="cemetery-grid">
+                <p class="col-span-full text-center text-slate-500 text-sm py-8">Lade Gräber...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script_0.js?v=rAIIgfFH"></script>
+</body>
+</html>

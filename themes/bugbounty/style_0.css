@@ -1,0 +1,18 @@
+
+        body { background-color: #0a0a0a; color: #cfcfcf; font-family: 'Courier New', monospace; }
+        .matrix-text { color: #00ff41; text-shadow: 0 0 5px rgba(0, 255, 65, 0.5); }
+        .delta-coin { color: #00ffff; text-shadow: 0 0 5px rgba(0, 255, 255, 0.5); font-weight: bold; }
+        .shop-card { 
+            background: #111; border: 1px solid #333; transition: all 0.2s; 
+        }
+        .shop-card:hover { border-color: #00ff41; transform: translateY(-2px); box-shadow: 0 0 15px rgba(0, 255, 65, 0.1); }
+        input, textarea { background: #1a1a1a !important; color: #fff !important; border-color: #333 !important; }
+        input:focus, textarea:focus { border-color: #00ff41 !important; outline: none; }
+        
+        /* Admin Styles */
+        .admin-panel { border-top: 2px dashed #ff4444; margin-top: 50px; padding-top: 20px; display: none; }
+        .report-card { background: #1a0505; border: 1px solid #500; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .status-open { color: #ffa500; }
+        .status-resolved { color: #00ff41; }
+        .status-rejected { color: #ff4444; }
+    

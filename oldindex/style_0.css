@@ -1,0 +1,21 @@
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #e9ebee;
+            /* Ein neutraler Hintergrund */
+        }
+
+        .theme-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-card img {
+            height: 180px;
+            object-fit: cover;
+        }
+    

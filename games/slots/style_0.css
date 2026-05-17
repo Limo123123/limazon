@@ -1,0 +1,6 @@
+
+        body { background: #0a0a0c; color: white; font-family: 'Space Grotesk', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .slot-container { background: #16161a; border: 2px solid #222; padding: 2rem; border-radius: 2rem; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .reel { background: #000; width: 100px; height: 100px; display: inline-flex; align-items: center; justify-content: center; font-size: 3rem; border-radius: 1rem; border: 1px solid #333; margin: 0.5rem; transition: transform 0.1s; }
+        .spinning { filter: blur(2px); transform: scale(0.9); }
+    

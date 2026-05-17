@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Account Hub</title>
+    <link rel="stylesheet" href="style_0.css?v=dND8babG">
+</head>
+<body>
+
+    <div class="sidebar" id="account-sidebar"></div>
+
+    <div class="main-content">
+        
+        <div id="loading-view">
+            <p>Verbinde mit Limazon...</p>
+        </div>
+
+        <div id="login-view">
+            <div class="login-card">
+                <h2>Limazon Login</h2>
+                <div class="form-group">
+                    <label>Benutzername</label>
+                    <input type="text" id="main-login-user" placeholder="Dein Username">
+                </div>
+                <div class="form-group">
+                    <label>Passwort</label>
+                    <input type="password" id="main-login-pass" placeholder="Dein Passwort">
+                </div>
+                <button class="action-btn" onclick="performMainLogin()">Anmelden</button>
+                <p style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">Noch keinen Account? Registrierung ist im Hauptmenü.</p>
+            </div>
+        </div>
+
+        <div id="dashboard-view">
+            <header>
+                <h1>Mein Konto</h1>
+                <button class="action-btn btn-danger" style="width: auto; padding: 8px 16px; font-size: 0.9rem;" onclick="handleLogout()">Ausloggen</button>
+            </header>
+
+            <div class="container">
+                <div class="profile-card">
+                    <div class="big-avatar" id="profile-avatar">U</div>
+                    <h2 id="profile-username">...</h2>
+                    <p id="profile-role" style="color: var(--primary); font-size: 0.9rem; margin-top: 5px;">...</p>
+                    <p id="profile-id" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 5px; font-family: monospace;">...</p>
+                    
+                    <div class="user-stats">
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-balance">...</span>
+                            <span class="stat-lbl">Guthaben</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-tokens">...</span>
+                            <span class="stat-lbl">Tokens</span>
+                        </div>
+                        <!-- NEU: Schufa Score Anzeige -->
+                        <div class="stat-box">
+                            <span class="stat-val" id="stat-schufa">...</span>
+                            <span class="stat-lbl">Schufa</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: left;">
+                        <small style="color: var(--text-muted);">Share-Code:</small>
+                        <div style="background: var(--bg-dark); padding: 8px; border-radius: 6px; font-family: monospace; margin-top: 5px; border: 1px solid var(--border); display: flex; justify-content: space-between;">
+                            <span id="profile-sharecode">...</span>
+                            <span style="cursor: pointer; color: var(--primary);" onclick="regenerateShareCode()">↻</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tabs-wrapper">
+                    <nav class="tabs-nav">
+                        <button class="tab-btn active" onclick="switchTab('overview')">Übersicht</button>
+                        <button class="tab-btn" onclick="switchTab('security')">Sicherheit & Daten</button>
+                        <button class="tab-btn" onclick="switchTab('danger')">Gefahrenzone</button>
+                    </nav>
+
+                    <div id="tab-overview" class="tab-content active">
+                        <div class="settings-section">
+                            <h3>👤 Profil anpassen</h3>
+                            <div class="form-group">
+                                <label>Bio (Über mich)</label>
+                                <textarea id="settings-bio" rows="3" placeholder="Erzähl etwas über dich..."></textarea>
+                            </div>
+                            <div class="toggle-row">
+                                <span>Inventar öffentlich anzeigen?</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settings-public-inv">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <button class="action-btn" onclick="saveProfileSettings()">Speichern</button>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>🏆 Achievements</h3>
+                            <div class="badge-grid" id="badge-container"></div>
+                        </div>
+
+                        <div class="settings-section" id="admin-settings-card" style="display: none;">
+                            <h3>⚡ Spezial / Admin</h3>
+                            <div class="toggle-row">
+                                <span>Infinity Money</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settings-infinity">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-security" class="tab-content">
+                        <div class="settings-section">
+                            <h3>🔑 Zugangsdaten</h3>
+                            <div class="form-group">
+                                <label>Benutzernamen ändern</label>
+                                <input type="text" id="new-username" placeholder="Neuer Username" style="margin-bottom: 10px;">
+                                <!-- NEU: Das versteckte Passwort-Feld -->
+                                <input type="password" id="username-confirm-pw" placeholder="Passwort zur Bestätigung">
+                                <button class="action-btn" style="margin-top: 10px;" onclick="changeUsername()">Ändern</button>
+                            </div>
+                            <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+                            <div class="form-group">
+                                <label>Passwort ändern</label>
+                                <input type="password" id="current-pw" placeholder="Aktuelles Passwort" style="margin-bottom: 10px;">
+                                <input type="password" id="new-pw" placeholder="Neues Passwort" style="margin-bottom: 10px;">
+                                <input type="password" id="confirm-pw" placeholder="Bestätigen">
+                                <button class="action-btn" style="margin-top: 10px;" onclick="changePassword()">Ändern</button>
+                            </div>
+                        </div>
+
+                        <!-- DSGVO Sektion & Visualisierer -->
+                        <div class="settings-section">
+                            <h3>📦 Daten & Datenschutz (DSGVO)</h3>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
+                                Lade eine vollständige Kopie deiner Account-Daten herunter. 
+                                Du kannst die Datei danach hier im Offline-Visualisierer ansehen.
+                            </p>
+                            
+                            <button class="action-btn" style="background-color: var(--accent); margin-bottom: 25px;" onclick="downloadExport()">
+                                📥 Meine Daten herunterladen (.json)
+                            </button>
+
+                            <hr style="border: 0; border-top: 1px dashed var(--border); margin: 20px 0;">
+                            
+                            <h4 style="margin-bottom: 10px; color: var(--text-main);">👁️ Offline Visualisierer</h4>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">
+                                Wähle deine heruntergeladene .json Datei aus. Die Daten werden nur in deinem Browser gelesen und nicht erneut hochgeladen.
+                            </p>
+                            
+                            <input type="file" id="import-file" accept=".json" style="margin-bottom: 15px; padding: 10px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; width: 100%; color: var(--text-muted);">
+                            
+                            <div id="visualizer-output" style="background: var(--bg-dark); padding: 20px; border-radius: 8px; border: 1px solid var(--border); display: none; text-align: left; overflow-x: auto;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-danger" class="tab-content">
+                        <div class="settings-section" style="border-color: var(--danger);">
+                            <h3 style="color: var(--danger);">⚠️ Account löschen</h3>
+                            <p style="margin-bottom: 20px; color: var(--text-muted);">
+                                Diese Aktion ist endgültig.
+                            </p>
+                            <button class="action-btn btn-danger" onclick="openDeleteModal()">Löschen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal">
+            <h2 style="color: var(--danger);">Wirklich löschen?</h2>
+            <input type="password" id="delete-confirm-pw" placeholder="Passwort zur Bestätigung">
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="action-btn btn-danger" style="flex: 1;" onclick="performDelete()">LÖSCHEN</button>
+                <button class="action-btn" style="flex: 1;" onclick="document.getElementById('delete-modal').style.display='none'">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="script_0.js?v=nustKUvX"></script>
+</body>
+</html>
