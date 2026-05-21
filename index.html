@@ -75,9 +75,18 @@
         }
 
         @keyframes strike-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important; }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.03);
+                box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important;
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .strike-label {
@@ -103,13 +112,19 @@
         }
 
         @keyframes ad-glow {
-            0% { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1); }
-            100% { box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4); border-color: rgba(59, 130, 246, 0.6); }
+            0% {
+                box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
+            }
+
+            100% {
+                box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4);
+                border-color: rgba(59, 130, 246, 0.6);
+            }
         }
     </style>
 </head>
 
-<body class="min-h-screen selection:bg-blue-500 selection:text-white overflow-y-scroll relative">
+<body class="min-h-screen selection:bg-blue-500 selection:text-white overflow-x-hidden overflow-y-scroll relative">
 
     <div class="fixed inset-0 z-[-1]" id="bgEffects">
         <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px]"></div>
@@ -118,12 +133,16 @@
     </div>
 
     <!-- NEU: WERBEBANNER (FLOATING BOTTOM RIGHT) -->
-    <div id="ad-banner" class="hidden fixed bottom-6 right-6 w-80 glass-panel rounded-2xl border border-blue-500/50 shadow-2xl z-[90] cursor-pointer transition-all hover:scale-105 ad-pulse">
+    <div id="ad-banner" class="hidden fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 sm:w-80 glass-panel rounded-2xl border border-blue-500/50 shadow-2xl z-[90] cursor-pointer transition-all hover:scale-105 ad-pulse">
+        class="hidden fixed bottom-6 right-6 w-80 glass-panel rounded-2xl border border-blue-500/50 shadow-2xl z-[90] cursor-pointer transition-all hover:scale-105 ad-pulse">
         <!-- Close Button (stopPropagation verhindert Navigation beim Klicken) -->
-        <button onclick="closeAd(event)" class="absolute top-2 right-2 text-gray-400 hover:text-white z-20 bg-black/50 rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
-        
-        <div class="absolute top-0 left-0 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-br-lg tracking-widest uppercase z-10">ANZEIGE</div>
-        
+        <button onclick="closeAd(event)"
+            class="absolute top-2 right-2 text-gray-400 hover:text-white z-20 bg-black/50 rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
+
+        <div
+            class="absolute top-0 left-0 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-br-lg tracking-widest uppercase z-10">
+            ANZEIGE</div>
+
         <div class="p-4 pt-8 flex items-start gap-4" onclick="navToAd()">
             <div id="ad-icon" class="text-4xl drop-shadow-lg shrink-0 mt-1"></div>
             <div>
@@ -135,7 +154,7 @@
 
     <div id="cookieOverlay"
         class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm hidden">
-        <div class="glass-panel p-8 rounded-3xl max-w-lg w-full border border-blue-500/30 shadow-2xl">
+        <div class="glass-panel p-5 sm:p-8 rounded-3xl max-w-lg w-full border border-blue-500/30 shadow-2xl">
             <h2 class="text-2xl font-black mb-4">🍪 Daten & Kekse</h2>
             <p class="text-gray-300 text-sm mb-6">Limazon nutzt Cookies für den Login und loggt Aktivitäten zur
                 Sicherheit.</p>
@@ -147,8 +166,8 @@
     <div id="mainContent" class="container mx-auto px-6 py-12 max-w-7xl flex flex-col min-h-screen">
 
         <header class="text-center mb-12">
-            <h1 class="text-5xl md:text-7xl font-black mb-4 tracking-tighter">
-                Limazon<span class="text-blue-500">.</span>Universe
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-black mb-4 tracking-tighter">
+                Limazon<span class="text-blue-500">.</span><wbr>Universe
             </h1>
             <p class="text-xl text-gray-400 font-light">Willkommen im Hub.</p>
 
@@ -628,14 +647,17 @@
                 </div>
             </div>
 
-            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/kirche.html')" data-tags="kirche gott pi religion spenden hardware">
-                <div class="h-32 bg-gradient-to-br from-indigo-950 via-purple-950 to-black flex items-center justify-center relative">
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
+                onclick="nav('themes/kirche.html')" data-tags="kirche gott pi religion spenden hardware">
+                <div
+                    class="h-32 bg-gradient-to-br from-indigo-950 via-purple-950 to-black flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🕯️</span>
                 </div>
                 <div class="p-5">
                     <div class="flex justify-between items-center mb-1">
                         <h3 class="text-xl font-bold group-hover:text-yellow-400">Kirche des Pi</h3>
-                        <span class="bg-yellow-500/20 text-yellow-300 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-500/30">HEILIG</span>
+                        <span
+                            class="bg-yellow-500/20 text-yellow-300 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-500/30">HEILIG</span>
                     </div>
                     <p class="text-gray-400 text-xs">Ehre die Hardware & Spende.</p>
                 </div>
@@ -779,7 +801,7 @@
                 document.getElementById('cookieOverlay').classList.remove('hidden');
             }
             checkActiveStrikes();
-            loadAd(); 
+            loadAd();
         };
 
         function acceptCookies() {
@@ -828,20 +850,20 @@
                 const res = await fetch(`${API_URL}/api/ads/random`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
-                    
+
                     // Wenn der Server sagt, der User ist werbefrei (Limazon Prime)
                     if (data.isAdFree) {
                         console.log("User hat Limazon Prime. Werbung wird geblockt.");
                         return;
                     }
-                    
+
                     if (data.ad) {
                         const banner = document.getElementById('ad-banner');
                         document.getElementById('ad-icon').textContent = data.ad.icon;
                         document.getElementById('ad-title').textContent = data.ad.title;
                         document.getElementById('ad-text').textContent = data.ad.text;
                         currentAdLink = data.ad.link;
-                        
+
                         banner.classList.remove('hidden');
                     }
                 }
@@ -856,7 +878,7 @@
         }
 
         function navToAd() {
-            if(currentAdLink) nav(currentAdLink);
+            if (currentAdLink) nav(currentAdLink);
         }
     </script>
 </body>

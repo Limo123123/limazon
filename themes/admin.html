@@ -130,63 +130,81 @@
             color: #fff;
             margin-top: 4px;
         }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 
-<body class="h-screen flex overflow-hidden">
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
 
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col p-4 shrink-0">
-        <div class="mb-8 flex items-center gap-3 px-2">
-            <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white">L</div>
-            <h1 class="text-xl font-bold tracking-tight">Limo Admin</h1>
+    <!-- Sidebar: Auf Mobile oben, auf Desktop links -->
+    <aside
+        class="w-full md:w-64 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col p-4 shrink-0">
+        <div class="mb-2 md:mb-8 flex items-center justify-between px-2">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white">L
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">Limo Admin</h1>
+            </div>
+            <!-- Zurück-Button wandert auf dem Handy in die Kopfzeile -->
+            <a href="/"
+                class="md:hidden text-xs font-bold text-slate-400 border border-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-800 transition">Hub
+                ⤶</a>
         </div>
 
-        <nav class="flex-grow space-y-1">
-            <a onclick="switchTab('users')" id="nav-users" class="sidebar-link active">👥 Benutzer</a>
-            <a onclick="switchTab('products')" id="nav-products" class="sidebar-link">🛒 Produkte</a>
-            <a onclick="switchTab('system')" id="nav-system" class="sidebar-link text-red-400 hover:text-red-300">⚙️
-                System & Notfall</a>
+        <!-- Navigation: Auf Mobile horizontal scrollbar, auf Desktop untereinander -->
+        <nav class="flex md:flex-col gap-2 md:gap-0 md:space-y-1 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+            <a onclick="switchTab('users')" id="nav-users" class="sidebar-link active whitespace-nowrap">👥 Benutzer</a>
+            <a onclick="switchTab('products')" id="nav-products" class="sidebar-link whitespace-nowrap">🛒 Produkte</a>
+            <a onclick="switchTab('system')" id="nav-system"
+                class="sidebar-link text-red-400 hover:text-red-300 whitespace-nowrap">⚙️ System & Notfall</a>
         </nav>
 
-        <div class="mt-auto border-t border-slate-800 pt-4">
+        <div class="hidden md:block mt-auto border-t border-slate-800 pt-4">
             <a href="/" class="sidebar-link text-sm">← Zurück zum Hub</a>
         </div>
     </aside>
 
-    <main class="flex-grow overflow-y-auto p-8 relative">
+    <main class="flex-grow overflow-y-auto p-4 md:p-8 relative">
 
-        <div id="tab-users" class="space-y-6 fade-in">
-            <div class="flex justify-between items-center">
-                <h2 class="text-3xl font-bold">Benutzerverwaltung</h2>
-                <input type="text" oninput="handleUserSearch(this.value)" placeholder="User suchen..."
-                    class="input-dark w-64">
-            </div>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h2 class="text-2xl sm:text-3xl font-bold">Benutzerverwaltung</h2>
+            <input type="text" oninput="handleUserSearch(this.value)" placeholder="User suchen..."
+                class="input-dark w-full md:w-64">
+        </div>
 
-            <div class="content-card overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="text-slate-400 uppercase border-b border-slate-700">
-                        <tr>
-                            <th class="p-3">User</th>
-                            <th class="p-3">Balance</th>
-                            <th class="p-3">Tokens</th>
-                            <th class="p-3">Rolle / Status</th>
-                            <th class="p-3 text-right">Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-list"></tbody>
-                </table>
-                <div class="text-center py-4 text-slate-500 hidden" id="user-empty">Keine User gefunden.</div>
-            </div>
+        <div class="content-card overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="text-slate-400 uppercase border-b border-slate-700">
+                    <tr>
+                        <th class="p-3">User</th>
+                        <th class="p-3">Balance</th>
+                        <th class="p-3">Tokens</th>
+                        <th class="p-3">Rolle / Status</th>
+                        <th class="p-3 text-right">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list"></tbody>
+            </table>
+            <div class="text-center py-4 text-slate-500 hidden" id="user-empty">Keine User gefunden.</div>
+        </div>
 
-            <div id="user-pagination"
-                class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
-                <button onclick="changeUserPage(-1)" id="btn-user-prev"
-                    class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
-                <span class="text-sm font-bold text-slate-300">Seite <span id="user-page-disp">1</span> / <span
-                        id="user-page-total">1</span></span>
-                <button onclick="changeUserPage(1)" id="btn-user-next"
-                    class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
-            </div>
+        <div id="user-pagination"
+            class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
+            <button onclick="changeUserPage(-1)" id="btn-user-prev"
+                class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
+            <span class="text-sm font-bold text-slate-300">Seite <span id="user-page-disp">1</span> / <span
+                    id="user-page-total">1</span></span>
+            <button onclick="changeUserPage(1)" id="btn-user-next"
+                class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
+        </div>
         </div>
 
         <div id="tab-products" class="hidden space-y-6 fade-in">
@@ -323,8 +341,9 @@
 
     </main>
 
-    <div id="modal-user" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
-        <div class="bg-slate-900 p-6 rounded-xl w-96 border border-slate-700 shadow-2xl fade-in">
+    <div id="modal-user" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4">
+        <div
+            class="bg-slate-900 p-5 sm:p-6 rounded-xl w-full max-w-sm border border-slate-700 shadow-2xl fade-in overflow-y-auto max-h-[90vh]">
             <h3 class="text-xl font-bold mb-4">User bearbeiten</h3>
             <input type="hidden" id="edit-u-id">
             <div class="space-y-3">
@@ -358,8 +377,9 @@
         </div>
     </div>
 
-    <div id="modal-product" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
-        <div class="bg-slate-900 p-6 rounded-xl w-96 border border-slate-700 shadow-2xl fade-in">
+    <div id="modal-product" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4">
+        <div
+            class="bg-slate-900 p-5 sm:p-6 rounded-xl w-full max-w-sm border border-slate-700 shadow-2xl fade-in overflow-y-auto max-h-[90vh]">
             <h3 class="text-xl font-bold mb-4">Produkt</h3>
             <input type="hidden" id="edit-p-oid">
             <div class="space-y-3">
