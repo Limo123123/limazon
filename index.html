@@ -121,6 +121,43 @@
                 border-color: rgba(59, 130, 246, 0.6);
             }
         }
+
+        @media (max-width: 640px) {
+            .strike-label {
+                top: 12px;
+                right: -28px;
+                font-size: 12px;
+                padding: 6px 30px;
+            }
+
+            #ad-banner {
+                left: 1rem;
+                right: 1rem;
+                bottom: 1rem;
+                width: auto;
+                max-width: calc(100% - 2rem);
+            }
+
+            .theme-card:hover {
+                transform: none;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            }
+
+            #bgEffects > div:first-child,
+            #bgEffects > div:nth-child(2) {
+                width: 18rem;
+                height: 18rem;
+            }
+
+            #bgEffects > div:first-child {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            #bgEffects > div:nth-child(2) {
+                right: 50%;
+            }
+        }
     </style>
 </head>
 
@@ -134,7 +171,6 @@
 
     <!-- NEU: WERBEBANNER (FLOATING BOTTOM RIGHT) -->
     <div id="ad-banner" class="hidden fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 sm:w-80 glass-panel rounded-2xl border border-blue-500/50 shadow-2xl z-[90] cursor-pointer transition-all hover:scale-105 ad-pulse">
-        class="hidden fixed bottom-6 right-6 w-80 glass-panel rounded-2xl border border-blue-500/50 shadow-2xl z-[90] cursor-pointer transition-all hover:scale-105 ad-pulse">
         <!-- Close Button (stopPropagation verhindert Navigation beim Klicken) -->
         <button onclick="closeAd(event)"
             class="absolute top-2 right-2 text-gray-400 hover:text-white z-20 bg-black/50 rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
@@ -172,7 +208,7 @@
             <p class="text-xl text-gray-400 font-light">Willkommen im Hub.</p>
 
             <div class="mt-8 relative max-w-md mx-auto">
-                <input type="text" id="searchInput" onkeyup="filterApps()"
+                <input type="text" id="searchInput"
                     class="w-full pl-12 pr-4 py-4 bg-gray-900/80 border border-gray-700 rounded-2xl text-white focus:outline-none search-glow transition-all"
                     placeholder="Suche Module...">
                 <span class="absolute left-4 top-4 opacity-50">🔍</span>
@@ -794,91 +830,94 @@
 
     <script>
         const API_URL = 'https://api.limazon.v6.rocks';
-        let currentAdLink = "";
+        const cookieOverlay = document.getElementById('cookieOverlay');
+        const searchInput = document.getElementById('searchInput');
+        const cards = document.querySelectorAll('.theme-card');
+        const adBanner = document.getElementById('ad-banner');
+        let currentAdLink = '';
 
-        window.onload = function () {
+        document.addEventListener('DOMContentLoaded', () => {
             if (!localStorage.getItem('limazon_consent_2026')) {
-                document.getElementById('cookieOverlay').classList.remove('hidden');
+                cookieOverlay.classList.remove('hidden');
             }
+
+            searchInput.addEventListener('input', filterApps);
             checkActiveStrikes();
             loadAd();
-        };
+        });
 
         function acceptCookies() {
             localStorage.setItem('limazon_consent_2026', 'true');
-            document.getElementById('cookieOverlay').classList.add('hidden');
+            cookieOverlay.classList.add('hidden');
         }
 
-        function nav(url) { window.location.href = url; }
+        function nav(url) {
+            window.location.href = url;
+        }
 
         function filterApps() {
-            const input = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.theme-card');
+            const query = searchInput.value.trim().toLowerCase();
+
             cards.forEach(card => {
-                const tags = card.getAttribute('data-tags') || "";
-                const title = card.querySelector('h3').innerText.toLowerCase();
-                card.style.display = (tags.includes(input) || title.includes(input)) ? 'block' : 'none';
+                const tags = (card.getAttribute('data-tags') || '').toLowerCase();
+                const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
+                const visible = !query || tags.includes(query) || title.includes(query);
+
+                card.style.display = visible ? '' : 'none';
             });
         }
 
         async function checkActiveStrikes() {
             try {
-                const res = await fetch(`${API_URL}/api/strikes/public`);
-                if (!res.ok) return;
+                const response = await fetch(`${API_URL}/api/strikes/public`);
+                if (!response.ok) return;
 
-                const data = await res.json();
-                if (!data.strikes || data.strikes.length === 0) return;
+                const data = await response.json();
+                if (!Array.isArray(data.strikes) || data.strikes.length === 0) return;
 
                 data.strikes.forEach(strike => {
                     const card = document.querySelector(`[data-module="${strike.module}"]`);
-                    if (card) {
-                        card.classList.add('strike-active-card');
-                        const banner = document.createElement('div');
-                        banner.className = 'strike-label';
-                        banner.innerHTML = 'STREIK';
-                        card.appendChild(banner);
-                    }
+                    if (!card) return;
+
+                    card.classList.add('strike-active-card');
+                    const banner = document.createElement('div');
+                    banner.className = 'strike-label';
+                    banner.textContent = 'STREIK';
+                    card.appendChild(banner);
                 });
-            } catch (e) {
-                console.log("Streik-Status nicht verfügbar.");
+            } catch (error) {
+                console.log('Streik-Status nicht verfügbar.', error);
             }
         }
 
-        // NEU: Die Funktion, um das Werbebanner zu laden (Mit Login-Prüfung!)
         async function loadAd() {
             try {
-                const res = await fetch(`${API_URL}/api/ads/random`, { credentials: 'include' });
-                if (res.ok) {
-                    const data = await res.json();
+                const response = await fetch(`${API_URL}/api/ads/random`, { credentials: 'include' });
+                if (!response.ok) return;
 
-                    // Wenn der Server sagt, der User ist werbefrei (Limazon Prime)
-                    if (data.isAdFree) {
-                        console.log("User hat Limazon Prime. Werbung wird geblockt.");
-                        return;
-                    }
+                const data = await response.json();
+                if (data.isAdFree) return;
+                if (!data.ad) return;
 
-                    if (data.ad) {
-                        const banner = document.getElementById('ad-banner');
-                        document.getElementById('ad-icon').textContent = data.ad.icon;
-                        document.getElementById('ad-title').textContent = data.ad.title;
-                        document.getElementById('ad-text').textContent = data.ad.text;
-                        currentAdLink = data.ad.link;
-
-                        banner.classList.remove('hidden');
-                    }
-                }
-            } catch (e) {
-                console.log("Werbe-Server nicht erreichbar oder durch Adblocker blockiert.");
+                document.getElementById('ad-icon').textContent = data.ad.icon || '📰';
+                document.getElementById('ad-title').textContent = data.ad.title || 'Anzeige';
+                document.getElementById('ad-text').textContent = data.ad.text || '';
+                currentAdLink = data.ad.link || '';
+                adBanner.classList.remove('hidden');
+            } catch (error) {
+                console.log('Werbe-Server nicht erreichbar oder durch Adblocker blockiert.', error);
             }
         }
 
         function closeAd(event) {
-            event.stopPropagation(); // WICHTIG: Verhindert, dass der Klick auf das "X" auch die Werbung öffnet
-            document.getElementById('ad-banner').style.display = 'none';
+            event.stopPropagation();
+            adBanner.style.display = 'none';
         }
 
         function navToAd() {
-            if (currentAdLink) nav(currentAdLink);
+            if (currentAdLink) {
+                nav(currentAdLink);
+            }
         }
     </script>
 </body>
