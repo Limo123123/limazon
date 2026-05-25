@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <title>Limo Admin - Activity Viewer</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .log-table { width: 100%; border-collapse: collapse; background: #2a2a2a; }
+        .log-table th, .log-table td { padding: 10px; border: 1px solid #444; text-align: left; font-size: 0.9em; }
+        .log-table tr:hover { background: #333; }
+        .action-tag { padding: 3px 7px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .tag-purchase { background: #2ecc71; color: black; }
+        .tag-trade { background: #3498db; color: white; }
+        .tag-message { background: #9b59b6; color: white; }
+        .tag-login { background: #f1c40f; color: black; }
+        .details-json { font-family: monospace; color: #aaa; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <h2>🕵️ Spieler-Aktivitäten (Live Logs)</h2>
+    <div id="stats">Wird geladen...</div>
+    <br>
+    <table class="log-table">
+        <thead>
+            <tr>
+                <th>Zeitpunkt</th>
+                <th>Spieler</th>
+                <th>Aktion</th>
+                <th>Details</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+    </table>
+
+    <script>
+        async function fetchLogs() {
+            const res = await fetch('https://api.limazon.v6.rocks/api/admin/activity-logs', { credentials: 'include' });
+            const data = await res.json();
+            
+            if(data.error) {
+                document.body.innerHTML = "<h1>Zugriff verweigert</h1>";
+                return;
+            }
+
+            document.getElementById('stats').innerText = `Gesamtanzahl Logs: ${data.total}`;
+            const body = document.getElementById('logBody');
+            body.innerHTML = '';
+
+            data.logs.forEach(log => {
+                const tr = document.createElement('tr');
+                const date = new Date(log.timestamp).toLocaleString('de-DE');
+                
+                // CSS Klasse für Action-Tags bestimmen
+                let tagClass = "action-tag";
+                if(log.action.includes('PURCHASE')) tagClass += " tag-purchase";
+                if(log.action.includes('TRADE')) tagClass += " tag-trade";
+                if(log.action.includes('MESSAGE')) tagClass += " tag-message";
+                if(log.action.includes('LOGIN')) tagClass += " tag-login";
+
+                tr.innerHTML = `
+                    <td>${date}</td>
+                    <td><strong>${log.username}</strong><br><small>${log.userId || ''}</small></td>
+                    <td><span class="${tagClass}">${log.action}</span></td>
+                    <td class="details-json">${JSON.stringify(log.details)}</td>
+                    <td><small>${log.ip}</small></td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        fetchLogs();
+        setInterval(fetchLogs, 30000); // Alle 30 Sekunden aktualisieren
+    </script>
+
+</body></html>
