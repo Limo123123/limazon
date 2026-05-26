@@ -144,18 +144,18 @@
                 box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             }
 
-            #bgEffects > div:first-child,
-            #bgEffects > div:nth-child(2) {
+            #bgEffects>div:first-child,
+            #bgEffects>div:nth-child(2) {
                 width: 18rem;
                 height: 18rem;
             }
 
-            #bgEffects > div:first-child {
+            #bgEffects>div:first-child {
                 left: 50%;
                 transform: translateX(-50%);
             }
 
-            #bgEffects > div:nth-child(2) {
+            #bgEffects>div:nth-child(2) {
                 right: 50%;
             }
         }
@@ -171,7 +171,8 @@
     </div>
 
     <!-- NEU: WERBEBANNER (FLOATING BOTTOM RIGHT) -->
-    <div id="ad-banner" class="hidden fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 sm:w-80 glass-panel rounded-2xl border border-blue-500/50 shadow-2xl z-[90] cursor-pointer transition-all hover:scale-105 ad-pulse">
+    <div id="ad-banner"
+        class="hidden fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 sm:w-80 glass-panel rounded-2xl border border-blue-500/50 shadow-2xl z-[90] cursor-pointer transition-all hover:scale-105 ad-pulse">
         <!-- Close Button (stopPropagation verhindert Navigation beim Klicken) -->
         <button onclick="closeAd(event)"
             class="absolute top-2 right-2 text-gray-400 hover:text-white z-20 bg-black/50 rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
@@ -193,8 +194,14 @@
         class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm hidden">
         <div class="glass-panel p-5 sm:p-8 rounded-3xl max-w-lg w-full border border-blue-500/30 shadow-2xl">
             <h2 class="text-2xl font-black mb-4">🍪 Daten & Kekse</h2>
-            <p class="text-gray-300 text-sm mb-6">Limazon nutzt Cookies für den Login und loggt Aktivitäten zur
+            <p class="text-gray-300 text-sm mb-4">Limazon nutzt Cookies für den Login und loggt Aktivitäten zur
                 Sicherheit.</p>
+
+            <p class="text-amber-400 text-xs border-l-2 border-amber-500 pl-2 mb-6 bg-amber-500/10 py-2 pr-2 rounded-r">
+                <strong>Wichtig:</strong> Limazon.Universe ist eine reine Wirtschaftssimulation. Alle Währungen, Banken
+                und IDs sind fiktive Spielinhalte. Es werden keine echten Personen- oder Zahlungsdaten erhoben!
+            </p>
+
             <button onclick="acceptCookies()"
                 class="w-full py-4 bg-blue-600 hover:bg-blue-500 font-bold rounded-2xl transition-all active:scale-95">Akzeptieren</button>
         </div>
@@ -818,7 +825,12 @@
 
         </div>
 
-        <footer class="mt-auto py-6 border-t border-gray-800 flex justify-center items-center text-sm text-gray-500">
+        <footer class="mt-auto py-6 border-t border-gray-800 text-center text-sm text-gray-500">
+            <p class="text-xs text-gray-600 mb-4 max-w-2xl mx-auto">
+                Limazon.Universe ist ein kostenloses Browserspiel und eine fiktive Rollenspiel-Simulation. Alle
+                In-Game-Finanzen, Clans und Dienstleistungen besitzen keinen realen Gegenwert.
+            </p>
+
             <div class="flex flex-wrap justify-center gap-4">
                 <a href="themes/account.html" class="hover:text-white transition">Konto</a>
                 <a href="themes/status.html" class="hover:text-white transition">Netzwerk</a>
