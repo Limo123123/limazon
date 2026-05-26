@@ -569,10 +569,14 @@
 
         async function saveUser() {
             const id = document.getElementById('edit-u-id').value;
+
+            // Prüfen ob die Checkbox gesetzt ist
+            const isAdminChecked = document.getElementById('edit-u-admin').checked;
+
             const body = {
                 balance: document.getElementById('edit-u-bal').value,
                 tokens: document.getElementById('edit-u-tok').value,
-                isAdmin: document.getElementById('edit-u-admin').checked,
+                role: isAdminChecked ? 'admin' : 'user',
                 infinityMoney: document.getElementById('edit-u-infinity').checked,
             };
 
