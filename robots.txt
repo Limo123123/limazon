@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /themes/admin.html
+Disallow: /themes/admin_logs.html
+Disallow: /themes/console.html
+Disallow: /themes/rights.html
+Disallow: /data-manager.html
+Disallow: /oldindex.html
+
+Allow: /
+Sitemap: https://app.limazon.v6.rocks/sitemap.xml
