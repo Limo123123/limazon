@@ -90,7 +90,7 @@
             border-color: #bdc3c7;
         }
 
-        /* Slot Machine */
+        /* Slot Machine V2 */
         .slot-machine {
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -120,11 +120,9 @@
         }
         .reel-inner {
             text-shadow: 0 5px 10px rgba(0,0,0,0.5);
-            /* Font Rendering für saubere Emojis */
             font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
         }
         
-        /* Die rasante Drehanimation */
         .spinning {
             animation: spin-blur 0.15s infinite linear;
         }
@@ -133,13 +131,34 @@
             100% { transform: translateY(40px); filter: blur(3px); opacity: 0.5; }
         }
 
-        /* Der harte Stopp mit Rebound */
         .snap {
             animation: snap-bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         @keyframes snap-bounce {
             0% { transform: translateY(-50px); opacity: 0; }
             100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+        }
+
+        /* Blackjack Cards */
+        .playing-card {
+            background: #fff;
+            border-radius: 8px;
+            width: 60px;
+            height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: bold;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #ccc;
+        }
+        .card-red { color: #e74c3c; }
+        .card-black { color: #2c3e50; }
+        .card-hidden {
+            background: repeating-linear-gradient(45deg, #2c3e50, #2c3e50 10px, #34495e 10px, #34495e 20px);
+            border: 2px solid #fff;
         }
 
         /* Inputs & Buttons */
@@ -189,9 +208,10 @@
 
     <div class="casino-card">
         
-        <div class="flex justify-center gap-6 mb-6">
+        <div class="flex justify-center gap-4 mb-6">
             <button id="tab-coinflip" class="tab-btn active" onclick="switchGame('coinflip')">COINFLIP</button>
             <button id="tab-slots" class="tab-btn inactive" onclick="switchGame('slots')">SLOTS</button>
+            <button id="tab-blackjack" class="tab-btn inactive" onclick="switchGame('blackjack')">BLACKJACK</button>
         </div>
 
         <div class="bg-black/40 rounded-xl p-3 mb-6 inline-block border border-white/5">
@@ -218,6 +238,20 @@
             </div>
         </div>
 
+        <div id="area-blackjack" class="hidden w-full">
+            <div class="bg-black/50 border border-white/10 rounded-xl p-4 mb-4">
+                <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">Dealer <span id="bj-dealer-score" class="text-white font-bold ml-2"></span></div>
+                <div id="bj-dealer-hand" class="flex justify-center gap-2 min-h-[85px] flex-wrap">
+                    </div>
+            </div>
+
+            <div class="bg-black/50 border border-white/10 rounded-xl p-4">
+                <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">Du <span id="bj-player-score" class="text-white font-bold ml-2"></span></div>
+                <div id="bj-player-hand" class="flex justify-center gap-2 min-h-[85px] flex-wrap">
+                    </div>
+            </div>
+        </div>
+
         <div id="result-msg" class="h-8 mb-4 font-bold text-lg text-gray-300">Dein Einsatz, bitte.</div>
 
         <div class="space-y-4">
@@ -240,6 +274,13 @@
             <div id="btn-group-slots" class="hidden">
                 <button id="btn-spin" class="btn-action btn-spin w-full" onclick="playSlots()">🎰 SPIN</button>
             </div>
+
+            <div id="btn-group-blackjack" class="hidden flex gap-2">
+                <button id="btn-bj-deal" class="btn-action w-full" style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: #000;" onclick="startBlackjack()">🃏 DEAL</button>
+                <button id="btn-bj-hit" class="btn-action hidden" style="background: #3498db; color: #fff;" onclick="actionBlackjack('hit')">HIT</button>
+                <button id="btn-bj-stand" class="btn-action hidden" style="background: #e74c3c; color: #fff;" onclick="actionBlackjack('stand')">STAND</button>
+                <button id="btn-bj-double" class="btn-action hidden" style="background: #f1c40f; color: #000;" onclick="actionBlackjack('double')">DOUBLE</button>
+            </div>
         </div>
 
         <div class="stats-bar">
@@ -258,8 +299,15 @@
         const API_URL = 'https://api.limazon.v6.rocks';
         let isPlaying = false;
         let currentBalance = 0;
+        
+        // Coinflip Variables
         let totalRotation = 0; 
+        
+        // Slots Variables
         let slotInterval;
+
+        // Blackjack Variables
+        let bjState = null;
 
         // Auth Helper
         async function fetchAuth(url, options = {}) {
@@ -273,37 +321,43 @@
 
         // Tab Switching Logic
         function switchGame(game) {
-            if(isPlaying) return; // Nicht wechseln, während ein Spiel läuft
+            if(isPlaying || (bjState && bjState.status === 'playing')) return; 
             
             const isCoin = game === 'coinflip';
+            const isSlot = game === 'slots';
+            const isBJ = game === 'blackjack';
             
             document.getElementById('tab-coinflip').className = `tab-btn ${isCoin ? 'active' : 'inactive'}`;
-            document.getElementById('tab-slots').className = `tab-btn ${!isCoin ? 'active' : 'inactive'}`;
+            document.getElementById('tab-slots').className = `tab-btn ${isSlot ? 'active' : 'inactive'}`;
+            document.getElementById('tab-blackjack').className = `tab-btn ${isBJ ? 'active' : 'inactive'}`;
             
             document.getElementById('area-coinflip').classList.toggle('hidden', !isCoin);
             document.getElementById('btn-group-coinflip').classList.toggle('hidden', !isCoin);
             
-            document.getElementById('area-slots').classList.toggle('hidden', isCoin);
-            document.getElementById('btn-group-slots').classList.toggle('hidden', isCoin);
+            document.getElementById('area-slots').classList.toggle('hidden', !isSlot);
+            document.getElementById('btn-group-slots').classList.toggle('hidden', !isSlot);
+
+            document.getElementById('area-blackjack').classList.toggle('hidden', !isBJ);
+            document.getElementById('btn-group-blackjack').classList.toggle('hidden', !isBJ);
 
             document.getElementById('result-msg').innerHTML = '<span class="text-gray-300">Dein Einsatz, bitte.</span>';
         }
 
         // Quick Bet Functions
         function setBet(amount) {
-            if(isPlaying) return;
+            if(isPlaying || (bjState && bjState.status === 'playing')) return;
             const input = document.getElementById('bet-amount');
             let current = parseFloat(input.value) || 0;
             input.value = current + amount;
         }
         function multiplyBet(factor) {
-            if(isPlaying) return;
+            if(isPlaying || (bjState && bjState.status === 'playing')) return;
             const input = document.getElementById('bet-amount');
             let current = parseFloat(input.value) || 0;
             if(current > 0) input.value = current * factor;
         }
         function setAllIn() {
-            if(isPlaying) return;
+            if(isPlaying || (bjState && bjState.status === 'playing')) return;
             document.getElementById('bet-amount').value = Math.floor(currentBalance);
         }
 
@@ -355,7 +409,23 @@
             document.getElementById('btn-heads').disabled = locked;
             document.getElementById('btn-tails').disabled = locked;
             document.getElementById('btn-spin').disabled = locked;
+            document.getElementById('btn-bj-deal').disabled = locked;
             document.getElementById('bet-amount').disabled = locked;
+        }
+
+        function handleResult(data) {
+            currentBalance = data.newBalance;
+            document.getElementById('user-balance').innerText = `$${currentBalance.toFixed(2)}`;
+            
+            const msg = document.getElementById('result-msg');
+            if (data.won) {
+                msg.innerHTML = `<span class="text-green-400 text-2xl drop-shadow-md">🎉 GEWONNEN! +$${data.payout.toFixed(2)}</span>`;
+            } else {
+                msg.innerHTML = `<span class="text-red-500">💸 Verloren...</span>`;
+            }
+            
+            loadStats();
+            lockUI(false);
         }
 
         // --- GAME: COINFLIP ---
@@ -403,7 +473,7 @@
             }
         }
 
-        // --- GAME: SLOTS ---
+        // --- GAME: SLOTS V2 ---
         async function playSlots() {
             const amount = validateBet();
             if (!amount) return;
@@ -418,13 +488,11 @@
             
             msg.innerText = "Walzen drehen sich...";
             
-            // 1. Spinning-Klasse auf alle Walzen legen und alte Animationen entfernen
             reels.forEach(r => {
                 r.classList.remove('snap');
                 r.classList.add('spinning');
             });
 
-            // Visueller Fake-Ratterer im Hintergrund, damit sich was bewegt
             const emojis = ['🍒', '🍋', '🍇', '🔔', '💎', '7️⃣'];
             slotInterval = setInterval(() => {
                 reels.forEach(r => r.innerText = emojis[Math.floor(Math.random() * 6)]);
@@ -445,30 +513,24 @@
                     return;
                 }
 
-                // 2. Walzen nacheinander stoppen lassen
                 clearInterval(slotInterval);
                 
-                // Walze 1 stoppt nach 500ms
                 setTimeout(() => {
                     reels[0].classList.remove('spinning');
                     reels[0].innerText = data.slots[0];
                     reels[0].classList.add('snap');
                 }, 500);
 
-                // Walze 2 stoppt nach 1000ms
                 setTimeout(() => {
                     reels[1].classList.remove('spinning');
                     reels[1].innerText = data.slots[1];
                     reels[1].classList.add('snap');
                 }, 1000);
 
-                // Walze 3 stoppt nach 1500ms und löst das Ende aus
                 setTimeout(() => {
                     reels[2].classList.remove('spinning');
                     reels[2].innerText = data.slots[2];
                     reels[2].classList.add('snap');
-                    
-                    // Ergebnis auswerten
                     handleResult(data);
                 }, 1500);
 
@@ -479,20 +541,135 @@
             }
         }
 
-        // Gemeinsames Result-Handling
-        function handleResult(data) {
-            currentBalance = data.newBalance;
-            document.getElementById('user-balance').innerText = `$${currentBalance.toFixed(2)}`;
+        // --- GAME: BLACKJACK ---
+        function renderCards(handArray, containerId, hideSecondCard = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
             
+            handArray.forEach((c, index) => {
+                if (hideSecondCard && index === 1) {
+                    container.innerHTML += `<div class="playing-card card-hidden"></div>`;
+                    return;
+                }
+                const isRed = c.card.includes('♥️') || c.card.includes('♦️');
+                const colorClass = isRed ? 'card-red' : 'card-black';
+                container.innerHTML += `<div class="playing-card ${colorClass}">${c.card}</div>`;
+            });
+        }
+
+        function updateBjUI(state) {
             const msg = document.getElementById('result-msg');
-            if (data.won) {
-                msg.innerHTML = `<span class="text-green-400 text-2xl drop-shadow-md">🎉 GEWONNEN! +$${data.payout.toFixed(2)}</span>`;
-            } else {
-                msg.innerHTML = `<span class="text-red-500">💸 Verloren...</span>`;
-            }
             
-            loadStats();
-            lockUI(false);
+            const isPlaying = state.status === 'playing';
+            document.getElementById('btn-bj-deal').classList.toggle('hidden', isPlaying);
+            document.getElementById('btn-bj-hit').classList.toggle('hidden', !isPlaying);
+            document.getElementById('btn-bj-stand').classList.toggle('hidden', !isPlaying);
+            
+            const canDouble = isPlaying && state.playerHand.length === 2;
+            document.getElementById('btn-bj-double').classList.toggle('hidden', !canDouble);
+
+            renderCards(state.playerHand, 'bj-player-hand');
+            renderCards(state.dealerHand, 'bj-dealer-hand', isPlaying); // Dealer verdeckt 2. Karte
+
+            const calcScore = (hand) => {
+                let sum = 0, aces = 0;
+                hand.forEach(c => { sum += c.points; if (c.val === 'A') aces++; });
+                while (sum > 21 && aces > 0) { sum -= 10; aces--; }
+                return sum;
+            };
+
+            document.getElementById('bj-player-score').innerText = `(${calcScore(state.playerHand)})`;
+            document.getElementById('bj-dealer-score').innerText = isPlaying ? `(?)` : `(${calcScore(state.dealerHand)})`;
+
+            if (state.message) {
+                if (state.status === 'won') msg.innerHTML = `<span class="text-green-400">🎉 ${state.message}</span>`;
+                else if (state.status === 'lost') msg.innerHTML = `<span class="text-red-500">💸 ${state.message}</span>`;
+                else msg.innerHTML = `<span class="text-yellow-400">🤝 ${state.message}</span>`;
+            } else {
+                msg.innerHTML = '<span class="text-gray-300">Hit oder Stand?</span>';
+            }
+
+            if (!isPlaying) {
+                updateBalance();
+                loadStats();
+                lockUI(false);
+            }
+        }
+
+        async function startBlackjack() {
+            const amount = validateBet();
+            if (!amount) return;
+
+            // SICHERHEIT: Alle Action-Buttons explizit entsperren, falls sie hängen!
+            document.getElementById('btn-bj-hit').disabled = false;
+            document.getElementById('btn-bj-stand').disabled = false;
+            document.getElementById('btn-bj-double').disabled = false;
+
+            lockUI(true);
+            document.getElementById('result-msg').innerText = "Karten werden gemischt...";
+            document.getElementById('bj-dealer-hand').innerHTML = '';
+            document.getElementById('bj-player-hand').innerHTML = '';
+            document.getElementById('bj-dealer-score').innerText = '';
+            document.getElementById('bj-player-score').innerText = '';
+
+            try {
+                const res = await fetchAuth(`${API_URL}/api/casino/blackjack/start`, {
+                    method: 'POST',
+                    body: JSON.stringify({ betAmount: amount })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    document.getElementById('result-msg').innerHTML = `<span class="text-red-500">${data.error || "Fehler"}</span>`;
+                    lockUI(false);
+                    return;
+                }
+
+                bjState = data;
+                updateBalance(); 
+                updateBjUI(bjState);
+            } catch (err) {
+                document.getElementById('result-msg').innerText = "Netzwerkfehler!";
+                lockUI(false);
+            }
+        }
+
+        function unlockButtons() {
+            document.getElementById('btn-bj-hit').disabled = false;
+            document.getElementById('btn-bj-stand').disabled = false;
+            document.getElementById('btn-bj-double').disabled = false;
+            document.getElementById('btn-bj-deal').disabled = false;
+        }
+
+        async function actionBlackjack(actionType) {
+            // Buttons sperren
+            document.getElementById('btn-bj-hit').disabled = true;
+            document.getElementById('btn-bj-stand').disabled = true;
+            document.getElementById('btn-bj-double').disabled = true;
+
+            try {
+                const res = await fetchAuth(`${API_URL}/api/casino/blackjack/action`, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: actionType })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.error || "Fehler bei der Aktion");
+                    unlockButtons(); // Fehler? -> Sofort Buttons frei!
+                } else {
+                    bjState = data;
+                    updateBjUI(bjState);
+                    // unlockButtons wird in updateBjUI(state) automatisch aufgerufen, 
+                    // wenn das Spiel vorbei ist. Wenn es weitergeht, bleiben sie für den nächsten Zug entsperrt.
+                    if (data.status === 'playing') {
+                         unlockButtons(); 
+                    }
+                }
+            } catch (err) {
+                alert("Netzwerkfehler!");
+                unlockButtons(); // Crash? -> Sofort Buttons frei!
+            }
         }
 
     </script>
