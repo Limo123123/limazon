@@ -153,7 +153,7 @@
                     currentUser = await res.json();
                     document.getElementById('user-avatar').innerText = currentUser.username.substring(0, 2).toUpperCase();
                 } else {
-                    window.location.href = 'index.html'; // Fallback falls nicht eingeloggt
+                    window.location.href = '/index.html'; // Fallback falls nicht eingeloggt
                 }
             } catch (e) { console.error(e); }
             
