@@ -2,58 +2,60 @@ import os
 import re
 import time
 
-def patch_html_files(directory='.'):
-    # Aktuelle Zeit in Sekunden für Cache-Busting
+
+def patch_html_files(directory="."):
     current_time = int(time.time())
-    
-    # Der Tag, den wir einfügen/updaten wollen
-    script_tag = f'<script type="module" src="/themes/js/security.js?v={current_time}"></script>'
 
-    # Regex, um das existierende Script zu finden (erkennt Pfade, die auf security.js enden, mit/ohne v=123)
-    script_pattern = re.compile(r'<script[^>]*src=["\'][^"\']*security\.js(?:\?v=\d+)?["\'][^>]*>\s*</script>', re.IGNORECASE)
-    
-    # Regex, um den schließenden Head-Tag zu finden
-    head_pattern = re.compile(r'</head>', re.IGNORECASE)
+    script_tag = (
+        f'<script src="/themes/js/security.js?v={current_time}"></script>'
+    )
 
-    files_patched = 0
-    files_added = 0
+    security_pattern = re.compile(
+        r'<script[^>]*src=["\'][^"\']*security\.js(?:\?v=\d+)?["\'][^>]*>\s*</script>',
+        re.IGNORECASE | re.DOTALL
+    )
 
-    for root, dirs, files in os.walk(directory):
+    head_pattern = re.compile(
+        r"<head([^>]*)>",
+        re.IGNORECASE
+    )
+
+    updated = 0
+
+    for root, _, files in os.walk(directory):
         for file in files:
-            if file.endswith('.html'):
-                filepath = os.path.join(root, file)
-                
-                with open(filepath, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
-                new_content = content
-                
-                # Prüfen, ob das Script schon drin ist
-                if script_pattern.search(content):
-                    # Ersetzen mit dem neuen Zeitstempel
-                    new_content = script_pattern.sub(script_tag, content)
-                    if new_content != content:
-                        print(f"[UPDATED]  {filepath}")
-                        files_patched += 1
-                else:
-                    # Hinzufügen vor dem </head> Tag
-                    if head_pattern.search(content):
-                        new_content = head_pattern.sub(f'    {script_tag}\n</head>', content)
-                        print(f"[ADDED]    {filepath}")
-                        files_added += 1
-                    else:
-                        print(f"[WARNING] Kein <head> Tag in {filepath} gefunden. Datei übersprungen.")
-                
-                # Nur schreiben, wenn sich etwas geändert hat
-                if new_content != content:
-                    with open(filepath, 'w', encoding='utf-8') as f:
-                        f.write(new_content)
+            if not file.endswith(".html"):
+                continue
 
-    print("-" * 40)
-    print("Patch-Vorgang abgeschlossen!")
-    print(f"Dateien aktualisiert (Zeitstempel neu): {files_patched}")
-    print(f"Dateien gepatcht (Skript neu eingefügt): {files_added}")
+            path = os.path.join(root, file)
+
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            original = content
+
+            # Alle security.js Einbindungen entfernen
+            content = security_pattern.sub("", content)
+
+            # Direkt nach <head> einfügen
+            def insert(match):
+                return f"<head{match.group(1)}>\n    {script_tag}"
+
+            content = head_pattern.sub(insert, content, count=1)
+
+            # Leere Zeilen etwas aufräumen
+            content = re.sub(r"\n{3,}", "\n\n", content)
+
+            if content != original:
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(content)
+
+                print(f"[PATCHED] {path}")
+                updated += 1
+
+    print("-" * 50)
+    print(f"Fertig! {updated} HTML-Dateien aktualisiert.")
+
 
 if __name__ == "__main__":
-    # Startet die Suche im aktuellen Verzeichnis
     patch_html_files()

@@ -1,72 +1,165 @@
-// security.js - Zentrale Security & Fingerprint Logik für Limazon
+// security.js - Zentrale Security & API Logik für Limazon
 
-const API_URL_CHECK = 'api.limazon.v6.rocks';
+const API_HOST = "api.limazon.v6.rocks";
+const FP_STORAGE_KEY = "limo_fingerprint";
 
-// 1. Zuerst den Fetch-Interceptor global und SOFORT definieren!
-const originalFetch = window.fetch;
-window.fetch = async function(...args) {
-    let [resource, config] = args;
-    if (!config) config = {};
-    if (!config.headers) config.headers = {};
-    
-    // A. Credentials für DEINE API hinzufügen (verhindert den 404 Fehler in alten HTMLs!)
-    if (typeof resource === 'string' && resource.includes(API_URL_CHECK)) {
-        config.credentials = 'include';
-    }
+// ------------------------------------------------------------
+// Fingerprint laden
+// ------------------------------------------------------------
 
-    // B. Fingerprint hinzufügen, falls bereits im LocalStorage vorhanden
-    const currentFp = localStorage.getItem('limo_fingerprint');
-    if (currentFp) {
-        if (config.headers instanceof Headers) {
-            config.headers.append('x-device-fingerprint', currentFp);
-        } else {
-            config.headers['x-device-fingerprint'] = currentFp;
-        }
-    }
-    
-    return originalFetch(resource, config);
-};
-
-// Falls du irgendwo axios nutzt, sichern wir das auch gleich ab
-if (typeof axios !== 'undefined') {
-    axios.defaults.withCredentials = true; 
-    const savedFp = localStorage.getItem('limo_fingerprint');
-    if (savedFp) axios.defaults.headers.common['x-device-fingerprint'] = savedFp;
-}
-
-// 2. Fingerprint Logik ausführen
-let visitorId = localStorage.getItem('limo_fingerprint');
+let visitorId = localStorage.getItem(FP_STORAGE_KEY);
 
 if (visitorId) {
-    console.log("🔒 [Security] Bekanntes Gerät erkannt: " + visitorId);
+    console.log("🔒 [Security] Bekanntes Gerät erkannt:", visitorId);
 } else {
     console.log("🔒 [Security] Neues Gerät. Generiere Fingerprint...");
     generateAndSaveFingerprint();
 }
 
-// 3. Funktion zum Generieren (wird nur 1x pro Gerät/Cache-Lebensdauer ausgeführt)
+// ------------------------------------------------------------
+// Globales Fetch patchen
+// ------------------------------------------------------------
+
+const originalFetch = window.fetch.bind(window);
+
+window.fetch = async function(resource, init = {}) {
+
+    let config = {
+        credentials: "include",
+        ...init
+    };
+
+    // URL bestimmen
+    let url;
+
+    try {
+        url = new URL(
+            resource instanceof Request ? resource.url : resource,
+            location.href
+        );
+    } catch {
+        return originalFetch(resource, config);
+    }
+
+    // Nur unsere API verändern
+    if (url.hostname === API_HOST) {
+
+        config.credentials = "include";
+
+        const headers = new Headers(config.headers || {});
+
+        // Fingerprint
+        const fp = localStorage.getItem(FP_STORAGE_KEY);
+
+        if (fp) {
+            headers.set("x-device-fingerprint", fp);
+        }
+
+        // Body automatisch zu JSON machen
+        if (
+            config.body &&
+            typeof config.body === "object" &&
+            !(config.body instanceof FormData) &&
+            !(config.body instanceof Blob) &&
+            !(config.body instanceof URLSearchParams) &&
+            !(config.body instanceof ArrayBuffer)
+        ) {
+            config.body = JSON.stringify(config.body);
+        }
+
+        // JSON Content-Type automatisch setzen
+        if (
+            typeof config.body === "string" &&
+            !headers.has("Content-Type")
+        ) {
+            headers.set("Content-Type", "application/json");
+        }
+
+        config.headers = headers;
+    }
+
+    const response = await originalFetch(resource, config);
+
+    if (!response.ok) {
+        console.warn(
+            `⚠️ ${config.method || "GET"} ${url.pathname} -> ${response.status}`
+        );
+    }
+
+    return response;
+};
+
+// ------------------------------------------------------------
+// Axios absichern
+// ------------------------------------------------------------
+
+if (typeof axios !== "undefined") {
+
+    axios.defaults.withCredentials = true;
+
+    const fp = localStorage.getItem(FP_STORAGE_KEY);
+
+    if (fp) {
+        axios.defaults.headers.common["x-device-fingerprint"] = fp;
+    }
+}
+
+// ------------------------------------------------------------
+// Komfortfunktion für JSON
+// ------------------------------------------------------------
+
+window.fetchJSON = async function(url, options = {}) {
+
+    const res = await fetch(url, options);
+
+    if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`${res.status}: ${txt}`);
+    }
+
+    return res.json();
+};
+
+// ------------------------------------------------------------
+// Fingerprint erzeugen
+// ------------------------------------------------------------
+
 function generateAndSaveFingerprint() {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js';
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js";
     script.async = true;
 
     script.onload = () => {
+
         FingerprintJS.load()
+
             .then(fp => fp.get())
+
             .then(result => {
+
                 visitorId = result.visitorId;
-                // Hash bombenfest im LocalStorage verankern
-                localStorage.setItem('limo_fingerprint', visitorId);
-                console.log("🔒 [Security] Neuer Fingerprint gespeichert: " + visitorId);
-                
-                // Für axios nachziehen, fetch greift ab jetzt automatisch auf localStorage zu
-                if (typeof axios !== 'undefined') {
-                    axios.defaults.headers.common['x-device-fingerprint'] = visitorId;
+
+                localStorage.setItem(FP_STORAGE_KEY, visitorId);
+
+                console.log(
+                    "🔒 [Security] Neuer Fingerprint gespeichert:",
+                    visitorId
+                );
+
+                if (typeof axios !== "undefined") {
+                    axios.defaults.headers.common["x-device-fingerprint"] = visitorId;
                 }
             })
-            .catch(err => console.error("Fehler beim Berechnen des Fingerprints:", err));
+
+            .catch(err => {
+                console.error("Fingerprint Fehler:", err);
+            });
     };
 
-    script.onerror = (err) => console.error("Konnte fp.min.js nicht laden:", err);
+    script.onerror = err => {
+        console.error("FingerprintJS konnte nicht geladen werden:", err);
+    };
+
     document.head.appendChild(script);
 }
