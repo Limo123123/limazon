@@ -1,4 +1,4 @@
-// js/limo-global.js
+// js/limo-global.js - V2 Update mit Bewegungen & neuen Modulen
 
 document.addEventListener("DOMContentLoaded", () => {
     if (!document.getElementById('limo-global-styles')) {
@@ -39,6 +39,13 @@ document.addEventListener("DOMContentLoaded", () => {
             .strike-title { color: #f8fafc; font-size: 1.8rem; font-weight: 700; margin: 0; }
             .strike-subtitle { color: #ef4444; font-size: 1rem; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; }
             
+            /* NEU: Styling für die Bewegung/Organisation */
+            .strike-movement-badge {
+                display: inline-block; background: rgba(168, 85, 247, 0.15); color: #d8b4fe;
+                padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; margin-top: 8px;
+                border: 1px solid rgba(168, 85, 247, 0.3); letter-spacing: 0.05em;
+            }
+
             .strike-reason-box {
                 background: #0f172a; border: 1px solid #334155; border-radius: 16px;
                 padding: 15px; margin-bottom: 20px; text-align: left;
@@ -47,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .strike-btn {
                 width: 100%; padding: 16px; background: #4f46e5;
                 color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem;
-                cursor: pointer; transition: all 0.2; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+                cursor: pointer; transition: all 0.2s; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
             }
             .strike-btn:hover { background: #6366f1; transform: translateY(-2px); }
             
@@ -73,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p id="st-reason" style="color:#f8fafc; font-size:1rem; font-style:italic; margin:0;"></p>
                 </div>
                 <div id="st-leaders" style="margin-bottom: 20px;"></div>
-                <p style="color: #666; font-size: 0.8rem;">Ende: <b id="st-end"></b></p>
+                <p style="color: #666; font-size: 0.8rem; margin-bottom: 15px;">Ende: <b id="st-end"></b></p>
                 <button class="strike-btn" onclick="window.exitStrikeArea()">Verstanden</button>
             </div>
             <div class="barricade-tape bottom"></div>
@@ -84,31 +91,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const pageType = document.currentScript ? document.currentScript.getAttribute('data-page') : 'unknown';
     
     window.exitStrikeArea = function() {
-        // HIER SIND JETZT ALLE 10 DRIN:
-        const gameModules = ['teachermon', 'casino', 'restaurant', 'jobs', 'crime', 'gangs', 'auctions'];
-        const socialModules = ['limonews', 'limterest', 'realestate'];
+        // V2 UPDATE: Die neuen Module hinzugefügt!
+        const gameModules = ['teachermon', 'casino', 'restaurant', 'jobs', 'crime', 'gangs', 'auctions', 'wheels', 'pets'];
+        const economyModules = ['shop', 'bank', 'realestate', 'delivery'];
 
         if (gameModules.includes(pageType)) {
             window.location.href = 'games.html'; // Schickt Gamer zurück zur Spieleliste
+        } else if (economyModules.includes(pageType)) {
+            window.location.href = '/index.html'; // Wirtschafts-Leute zurück zum Hub
         } else {
             window.location.href = '/index.html'; // Alles andere zurück zum Portal
         }
     };
 });
 
-const originalFetch = window.fetch;
+// V2 UPDATE: Name geändert, um Konflikte mit security.js zu vermeiden!
+const limoGlobalFetch = window.fetch;
 window.fetch = async function(...args) {
-    const response = await originalFetch(...args);
+    const response = await limoGlobalFetch(...args);
+    
     if (response.status === 423) {
         response.clone().json().then(data => {
             if (data.error === "STRIKE_ACTIVE") {
-                document.getElementById('st-title').innerText = `MODUL: ${data.strikeData.module.toUpperCase()}`;
+                
+                // V2 UPDATE: Prüfen, ob der Streik von einer Bewegung/Organisation kommt
+                let titleHtml = `MODUL: ${data.strikeData.module.toUpperCase()}`;
+                
+                // Falls die API im Streik-Objekt eine Bewegung mitschickt (aus deinem Server.js Update)
+                // Da im Server.js die Bewegung im Objekt mitgeliefert wird, müssen wir evtl. auf data.strikeData.movementName prüfen
+                // Wenn du es in der API "strikers" nennst und die Bewegung nicht explizit drin steht, 
+                // kannst du es im Server auch noch ans "strikeData" Objekt hängen!
+                if (data.strikeData.movementName) {
+                    titleHtml += `<br><span class="strike-movement-badge">🏴 Im Namen von: ${data.strikeData.movementName}</span>`;
+                }
+
+                document.getElementById('st-title').innerHTML = titleHtml;
                 document.getElementById('st-reason').innerText = `"${data.strikeData.reason}"`;
                 document.getElementById('st-leaders').innerHTML = data.strikeData.strikers.map(s => `<span class="striker-tag">✊ ${s}</span>`).join('');
                 document.getElementById('st-end').innerText = new Date(data.strikeData.endsAt).toLocaleString('de-DE');
                 document.getElementById('strike-overlay').classList.remove('strike-hidden');
             }
-        }).catch(e => console.error(e));
+        }).catch(e => console.error("Strike Overlay Error:", e));
     }
     return response;
 };
