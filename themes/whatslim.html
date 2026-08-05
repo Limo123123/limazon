@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script src="/themes/js/security.js?v=1785887284"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whatslim - Limazon Messenger</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-sidebar: #1e1e1e;
+            --bg-chat: #0b141a;
+            --primary: #00a884;
+            --text-light: #e9edef;
+            --text-muted: #8696a0;
+            --msg-in: #202c33;
+            --msg-out: #005c4b;
+            --danger: #e74c3c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background-color: var(--bg-dark); color: var(--text-light); display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR */
+        #sidebar { width: 350px; background-color: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid #2f3b43; z-index: 10; }
+        .header { padding: 15px; background-color: var(--bg-sidebar); border-bottom: 1px solid #2f3b43; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { font-size: 1.2rem; color: var(--text-light); }
+
+        .tabs { display: flex; border-bottom: 1px solid #2f3b43; }
+        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: var(--bg-sidebar); color: var(--text-muted); font-weight: bold; }
+        .tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        .new-chat-box { padding: 15px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #2f3b43; }
+        .new-chat-box input { padding: 10px; border-radius: 5px; border: none; background: #2a3942; color: white; outline: none; }
+        .new-chat-box button { background: var(--primary); color: #111b21; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .new-chat-box button:hover { background: #00bfa5; }
+
+        #chat-list { flex: 1; overflow-y: auto; }
+        .chat-item { padding: 15px; border-bottom: 1px solid #2f3b43; cursor: pointer; transition: background 0.2s; }
+        .chat-item:hover, .chat-item.active { background: #2a3942; }
+        .chat-name { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+        .chat-preview { font-size: 0.9rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* CHAT AREA */
+        #chat-area { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-chat); position: relative; }
+        
+        #chat-header { padding: 15px 20px; background-color: var(--bg-sidebar); border-bottom: 1px solid #2f3b43; display: flex; justify-content: space-between; align-items: center; z-index: 5; }
+        .chat-header-title { font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        
+        .header-actions { display: flex; gap: 10px; }
+        .btn-icon { background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; transition: 0.2s; padding: 5px; }
+        .btn-icon:hover { color: var(--text-light); }
+        .btn-delete { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        /* GROUP SETTINGS PANEL */
+        #group-settings {
+            background-color: #2a3942;
+            padding: 15px 20px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            border-bottom: 1px solid #2f3b43;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 4;
+        }
+        .setting-row { display: flex; gap: 10px; }
+        .setting-row input { flex: 1; padding: 8px; border-radius: 5px; border: none; background: #1e2a30; color: white; outline: none; }
+        .setting-row button { background: #3b4a54; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .setting-row button:hover { background: #4b5a64; }
+        .setting-row button.btn-red { background: var(--danger); }
+        .setting-row button.btn-red:hover { background: #c0392b; }
+
+        #messages-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+
+        .date-divider { align-self: center; background: #182229; color: #8696a0; padding: 5px 12px; border-radius: 10px; font-size: 0.8rem; margin: 15px 0; box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+
+        .message { max-width: 65%; padding: 8px 12px; border-radius: 8px; font-size: 0.95rem; position: relative; word-wrap: break-word; }
+        .message.in { align-self: flex-start; background-color: var(--msg-in); border-top-left-radius: 0; }
+        .message.out { align-self: flex-end; background-color: var(--msg-out); border-top-right-radius: 0; }
+        .message.system { align-self: center; background-color: transparent; color: var(--text-muted); font-style: italic; font-size: 0.85rem; max-width: 90%; text-align: center; border: none; }
+        
+        .sender-name { font-size: 0.75rem; color: #53bdeb; font-weight: bold; margin-bottom: 3px; display: block; }
+        .msg-time { font-size: 0.7rem; color: rgba(255,255,255,0.6); display: block; text-align: right; margin-top: 5px; }
+
+        #input-area { padding: 15px; background-color: var(--bg-sidebar); display: flex; gap: 15px; }
+        #input-area input { flex: 1; padding: 15px; border-radius: 8px; border: none; background: #2a3942; color: white; font-size: 1rem; outline: none; }
+        #input-area button { background: var(--primary); color: #111b21; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        #input-area button:hover { background: #00bfa5; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #374045; border-radius: 3px; }
+        .placeholder-text { margin: auto; color: var(--text-muted); font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="header">
+            <h2>💬 Whatslim</h2>
+            <small id="my-username" style="color: var(--primary);">Laden...</small>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" id="tab-single" onclick="switchTab('single')">Privat</div>
+            <div class="tab" id="tab-group" onclick="switchTab('group')">Gruppe</div>
+        </div>
+
+        <div class="new-chat-box" id="form-single">
+            <input type="text" id="new-single-input" placeholder="Benutzername...">
+            <button onclick="startSingleChat()">Chat starten</button>
+        </div>
+
+        <div class="new-chat-box" id="form-group" style="display: none;">
+            <input type="text" id="group-name-input" placeholder="Gruppenname...">
+            <input type="text" id="group-users-input" placeholder="User1, User2...">
+            <button onclick="startGroupChat()">Gruppe gründen</button>
+        </div>
+
+        <div id="chat-list"></div>
+    </div>
+
+    <div id="chat-area">
+        <div id="chat-header" style="display: none;">
+            <div class="chat-header-title">
+                <span id="active-chat-icon">👤</span>
+                <span id="active-chat-name">Partner Name</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" id="btn-settings" style="display: none;" onclick="toggleGroupSettings()" title="Gruppeneinstellungen">⚙️</button>
+                <button class="btn-delete" id="btn-delete-chat" onclick="deleteActiveChat()">Löschen</button>
+            </div>
+        </div>
+
+        <!-- Settings Panel für Gruppen -->
+        <div id="group-settings">
+            <div class="setting-row">
+                <input type="text" id="set-group-name" placeholder="Neuer Gruppenname">
+                <button onclick="renameGroup()">Umbenennen</button>
+            </div>
+            <div class="setting-row">
+                <input type="text" id="set-add-user" placeholder="User hinzufügen (Komma-getrennt)">
+                <button onclick="addToGroup()">Hinzufügen</button>
+            </div>
+            <div class="setting-row">
+                <input type="text" id="set-kick-user" placeholder="Benutzer kicken (einzelner Name)">
+                <button class="btn-red" onclick="removeFromGroup()">Kicken</button>
+            </div>
+        </div>
+
+        <div id="messages-container">
+            <div class="placeholder-text">Wähle einen Chat aus oder starte einen neuen.</div>
+        </div>
+
+        <div id="input-area" style="display: none;">
+            <input type="text" id="message-input" placeholder="Schreibe eine Nachricht..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Senden</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks/api'; 
+        
+        let myUsername = '';
+        let myUserId = '';
+        let currentChatId = null;
+        let isCurrentChatGroup = false;
+        let pollingInterval = null;
+        let lastMessageCount = 0;
+
+        async function init() {
+            try {
+                const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+                if (!res.ok) { window.location.href = '/index.html'; return; }
+                const data = await res.json();
+                myUsername = data.username;
+                myUserId = data.userId;
+                document.getElementById('my-username').innerText = myUsername;
+                
+                loadChatList();
+                setInterval(loadChatList, 8000); 
+            } catch (err) { console.error("Init Fehler:", err); }
+        }
+
+        function switchTab(type) {
+            document.getElementById('tab-single').classList.toggle('active', type === 'single');
+            document.getElementById('tab-group').classList.toggle('active', type === 'group');
+            document.getElementById('form-single').style.display = type === 'single' ? 'flex' : 'none';
+            document.getElementById('form-group').style.display = type === 'group' ? 'flex' : 'none';
+        }
+
+        async function loadChatList() {
+            try {
+                const res = await fetch(`${API_URL}/whatslim/chats`, { credentials: 'include' });
+                const data = await res.json();
+                
+                const chatListEl = document.getElementById('chat-list');
+                chatListEl.innerHTML = '';
+
+                data.chats.forEach(chat => {
+                    const div = document.createElement('div');
+                    div.className = `chat-item ${currentChatId === chat.chatId ? 'active' : ''}`;
+                    div.onclick = () => openChat(chat.chatId, chat.displayName, chat.isGroup);
+                    
+                    const timeStr = new Date(chat.lastUpdate).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                    const icon = chat.isGroup ? '👥' : '👤';
+
+                    div.innerHTML = `
+                        <div style="display: flex; justify-content: space-between;">
+                            <div class="chat-name">${icon} ${escapeHTML(chat.displayName)}</div>
+                            <div style="font-size: 0.8rem; color: #8696a0;">${timeStr}</div>
+                        </div>
+                        <div class="chat-preview">${escapeHTML(chat.lastMessage || '')}</div>
+                    `;
+                    chatListEl.appendChild(div);
+                });
+            } catch (err) { console.error("Ladefehler Chats:", err); }
+        }
+
+        async function startSingleChat() {
+            const targetUsername = document.getElementById('new-single-input').value.trim();
+            if (!targetUsername) return;
+            try {
+                const res = await fetch(`${API_URL}/whatslim/start`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUsername }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (!res.ok) return alert(data.error);
+                
+                document.getElementById('new-single-input').value = '';
+                const partnerName = data.chat.participantNames.find(n => n.toLowerCase() !== myUsername.toLowerCase()) || targetUsername;
+                loadChatList();
+                openChat(data.chat._id, partnerName, false);
+            } catch (err) { alert("Fehler beim Starten."); }
+        }
+
+        async function startGroupChat() {
+            const groupName = document.getElementById('group-name-input').value.trim();
+            const usersStr = document.getElementById('group-users-input').value.trim();
+            if (!groupName || !usersStr) return;
+
+            const usernames = usersStr.split(',').map(u => u.trim()).filter(u => u.length > 0);
+            
+            try {
+                const res = await fetch(`${API_URL}/whatslim/group`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ groupName, usernames }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (!res.ok) return alert(data.error);
+
+                document.getElementById('group-name-input').value = '';
+                document.getElementById('group-users-input').value = '';
+                loadChatList();
+                openChat(data.chat._id, groupName, true);
+            } catch (err) { alert("Fehler beim Erstellen der Gruppe."); }
+        }
+
+        function openChat(chatId, displayName, isGroup) {
+            currentChatId = chatId;
+            isCurrentChatGroup = isGroup;
+            lastMessageCount = 0; 
+            
+            document.getElementById('chat-header').style.display = 'flex';
+            document.getElementById('input-area').style.display = 'flex';
+            document.getElementById('active-chat-name').innerText = displayName;
+            document.getElementById('active-chat-icon').innerText = isGroup ? '👥' : '👤';
+            
+            const btnDelete = document.getElementById('btn-delete-chat');
+            btnDelete.innerText = isGroup ? 'Verlassen' : 'Löschen';
+
+            const btnSettings = document.getElementById('btn-settings');
+            btnSettings.style.display = isGroup ? 'block' : 'none';
+            document.getElementById('group-settings').style.display = 'none'; // Immer einklappen bei Chat-Wechsel
+
+            document.getElementById('messages-container').innerHTML = ''; 
+            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            event?.currentTarget?.classList.add('active');
+
+            if (pollingInterval) clearInterval(pollingInterval);
+            loadMessages();
+            pollingInterval = setInterval(loadMessages, 3000);
+            document.getElementById('message-input').focus();
+        }
+
+        /* --- GRUPPEN EINSTELLUNGEN --- */
+        function toggleGroupSettings() {
+            const panel = document.getElementById('group-settings');
+            panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        async function renameGroup() {
+            const newName = document.getElementById('set-group-name').value.trim();
+            if (!newName) return;
+            try {
+                const res = await fetch(`${API_URL}/whatslim/group/${currentChatId}/rename`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newName }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (!res.ok) return alert(data.error);
+                
+                document.getElementById('set-group-name').value = '';
+                document.getElementById('active-chat-name').innerText = newName;
+                loadChatList(); loadMessages();
+            } catch (err) { alert("Fehler beim Umbenennen."); }
+        }
+
+        async function addToGroup() {
+            const usersStr = document.getElementById('set-add-user').value.trim();
+            if (!usersStr) return;
+            const usernames = usersStr.split(',').map(u => u.trim()).filter(u => u.length > 0);
+            try {
+                const res = await fetch(`${API_URL}/whatslim/group/${currentChatId}/add`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usernames }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (!res.ok) return alert(data.error);
+                
+                document.getElementById('set-add-user').value = '';
+                loadMessages();
+            } catch (err) { alert("Fehler beim Hinzufügen."); }
+        }
+
+        async function removeFromGroup() {
+            const targetUsername = document.getElementById('set-kick-user').value.trim();
+            if (!targetUsername) return;
+            if(!confirm(`Willst du ${targetUsername} wirklich aus der Gruppe werfen?`)) return;
+            try {
+                const res = await fetch(`${API_URL}/whatslim/group/${currentChatId}/remove`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUsername }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (!res.ok) return alert(data.error);
+                
+                document.getElementById('set-kick-user').value = '';
+                loadMessages();
+            } catch (err) { alert("Fehler beim Kicken."); }
+        }
+
+        /* --- NACHRICHTEN LOGIK --- */
+        async function loadMessages() {
+            if (!currentChatId) return;
+            try {
+                const res = await fetch(`${API_URL}/chat/chats/${currentChatId}/messages?limit=100`, { credentials: 'include' });
+                const data = await res.json();
+                
+                if (data.messages.length !== lastMessageCount) {
+                    renderMessages(data.messages);
+                    lastMessageCount = data.messages.length;
+                    scrollToBottom();
+                }
+            } catch (err) { console.error("Nachrichten Ladefehler:", err); }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '';
+            let lastDateStr = null;
+
+            messages.forEach(msg => {
+                const msgDate = new Date(msg.timestamp);
+                const currentDateStr = msgDate.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                
+                if (currentDateStr !== lastDateStr) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'date-divider';
+                    
+                    const todayStr = new Date().toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+                    if (currentDateStr === todayStr) dateDiv.innerText = "Heute";
+                    else if (currentDateStr === yesterdayStr) dateDiv.innerText = "Gestern";
+                    else dateDiv.innerText = currentDateStr;
+
+                    container.appendChild(dateDiv);
+                    lastDateStr = currentDateStr;
+                }
+
+                const div = document.createElement('div');
+                
+                if (msg.isSystem) {
+                    div.className = 'message system';
+                    div.innerHTML = escapeHTML(msg.content);
+                    container.appendChild(div);
+                    return;
+                }
+
+                const isMe = msg.senderId === myUserId || msg.senderUsername.toLowerCase() === myUsername.toLowerCase();
+                div.className = `message ${isMe ? 'out' : 'in'}`;
+                const timeStr = msgDate.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                
+                let senderHtml = '';
+                if (!isMe && isCurrentChatGroup) {
+                    senderHtml = `<span class="sender-name">${escapeHTML(msg.senderUsername)}</span>`;
+                }
+
+                div.innerHTML = `
+                    ${senderHtml}
+                    <div class="msg-content">${escapeHTML(msg.content)}</div>
+                    <span class="msg-time">${timeStr}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            if (!content || !currentChatId) return;
+
+            const container = document.getElementById('messages-container');
+            const tempDiv = document.createElement('div');
+            tempDiv.className = 'message out';
+            tempDiv.style.opacity = '0.7';
+            const timeStr = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            tempDiv.innerHTML = `<div class="msg-content">${escapeHTML(content)}</div><span class="msg-time">${timeStr} ⏳</span>`;
+            container.appendChild(tempDiv);
+            scrollToBottom();
+            
+            input.value = '';
+
+            try {
+                await fetch(`${API_URL}/chat/chats/${currentChatId}/messages`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content }), credentials: 'include'
+                });
+                loadMessages(); loadChatList(); 
+            } catch (err) {
+                tempDiv.style.color = "red";
+                tempDiv.querySelector('.msg-time').innerText = "Fehler!";
+            }
+        }
+
+        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
+        function scrollToBottom() { const c = document.getElementById('messages-container'); c.scrollTop = c.scrollHeight; }
+        function escapeHTML(str) { return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])); }
+
+        async function deleteActiveChat() {
+            if (!currentChatId) return;
+            const actionStr = isCurrentChatGroup ? "Diese Gruppe wirklich verlassen?" : "Möchtest du diesen Chat wirklich unwiderruflich löschen?";
+            
+            if (!confirm(actionStr)) return;
+
+            try {
+                await fetch(`${API_URL}/whatslim/chats/${currentChatId}`, { method: 'DELETE', credentials: 'include' });
+                
+                currentChatId = null;
+                document.getElementById('chat-header').style.display = 'none';
+                document.getElementById('input-area').style.display = 'none';
+                document.getElementById('group-settings').style.display = 'none';
+                document.getElementById('messages-container').innerHTML = '<div class="placeholder-text">Wähle einen Chat aus oder starte einen neuen.</div>';
+                
+                if (pollingInterval) clearInterval(pollingInterval);
+                loadChatList();
+            } catch(e) { alert("Fehler beim Löschen/Verlassen."); }
+        }
+
+        init();
+    </script>
+</body>
+</html>
