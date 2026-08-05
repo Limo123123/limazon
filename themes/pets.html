@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <script src="/themes/js/security.js?v=1785887284"></script>
+    <script src="/themes/js/security.js?v=1785963851"></script>
+    
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -252,6 +253,10 @@
                                     <span>📤</span> Transfer
                                 </button>
                             </div>
+                            
+                            <button class="w-full bg-rose-950/30 hover:bg-rose-900 border border-rose-900/50 text-rose-400 hover:text-rose-200 font-bold py-1.5 rounded-xl transition active:scale-95 text-xs flex items-center justify-center gap-1 mt-2" onclick="euthanizePet('${pet.id || pet._id}', '${pet.name}')">
+                                <span>💉</span> Einschläfern
+                            </button>
                         </div>
                     </div>
                 `;
@@ -286,6 +291,21 @@
             if (res.ok) {
                 showToast(res.message, "success");
                 loadMyPets();
+            } else {
+                showToast(res.error, "error");
+            }
+        }
+
+        async function euthanizePet(petId, petName) {
+            if (!confirm(`Willst du ${petName} wirklich unwiderruflich einschläfern lassen?`)) return;
+
+            const sendToCemetery = confirm(`Soll ${petName} einen Grabstein auf dem Tierfriedhof bekommen?\n\n(OK = Ja, auf den Friedhof | Abbrechen = Nein, restlos löschen)`);
+
+            const res = await fetchApi(`/pets/${petId}/euthanize`, 'POST', { sendToCemetery: sendToCemetery });
+            
+            if (res.ok) {
+                showToast(res.message, "success");
+                loadMyPets(); 
             } else {
                 showToast(res.error, "error");
             }
