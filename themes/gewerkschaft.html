@@ -140,7 +140,6 @@
 
     </main>
 
-    <!-- Einbindung des globalen Sperrbildschirms (falls die Gewerkschaft selbst bestreikt wird 😉) -->
     <script src="/themes/js/limo-global.js" data-page="gewerkschaft"></script>
 
     <script>
@@ -159,8 +158,10 @@
                 }
             } catch (e) { console.error(e); }
             
+            // FIX: Wir müssen erst zwingend warten, bis die Bewegungen geladen sind!
+            await loadMovements();
+            // ERST DANN laden wir die Streiks, damit myMovementData bekannt ist.
             loadStrikes();
-            loadMovements();
         });
 
         async function fetchAuth(url, options = {}) {
@@ -263,7 +264,9 @@
                     showAlert(data.message);
                     document.getElementById('mov-name').value = '';
                     document.getElementById('mov-desc').value = '';
-                    loadMovements();
+                    // FIX: Warten auf Movement, dann Streiks updaten
+                    await loadMovements();
+                    loadStrikes();
                 } else { showAlert(data.error, true); }
             } catch(e) { showAlert("Netzwerkfehler.", true); }
         }
@@ -272,7 +275,12 @@
             try {
                 const res = await fetchAuth(`${API_BASE_URL}/api/movements/join/${id}`, { method: 'POST' });
                 const data = await res.json();
-                if(res.ok) { showAlert(data.message); loadMovements(); loadStrikes(); } 
+                if(res.ok) { 
+                    showAlert(data.message); 
+                    // FIX: Warten auf Movement, dann Streiks updaten
+                    await loadMovements(); 
+                    loadStrikes(); 
+                } 
                 else { showAlert(data.error, true); }
             } catch(e) { showAlert("Netzwerkfehler.", true); }
         }
@@ -282,7 +290,12 @@
             try {
                 const res = await fetchAuth(`${API_BASE_URL}/api/movements/leave`, { method: 'POST' });
                 const data = await res.json();
-                if(res.ok) { showAlert(data.message); loadMovements(); loadStrikes(); } 
+                if(res.ok) { 
+                    showAlert(data.message); 
+                    // FIX: Warten auf Movement, dann Streiks updaten
+                    await loadMovements(); 
+                    loadStrikes(); 
+                } 
                 else { showAlert(data.error, true); }
             } catch(e) { showAlert("Netzwerkfehler.", true); }
         }
@@ -332,20 +345,19 @@
                     }
 
                     let joinBtnHtml = '';
-                    // Beitreten Logik (Bewegung oder Unabhängig)
-                    if (!isActive && !hasJoined) {
+                    if (!hasJoined) {
                         let canJoin = true;
                         if (strike.movementId) {
-                            // Wenn Streik von Bewegung, darf nur Mitglied der Bewegung joinen
                             if (!myMovementData || myMovementData._id !== strike.movementId) {
                                 canJoin = false;
                             }
                         }
                         
                         if (canJoin) {
+                            const btnText = isActive ? "✊ Dem laufenden Streik anschließen" : "✊ Solidarität zeigen (Beitreten)";
                             joinBtnHtml = `
                                 <button onclick="joinStrike('${strike._id}')" class="w-full mt-4 bg-amber-500 text-black hover:bg-amber-400 font-bold py-3 rounded-xl transition shadow-lg active:scale-95 text-sm">
-                                    ✊ Solidarität zeigen (Beitreten)
+                                    ${btnText}
                                 </button>`;
                         } else {
                             joinBtnHtml = `<div class="w-full mt-4 bg-slate-800 text-slate-500 text-center py-2 rounded-xl text-xs">Exklusiv für Mitglieder von "${strike.movementName}"</div>`;
