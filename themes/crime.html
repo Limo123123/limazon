@@ -151,7 +151,8 @@
         <div class="glass-panel panic-content p-8 rounded-2xl border-2 border-red-600 max-w-md w-full text-center shadow-[0_0_50px_rgba(239,68,68,0.3)]">
             <h1 class="text-5xl mb-4">🚨</h1>
             <h2 class="text-3xl font-black text-red-500 mb-2 tracking-widest">RAZZIA!</h2>
-            <p class="text-gray-300 text-sm mb-6">Das SEK hat dich hochgenommen! Nenne uns sofort den Namen deines Dealers, sonst wanderst du in den Knast und verlierst dein Geld.</p>
+            <!-- FIX: Hier hat der Text eine ID bekommen, damit wir ihn überschreiben können -->
+            <p id="snitch-text" class="text-gray-300 text-sm mb-6">Das SEK hat dich hochgenommen! Nenne uns sofort den Namen deines Dealers, sonst wanderst du in den Knast und verlierst dein Geld.</p>
             
             <p id="snitch-attempts" class="text-sm font-bold text-yellow-500 mb-4 bg-yellow-900/30 py-2 rounded border border-yellow-500/30">Du hast noch 3 Versuche.</p>
             
@@ -436,7 +437,7 @@
 
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
             const activeBtn = document.getElementById(`tab-${tabName}-btn`);
-            activeBtn.style.color = ''; // Reset inline color
+            activeBtn.style.color = ''; 
 
             if (tabName === 'heist') {
                 activeBtn.classList.add('active-heist');
@@ -457,20 +458,26 @@
         // --- STATUS LOADER ---
         async function loadCrimeStatus() {
             try {
-                // Cartel Status (Razzia / Dealer)
                 const carRes = await fetch(`${API_URL}/api/cartel/status`, { credentials: 'include' });
                 if (carRes.ok) {
                     const carData = await carRes.json();
 
-                    // Razzia! Overlay
                     if (carData.isUnderArrest) {
                         document.getElementById('snitch-overlay').classList.remove('hidden');
                         document.getElementById('snitch-attempts').innerText = `Du hast noch ${carData.snitchAttemptsLeft} Versuche.`;
+                        
+                        // FIX: Hier schauen wir nach, ob eine Spezial-Nachricht im Speicher liegt!
+                        const specialMessage = localStorage.getItem('limo_raid_msg');
+                        if (specialMessage) {
+                            document.getElementById('snitch-text').innerText = specialMessage;
+                        } else {
+                            document.getElementById('snitch-text').innerText = "Das SEK hat dich hochgenommen! Nenne uns sofort den Namen deines Dealers, sonst wanderst du in den Knast und verlierst dein Geld.";
+                        }
                     } else {
                         document.getElementById('snitch-overlay').classList.add('hidden');
+                        localStorage.removeItem('limo_raid_msg'); // Wenn wir wieder frei sind, löschen wir den Speicher
                     }
 
-                    // Dealer UI
                     if (carData.isDealer) {
                         document.getElementById('apply-section').classList.add('hidden');
                         document.getElementById('active-dealer-section').classList.remove('hidden');
@@ -687,7 +694,6 @@
                         alert("GESCHEITERT! " + json.message);
                     }
                     updateHeistData();
-                    // Update user balance roughly
                     const meRes = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
                     const meData = await meRes.json();
                     document.getElementById('user-balance').innerText = formatMoneySmart(meData.balance);
@@ -700,7 +706,6 @@
         // ==========================================
         async function useCrystals() {
             try {
-                // Wir senden drugId: 'limo_crystals' an den neuen dynamischen Endpoint
                 const res = await fetch(`${API_URL}/api/drugs/use`, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
@@ -712,7 +717,11 @@
                 if (res.ok) {
                     showAlert(data.message, data.event !== 'buff');
                     loadInventory(); 
-                    if (data.event === 'raid') { setTimeout(loadCrimeStatus, 1500); }
+                    if (data.event === 'raid') { 
+                        // FIX: Hier speichern wir die Celina-Nachricht ab, BEVOR das Fenster neu lädt
+                        localStorage.setItem('limo_raid_msg', data.message);
+                        setTimeout(loadCrimeStatus, 1500); 
+                    }
                 } else { showAlert(data.error, true); }
             } catch (e) { showAlert("Verbindungsfehler.", true); }
         }
@@ -727,6 +736,7 @@
                 if (res.ok) {
                     alert(data.message); 
                     document.getElementById('snitch-overlay').classList.add('hidden');
+                    localStorage.removeItem('limo_raid_msg'); // Deal gemacht, Speicher leeren
                     loadCrimeStatus();
                 } else {
                     alert(data.error); 
