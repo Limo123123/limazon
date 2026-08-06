@@ -327,7 +327,6 @@
                 <div class="p-5"><h3 class="text-xl font-bold group-hover:text-orange-400">Job Center</h3><p class="text-gray-400 text-xs">Karriere machen & verdienen.</p></div>
             </div>
 
-            <!-- NEU: SCHULE -->
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/schule.html')" data-tags="schule lernen unterricht noten klassenfahrt zeugnis bildung chaos">
                 <div class="h-32 bg-gradient-to-br from-slate-700 to-gray-900 flex items-center justify-center relative"><span class="text-6xl card-icon">🏫</span></div>
                 <div class="p-5"><h3 class="text-xl font-bold group-hover:text-slate-300">Limo Schule</h3><p class="text-gray-400 text-xs">Unterricht, Noten & Chaos.</p></div>
@@ -393,6 +392,19 @@
                 <div class="h-32 bg-gradient-to-br from-rose-700 to-pink-800 flex items-center justify-center relative"><span class="text-6xl card-icon">📌</span></div>
                 <div class="p-5"><h3 class="text-xl font-bold group-hover:text-rose-400">Limterest</h3><p class="text-gray-400 text-xs">Inspirationen merken & teilen.</p></div>
             </div>
+
+            <!-- NEU: EVENT APP BUTTON -->
+            <a href="themes/event.html" class="relative overflow-hidden group p-1 rounded-2xl bg-gradient-to-r from-red-500 via-yellow-500 to-purple-500 transform transition-transform hover:scale-105 shadow-[0_0_15px_rgba(236,72,153,0.4)]" data-tags="event csd bonus tokens glücksrad pride">
+                <div class="bg-black/90 h-full w-full rounded-xl p-6 flex flex-col items-center justify-center relative z-10 transition-colors group-hover:bg-black/70">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-pink-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+                    <span class="text-5xl mb-3 relative z-20 group-hover:animate-bounce">🏳️‍🌈</span>
+                    <h3 class="text-xl font-bold text-white relative z-20 tracking-wider">EVENT</h3>
+                    <p class="text-xs text-gray-400 mt-2 text-center relative z-20 font-mono">Tägliche Belohnung & Glücksrad</p>
+                    <div class="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-[0_0_10px_red]">
+                        LIVE
+                    </div>
+                </div>
+            </a>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('ot/tcg/index.html')" data-tags="bewertung schule lehrer social">
                 <div class="h-32 bg-gradient-to-br from-lime-800 to-green-900 flex items-center justify-center"><span class="text-6xl card-icon">🎓</span></div>
@@ -571,7 +583,7 @@
         const authScreen = document.getElementById('authScreen');
         const mainContent = document.getElementById('mainContent');
         const searchInput = document.getElementById('searchInput');
-        const cards = document.querySelectorAll('.theme-card');
+        const cards = document.querySelectorAll('.theme-card, a[href="themes/event.html"]'); // Anpassung für die Suchfunktion
         const adBanner = document.getElementById('ad-banner');
         
         let currentAdLink = '';
@@ -580,14 +592,12 @@
         document.addEventListener('DOMContentLoaded', async () => {
             searchInput.addEventListener('input', filterApps);
 
-            // Prüfen, ob wir bereits eine aktive Session haben
             try {
                 const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
                     showPortal(data.username, true);
                 } else {
-                    // Nicht autorisiert (404/401) -> Zeige Login
                     authScreen.classList.remove('hidden');
                 }
             } catch (err) {
@@ -603,7 +613,7 @@
             const tabLogin = document.getElementById('tabLogin');
             const tabRegister = document.getElementById('tabRegister');
             
-            document.getElementById('authMessage').classList.add('hidden'); // Clear Errors
+            document.getElementById('authMessage').classList.add('hidden'); 
 
             if (tab === 'login') {
                 loginForm.classList.remove('hidden');
@@ -634,27 +644,24 @@
             document.getElementById('navUsername').textContent = username;
             
             if (instant) {
-                // Wenn man schon eingeloggt war: Keine Animation, sofort rein!
                 authScreen.classList.add('hidden');
                 mainContent.classList.remove('hidden', 'opacity-0');
                 checkActiveStrikes();
                 loadAd();
             } else {
-                // Wenn man sich gerade frisch einloggt: Sehr schnelle Animation
                 authScreen.classList.add('opacity-0');
                 
                 setTimeout(() => {
                     authScreen.classList.add('hidden');
                     mainContent.classList.remove('hidden');
                     
-                    // Ein winziger Delay, damit der Browser den Display-Wechsel checkt
                     setTimeout(() => {
                         mainContent.classList.remove('opacity-0');
                     }, 20);
 
                     checkActiveStrikes();
                     loadAd();
-                }, 200); // 200ms (passt zur neuen duration-200 Klasse)
+                }, 200); 
             }
         }
 
@@ -703,7 +710,7 @@
             const payload = {
                 username: document.getElementById('regUsername').value,
                 password: document.getElementById('regPassword').value,
-                inviteCode: document.getElementById('regInviteCode').value // Das neue Pflichtfeld
+                inviteCode: document.getElementById('regInviteCode').value 
             };
 
             try {
@@ -733,7 +740,7 @@
         async function handleLogout() {
             try {
                 await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
-                window.location.reload(); // Reload erzwingt das erneute Laden der Seite (zeigt Login)
+                window.location.reload(); 
             } catch(e) {
                 console.error("Logout Fehler", e);
             }

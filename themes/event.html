@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script src="/themes/js/security.js?v=1785963851"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon Events</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #0f172a; color: white; min-height: 100vh; transition: background 1s ease; }
+        .glass { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .cyber-btn { transition: all 0.2s; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+        .cyber-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.2); }
+        .cyber-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Slot Machine Text Animation */
+        #wheel-result { transition: color 0.3s; }
+        .spinning { animation: shake 0.1s infinite; filter: blur(1px); }
+        @keyframes shake {
+            0% { transform: translateY(-2px); }
+            50% { transform: translateY(2px); }
+            100% { transform: translateY(-2px); }
+        }
+    </style>
+</head>
+<body id="body-bg" class="flex flex-col items-center p-4 md:p-8">
+
+    <div class="w-full max-w-3xl">
+        <a href="/" class="text-xs uppercase tracking-widest text-white/50 hover:text-white mb-6 block font-bold">← Zurück zum Portal</a>
+
+        <!-- NO EVENT PLACEHOLDER -->
+        <div id="no-event" class="hidden glass p-12 rounded-3xl text-center mt-20 border border-white/5">
+            <h1 class="text-4xl mb-4">💤</h1>
+            <h2 class="text-2xl font-bold mb-2">Aktuell läuft kein Event</h2>
+            <p class="text-white/50">Komm später wieder, wenn der Server etwas zu feiern hat.</p>
+        </div>
+
+        <!-- EVENT CONTENT -->
+        <div id="event-content" class="hidden space-y-8">
+            
+            <header class="text-center glass p-8 rounded-3xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <span id="event-emoji" class="text-6xl block mb-2">🎉</span>
+                    <h1 id="event-title" class="text-4xl md:text-5xl font-black mb-2 drop-shadow-lg">Event Name</h1>
+                    <p id="event-desc" class="text-white/80 font-medium max-w-xl mx-auto">Event Description goes here.</p>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- DAILY REWARD -->
+                <div class="glass p-6 rounded-3xl flex flex-col justify-between text-center border-t-4 border-white/20" id="daily-box">
+                    <div>
+                        <h2 class="text-xl font-bold mb-1">Tägliches Geschenk</h2>
+                        <p class="text-sm text-white/50 mb-6">Hol dir deinen Bonus ab.</p>
+                        <div class="bg-black/30 p-4 rounded-xl inline-block mb-6 border border-white/5">
+                            <div class="text-2xl font-bold text-green-400" id="daily-money">+$0</div>
+                            <div class="text-lg font-bold text-yellow-400" id="daily-tokens">+0 Tokens</div>
+                        </div>
+                    </div>
+                    <button id="btn-claim" onclick="claimDaily()" class="cyber-btn w-full py-4 rounded-xl bg-white text-black">
+                        Jetzt abholen
+                    </button>
+                </div>
+
+                <!-- EVENT WHEEL -->
+                <div class="glass p-6 rounded-3xl text-center relative border-t-4 border-white/20" id="wheel-box">
+                    <h2 class="text-xl font-bold mb-1">Glücksrad</h2>
+                    <p class="text-sm text-white/50 mb-6">Preis pro Dreh: <span id="wheel-cost" class="font-bold text-white">$0</span></p>
+                    
+                    <div class="bg-black/50 h-32 rounded-2xl border-2 border-white/10 flex items-center justify-center mb-6 overflow-hidden">
+                        <div id="wheel-result" class="text-2xl font-bold font-mono text-white/30">BEREIT</div>
+                    </div>
+
+                    <button id="btn-spin" onclick="spinWheel()" class="cyber-btn w-full py-4 rounded-xl text-white shadow-xl">
+                        DREHEN 🎰
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks';
+        let currentConfig = null;
+        let spinInterval = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/event/info`, { credentials: 'include' });
+                if (res.ok) {
+                    currentConfig = await res.json();
+                    buildEventPage();
+                }
+            } catch (e) { console.error(e); }
+        });
+
+        function buildEventPage() {
+            if (!currentConfig || !currentConfig.isActive) {
+                document.getElementById('no-event').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('event-content').classList.remove('hidden');
+            
+            // 1. Theme anwenden
+            document.getElementById('body-bg').style.background = currentConfig.theme.backgroundGradient;
+            document.getElementById('daily-box').style.borderTopColor = currentConfig.theme.accentColor;
+            document.getElementById('wheel-box').style.borderTopColor = currentConfig.theme.accentColor;
+            document.getElementById('btn-spin').style.backgroundColor = currentConfig.theme.accentColor;
+            
+            // 2. Texte anwenden
+            document.getElementById('event-emoji').innerText = currentConfig.theme.emoji;
+            document.getElementById('event-title').innerText = currentConfig.name;
+            document.getElementById('event-desc').innerText = currentConfig.description;
+            
+            // 3. Werte eintragen
+            document.getElementById('daily-money').innerText = "+$" + currentConfig.dailyReward.money.toLocaleString();
+            document.getElementById('daily-tokens').innerText = "+" + currentConfig.dailyReward.tokens + " Tokens";
+            document.getElementById('wheel-cost').innerText = "$" + currentConfig.wheel.costMoney.toLocaleString();
+        }
+
+        async function claimDaily() {
+            const btn = document.getElementById('btn-claim');
+            btn.disabled = true;
+            btn.innerText = "Lade...";
+
+            try {
+                const res = await fetch(`${API_URL}/api/event/claim-daily`, { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert(data.message);
+                    btn.innerText = "Abgeholt ✓";
+                    btn.style.opacity = "0.5";
+                } else {
+                    alert(data.error);
+                    btn.innerText = "Jetzt abholen";
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                alert("Fehler.");
+                btn.disabled = false;
+            }
+        }
+
+        async function spinWheel() {
+            const btn = document.getElementById('btn-spin');
+            const resultBox = document.getElementById('wheel-result');
+            
+            btn.disabled = true;
+            resultBox.classList.add('spinning');
+            resultBox.style.color = "white";
+
+            // Pseudo-Animation für das Rad
+            let i = 0;
+            spinInterval = setInterval(() => {
+                const randomPrize = currentConfig.wheel.prizes[i % currentConfig.wheel.prizes.length];
+                resultBox.innerText = randomPrize.label;
+                i++;
+            }, 100);
+
+            try {
+                const res = await fetch(`${API_URL}/api/event/spin-wheel`, { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                
+                // Lass das Rad noch eine Sekunde "drehen", bevor wir das Ergebnis zeigen
+                setTimeout(() => {
+                    clearInterval(spinInterval);
+                    resultBox.classList.remove('spinning');
+                    
+                    if (res.ok) {
+                        resultBox.innerText = data.prize.label;
+                        resultBox.style.color = data.prize.color; // Färbt den Text je nach Gewinn (Rot, Gold, Grün...)
+                    } else {
+                        resultBox.innerText = "ERROR";
+                        alert(data.error);
+                    }
+                    
+                    btn.disabled = false;
+                }, 1500);
+
+            } catch (e) {
+                clearInterval(spinInterval);
+                resultBox.classList.remove('spinning');
+                resultBox.innerText = "VERBINDUNGSFEHLER";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
