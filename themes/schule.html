@@ -1,0 +1,397 @@
+<!DOCTYPE html><html lang="de"><head>
+    <script src="/themes/js/security.js?v=1785963851"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Schule - Limazon</title>
+    <style>
+        :root {
+            --bg-base: #090e11;
+            --bg-card: #151f25;
+            --bg-hover: #1e2a31;
+            --primary: #00a884;
+            --primary-glow: rgba(0, 168, 132, 0.4);
+            --text-main: #e9edef;
+            --text-muted: #8696a0;
+            --danger: #ff4757;
+            --danger-glow: rgba(255, 71, 87, 0.3);
+            --warning: #f1c40f;
+            --info: #3498db;
+            --chalkboard: #111b21;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { 
+            background-color: var(--bg-base); 
+            color: var(--text-main); 
+            display: flex; 
+            justify-content: center; 
+            padding: 40px 20px;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 168, 132, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(52, 152, 219, 0.05), transparent 25%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* HEADER */
+        .header {
+            background-color: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #2a3942;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--info));
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; letter-spacing: 1px; }
+        .header p { color: var(--text-muted); font-size: 1.1rem; }
+        .student-name { color: var(--primary); font-weight: bold; text-shadow: 0 0 10px var(--primary-glow); }
+
+        /* ACTION BEREICH */
+        .action-panel {
+            background-color: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #2a3942;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .btn-attend {
+            background: linear-gradient(135deg, #00bfa5, #00a884);
+            color: #000;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px var(--primary-glow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-attend:hover { 
+            transform: translateY(-3px) scale(1.02); 
+            box-shadow: 0 8px 25px var(--primary-glow); 
+        }
+        .btn-attend:active { transform: translateY(1px); }
+        .btn-attend:disabled { background: #3b4a54; color: #8696a0; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        /* EREIGNIS BOX */
+        #event-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            background: #182229;
+            display: none;
+            font-size: 1.15rem;
+            line-height: 1.6;
+            text-align: left;
+            border: 1px solid #2f3b43;
+            animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-hit { border-left: 6px solid var(--danger); background: linear-gradient(90deg, rgba(255, 71, 87, 0.1), transparent); }
+        .event-late { border-left: 6px solid var(--warning); background: linear-gradient(90deg, rgba(241, 196, 15, 0.1), transparent); }
+        .event-free { border-left: 6px solid var(--info); background: linear-gradient(90deg, rgba(52, 152, 219, 0.1), transparent); }
+        .event-task { border-left: 6px solid var(--primary); background: linear-gradient(90deg, rgba(0, 168, 132, 0.1), transparent); }
+        .event-error { border-left: 6px solid var(--danger); background: #2a1114 !important; color: #ff6b81; text-align: center; }
+
+        .grade-badge {
+            display: inline-block;
+            background: #2a3942;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin-top: 15px;
+            border: 1px solid #3f4b52;
+        }
+
+        /* ZEUGNIS BEREICH */
+        .zeugnis-panel {
+            background-color: var(--chalkboard);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            border: 1px solid #2a3942;
+        }
+
+        .zeugnis-header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #2f3b43;
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .zeugnis-header h2 { font-size: 1.8rem; color: #fff; font-weight: 300; letter-spacing: 2px; }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        
+        th { 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 0.85rem; 
+            padding: 0 15px 10px 15px;
+            text-align: left;
+            letter-spacing: 1px;
+        }
+        
+        td { 
+            padding: 18px 15px; 
+            background: #182229;
+            font-size: 1.1rem; 
+        }
+        
+        tr td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; font-weight: 500; }
+        tr td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; text-align: right; }
+        
+        tbody tr { transition: transform 0.2s, background 0.2s; }
+        tbody tr:hover td { background: var(--bg-hover); transform: scale(1.01); }
+
+        .grade-good { color: #2ecc71; font-weight: bold; text-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
+        .grade-ok { color: #f1c40f; font-weight: bold; text-shadow: 0 0 10px rgba(241, 196, 15, 0.4); }
+        .grade-bad { color: #ff4757; font-weight: bold; text-shadow: 0 0 10px var(--danger-glow); }
+
+        .zeugnis-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #151f25;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid #2f3b43;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .avg-number { font-size: 1.8rem; }
+
+        @keyframes slideDown { 
+            0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 
+            100% { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+        
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #182229 25%, #2a3942 50%, #182229 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            color: transparent !important;
+            border-radius: 5px;
+        }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🏫 Limazon Academy</h1>
+            <p>Schüler-Akte: <span id="student-name" class="student-name">Lädt...</span></p>
+        </div>
+
+        <!-- ACTION -->
+        <div class="action-panel">
+            <button class="btn-attend" onclick="attendClass()" id="btn-attend">🎒 Unterricht betreten</button>
+            <div id="event-box"></div>
+        </div>
+
+        <!-- ZEUGNIS -->
+        <div class="zeugnis-panel">
+            <div class="zeugnis-header">
+                <h2>🎓 DEIN NOTENSPIEGEL</h2>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>📚 Fach</th>
+                        <th>📝 Prüfungen</th>
+                        <th style="text-align: right;">🎯 Ø Note</th>
+                    </tr>
+                </thead>
+                <tbody id="zeugnis-body">
+                    <!-- Platzhalter während des Ladens -->
+                    <tr>
+                        <td class="skeleton">Mathematik</td>
+                        <td class="skeleton">0</td>
+                        <td class="skeleton" style="text-align: right;">-</td>
+                    </tr>
+                    <tr>
+                        <td class="skeleton">Deutsch</td>
+                        <td class="skeleton">0</td>
+                        <td class="skeleton" style="text-align: right;">-</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="zeugnis-footer">
+                <span>GESAMTDURCHSCHNITT</span>
+                <span id="total-average" class="avg-number">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks/api'; 
+        
+        // 1. Initialisierung und Auth-Check
+        async function init() {
+            try {
+                const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+                if (!res.ok) {
+                    window.location.href = '/index.html'; 
+                    return;
+                }
+                const data = await res.json();
+                document.getElementById('student-name').innerText = data.username.toUpperCase();
+                
+                loadZeugnis();
+            } catch (err) {
+                console.error("Init Fehler:", err);
+            }
+        }
+
+        // 2. Zeugnis laden
+        async function loadZeugnis() {
+            try {
+                const res = await fetch(`${API_URL}/school/zeugnis`, { credentials: 'include' });
+                const data = await res.json();
+                
+                const tbody = document.getElementById('zeugnis-body');
+                tbody.innerHTML = '';
+
+                if (data.zeugnis.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #8696a0; background: transparent; padding: 40px;">Noch keine Noten eingetragen. Drück den Button!</td></tr>';
+                    document.getElementById('total-average').innerText = '-';
+                    return;
+                }
+
+                data.zeugnis.forEach(fach => {
+                    const tr = document.createElement('tr');
+                    
+                    let gradeHtml = '<span style="color: #5c6b73;">-</span>';
+                    if (fach.average !== null) {
+                        let gradeClass = 'grade-ok';
+                        if (fach.average <= 2.5) gradeClass = 'grade-good';
+                        else if (fach.average >= 4.5) gradeClass = 'grade-bad';
+                        
+                        gradeHtml = `<span class="${gradeClass}">${fach.average}</span>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td>${fach.subject}</td>
+                        <td style="color: #8696a0;">${fach.count}</td>
+                        <td>${gradeHtml}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Gesamtdurchschnitt färben
+                const avgEl = document.getElementById('total-average');
+                if (data.totalAverage !== null) {
+                    let avgClass = 'grade-ok';
+                    if (data.totalAverage <= 2.5) avgClass = 'grade-good';
+                    else if (data.totalAverage >= 4.5) avgClass = 'grade-bad';
+                    
+                    avgEl.innerHTML = `<span class="${avgClass}">${data.totalAverage}</span>`;
+                } else {
+                    avgEl.innerText = '-';
+                }
+
+            } catch (err) {
+                console.error("Zeugnis Ladefehler:", err);
+            }
+        }
+
+        // 3. Am Unterricht teilnehmen
+        async function attendClass() {
+            const btn = document.getElementById('btn-attend');
+            const eventBox = document.getElementById('event-box');
+            
+            btn.disabled = true;
+            btn.innerText = "⏳ Sitze im Klassenzimmer...";
+            eventBox.style.display = 'none';
+            eventBox.className = '';
+
+            try {
+                const res = await fetch(`${API_URL}/school/attend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+                
+                eventBox.style.display = 'block';
+
+                if (!res.ok) {
+                    // Cooldown oder Fehler
+                    eventBox.classList.add('event-error');
+                    eventBox.innerHTML = `<strong>🚫 Schulverweis:</strong><br>${data.error}`;
+                } else {
+                    // Erfolgreiches Event
+                    let cssClass = 'event-task'; // Default
+                    if (data.eventType === 'hit') cssClass = 'event-hit';
+                    if (data.eventType === 'late') cssClass = 'event-late';
+                    if (data.eventType === 'free') cssClass = 'event-free';
+                    if (data.eventType === 'trip') cssClass = 'event-free'; // Casino Ausflug = Blau
+                    if (data.eventType === 'ppp') cssClass = 'event-task';  // Viral gehen = Grün
+
+                    eventBox.classList.add(cssClass);
+                    
+                    let gradeText = '';
+                    if (data.grade !== null) {
+                        let gColor = '#f1c40f'; // Gelb
+                        if (data.grade <= 2) gColor = '#2ecc71'; // Grün
+                        if (data.grade >= 5) gColor = '#ff4757'; // Rot
+                        
+                        gradeText = `<div class="grade-badge">Eingetragene Note: <span style="color: ${gColor};">${data.grade}</span></div>`;
+                    }
+                    
+                    eventBox.innerHTML = `<div>${data.message}</div> ${gradeText}`;
+
+                    // Zeugnis neu laden, um die neue Note live anzuzeigen
+                    if (data.grade !== null) {
+                        loadZeugnis();
+                    }
+                }
+            } catch (err) {
+                eventBox.style.display = 'block';
+                eventBox.classList.add('event-error');
+                eventBox.innerHTML = `<strong>Server-Fehler:</strong> Der Hausmeister hat das WLAN-Kabel durchgeschnitten.`;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "🎒 Unterricht betreten";
+            }
+        }
+
+        init();
+    </script>
+
+</body></html>

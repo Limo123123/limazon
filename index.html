@@ -1,0 +1,867 @@
+<!DOCTYPE html><html lang="de"><head>
+    <script src="/themes/js/security.js?v=1785963851"></script>
+    
+    <!-- SimpleWebAuthn Browser Script für Passkeys -->
+    <script src="/assets_offline/1786118273121_index.umd.min.js"></script>
+
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Portal</title>
+    <!--  -->
+    <script src="/assets_offline/1786118270425_dl_asset.css"></script>
+    <link href="/assets_offline/1786118273093_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: white;
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 25, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .theme-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .card-icon {
+            transition: transform 0.4s ease;
+        }
+
+        .theme-card:hover .card-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .pattern-grid {
+            background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .input-glow {
+            transition: all 0.3s ease;
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(17, 24, 39, 0.9);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* --- STREIK-ANZEIGE --- */
+        .strike-active-card {
+            border: 3px solid #ff0000 !important;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.7) !important;
+            animation: strike-pulse 1.5s infinite !important;
+        }
+
+        @keyframes strike-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important; }
+            100% { transform: scale(1); }
+        }
+
+        .strike-label {
+            position: absolute;
+            top: 20px;
+            right: -40px;
+            background: #ff0000;
+            color: white;
+            font-size: 14px;
+            font-weight: 900;
+            padding: 8px 50px;
+            transform: rotate(45deg);
+            z-index: 50;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid white;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+
+        /* --- AD BANNER --- */
+        .ad-pulse {
+            animation: ad-glow 3s infinite alternate;
+        }
+
+        @keyframes ad-glow {
+            0% { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1); }
+            100% { box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4); border-color: rgba(59, 130, 246, 0.6); }
+        }
+
+        /* --- TAB SWITCHER LOGIC --- */
+        .tab-btn.active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+        .tab-btn.inactive {
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+        }
+
+        @media (max-width: 640px) {
+            .strike-label { top: 12px; right: -28px; font-size: 12px; padding: 6px 30px; }
+            #ad-banner { left: 1rem; right: 1rem; bottom: 1rem; width: auto; max-width: calc(100% - 2rem); }
+            .theme-card:hover { transform: none; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); }
+            #bgEffects>div:first-child, #bgEffects>div:nth-child(2) { width: 18rem; height: 18rem; }
+            #bgEffects>div:first-child { left: 50%; transform: translateX(-50%); }
+            #bgEffects>div:nth-child(2) { right: 50%; }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen selection:bg-blue-500 selection:text-white overflow-x-hidden overflow-y-scroll relative">
+
+    <div class="fixed inset-0 z-[-1]" id="bgEffects">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute inset-0 pattern-grid opacity-20"></div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- === LOGIN / REGISTER SCREEN (OVERLAY) ==== -->
+    <!-- ========================================== -->
+    <div id="authScreen" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity duration-200">
+        <div class="glass-panel p-8 rounded-3xl max-w-md w-full border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] relative overflow-hidden">
+            
+            <!-- Logo / Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-black tracking-tighter mb-2">Limazon<span class="text-blue-500">.</span></h1>
+                <p class="text-gray-400 text-sm">Identifikation erforderlich.</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex mb-6 border-b border-gray-800">
+                <button onclick="switchTab('login')" id="tabLogin" class="tab-btn active flex-1 pb-3 text-sm font-bold uppercase tracking-wider transition-colors">Login</button>
+                <button onclick="switchTab('register')" id="tabRegister" class="tab-btn inactive flex-1 pb-3 text-sm font-bold uppercase tracking-wider transition-colors">Registrieren</button>
+            </div>
+
+            <!-- Error/Success Message Box -->
+            <div id="authMessage" class="hidden mb-4 p-3 rounded-xl text-sm font-medium text-center border"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <input type="text" id="loginUsername" placeholder="Benutzername" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                </div>
+                <div>
+                    <input type="password" id="loginPassword" placeholder="Passwort" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                </div>
+                <div class="flex items-center gap-2 pt-2">
+                    <input type="checkbox" id="rememberMe" class="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900">
+                    <label for="rememberMe" class="text-xs text-gray-400 cursor-pointer">Eingeloggt bleiben</label>
+                </div>
+                
+                <button type="submit" id="loginBtn" class="w-full mt-2 py-4 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                    System betreten
+                </button>
+
+                <!-- Trenner -->
+                <div class="relative flex items-center py-2">
+                    <div class="flex-grow border-t border-gray-800"></div>
+                    <span class="flex-shrink-0 mx-4 text-gray-500 text-xs">ODER</span>
+                    <div class="flex-grow border-t border-gray-800"></div>
+                </div>
+
+                <!-- WebAuthn Passkey Button -->
+                <button type="button" id="passkeyBtn" onclick="handlePasskeyLogin()" class="w-full py-4 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-xl transition-all active:scale-95 border border-gray-700 flex items-center justify-center gap-2">
+                    <span class="text-xl">🛡️</span> Passkey Login
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-4">
+                <div>
+                    <input type="text" id="regUsername" required="" placeholder="Benutzername (Min. 3 Zeichen)" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                </div>
+                <div>
+                    <input type="password" id="regPassword" required="" placeholder="Passwort (Min. 6 Zeichen)" class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                </div>
+                <div>
+                    <input type="text" id="regInviteCode" required="" placeholder="Invite Code (z.B. INV-...)" class="w-full px-4 py-3 bg-gray-900/50 border border-blue-500/50 rounded-xl text-white input-glow focus:outline-none" style="box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1);">
+                    <p class="text-[10px] text-gray-500 mt-1 ml-1">Exklusiver Zugangscode erforderlich.</p>
+                </div>
+                <button type="submit" id="regBtn" class="w-full mt-2 py-4 bg-purple-600 hover:bg-purple-500 font-bold rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                    Identität registrieren
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- === PORTAL (MAIN CONTENT) ================ -->
+    <!-- ========================================== -->
+    <!-- Initial versteckt, wird nach Login sichtbar gemacht -->
+    <div id="mainContent" class="container mx-auto px-6 py-12 max-w-7xl flex flex-col min-h-screen hidden opacity-0 transition-opacity duration-300">
+
+        <!-- WERBEBANNER -->
+        <div id="ad-banner" class="hidden fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 sm:w-80 glass-panel rounded-2xl border border-blue-500/50 shadow-2xl z-[90] cursor-pointer transition-all hover:scale-105 ad-pulse">
+            <button onclick="closeAd(event)" class="absolute top-2 right-2 text-gray-400 hover:text-white z-20 bg-black/50 rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
+            <div class="absolute top-0 left-0 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-br-lg tracking-widest uppercase z-10">ANZEIGE</div>
+            <div class="p-4 pt-8 flex items-start gap-4" onclick="navToAd()">
+                <div id="ad-icon" class="text-4xl drop-shadow-lg shrink-0 mt-1"></div>
+                <div>
+                    <h3 id="ad-title" class="text-base font-bold text-blue-400 mb-1 leading-tight"></h3>
+                    <p id="ad-text" class="text-gray-300 text-xs leading-snug"></p>
+                </div>
+            </div>
+        </div>
+
+        <header class="text-center mb-12 relative">
+            <div class="absolute right-0 top-0 text-right hidden sm:block">
+                <p class="text-sm text-gray-400">Eingeloggt als</p>
+                <p id="navUsername" class="text-lg font-bold text-blue-400">...</p>
+                <button onclick="handleLogout()" class="text-xs text-red-400 hover:text-red-300 mt-1 underline">Logout</button>
+            </div>
+
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-black mb-4 tracking-tighter">
+                Limazon<span class="text-blue-500">.</span><wbr>Universe
+            </h1>
+            <p class="text-xl text-gray-400 font-light">Willkommen im Hub.</p>
+
+            <div class="mt-8 relative max-w-md mx-auto">
+                <input type="text" id="searchInput" class="w-full pl-12 pr-4 py-4 bg-gray-900/80 border border-gray-700 rounded-2xl text-white input-glow focus:outline-none transition-all" placeholder="Suche Module...">
+                <span class="absolute left-4 top-4 opacity-50">🔍</span>
+            </div>
+        </header>
+
+        <div id="appsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+
+            <!-- KACHELN -->
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/limazon.html')" data-module="shop" data-tags="shop kaufen klassik economy">
+                <div class="h-32 bg-gradient-to-br from-blue-900 to-slate-900 flex items-center justify-center relative"><span class="text-6xl card-icon">🛒</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-blue-400">Shop Classic</h3><p class="text-gray-400 text-xs">Der klassische Marktplatz.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/rathaus.html')" data-module="rathaus" data-tags="rathaus bürgermeister wahl steuern gesetz politik">
+                <div class="h-32 bg-gradient-to-br from-blue-800 via-indigo-900 to-black flex items-center justify-center relative"><span class="text-6xl card-icon">🏛️</span></div>
+                <div class="p-5">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold group-hover:text-blue-400">Das Rathaus</h3>
+                        <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-500/30">MACHT</span>
+                    </div>
+                    <p class="text-gray-400 text-xs">Wahlen, Steuern &amp; Gesetze.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/gesetzbuch.html')" data-tags="gesetz regeln wiki law recht admin">
+                <div class="h-32 bg-gradient-to-br from-yellow-800 to-amber-950 flex items-center justify-center relative"><span class="text-6xl card-icon">⚖️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-yellow-400">Gesetzbuch</h3><p class="text-gray-400 text-xs">Die Grundrechte (und Pflichten).</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/limazonsuper.html')" data-tags="shop kaufen super modern beta 3d">
+                <div class="h-32 bg-gradient-to-br from-green-900 via-emerald-900 to-black flex items-center justify-center"><span class="text-6xl card-icon">🧪</span></div>
+                <div class="p-5">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold group-hover:text-green-400">Limazon Super</h3>
+                        <span class="bg-green-500/20 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded border border-green-500/30">BETA</span>
+                    </div>
+                    <p class="text-gray-400 text-xs">Next-Gen Shopping.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/bank.html')" data-module="bank" data-tags="geld finanzen bank überweisen">
+                <div class="h-32 bg-gradient-to-br from-cyan-900 to-blue-950 flex items-center justify-center relative"><span class="text-6xl card-icon">🏦</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-cyan-400">Limo Bank</h3><p class="text-gray-400 text-xs">Konto, Aktien &amp; Transfers.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/finance.html')" data-tags="krypto crypto aktien stocks geld finance exchange">
+                <div class="h-32 bg-gradient-to-br from-blue-900 to-indigo-950 flex items-center justify-center"><span class="text-6xl card-icon">📈</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-blue-400">Exchange</h3><p class="text-gray-400 text-xs">Krypto &amp; Aktien.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/taxes.html')" data-tags="steuern finanzamt rich economy system">
+                <div class="h-32 bg-gradient-to-br from-slate-700 to-gray-900 flex items-center justify-center relative"><span class="text-6xl card-icon">🏛️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-slate-300">Finanzamt</h3><p class="text-gray-400 text-xs">Vermögensabgabe ab 100M.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/realestate.html')" data-module="realestate" data-tags="haus immobilien wg wohnen miete schutz">
+                <div class="h-32 bg-gradient-to-br from-blue-700 via-indigo-900 to-slate-900 flex items-center justify-center relative"><span class="text-6xl card-icon">🏠</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-blue-400">Immobilien</h3><p class="text-gray-400 text-xs">Häuser, WGs &amp; Tresor-Schutz.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/neighborhood.html')" data-tags="nachbarn stadt map häuser besuchen street">
+                <div class="h-32 bg-gradient-to-br from-teal-700 via-cyan-900 to-slate-900 flex items-center justify-center"><span class="text-6xl card-icon">🏘️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-cyan-400">Nachbarschaft</h3><p class="text-gray-400 text-xs">Andere Spieler besuchen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/limea.html')" data-tags="moebel möbel einrichten ikea haus bauen editor design">
+                <div class="h-32 bg-gradient-to-br from-blue-600 via-yellow-600 to-black flex items-center justify-center"><span class="text-6xl card-icon">🪑</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-yellow-400">Limea</h3><p class="text-gray-400 text-xs">Möbel shoppen &amp; Haus einrichten.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/pets.html')" data-module="pets" data-tags="haustier hund katze füttern tier adoptieren">
+                <div class="h-32 bg-gradient-to-br from-amber-600 via-orange-800 to-black flex items-center justify-center relative"><span class="text-6xl card-icon">🐾</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-amber-400">Haustiere</h3><p class="text-gray-400 text-xs">Adoptieren, füttern &amp; pflegen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/tierpark.html')" data-tags="tiere park spielen haustiere zoo">
+                <div class="h-32 bg-gradient-to-br from-green-500 to-emerald-800 flex items-center justify-center"><span class="text-6xl card-icon">🌳</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-green-400">Tierpark</h3><p class="text-gray-400 text-xs">Lass dein Haustier mit anderen spielen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/jobs.html')" data-module="jobs" data-tags="arbeit job geld verdienen economy">
+                <div class="h-32 bg-gradient-to-br from-orange-800 to-amber-900 flex items-center justify-center relative"><span class="text-6xl card-icon">💼</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-orange-400">Job Center</h3><p class="text-gray-400 text-xs">Karriere machen &amp; verdienen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/schule.html')" data-tags="schule lernen unterricht noten klassenfahrt zeugnis bildung chaos">
+                <div class="h-32 bg-gradient-to-br from-slate-700 to-gray-900 flex items-center justify-center relative"><span class="text-6xl card-icon">🏫</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-slate-300">Limo Schule</h3><p class="text-gray-400 text-xs">Unterricht, Noten &amp; Chaos.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/restaurant.html')" data-module="restaurant" data-tags="essen food hunger pizza burger energie">
+                <div class="h-32 bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center relative"><span class="text-6xl card-icon">🍔</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-orange-300">Limo's Diner</h3><p class="text-gray-400 text-xs">Energie tanken &amp; Pizza essen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/teachermon.html')" data-module="teachermon" data-tags="karten sammeln spiel lehrer teachermon gacha">
+                <div class="h-32 bg-gradient-to-br from-fuchsia-800 to-purple-900 flex items-center justify-center relative"><span class="text-6xl card-icon">🃏</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-fuchsia-400">Teachermon</h3><p class="text-gray-400 text-xs">Das Lehrer-Sammelkartenspiel.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/casino.html')" data-module="casino" data-tags="glücksspiel geld wetten casino">
+                <div class="h-32 bg-gradient-to-br from-yellow-600 to-amber-800 flex items-center justify-center relative"><span class="text-6xl card-icon">🎰</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-yellow-400">Casino</h3><p class="text-gray-400 text-xs">Alles auf Rot.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/games.html')" data-tags="spiele games zocken snake flappy arcade">
+                <div class="h-32 bg-gradient-to-br from-indigo-800 to-violet-900 flex items-center justify-center"><span class="text-6xl card-icon">🎮</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-indigo-400">Arcade</h3><p class="text-gray-400 text-xs">Minigames &amp; Highscores.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/wheel.html')" data-tags="glücksrad wheel tokens win">
+                <div class="h-32 bg-gradient-to-br from-purple-800 to-fuchsia-900 flex items-center justify-center"><span class="text-6xl card-icon">🎡</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-purple-400">Wheel</h3><p class="text-gray-400 text-xs">Tokens &amp; Gewinne.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/lottery.html')" data-tags="lotto lottery jackpot lose gewinnen">
+                <div class="h-32 bg-gradient-to-br from-emerald-600 via-teal-800 to-black flex items-center justify-center"><span class="text-6xl card-icon">🎟️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-emerald-400">Lottery</h3><p class="text-gray-400 text-xs">Knacke den Jackpot.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/standesamt.html')" data-tags="heiraten hochzeit liebe ringe standesamt steuern">
+                <div class="h-32 bg-gradient-to-br from-pink-600 to-rose-900 flex items-center justify-center relative"><span class="text-6xl card-icon">💒</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-pink-400">Standesamt</h3><p class="text-gray-400 text-xs">Heiraten &amp; Steuervorteile.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/tinda.html')" data-tags="dating liebe match tinder social">
+                <div class="h-32 bg-gradient-to-br from-pink-700 to-rose-900 flex items-center justify-center"><span class="text-6xl card-icon">🔥</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-pink-400">Tinda</h3><p class="text-gray-400 text-xs">Finde dein Match.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/whatslim.html')" data-tags="chat nachrichten messenger kommunikation whatslim text gruppe">
+                <div class="h-32 bg-gradient-to-br from-teal-700 to-emerald-900 flex items-center justify-center relative"><span class="text-6xl card-icon">💬</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-teal-400">Whatslim</h3><p class="text-gray-400 text-xs">Der Limazon Messenger.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/family-dashboard.html')" data-tags="familie family kinder tinda adoptieren baby jugendamt">
+                <div class="h-32 bg-gradient-to-br from-pink-800 to-rose-950 flex items-center justify-center relative"><span class="text-6xl card-icon">👨‍👩‍👧‍👦</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-pink-400">Family Control</h3><p class="text-gray-400 text-xs">Kinder &amp; Adoptionscenter.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/news.html')" data-tags="nachrichten news zeitung info system">
+                <div class="h-32 bg-gradient-to-br from-red-900 to-rose-950 flex items-center justify-center relative"><span class="text-6xl card-icon">📰</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-red-400">Limo News</h3><p class="text-gray-400 text-xs">Was passiert in Limazon?</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/limterest.html')" data-module="limterest" data-tags="bilder social fotos pinterest">
+                <div class="h-32 bg-gradient-to-br from-rose-700 to-pink-800 flex items-center justify-center relative"><span class="text-6xl card-icon">📌</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-rose-400">Limterest</h3><p class="text-gray-400 text-xs">Inspirationen merken &amp; teilen.</p></div>
+            </div>
+
+            <a href="themes/event.html" class="relative overflow-hidden group p-1 rounded-2xl bg-gradient-to-r from-red-500 via-yellow-500 to-purple-500 transform transition-transform hover:scale-105 shadow-[0_0_15px_rgba(236,72,153,0.4)]" data-tags="event csd bonus tokens glücksrad pride">
+                <div class="bg-black/90 h-full w-full rounded-xl p-6 flex flex-col items-center justify-center relative z-10 transition-colors group-hover:bg-black/70">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-pink-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+                    <span class="text-5xl mb-3 relative z-20 group-hover:animate-bounce">🏳️‍🌈</span>
+                    <h3 class="text-xl font-bold text-white relative z-20 tracking-wider">EVENT</h3>
+                    <p class="text-xs text-gray-400 mt-2 text-center relative z-20 font-mono">Tägliche Belohnung &amp; Glücksrad</p>
+                    <div class="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-[0_0_10px_red]">
+                        LIVE
+                    </div>
+                </div>
+            </a>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('ot/tcg/index.html')" data-tags="bewertung schule lehrer social">
+                <div class="h-32 bg-gradient-to-br from-lime-800 to-green-900 flex items-center justify-center"><span class="text-6xl card-icon">🎓</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-lime-400">Human Grades</h3><p class="text-gray-400 text-xs">Bewerte andere Menschen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/dont-blame-me.html')" data-tags="beichten blame fun confessions">
+                <div class="h-32 bg-gradient-to-br from-gray-800 to-black flex items-center justify-center"><span class="text-6xl card-icon">⚖️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-gray-300">Confessions</h3><p class="text-gray-400 text-xs">Deine Geheimnisse.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/therapy.html')" data-tags="hilfe therapie sucht casino doktor">
+                <div class="h-32 bg-gradient-to-br from-cyan-800 via-blue-900 to-black flex items-center justify-center"><span class="text-6xl card-icon">🛋️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-cyan-400">Dr. Limo</h3><p class="text-gray-400 text-xs">Therapie &amp; Suchtberatung.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/crime.html')" data-module="crime" data-tags="verbrechen überfall raub crime">
+                <div class="h-32 bg-gradient-to-br from-red-950 to-black flex items-center justify-center relative"><span class="text-6xl card-icon">🦹</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-red-600">Untergrund</h3><p class="text-gray-400 text-xs">Überfälle &amp; Dark Market.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/wanted.html')" data-tags="bounty kopfgeld wanted rache crime">
+                <div class="h-32 bg-gradient-to-br from-red-900 via-stone-900 to-black flex items-center justify-center"><span class="text-6xl card-icon">🎯</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-red-400">Bounty Hub</h3><p class="text-gray-400 text-xs">Kopfgelder jagen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/court.html')" data-tags="gericht court recht gesetz anklage crime">
+                <div class="h-32 bg-gradient-to-br from-yellow-900 to-stone-950 flex items-center justify-center"><span class="text-6xl card-icon">🔨</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-yellow-500">Limo Court</h3><p class="text-gray-400 text-xs">Recht &amp; Justiz.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/gangs.html')" data-module="gangs" data-tags="gang clan war clans">
+                <div class="h-32 bg-gradient-to-br from-violet-900 to-purple-950 flex items-center justify-center relative"><span class="text-6xl card-icon">🏴‍☠️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-violet-400">Clans</h3><p class="text-gray-400 text-xs">Bandenkriege &amp; Reviere.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/mail.html')" data-tags="mail postfach inbox belohnung">
+                <div class="h-32 bg-gradient-to-br from-indigo-800 via-blue-900 flex items-center justify-center"><span class="text-6xl card-icon">📬</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-indigo-400">Postfach</h3><p class="text-gray-400 text-xs">System-Mails &amp; Belohnungen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/logistics.html')" data-tags="logistik post versenden paket senden dhl">
+                <div class="h-32 bg-gradient-to-br from-orange-600 via-orange-800 flex items-center justify-center"><span class="text-6xl card-icon">🚚</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-orange-400">Limo Post</h3><p class="text-gray-400 text-xs">Sende Items an Freunde.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/kleinanzeigen.html')" data-tags="verkaufen kaufen ebay marktplatz">
+                <div class="h-32 bg-gradient-to-br from-amber-700 via-orange-900 to-black flex items-center justify-center"><span class="text-6xl card-icon">🏷️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-amber-400">Limo Kleinanzeigen</h3><p class="text-gray-400 text-xs">Gebrauchtmarkt.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/gewerkschaft.html')" data-tags="streik gewerkschaft protest blockade rebellion">
+                <div class="h-32 bg-gradient-to-br from-red-600 via-orange-900 to-black flex items-center justify-center relative overflow-hidden"><span class="text-6xl card-icon">✊</span></div>
+                <div class="p-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="text-xl font-bold group-hover:text-red-400">Gewerkschaft</h3>
+                        <span class="bg-red-500/20 text-red-300 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/30">REBELLION</span>
+                    </div>
+                    <p class="text-gray-400 text-xs">Organisiere Streiks.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/petitions.html')" data-tags="petition unterschriften demokratie volk vorschläge">
+                <div class="h-32 bg-gradient-to-br from-yellow-600 via-amber-800 to-black flex items-center justify-center"><span class="text-6xl card-icon">📜</span></div>
+                <div class="p-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="text-xl font-bold group-hover:text-yellow-400">Petitionen</h3>
+                        <span class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-500/30">VOLK</span>
+                    </div>
+                    <p class="text-gray-400 text-xs">Verändere die Welt.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/profile.html')" data-tags="profil ich user settings limo id">
+                <div class="h-32 bg-gradient-to-br from-fuchsia-900 to-purple-950 flex items-center justify-center"><span class="text-6xl card-icon">💳</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-fuchsia-400">Limo ID</h3><p class="text-gray-400 text-xs">Profil &amp; Inventar.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/limoplus.html')" data-tags="abo prime plus vip boost">
+                <div class="h-32 bg-gradient-to-br from-cyan-600 via-blue-800 to-black flex items-center justify-center relative overflow-hidden"><span class="text-6xl card-icon">💎</span></div>
+                <div class="p-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="text-xl font-bold group-hover:text-cyan-400 transition-colors">Limazon+</h3>
+                        <span class="bg-cyan-500/20 text-cyan-300 text-[10px] px-2 py-0.5 rounded border border-cyan-500/30 font-bold">VIP</span>
+                    </div>
+                    <p class="text-gray-400 text-xs">Tägliche Boosts &amp; Abos.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/kirche.html')" data-tags="kirche gott pi religion spenden hardware">
+                <div class="h-32 bg-gradient-to-br from-indigo-950 via-purple-950 to-black flex items-center justify-center relative"><span class="text-6xl card-icon">🕯️</span></div>
+                <div class="p-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="text-xl font-bold group-hover:text-yellow-400">Kirche des Pi</h3>
+                        <span class="bg-yellow-500/20 text-yellow-300 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-500/30">HEILIG</span>
+                    </div>
+                    <p class="text-gray-400 text-xs">Ehre die Hardware &amp; Spende.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/form.html')" data-tags="support hilfe ticket antrag geld">
+                <div class="h-32 bg-gradient-to-br from-sky-800 via-blue-900 to-slate-900 flex items-center justify-center relative overflow-hidden"><span class="text-6xl card-icon">📝</span></div>
+                <div class="p-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="text-xl font-bold group-hover:text-sky-400">Support</h3>
+                        <span class="bg-sky-500/20 text-sky-300 text-[10px] px-2 py-0.5 rounded border border-sky-500/30 font-bold">HELP</span>
+                    </div>
+                    <p class="text-gray-400 text-xs">Anträge &amp; Entschädigungen.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/cdn.html')" data-tags="bilder upload cdn fotos crop zuschneiden hosting system tools">
+                <div class="h-32 bg-gradient-to-br from-sky-800 to-blue-900 flex items-center justify-center relative"><span class="text-6xl card-icon">☁️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-sky-400">CDN Tools</h3><p class="text-gray-400 text-xs">Eigene Bilder hosten.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/reviews.html')" data-tags="bewertung review sterne feedback">
+                <div class="h-32 bg-gradient-to-br from-yellow-500 to-amber-700 flex items-center justify-center"><span class="text-6xl card-icon">⭐</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-yellow-400">Reviews</h3><p class="text-gray-400 text-xs">Limazon Yelp.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/bugbounty.html')" data-tags="bugs fehler melden reward">
+                <div class="h-32 bg-gradient-to-br from-green-900 to-black flex items-center justify-center"><span class="text-6xl card-icon">🐛</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-green-400">Bug Bounty</h3><p class="text-gray-400 text-xs">Fehler finden &amp; Coins verdienen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/ideabox.html')" data-tags="ideen vorschläge feedback">
+                <div class="h-32 bg-gradient-to-br from-amber-800 to-orange-900 flex items-center justify-center"><span class="text-6xl card-icon">💡</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-amber-400">Ideenbox</h3><p class="text-gray-400 text-xs">Vorschläge einreichen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/rights.html')" data-tags="admin rechte system sicherheit ban rights">
+                <div class="h-32 bg-gradient-to-br from-red-800 to-rose-950 flex items-center justify-center"><span class="text-6xl card-icon">🛡️</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-red-400">Rights</h3><p class="text-gray-400 text-xs">Admin &amp; Gruppen.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/stats.html')" data-tags="system status ping info admin metrics">
+                <div class="h-32 bg-gradient-to-br from-emerald-900 to-black flex items-center justify-center"><span class="text-6xl card-icon">📈</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-emerald-400">Metriken</h3><p class="text-gray-400 text-xs">Statistiken.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/status.html')" data-tags="system status ping info admin">
+                <div class="h-32 bg-gradient-to-br from-slate-800 to-black flex items-center justify-center"><span class="text-6xl card-icon">_&gt;</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-slate-400">Status</h3><p class="text-gray-400 text-xs">Server Monitor.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="window.location.href='https://limipedia.any64.de'" data-tags="wiki hilfe info">
+                <div class="h-32 bg-gradient-to-br from-slate-700 to-gray-900 flex items-center justify-center"><span class="text-6xl card-icon">📖</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-slate-400">Limipedia</h3><p class="text-gray-400 text-xs">Das Wiki.</p></div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group" onclick="nav('themes/hall-of-fame.html')" data-tags="rangliste top bestenliste">
+                <div class="h-32 bg-gradient-to-br from-yellow-700 to-orange-900 flex items-center justify-center"><span class="text-6xl card-icon">🏆</span></div>
+                <div class="p-5"><h3 class="text-xl font-bold group-hover:text-yellow-400">Hall of Fame</h3><p class="text-gray-400 text-xs">Die reichsten Bürger.</p></div>
+            </div>
+
+        </div>
+
+        <footer class="mt-auto py-6 border-t border-gray-800 text-center text-sm text-gray-500">
+            <p class="text-xs text-gray-600 mb-4 max-w-2xl mx-auto">
+                Limazon.Universe ist ein geschlossenes System. Alle In-Game-Finanzen, Clans und Dienstleistungen besitzen keinen realen Gegenwert.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="themes/account.html" class="hover:text-white transition">Konto</a>
+                <a href="themes/status.html" class="hover:text-white transition">Netzwerk</a>
+                <a href="themes/admin.html" class="hover:text-red-400 transition">Management</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- SCRIPT-BEREICH: AUTH LOGIC & PORTAL INITIALISIERUNG -->
+    <script>
+        // API Base URL - Passe dies an, falls dein Frontend nicht auf demselben Host wie das Backend läuft
+        const API_URL = 'https://api.limazon.v6.rocks'; 
+        
+        const authScreen = document.getElementById('authScreen');
+        const mainContent = document.getElementById('mainContent');
+        const searchInput = document.getElementById('searchInput');
+        const cards = document.querySelectorAll('.theme-card, a[href="themes/event.html"]'); 
+        const adBanner = document.getElementById('ad-banner');
+        
+        let currentAdLink = '';
+
+        // --- AUTH-LOGIC BEIM START ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            searchInput.addEventListener('input', filterApps);
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    showPortal(data.username, true);
+                } else {
+                    authScreen.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("Auth-Check Error:", err);
+                authScreen.classList.remove('hidden');
+            }
+        });
+
+        // --- UI FUNKTIONEN ---
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const regForm = document.getElementById('registerForm');
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegister = document.getElementById('tabRegister');
+            
+            document.getElementById('authMessage').classList.add('hidden'); 
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                tabLogin.classList.replace('inactive', 'active');
+                tabRegister.classList.replace('active', 'inactive');
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                tabLogin.classList.replace('active', 'inactive');
+                tabRegister.classList.replace('inactive', 'active');
+            }
+        }
+
+        function showMessage(msg, isError = true) {
+            const msgBox = document.getElementById('authMessage');
+            msgBox.textContent = msg;
+            msgBox.classList.remove('hidden', 'bg-red-500/20', 'border-red-500/50', 'text-red-400', 'bg-green-500/20', 'border-green-500/50', 'text-green-400');
+            
+            if (isError) {
+                msgBox.classList.add('bg-red-500/20', 'border-red-500/50', 'text-red-400');
+            } else {
+                msgBox.classList.add('bg-green-500/20', 'border-green-500/50', 'text-green-400');
+            }
+        }
+
+        function showPortal(username, instant = false) {
+            document.getElementById('navUsername').textContent = username;
+            
+            if (instant) {
+                authScreen.classList.add('hidden');
+                mainContent.classList.remove('hidden', 'opacity-0');
+                checkActiveStrikes();
+                loadAd();
+            } else {
+                authScreen.classList.add('opacity-0');
+                
+                setTimeout(() => {
+                    authScreen.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        mainContent.classList.remove('opacity-0');
+                    }, 20);
+
+                    checkActiveStrikes();
+                    loadAd();
+                }, 200); 
+            }
+        }
+
+        // --- API CALLS ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = "Verbinde...";
+
+            const payload = {
+                username: document.getElementById('loginUsername').value,
+                password: document.getElementById('loginPassword').value,
+                rememberMe: document.getElementById('rememberMe').checked
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showPortal(data.user.username);
+                } else {
+                    showMessage(data.error || "Login fehlgeschlagen.");
+                }
+            } catch (err) {
+                showMessage("Netzwerkfehler beim Login.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "System betreten";
+            }
+        }
+
+        // --- WEBAUTHN / PASSKEY LOGIN LOGIC ---
+        const { startAuthentication } = SimpleWebAuthnBrowser;
+
+        async function handlePasskeyLogin() {
+            const btn = document.getElementById('passkeyBtn');
+            btn.disabled = true;
+            btn.innerHTML = "Warte auf Fingerabdruck...";
+
+            try {
+                // 1. Optionen vom Server abfragen
+                const resp = await fetch(`${API_URL}/api/webauthn/login-options`, { credentials: 'include' });
+                const options = await resp.json();
+                
+                if (options.error) {
+                    throw new Error(options.error);
+                }
+
+                // 2. Browser fragt nach dem Passkey
+                let asseResp;
+                try {
+                    asseResp = await startAuthentication(options);
+                } catch (error) {
+                    throw new Error("Authentifizierung abgebrochen.");
+                }
+
+                // 3. Antwort an den Server senden
+                const verificationResp = await fetch(`${API_URL}/api/webauthn/login-verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(asseResp),
+                    credentials: 'include'
+                });
+
+                const verificationJSON = await verificationResp.json();
+                
+                if (verificationJSON.verified) {
+                    // Erfolgreich eingeloggt!
+                    showPortal(verificationJSON.username);
+                } else {
+                    throw new Error(verificationJSON.error || "Verifizierung fehlgeschlagen.");
+                }
+
+            } catch (err) {
+                showMessage(err.message || "Passkey Login fehlgeschlagen.");
+                btn.disabled = false;
+                btn.innerHTML = '<span class="text-xl">🛡️</span> Passkey Login';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('regBtn');
+            btn.disabled = true;
+            btn.textContent = "Registriere...";
+
+            const payload = {
+                username: document.getElementById('regUsername').value,
+                password: document.getElementById('regPassword').value,
+                inviteCode: document.getElementById('regInviteCode').value 
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showMessage("Erfolgreich registriert! Bitte logge dich nun ein.", false);
+                    document.getElementById('registerForm').reset();
+                    setTimeout(() => switchTab('login'), 2000);
+                } else {
+                    showMessage(data.error || "Registrierung fehlgeschlagen.");
+                }
+            } catch (err) {
+                showMessage("Netzwerkfehler bei Registrierung.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Identität registrieren";
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+                window.location.reload(); 
+            } catch(e) {
+                console.error("Logout Fehler", e);
+            }
+        }
+
+        // --- PORTAL FUNKTIONEN ---
+        function nav(url) {
+            window.location.href = url;
+        }
+
+        function filterApps() {
+            const query = searchInput.value.trim().toLowerCase();
+            cards.forEach(card => {
+                const tags = (card.getAttribute('data-tags') || '').toLowerCase();
+                const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
+                const visible = !query || tags.includes(query) || title.includes(query);
+                card.style.display = visible ? '' : 'none';
+            });
+        }
+
+        async function checkActiveStrikes() {
+            try {
+                const response = await fetch(`${API_URL}/api/strikes/public`);
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (!Array.isArray(data.strikes) || data.strikes.length === 0) return;
+
+                data.strikes.forEach(strike => {
+                    const card = document.querySelector(`[data-module="${strike.module}"]`);
+                    if (!card) return;
+
+                    card.classList.add('strike-active-card');
+                    const banner = document.createElement('div');
+                    banner.className = 'strike-label';
+                    banner.textContent = 'STREIK';
+                    card.appendChild(banner);
+                });
+            } catch (error) {
+                console.log('Streik-Status nicht verfügbar.');
+            }
+        }
+
+        async function loadAd() {
+            try {
+                const response = await fetch(`${API_URL}/api/ads/random`, { credentials: 'include' });
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (data.isAdFree || !data.ad) return;
+
+                document.getElementById('ad-icon').textContent = data.ad.icon || '📰';
+                document.getElementById('ad-title').textContent = data.ad.title || 'Anzeige';
+                document.getElementById('ad-text').textContent = data.ad.text || '';
+                currentAdLink = data.ad.link || '';
+                adBanner.classList.remove('hidden');
+            } catch (error) {
+                console.log('Werbe-Server nicht erreichbar.');
+            }
+        }
+
+        function closeAd(event) {
+            event.stopPropagation();
+            adBanner.style.display = 'none';
+        }
+
+        function navToAd() {
+            if (currentAdLink) nav(currentAdLink);
+        }
+    </script>
+
+</body></html>

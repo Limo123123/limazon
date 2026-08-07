@@ -1,0 +1,679 @@
+<!DOCTYPE html><html lang="de"><head>
+    <script src="/themes/js/security.js?v=1785963851"></script>
+    
+    <meta name="robots" content="index, follow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Casino Royale 🎰</title>
+    <link href="/assets_offline/1786118273724_dl_asset_famil.css" rel="stylesheet">
+    <script src="/assets_offline/1786118270425_dl_asset.css"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 40px 10px;
+        }
+
+        /* Background Effects */
+        .bg-glow {
+            position: fixed; inset: 0; pointer-events: none; z-index: -1;
+            background: radial-gradient(circle at 50% 30%, rgba(255, 215, 0, 0.15), transparent 60%);
+        }
+
+        /* Glass Card */
+        .casino-card {
+            background: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 30px;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            text-align: center;
+            position: relative;
+        }
+
+        /* Game Tabs */
+        .tab-btn {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            padding-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: #ffd700;
+            border-bottom: 2px solid #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        .tab-btn.inactive {
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-btn.inactive:hover {
+            color: #9ca3af;
+        }
+
+        /* Coin 3D */
+        .coin-wrapper {
+            width: 180px; height: 180px; margin: 30px auto;
+            perspective: 1000px;
+        }
+        .coin {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d;
+        }
+        .coin-side {
+            width: 100%; height: 100%; border-radius: 50%; position: absolute;
+            backface-visibility: hidden; display: flex; align-items: center; justify-content: center;
+            font-family: 'Space Grotesk', sans-serif; font-weight: bold; font-size: 2.5rem;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 0 15px rgba(255, 215, 0, 0.4);
+            border: 8px solid #d4af37;
+        }
+        .heads {
+            background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+            color: #583e02; text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+        }
+        .tails {
+            background: radial-gradient(circle at 30% 30%, #e0e0e0, #7f8c8d);
+            color: #333; text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+            transform: rotateY(180deg);
+            border-color: #bdc3c7;
+        }
+
+        /* Slot Machine V2 */
+        .slot-machine {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 30px auto;
+            box-shadow: inset 0 10px 30px rgba(0,0,0,0.9);
+        }
+        .reels-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .reel {
+            width: 80px;
+            height: 100px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5rem;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+            position: relative;
+        }
+        .reel-inner {
+            text-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+        }
+        
+        .spinning {
+            animation: spin-blur 0.15s infinite linear;
+        }
+        @keyframes spin-blur {
+            0% { transform: translateY(-40px); filter: blur(3px); opacity: 0.5; }
+            100% { transform: translateY(40px); filter: blur(3px); opacity: 0.5; }
+        }
+
+        .snap {
+            animation: snap-bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes snap-bounce {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; filter: blur(0); }
+        }
+
+        /* Blackjack Cards */
+        .playing-card {
+            background: #fff;
+            border-radius: 8px;
+            width: 60px;
+            height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: bold;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #ccc;
+        }
+        .card-red { color: #e74c3c; }
+        .card-black { color: #2c3e50; }
+        .card-hidden {
+            background: repeating-linear-gradient(45deg, #2c3e50, #2c3e50 10px, #34495e 10px, #34495e 20px);
+            border: 2px solid #fff;
+        }
+
+        /* Inputs & Buttons */
+        .bet-input {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: #ffd700; font-family: 'Space Grotesk', monospace; font-size: 1.5rem;
+            text-align: center; width: 100%; border-radius: 15px; padding: 15px;
+            outline: none; transition: all 0.3s;
+        }
+        .bet-input:focus { border-color: #ffd700; background: rgba(255, 215, 0, 0.05); }
+
+        .btn-action {
+            flex: 1; padding: 15px; border-radius: 15px; font-weight: 800; text-transform: uppercase;
+            font-size: 1.1rem; transition: transform 0.1s, filter 0.2s; border: none; cursor: pointer;
+        }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-heads { background: linear-gradient(135deg, #ffd700, #f39c12); color: #4a3b00; }
+        .btn-tails { background: linear-gradient(135deg, #bdc3c7, #7f8c8d); color: #2c3e50; }
+        .btn-spin { background: linear-gradient(135deg, #8e44ad, #9b59b6); color: white; box-shadow: 0 0 15px rgba(155, 89, 182, 0.5); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+
+        /* Quick Bets */
+        .chip {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);
+            color: #aaa; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .chip:hover { background: rgba(255, 215, 0, 0.2); color: #ffd700; border-color: #ffd700; }
+        .chip.max { border-color: #e74c3c; color: #e74c3c; }
+        .chip.max:hover { background: rgba(231, 76, 60, 0.2); }
+
+        /* Stats */
+        .stats-bar {
+            display: flex; justify-content: space-between; margin-top: 30px;
+            padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-val { font-family: 'Space Grotesk', sans-serif; font-weight: bold; font-size: 1.2rem; }
+    </style>
+    
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="absolute top-5 left-5">
+        <a href="../index.html" class="text-gray-500 hover:text-white transition-colors">← Zurück</a>
+    </div>
+
+    <div class="casino-card">
+        
+        <div class="flex justify-center gap-4 mb-6">
+            <button id="tab-coinflip" class="tab-btn active" onclick="switchGame('coinflip')">COINFLIP</button>
+            <button id="tab-slots" class="tab-btn inactive" onclick="switchGame('slots')">SLOTS</button>
+            <button id="tab-blackjack" class="tab-btn inactive" onclick="switchGame('blackjack')">BLACKJACK</button>
+        </div>
+
+        <div class="bg-black/40 rounded-xl p-3 mb-6 inline-block border border-white/5">
+            <span class="text-gray-400 text-sm mr-2">Guthaben:</span>
+            <span id="user-balance" class="text-green-400 font-mono font-bold text-lg">$---</span>
+        </div>
+
+        <div id="area-coinflip">
+            <div class="coin-wrapper">
+                <div id="coin" class="coin">
+                    <div class="coin-side heads">KOPF</div>
+                    <div class="coin-side tails">ZAHL</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="area-slots" class="hidden">
+            <div class="slot-machine">
+                <div class="reels-container">
+                    <div class="reel"><div class="reel-inner" id="reel-0">🍒</div></div>
+                    <div class="reel"><div class="reel-inner" id="reel-1">🍋</div></div>
+                    <div class="reel"><div class="reel-inner" id="reel-2">🍇</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="area-blackjack" class="hidden w-full">
+            <div class="bg-black/50 border border-white/10 rounded-xl p-4 mb-4">
+                <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">Dealer <span id="bj-dealer-score" class="text-white font-bold ml-2"></span></div>
+                <div id="bj-dealer-hand" class="flex justify-center gap-2 min-h-[85px] flex-wrap">
+                    </div>
+            </div>
+
+            <div class="bg-black/50 border border-white/10 rounded-xl p-4">
+                <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">Du <span id="bj-player-score" class="text-white font-bold ml-2"></span></div>
+                <div id="bj-player-hand" class="flex justify-center gap-2 min-h-[85px] flex-wrap">
+                    </div>
+            </div>
+        </div>
+
+        <div id="result-msg" class="h-8 mb-4 font-bold text-lg text-gray-300">Dein Einsatz, bitte.</div>
+
+        <div class="space-y-4">
+            <div class="relative">
+                <input type="number" id="bet-amount" class="bet-input" placeholder="0.00">
+                <div class="flex justify-center gap-2 mt-3 flex-wrap">
+                    <button class="chip" onclick="setBet(100)">+100</button>
+                    <button class="chip" onclick="setBet(1000)">+1k</button>
+                    <button class="chip" onclick="setBet(10000)">+10k</button>
+                    <button class="chip" onclick="multiplyBet(2)">x2</button>
+                    <button class="chip max" onclick="setAllIn()">ALL IN</button>
+                </div>
+            </div>
+
+            <div id="btn-group-coinflip" class="flex gap-4">
+                <button id="btn-heads" class="btn-action btn-heads" onclick="playCoinflip('heads')">Kopf</button>
+                <button id="btn-tails" class="btn-action btn-tails" onclick="playCoinflip('tails')">Zahl</button>
+            </div>
+
+            <div id="btn-group-slots" class="hidden">
+                <button id="btn-spin" class="btn-action btn-spin w-full" onclick="playSlots()">🎰 SPIN</button>
+            </div>
+
+            <div id="btn-group-blackjack" class="hidden flex gap-2">
+                <button id="btn-bj-deal" class="btn-action w-full" style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: #000;" onclick="startBlackjack()">🃏 DEAL</button>
+                <button id="btn-bj-hit" class="btn-action hidden" style="background: #3498db; color: #fff;" onclick="actionBlackjack('hit')">HIT</button>
+                <button id="btn-bj-stand" class="btn-action hidden" style="background: #e74c3c; color: #fff;" onclick="actionBlackjack('stand')">STAND</button>
+                <button id="btn-bj-double" class="btn-action hidden" style="background: #f1c40f; color: #000;" onclick="actionBlackjack('double')">DOUBLE</button>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="text-left">
+                <div class="text-xs text-gray-500 uppercase">Wins/Loss</div>
+                <div class="stat-val"><span class="text-green-400" id="stat-wins">0</span> / <span class="text-red-400" id="stat-losses">0</span></div>
+            </div>
+            <div class="text-right">
+                <div class="text-xs text-gray-500 uppercase">Net Profit</div>
+                <div class="stat-val" id="stat-profit">$0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.limazon.v6.rocks';
+        let isPlaying = false;
+        let currentBalance = 0;
+        
+        // Coinflip Variables
+        let totalRotation = 0; 
+        
+        // Slots Variables
+        let slotInterval;
+
+        // Blackjack Variables
+        let bjState = null;
+
+        // Auth Helper
+        async function fetchAuth(url, options = {}) {
+            const defaults = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+            return fetch(url, { ...defaults, ...options });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Promise.all([updateBalance(), loadStats()]);
+        });
+
+        // Tab Switching Logic
+        function switchGame(game) {
+            if(isPlaying || (bjState && bjState.status === 'playing')) return; 
+            
+            const isCoin = game === 'coinflip';
+            const isSlot = game === 'slots';
+            const isBJ = game === 'blackjack';
+            
+            document.getElementById('tab-coinflip').className = `tab-btn ${isCoin ? 'active' : 'inactive'}`;
+            document.getElementById('tab-slots').className = `tab-btn ${isSlot ? 'active' : 'inactive'}`;
+            document.getElementById('tab-blackjack').className = `tab-btn ${isBJ ? 'active' : 'inactive'}`;
+            
+            document.getElementById('area-coinflip').classList.toggle('hidden', !isCoin);
+            document.getElementById('btn-group-coinflip').classList.toggle('hidden', !isCoin);
+            
+            document.getElementById('area-slots').classList.toggle('hidden', !isSlot);
+            document.getElementById('btn-group-slots').classList.toggle('hidden', !isSlot);
+
+            document.getElementById('area-blackjack').classList.toggle('hidden', !isBJ);
+            document.getElementById('btn-group-blackjack').classList.toggle('hidden', !isBJ);
+
+            document.getElementById('result-msg').innerHTML = '<span class="text-gray-300">Dein Einsatz, bitte.</span>';
+        }
+
+        // Quick Bet Functions
+        function setBet(amount) {
+            if(isPlaying || (bjState && bjState.status === 'playing')) return;
+            const input = document.getElementById('bet-amount');
+            let current = parseFloat(input.value) || 0;
+            input.value = current + amount;
+        }
+        function multiplyBet(factor) {
+            if(isPlaying || (bjState && bjState.status === 'playing')) return;
+            const input = document.getElementById('bet-amount');
+            let current = parseFloat(input.value) || 0;
+            if(current > 0) input.value = current * factor;
+        }
+        function setAllIn() {
+            if(isPlaying || (bjState && bjState.status === 'playing')) return;
+            document.getElementById('bet-amount').value = Math.floor(currentBalance);
+        }
+
+        // Data Loading
+        async function updateBalance() {
+            try {
+                const res = await fetchAuth(`${API_URL}/api/auth/me`);
+                const data = await res.json();
+                if (data.balance !== undefined) {
+                    currentBalance = data.balance;
+                    document.getElementById('user-balance').innerText = `$${data.balance.toFixed(2)}`;
+                }
+            } catch(e) {}
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetchAuth(`${API_URL}/api/casino/stats`);
+                const data = await res.json();
+                if(data.stats) {
+                    document.getElementById('stat-wins').innerText = data.stats.wins || 0;
+                    document.getElementById('stat-losses').innerText = data.stats.losses || 0;
+                    const profit = data.stats.netProfit || 0;
+                    const el = document.getElementById('stat-profit');
+                    el.innerText = (profit >= 0 ? '+' : '') + `$${profit.toFixed(0)}`;
+                    el.className = 'stat-val ' + (profit >= 0 ? 'text-green-400' : 'text-red-400');
+                }
+            } catch(e) {}
+        }
+
+        function validateBet() {
+            const input = document.getElementById('bet-amount');
+            const amount = parseFloat(input.value);
+            const msg = document.getElementById('result-msg');
+
+            if (!amount || amount <= 0) {
+                msg.innerHTML = '<span class="text-orange-500">Ungültiger Einsatz!</span>';
+                return null;
+            }
+            if (amount > currentBalance) {
+                msg.innerHTML = '<span class="text-red-500">Zu wenig Geld!</span>';
+                return null;
+            }
+            return amount;
+        }
+
+        function lockUI(locked) {
+            isPlaying = locked;
+            document.getElementById('btn-heads').disabled = locked;
+            document.getElementById('btn-tails').disabled = locked;
+            document.getElementById('btn-spin').disabled = locked;
+            document.getElementById('btn-bj-deal').disabled = locked;
+            document.getElementById('bet-amount').disabled = locked;
+        }
+
+        function handleResult(data) {
+            currentBalance = data.newBalance;
+            document.getElementById('user-balance').innerText = `$${currentBalance.toFixed(2)}`;
+            
+            const msg = document.getElementById('result-msg');
+            if (data.won) {
+                msg.innerHTML = `<span class="text-green-400 text-2xl drop-shadow-md">🎉 GEWONNEN! +$${data.payout.toFixed(2)}</span>`;
+            } else {
+                msg.innerHTML = `<span class="text-red-500">💸 Verloren...</span>`;
+            }
+            
+            loadStats();
+            lockUI(false);
+        }
+
+        // --- GAME: COINFLIP ---
+        async function playCoinflip(choice) {
+            const amount = validateBet();
+            if (!amount) return;
+
+            lockUI(true);
+            const msg = document.getElementById('result-msg');
+            msg.innerText = "Münze fliegt...";
+            
+            try {
+                const res = await fetchAuth(`${API_URL}/api/casino/flip`, {
+                    method: 'POST',
+                    body: JSON.stringify({ betAmount: amount, side: choice })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    msg.innerHTML = `<span class="text-red-500">${data.error || "Fehler"}</span>`;
+                    lockUI(false);
+                    return;
+                }
+
+                // Animation Logic
+                const coin = document.getElementById('coin');
+                const extraSpins = 1800; 
+                let targetAngle = data.resultSide === 'tails' ? 180 : 0;
+                
+                totalRotation += extraSpins;
+                const currentMod = totalRotation % 360; 
+                const adjustment = targetAngle - currentMod;
+                totalRotation += adjustment;
+
+                coin.style.transition = "transform 3s cubic-bezier(0.25, 1, 0.5, 1)";
+                coin.style.transform = `rotateY(${totalRotation}deg)`;
+
+                setTimeout(() => {
+                    handleResult(data);
+                }, 3000);
+
+            } catch (err) {
+                msg.innerText = "Netzwerkfehler!";
+                lockUI(false);
+            }
+        }
+
+        // --- GAME: SLOTS V2 ---
+        async function playSlots() {
+            const amount = validateBet();
+            if (!amount) return;
+
+            lockUI(true);
+            const msg = document.getElementById('result-msg');
+            const reels = [
+                document.getElementById('reel-0'),
+                document.getElementById('reel-1'),
+                document.getElementById('reel-2')
+            ];
+            
+            msg.innerText = "Walzen drehen sich...";
+            
+            reels.forEach(r => {
+                r.classList.remove('snap');
+                r.classList.add('spinning');
+            });
+
+            const emojis = ['🍒', '🍋', '🍇', '🔔', '💎', '7️⃣'];
+            slotInterval = setInterval(() => {
+                reels.forEach(r => r.innerText = emojis[Math.floor(Math.random() * 6)]);
+            }, 80);
+
+            try {
+                const res = await fetchAuth(`${API_URL}/api/casino/slots`, {
+                    method: 'POST',
+                    body: JSON.stringify({ betAmount: amount })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    clearInterval(slotInterval);
+                    reels.forEach(r => { r.classList.remove('spinning'); r.innerText = '❌'; });
+                    msg.innerHTML = `<span class="text-red-500">${data.error || "Fehler"}</span>`;
+                    lockUI(false);
+                    return;
+                }
+
+                clearInterval(slotInterval);
+                
+                setTimeout(() => {
+                    reels[0].classList.remove('spinning');
+                    reels[0].innerText = data.slots[0];
+                    reels[0].classList.add('snap');
+                }, 500);
+
+                setTimeout(() => {
+                    reels[1].classList.remove('spinning');
+                    reels[1].innerText = data.slots[1];
+                    reels[1].classList.add('snap');
+                }, 1000);
+
+                setTimeout(() => {
+                    reels[2].classList.remove('spinning');
+                    reels[2].innerText = data.slots[2];
+                    reels[2].classList.add('snap');
+                    handleResult(data);
+                }, 1500);
+
+            } catch (err) {
+                clearInterval(slotInterval);
+                msg.innerText = "Netzwerkfehler!";
+                lockUI(false);
+            }
+        }
+
+        // --- GAME: BLACKJACK ---
+        function renderCards(handArray, containerId, hideSecondCard = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            handArray.forEach((c, index) => {
+                if (hideSecondCard && index === 1) {
+                    container.innerHTML += `<div class="playing-card card-hidden"></div>`;
+                    return;
+                }
+                const isRed = c.card.includes('♥️') || c.card.includes('♦️');
+                const colorClass = isRed ? 'card-red' : 'card-black';
+                container.innerHTML += `<div class="playing-card ${colorClass}">${c.card}</div>`;
+            });
+        }
+
+        function updateBjUI(state) {
+            const msg = document.getElementById('result-msg');
+            
+            const isPlaying = state.status === 'playing';
+            document.getElementById('btn-bj-deal').classList.toggle('hidden', isPlaying);
+            document.getElementById('btn-bj-hit').classList.toggle('hidden', !isPlaying);
+            document.getElementById('btn-bj-stand').classList.toggle('hidden', !isPlaying);
+            
+            const canDouble = isPlaying && state.playerHand.length === 2;
+            document.getElementById('btn-bj-double').classList.toggle('hidden', !canDouble);
+
+            renderCards(state.playerHand, 'bj-player-hand');
+            renderCards(state.dealerHand, 'bj-dealer-hand', isPlaying); // Dealer verdeckt 2. Karte
+
+            const calcScore = (hand) => {
+                let sum = 0, aces = 0;
+                hand.forEach(c => { sum += c.points; if (c.val === 'A') aces++; });
+                while (sum > 21 && aces > 0) { sum -= 10; aces--; }
+                return sum;
+            };
+
+            document.getElementById('bj-player-score').innerText = `(${calcScore(state.playerHand)})`;
+            document.getElementById('bj-dealer-score').innerText = isPlaying ? `(?)` : `(${calcScore(state.dealerHand)})`;
+
+            if (state.message) {
+                if (state.status === 'won') msg.innerHTML = `<span class="text-green-400">🎉 ${state.message}</span>`;
+                else if (state.status === 'lost') msg.innerHTML = `<span class="text-red-500">💸 ${state.message}</span>`;
+                else msg.innerHTML = `<span class="text-yellow-400">🤝 ${state.message}</span>`;
+            } else {
+                msg.innerHTML = '<span class="text-gray-300">Hit oder Stand?</span>';
+            }
+
+            if (!isPlaying) {
+                updateBalance();
+                loadStats();
+                lockUI(false);
+            }
+        }
+
+        async function startBlackjack() {
+            const amount = validateBet();
+            if (!amount) return;
+
+            // SICHERHEIT: Alle Action-Buttons explizit entsperren, falls sie hängen!
+            document.getElementById('btn-bj-hit').disabled = false;
+            document.getElementById('btn-bj-stand').disabled = false;
+            document.getElementById('btn-bj-double').disabled = false;
+
+            lockUI(true);
+            document.getElementById('result-msg').innerText = "Karten werden gemischt...";
+            document.getElementById('bj-dealer-hand').innerHTML = '';
+            document.getElementById('bj-player-hand').innerHTML = '';
+            document.getElementById('bj-dealer-score').innerText = '';
+            document.getElementById('bj-player-score').innerText = '';
+
+            try {
+                const res = await fetchAuth(`${API_URL}/api/casino/blackjack/start`, {
+                    method: 'POST',
+                    body: JSON.stringify({ betAmount: amount })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    document.getElementById('result-msg').innerHTML = `<span class="text-red-500">${data.error || "Fehler"}</span>`;
+                    lockUI(false);
+                    return;
+                }
+
+                bjState = data;
+                updateBalance(); 
+                updateBjUI(bjState);
+            } catch (err) {
+                document.getElementById('result-msg').innerText = "Netzwerkfehler!";
+                lockUI(false);
+            }
+        }
+
+        function unlockButtons() {
+            document.getElementById('btn-bj-hit').disabled = false;
+            document.getElementById('btn-bj-stand').disabled = false;
+            document.getElementById('btn-bj-double').disabled = false;
+            document.getElementById('btn-bj-deal').disabled = false;
+        }
+
+        async function actionBlackjack(actionType) {
+            // Buttons sperren
+            document.getElementById('btn-bj-hit').disabled = true;
+            document.getElementById('btn-bj-stand').disabled = true;
+            document.getElementById('btn-bj-double').disabled = true;
+
+            try {
+                const res = await fetchAuth(`${API_URL}/api/casino/blackjack/action`, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: actionType })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.error || "Fehler bei der Aktion");
+                    unlockButtons(); // Fehler? -> Sofort Buttons frei!
+                } else {
+                    bjState = data;
+                    updateBjUI(bjState);
+                    // unlockButtons wird in updateBjUI(state) automatisch aufgerufen, 
+                    // wenn das Spiel vorbei ist. Wenn es weitergeht, bleiben sie für den nächsten Zug entsperrt.
+                    if (data.status === 'playing') {
+                         unlockButtons(); 
+                    }
+                }
+            } catch (err) {
+                alert("Netzwerkfehler!");
+                unlockButtons(); // Crash? -> Sofort Buttons frei!
+            }
+        }
+
+    </script>
+    <script src="js/limo-global.js?v=4" data-page="casino"></script>
+
+</body></html>

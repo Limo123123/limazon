@@ -1,0 +1,444 @@
+<!DOCTYPE html><html lang="de"><head>
+    <script src="/themes/js/security.js?v=1785963851"></script>
+    
+    <meta name="robots" content="index, follow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo Gewerkschaft ✊</title>
+    <script src="/assets_offline/1786118270425_dl_asset.css"></script>
+    <link href="/assets_offline/1786118273588_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #0f172a; color: white; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .input-dark { background: #1e293b; border: 1px solid #334155; color: white; transition: all 0.2s; }
+        .input-dark:focus { outline: none; border-color: #ef4444; background: #0f172a; }
+        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card-rebel { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 50%, #991b1b 100%); box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3); }
+        .strike-item { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .strike-item:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5); }
+        .tab-btn { padding: 10px 20px; font-weight: bold; border-bottom: 2px solid transparent; color: #6b7280; transition: 0.3s; }
+        .tab-btn.active { color: #ef4444; border-bottom: 2px solid #ef4444; }
+    </style>
+    
+</head>
+
+<body class="min-h-screen flex flex-col max-w-2xl mx-auto relative overflow-y-auto bg-slate-900 hide-scroll">
+
+    <header class="p-6 flex justify-between items-center z-10 sticky top-0 bg-[#0f172a]/90 backdrop-blur-md border-b border-slate-800">
+        <div>
+            <a href="/" class="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 font-bold mb-1 block transition">← Zurück zum Portal</a>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">Gewerkschaft ✊</h1>
+            <p class="text-xs text-slate-400">Organisierter Widerstand</p>
+        </div>
+        <div id="user-avatar" class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-sm border-2 border-slate-700 shadow-lg transition">?</div>
+    </header>
+
+    <main class="flex-grow px-4 pt-6 pb-24 overflow-y-auto hide-scroll z-0">
+
+        <div id="alert-box" class="hidden mb-6 text-center p-4 rounded-xl font-bold text-sm shadow-lg fade-in"></div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex gap-4 border-b border-slate-800 mb-6 slide-up">
+            <button id="tab-btn-strikes" onclick="switchTab('strikes')" class="tab-btn active">🛑 Streiks</button>
+            <button id="tab-btn-movements" onclick="switchTab('movements')" class="tab-btn">🏴 Bewegungen</button>
+        </div>
+
+        <!-- TAB: STREIKS -->
+        <div id="tab-strikes" class="space-y-6">
+            <div class="glass rounded-2xl p-6 shadow-2xl relative overflow-hidden mb-8 border border-white/10 slide-up">
+                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none"></div>
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="relative z-10">
+                    <h2 class="text-xl font-bold text-white mb-1">Neuen Streik ausrufen</h2>
+                    <p class="text-xs text-slate-400 mb-4">Wähle ein Modul und sammle Mitstreiter.</p>
+
+                    <!-- Warnung für Anführer von Bewegungen -->
+                    <div id="strike-warning" class="hidden mb-4 p-3 bg-amber-500/20 border border-amber-500/50 text-amber-300 rounded text-xs font-bold">
+                        ⚠️ Du bist Anführer einer Bewegung. Rufst du diesen Streik aus, tust du das im Namen deiner Bewegung. Nur ein anderes Mitglied deiner Bewegung kann ihn bestätigen!
+                    </div>
+
+                    <form onsubmit="proposeStrike(event)">
+                        <div class="mb-4">
+                            <label class="text-[10px] uppercase text-red-400 font-bold mb-2 block tracking-wider">Ziel-Modul</label>
+                            <select id="strike-module" class="input-dark w-full p-4 rounded-xl text-sm font-medium" required="">
+                                <option value="shop">Shop / Marktplatz 🛒</option>
+                                <option value="bank">Limo Bank 🏦</option>
+                                <option value="jobs">Job Center 💼</option>
+                                <option value="restaurant">Restaurant 🍔</option>
+                                <option value="crime">Untergrund (Crime) 🦹</option>
+                                <option value="realestate">Immobilien 🏠</option>
+                                <option value="auctions">Auktionshaus 🔨</option>
+                                <option value="gangs">Gangs &amp; Clans 🏴‍☠️</option>
+                                <option value="casino">Casino 🎰</option>
+                                <option value="wheels">Glücksräder 🎡</option>
+                                <option value="pets">Haustiere 🐾</option>
+                                <option value="delivery">Logistik (Post) 🚚</option>
+                                <option value="limonews">Limo News 📰</option>
+                                <option value="limterest">Limterest 📌</option>
+                                <option value="teachermon">Teachermon 🃏</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="text-[10px] uppercase text-red-400 font-bold mb-2 block tracking-wider">Forderung / Grund</label>
+                            <input type="text" id="strike-reason" class="input-dark w-full p-4 rounded-xl text-sm" placeholder="Z.B. Bessere Drop-Raten!" required="" autocomplete="off" maxlength="100">
+                        </div>
+
+                        <button type="submit" id="btn-propose" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold p-4 rounded-xl transition shadow-lg shadow-red-500/20 active:scale-95">
+                            Protest starten 🚩
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mb-4 flex justify-between items-end px-1 slide-up">
+                <h3 class="text-lg font-bold text-white">Laufende Proteste</h3>
+                <button onclick="loadStrikes()" class="text-xs text-red-400 hover:text-red-300 font-bold bg-red-400/10 px-2 py-1 rounded transition">Aktualisieren ↻</button>
+            </div>
+
+            <div id="strikes-list" class="space-y-4 slide-up">
+                <div class="p-8 rounded-xl text-center border border-dashed border-slate-700 text-slate-500 text-sm">Lade Akten...</div>
+            </div>
+        </div>
+
+        <!-- TAB: BEWEGUNGEN -->
+        <div id="tab-movements" class="hidden space-y-6">
+            
+            <!-- Eigene Bewegung -->
+            <div id="my-movement-section" class="glass p-6 rounded-2xl border-l-4 border-l-blue-500 hidden slide-up">
+                <h2 class="text-xl font-bold mb-1 text-white">Meine Organisation</h2>
+                <div id="my-movement-content" class="mb-4"></div>
+                <button onclick="leaveMovement()" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold py-3 rounded-xl transition">Bewegung verlassen</button>
+            </div>
+
+            <!-- Bewegung gründen -->
+            <div id="create-movement-section" class="glass p-6 rounded-2xl border border-blue-500/30 slide-up">
+                <h2 class="text-xl font-bold mb-2 text-blue-400">Bewegung gründen</h2>
+                <p class="text-xs text-slate-400 mb-4">Gründe eine offizielle Organisation für $2.500.</p>
+                <div class="space-y-4">
+                    <input type="text" id="mov-name" placeholder="Name (z.B. Arbeiterfront)" class="input-dark w-full p-3 rounded-xl text-sm" maxlength="30">
+                    <textarea id="mov-desc" placeholder="Eure Ziele..." class="input-dark w-full p-3 rounded-xl text-sm h-20" maxlength="200"></textarea>
+                    <button onclick="createMovement()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition">Gründen ($2.500)</button>
+                </div>
+            </div>
+
+            <div class="mb-4 px-1 slide-up">
+                <h3 class="text-lg font-bold text-white">Alle Organisationen</h3>
+            </div>
+
+            <div id="movements-list" class="space-y-4 slide-up">
+                <div class="p-8 rounded-xl text-center border border-dashed border-slate-700 text-slate-500 text-sm">Lade...</div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="/themes/js/limo-global.js" data-page="gewerkschaft"></script>
+
+    <script>
+        const API_BASE_URL = 'https://api.limazon.v6.rocks';
+        let currentUser = null;
+        let myMovementData = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    currentUser = await res.json();
+                    document.getElementById('user-avatar').innerText = currentUser.username.substring(0, 2).toUpperCase();
+                } else {
+                    window.location.href = '/'; 
+                }
+            } catch (e) { console.error(e); }
+            
+            // FIX: Wir müssen erst zwingend warten, bis die Bewegungen geladen sind!
+            await loadMovements();
+            // ERST DANN laden wir die Streiks, damit myMovementData bekannt ist.
+            loadStrikes();
+        });
+
+        async function fetchAuth(url, options = {}) {
+            options.credentials = 'include';
+            return fetch(url, options);
+        }
+
+        function showAlert(msg, isError = false) {
+            const box = document.getElementById('alert-box');
+            box.innerText = msg;
+            box.className = `mb-6 text-center p-4 rounded-xl font-bold text-sm block shadow-lg fade-in ${isError ? 'bg-red-900/30 text-red-400 border border-red-500/30' : 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/30'}`;
+            setTimeout(() => { box.classList.add('hidden'); }, 5000);
+        }
+
+        function switchTab(tab) {
+            document.getElementById('tab-strikes').classList.add('hidden');
+            document.getElementById('tab-movements').classList.add('hidden');
+            document.getElementById('tab-btn-strikes').classList.remove('active');
+            document.getElementById('tab-btn-movements').classList.remove('active');
+
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tab}`).classList.add('active');
+        }
+
+        // === BEWEGUNGEN LOGIK ===
+        async function loadMovements() {
+            try {
+                const myRes = await fetchAuth(`${API_BASE_URL}/api/movements/my`);
+                const myData = await myRes.json();
+                myMovementData = myData.movement;
+
+                if (myMovementData) {
+                    document.getElementById('create-movement-section').classList.add('hidden');
+                    document.getElementById('my-movement-section').classList.remove('hidden');
+                    
+                    document.getElementById('my-movement-content').innerHTML = `
+                        <h3 class="text-2xl font-bold text-blue-400">${myMovementData.name}</h3>
+                        <p class="text-slate-300 text-sm italic my-2 border-l-2 border-blue-500 pl-2">"${myMovementData.description}"</p>
+                        <p class="text-xs text-slate-500">Anführer: <span class="text-white">${myMovementData.leaderName}</span></p>
+                        <p class="text-xs text-slate-500 mt-1">Mitglieder (${myMovementData.memberNames.length}): ${myMovementData.memberNames.join(', ')}</p>
+                    `;
+
+                    if (myMovementData.leaderId === currentUser.userId) {
+                        document.getElementById('strike-warning').classList.remove('hidden');
+                    } else {
+                        document.getElementById('strike-warning').classList.add('hidden');
+                    }
+                } else {
+                    document.getElementById('create-movement-section').classList.remove('hidden');
+                    document.getElementById('my-movement-section').classList.add('hidden');
+                    document.getElementById('strike-warning').classList.add('hidden');
+                }
+
+                const allRes = await fetchAuth(`${API_BASE_URL}/api/movements`);
+                const allData = await allRes.json();
+                
+                const listEl = document.getElementById('movements-list');
+                if (allData.movements.length === 0) {
+                    listEl.innerHTML = '<p class="text-slate-500 text-center text-sm p-4">Noch keine Organisationen gegründet.</p>';
+                    return;
+                }
+
+                listEl.innerHTML = allData.movements.map(m => {
+                    const isMine = myMovementData && myMovementData._id === m._id;
+                    const canJoin = !myMovementData; 
+                    
+                    let actionBtn = '';
+                    if (isMine) {
+                        actionBtn = `<span class="bg-blue-900/30 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-[10px] font-bold uppercase">Deine Gruppe</span>`;
+                    } else if (canJoin) {
+                        actionBtn = `<button onclick="joinMovement('${m._id}')" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold py-1 px-3 rounded transition">Beitreten</button>`;
+                    }
+
+                    return `
+                    <div class="glass p-4 rounded-xl border border-slate-700">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white text-lg">${m.name}</h4>
+                            ${actionBtn}
+                        </div>
+                        <p class="text-xs text-slate-400 mb-3">${m.description}</p>
+                        <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-800 pt-2">
+                            <span>👑 ${m.leaderName}</span>
+                            <span>👥 ${m.members.length} Mitglieder</span>
+                        </div>
+                    </div>`;
+                }).join('');
+
+            } catch(e) { console.error(e); }
+        }
+
+        async function createMovement() {
+            const name = document.getElementById('mov-name').value;
+            const desc = document.getElementById('mov-desc').value;
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/movements/create`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showAlert(data.message);
+                    document.getElementById('mov-name').value = '';
+                    document.getElementById('mov-desc').value = '';
+                    // FIX: Warten auf Movement, dann Streiks updaten
+                    await loadMovements();
+                    loadStrikes();
+                } else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Netzwerkfehler.", true); }
+        }
+
+        async function joinMovement(id) {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/movements/join/${id}`, { method: 'POST' });
+                const data = await res.json();
+                if(res.ok) { 
+                    showAlert(data.message); 
+                    // FIX: Warten auf Movement, dann Streiks updaten
+                    await loadMovements(); 
+                    loadStrikes(); 
+                } 
+                else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Netzwerkfehler.", true); }
+        }
+
+        async function leaveMovement() {
+            if(!confirm("Wirklich austreten? (Wenn du Anführer bist, wird die Bewegung gelöscht!)")) return;
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/movements/leave`, { method: 'POST' });
+                const data = await res.json();
+                if(res.ok) { 
+                    showAlert(data.message); 
+                    // FIX: Warten auf Movement, dann Streiks updaten
+                    await loadMovements(); 
+                    loadStrikes(); 
+                } 
+                else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Netzwerkfehler.", true); }
+        }
+
+        // === STREIK LOGIK ===
+        async function loadStrikes() {
+            const list = document.getElementById('strikes-list');
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/strikes`);
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error);
+
+                if (data.strikes.length === 0) {
+                    list.innerHTML = `
+                        <div class="glass p-8 rounded-xl text-center flex flex-col items-center justify-center opacity-70">
+                            <span class="text-4xl mb-3">🕊️</span>
+                            <span class="text-slate-400 text-sm font-medium">Die Straßen sind friedlich.<br>Aktuell keine Proteste.</span>
+                        </div>`;
+                    return;
+                }
+
+                list.innerHTML = '';
+                data.strikes.forEach(strike => {
+                    const isActive = strike.status === 'active';
+                    const isCreator = currentUser && strike.strikers && strike.strikers[0] === currentUser.userId;
+                    const isAdmin = currentUser && currentUser.isAdmin;
+                    const hasJoined = currentUser && strike.strikers && strike.strikers.includes(currentUser.userId);
+
+                    const statusClass = isActive ? 'card-rebel' : 'glass border-l-4 border-amber-500';
+                    const statusBadge = isActive 
+                        ? `<span class="bg-black/30 text-white px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Blockiert</span>` 
+                        : `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase">Wartet auf Hilfe</span>`;
+
+                    const movementBadge = strike.movementName 
+                        ? `<div class="mt-2"><span class="bg-purple-900/40 text-purple-300 px-2 py-1 rounded text-[10px] border border-purple-500/30 uppercase tracking-wide">🏴 Im Namen von: ${strike.movementName}</span></div>` 
+                        : '';
+
+                    let timeHtml = '';
+                    if (isActive && strike.expiresAt) {
+                        const endTime = new Date(strike.expiresAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                        timeHtml = `
+                            <div class="mt-4 w-full bg-black/20 p-3 rounded-xl border border-white/5 text-center">
+                                <span class="text-[10px] text-white/50 uppercase tracking-wider block">Blockade endet um</span>
+                                <span class="text-sm font-mono font-bold text-white">${endTime} Uhr</span>
+                            </div>`;
+                    }
+
+                    let joinBtnHtml = '';
+                    if (!hasJoined) {
+                        let canJoin = true;
+                        if (strike.movementId) {
+                            if (!myMovementData || myMovementData._id !== strike.movementId) {
+                                canJoin = false;
+                            }
+                        }
+                        
+                        if (canJoin) {
+                            const btnText = isActive ? "✊ Dem laufenden Streik anschließen" : "✊ Solidarität zeigen (Beitreten)";
+                            joinBtnHtml = `
+                                <button onclick="joinStrike('${strike._id}')" class="w-full mt-4 bg-amber-500 text-black hover:bg-amber-400 font-bold py-3 rounded-xl transition shadow-lg active:scale-95 text-sm">
+                                    ${btnText}
+                                </button>`;
+                        } else {
+                            joinBtnHtml = `<div class="w-full mt-4 bg-slate-800 text-slate-500 text-center py-2 rounded-xl text-xs">Exklusiv für Mitglieder von "${strike.movementName}"</div>`;
+                        }
+                    }
+
+                    let deleteBtn = '';
+                    if (isCreator || isAdmin) {
+                        deleteBtn = `
+                            <button onclick="cancelStrike('${strike._id}')" class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl transition text-xs border border-slate-700">
+                                ❌ Streik abbrechen
+                            </button>`;
+                    }
+
+                    list.innerHTML += `
+                        <div class="${statusClass} p-5 rounded-2xl strike-item relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-1">
+                                <h3 class="text-lg font-bold text-white uppercase tracking-tight">${strike.module}</h3>
+                                ${statusBadge}
+                            </div>
+                            ${movementBadge}
+                            
+                            <div class="bg-black/20 p-3 rounded-xl border border-white/5 mt-3 mb-3">
+                                <p class="text-white/90 text-sm font-medium italic">"${strike.reason}"</p>
+                            </div>
+                            
+                            <p class="text-xs text-white/60 mb-2 leading-relaxed">
+                                <b class="text-white/80">Streikende:</b> ${strike.strikerNames.join(', ')}
+                            </p>
+                            
+                            ${timeHtml}
+                            ${joinBtnHtml}
+                            ${deleteBtn}
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                list.innerHTML = `<div class="text-red-400 bg-red-900/20 border border-red-500/20 p-4 rounded-xl text-center text-sm">${e.message || "Verbindung zur Gewerkschaft fehlgeschlagen."}</div>`;
+            }
+        }
+
+        async function proposeStrike(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-propose');
+            const moduleName = document.getElementById('strike-module').value;
+            const reason = document.getElementById('strike-reason').value;
+
+            btn.disabled = true;
+            btn.innerText = "Sende Antrag...";
+
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/strikes/propose`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ moduleName, reason })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    showAlert(data.message);
+                    document.getElementById('strike-reason').value = '';
+                    loadStrikes();
+                } else { showAlert(data.error, true); }
+            } catch (e) { showAlert("Ein Verbindungsfehler ist aufgetreten.", true); } 
+            finally { btn.disabled = false; btn.innerText = "Protest starten 🚩"; }
+        }
+
+        async function joinStrike(id) {
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/strikes/join/${id}`, { method: 'POST' });
+                const data = await res.json();
+                if(res.ok) { showAlert(data.message); loadStrikes(); } 
+                else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Fehler beim Beitreten.", true); }
+        }
+
+        async function cancelStrike(id) {
+            if (!confirm("Bist du sicher, dass du den Streik auflösen willst? Die Arbeiter werden nicht erfreut sein!")) return;
+            try {
+                const res = await fetchAuth(`${API_BASE_URL}/api/strikes/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if(res.ok) { showAlert(data.message); loadStrikes(); } 
+                else { showAlert(data.error, true); }
+            } catch(e) { showAlert("Fehler beim Beenden des Streiks.", true); }
+        }
+    </script>
+
+</body></html>
