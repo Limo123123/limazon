@@ -545,6 +545,45 @@
         </div>
     </div>
 
+    <!-- 4. CHANNEL / DASHBOARD VIEW -->
+    <div id="view-channel" class="view-section container">
+        <div style="background: #181818; padding: 30px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #333;">
+            <h2 style="margin-top:0; display:flex; justify-content:space-between;">
+                Creator Studio 
+                <span style="font-size:14px; color:#aaa; font-weight:normal; align-self:center;">Verdiene $5 pro Aufruf</span>
+            </h2>
+            <div style="display:flex; gap: 20px; flex-wrap: wrap;">
+                <div style="background:#0f0f0f; padding:20px; border-radius:10px; flex:1; min-width:200px; border: 1px solid #222;">
+                    <div style="color:#aaa; font-size:14px;">Gesamte Aufrufe (Lifetime)</div>
+                    <div style="font-size:28px; font-weight:bold; color:white; margin-top:5px;" id="dashTotalViews">0</div>
+                </div>
+                <div style="background:#0f0f0f; padding:20px; border-radius:10px; flex:1; min-width:200px; border: 1px solid #222;">
+                    <div style="color:#aaa; font-size:14px;">Unbezahlte Aufrufe</div>
+                    <div style="font-size:28px; font-weight:bold; color:var(--accent); margin-top:5px;" id="dashUnpaidViews">0</div>
+                    <button class="btn btn-primary" style="margin-top:15px; width:100%;" onclick="requestPayout()">Jetzt Auszahlen</button>
+                </div>
+            </div>
+        </div>
+
+        <h3>Meine hochgeladenen Videos</h3>
+        <div id="dashVideoList" style="display:flex; flex-direction:column; gap:10px; margin-bottom:40px;">
+            <p style="color:#777;">Lade Videos...</p>
+        </div>
+
+        <!-- ADMIN BEREICH (Wird nur für Admins eingeblendet) -->
+        <div id="adminSection" style="display:none; border-top: 1px solid #333; padding-top:30px;">
+            <h2 style="color:var(--danger); margin-top:0;">🛡️ Admin Zentrale</h2>
+            
+            <div class="tab-bar">
+                <button class="tab-btn active" id="btn-admin-videos" onclick="switchAdminTab('videos')">Alle Videos (Server)</button>
+                <button class="tab-btn" id="btn-admin-reports" onclick="switchAdminTab('reports')">Meldungen</button>
+            </div>
+
+            <div id="admin-videos" class="tab-content active" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <div id="admin-reports" class="tab-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+    </div>
+
     <!-- PLYR SCRIPT -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
@@ -592,11 +631,13 @@
                 loadSuggestions();
             } else if (page === 'upload') {
                 document.getElementById('view-upload').classList.add('active');
-            } else if (page === 'channel' || uploaderQuery) {
+            } else if (page === 'channel') {
+                document.getElementById('view-channel').classList.add('active');
+                loadDashboard();
+            } else if (uploaderQuery) {
                 document.getElementById('view-feed').classList.add('active');
-                const uploader = uploaderQuery || (currentUser ? currentUser.username : '');
-                document.getElementById('feedTitle').innerText = `Kanal: ${uploader}`;
-                loadFeed(null, uploader);
+                document.getElementById('feedTitle').innerText = `Kanal: ${uploaderQuery}`;
+                loadFeed(null, uploaderQuery);
             } else if (searchQuery) {
                 document.getElementById('view-feed').classList.add('active');
                 document.getElementById('feedTitle').innerText = `Suche: "${searchQuery}"`;
@@ -921,6 +962,140 @@
                 btn.disabled = false;
                 barBg.style.display = 'none';
             }
+        }
+
+        // ==========================================
+        // CREATOR STUDIO & ADMIN DASHBOARD
+        // ==========================================
+        async function loadDashboard() {
+            try {
+                // 1. Creator Stats laden
+                const res = await fetch(`${API_DOMAIN}/api/limtube/dashboard`, fetchOptions);
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error("Konnte Dashboard nicht laden.");
+
+                document.getElementById('dashTotalViews').innerText = data.totalViews;
+                document.getElementById('dashUnpaidViews').innerText = data.unpaidViews;
+
+                // Meine Videos rendern
+                const list = document.getElementById('dashVideoList');
+                list.innerHTML = "";
+                if (data.videos.length === 0) {
+                    list.innerHTML = "<p style='color:#777;'>Du hast noch keine Videos hochgeladen.</p>";
+                } else {
+                    data.videos.forEach(v => {
+                        list.innerHTML += `
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:#1e1e1e; padding:15px; border-radius:10px;">
+                            <div style="display:flex; align-items:center; gap:15px; cursor:pointer;" onclick="navigate('?v=${v.id}')">
+                                <div style="width:80px; aspect-ratio:16/9; background:#000; border-radius:6px; display:flex; align-items:center; justify-content:center;">▶</div>
+                                <div>
+                                    <div style="font-weight:bold;">${v.title}</div>
+                                    <div style="color:#aaa; font-size:12px;">Aufrufe: ${v.views} | Erstellt: ${new Date(v.createdAt).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteVideoDash('${v.id}')">Löschen</button>
+                        </div>`;
+                    });
+                }
+
+                // 2. Admin Daten laden, falls Admin
+                if (data.isAdmin) {
+                    document.getElementById('adminSection').style.display = 'block';
+                    loadAdminData();
+                } else {
+                    document.getElementById('adminSection').style.display = 'none';
+                }
+
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        async function requestPayout() {
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/payout`, { ...fetchOptions, method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    loadDashboard(); // Aktualisiert die Zahlen
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert("Fehler bei der Auszahlung.");
+            }
+        }
+
+        async function deleteVideoDash(id) {
+            if (!confirm("Video wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden!")) return;
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/video/${id}`, { ...fetchOptions, method: 'DELETE' });
+                if (res.ok) {
+                    loadDashboard(); // Liste neu laden
+                } else {
+                    const data = await res.json();
+                    alert(data.error);
+                }
+            } catch (e) {
+                alert("Fehler beim Löschen.");
+            }
+        }
+
+        // --- ADMIN FUNKTIONEN ---
+        function switchAdminTab(tab) {
+            document.getElementById('btn-admin-videos').classList.remove('active');
+            document.getElementById('btn-admin-reports').classList.remove('active');
+            document.getElementById('admin-videos').style.display = 'none';
+            document.getElementById('admin-reports').style.display = 'none';
+
+            document.getElementById(`btn-admin-${tab}`).classList.add('active');
+            document.getElementById(`admin-${tab}`).style.display = 'flex';
+        }
+
+        async function loadAdminData() {
+            // Alle Videos laden
+            try {
+                const vidRes = await fetch(`${API_DOMAIN}/api/limtube/admin/videos`, fetchOptions);
+                const vidData = await vidRes.json();
+                const vList = document.getElementById('admin-videos');
+                vList.innerHTML = "";
+                
+                vidData.videos.forEach(v => {
+                    vList.innerHTML += `
+                    <div style="display:flex; align-items:center; justify-content:space-between; background:#121212; padding:15px; border-radius:10px; border:1px solid #333;">
+                        <div style="display:flex; flex-direction:column;">
+                            <div style="font-weight:bold; color:white; cursor:pointer;" onclick="navigate('?v=${v._id}')">${v.title}</div>
+                            <div style="color:#aaa; font-size:12px;">Uploader: <span style="color:var(--accent);">${v.uploaderName}</span> | Typ: ${v.origin || 'Lokal'}</div>
+                        </div>
+                        <button class="btn btn-danger" onclick="deleteVideoDash('${v._id}')">Nuken (Löschen)</button>
+                    </div>`;
+                });
+            } catch (e) { }
+
+            // Reports laden
+            try {
+                const repRes = await fetch(`${API_DOMAIN}/api/limtube/admin/reports`, fetchOptions);
+                const repData = await repRes.json();
+                const rList = document.getElementById('admin-reports');
+                rList.innerHTML = "";
+                
+                if (repData.reports.length === 0) {
+                    rList.innerHTML = "<p style='color:#777;'>Keine aktiven Meldungen.</p>";
+                } else {
+                    repData.reports.forEach(r => {
+                        rList.innerHTML += `
+                        <div style="background:#2a0a0a; padding:15px; border-radius:10px; border:1px solid #500;">
+                            <div style="font-weight:bold; color:#ff4444;">Meldung von ${r.reportedBy}</div>
+                            <div style="margin: 5px 0; font-size:14px;">Grund: ${r.reason}</div>
+                            <div style="display:flex; gap:10px; margin-top:10px;">
+                                <button class="btn btn-secondary" onclick="navigate('?v=${r.videoId}')">Video prüfen</button>
+                                <button class="btn btn-danger" onclick="deleteVideoDash('${r.videoId}')">Video Löschen</button>
+                            </div>
+                        </div>`;
+                    });
+                }
+            } catch (e) { }
         }
 
         init();
