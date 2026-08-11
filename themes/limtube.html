@@ -49,375 +49,82 @@
             cursor: pointer;
         }
 
-        .lim {
-            color: var(--accent);
-        }
+        .lim { color: var(--accent); }
+        .tube { background: var(--danger); padding: 0 4px; border-radius: 3px; margin-left: 2px; font-size: 0.9em; }
 
-        .tube {
-            background: var(--danger);
-            padding: 0 4px;
-            border-radius: 3px;
-            margin-left: 2px;
-            font-size: 0.9em;
-        }
+        .search-form { display: flex; flex: 1; max-width: 500px; margin: 0 20px; position: relative; }
+        .search-input { width: 100%; background: #121212; border: 1px solid #333; padding: 0 15px; border-radius: 20px 0 0 20px; color: white; height: 40px; outline: none; font-size: 16px; border-right: none; box-sizing: border-box; }
+        .search-btn { background: #222; border: 1px solid #333; padding: 0 20px; border-radius: 0 20px 20px 0; color: #777; cursor: pointer; height: 40px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+        .search-btn:hover { background: #333; color: white; }
 
-        .search-form {
-            display: flex;
-            flex: 1;
-            max-width: 500px;
-            margin: 0 20px;
-            position: relative;
-        }
+        .user-controls { display: flex; gap: 15px; align-items: center; }
+        .icon-btn { background: transparent; border: none; color: var(--text); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 50%; transition: background 0.2s; }
+        .icon-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .header-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; text-decoration: none; font-size: 14px; cursor: pointer; }
 
-        .search-input {
-            width: 100%;
-            background: #121212;
-            border: 1px solid #333;
-            padding: 0 15px;
-            border-radius: 20px 0 0 20px;
-            color: white;
-            height: 40px;
-            outline: none;
-            font-size: 16px;
-            border-right: none;
-            box-sizing: border-box;
-        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
 
-        .search-btn {
-            background: #222;
-            border: 1px solid #333;
-            padding: 0 20px;
-            border-radius: 0 20px 20px 0;
-            color: #777;
-            cursor: pointer;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-        }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        #view-watch.active { display: grid; } /* FIX: Damit Watch Layout korrekt funktioniert */
 
-        .search-btn:hover {
-            background: #333;
-            color: white;
-        }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .video-card { cursor: pointer; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+        .thumb { aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .details { margin-top: 12px; display: flex; gap: 12px; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; text-decoration: none; font-weight: bold; cursor: pointer; }
+        .meta { display: flex; flex-direction: column; overflow: hidden; }
+        .title { font-weight: 600; margin: 0 0 4px 0; line-height: 1.4; max-height: 2.8em; overflow: hidden; font-size: 15px; color: white; }
+        .uploader { font-size: 13px; color: #aaa; display: flex; align-items: center; }
+        .badge { background: var(--danger); color: white; font-size: 9px; padding: 2px 4px; border-radius: 3px; margin-left: 5px; font-weight: bold; }
 
-        .user-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
+        .watch-layout { grid-template-columns: 1fr 350px; gap: 24px; max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .player-box { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+        .plyr { width: 100%; height: 100%; }
+        .plyr__video-wrapper { height: 100%; background: black; }
+        .plyr__video-wrapper video { object-fit: contain !important; height: 100% !important; }
 
-        .icon-btn {
-            background: transparent;
-            border: none;
-            color: var(--text);
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
+        .btn { background: #272727; color: white; border: none; padding: 8px 16px; border-radius: 18px; cursor: pointer; font-weight: 500; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn:hover { background: #3f3f3f; }
+        .btn-primary { background: white; color: black; font-weight: bold; }
+        .btn-danger { background: rgba(255, 68, 68, 0.1); color: #ff4444; }
+        .btn-danger:hover { background: rgba(255, 68, 68, 0.2); }
 
-        .icon-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
+        .comment-section { margin-top: 20px; }
+        .comment-input-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .comment-input { flex: 1; background: transparent; border: none; border-bottom: 1px solid #444; color: white; padding: 8px; font-family: inherit; }
+        .comment-input:focus { border-bottom-color: var(--text); outline: none; }
+        .comment { display: flex; gap: 15px; margin-bottom: 20px; }
 
-        .icon-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
+        .upload-box { max-width: 600px; margin: 50px auto; background: #181818; padding: 40px; border-radius: 16px; border: 1px solid #333; text-align: center; }
+        .form-input { width: 100%; padding: 12px; background: #0f0f0f; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
+        .form-input:focus { border-color: var(--accent); outline: none; }
 
-        .header-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--accent);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
+        .tab-bar { display: flex; border-bottom: 1px solid #333; margin-bottom: 20px; overflow-x: auto; }
+        .tab-btn { flex: 1; background: none; border: none; color: #888; padding: 10px; cursor: pointer; font-weight: bold; font-size: 16px; white-space: nowrap; }
+        .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        .progress-bar-bg { width: 100%; background: #333; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 10px; display: none; }
+        .progress-bar-fill { height: 100%; background: var(--danger); width: 0%; transition: width 0.3s; }
 
-        .view-section {
-            display: none;
-        }
+        #ipv6-warning { display: none; background: #ff9800; color: #000; text-align: center; padding: 10px; font-weight: bold; z-index:9999; position:relative; }
+        .close-warning { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer; color: #000; font-weight: bold; opacity: 0.7; transition: 0.2s; }
+        .close-warning:hover { opacity: 1; }
 
-        .view-section.active {
-            display: block;
-        }
-
-        #view-watch.active {
-            display: grid;
-        }
-
-        /* NEU: Das Watch-Fenster braucht Grid statt Block! */
-
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .video-card {
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .thumb {
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .details {
-            margin-top: 12px;
-            display: flex;
-            gap: 12px;
-        }
-
-        .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            color: #fff;
-            text-decoration: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .meta {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .title {
-            font-weight: 600;
-            margin: 0 0 4px 0;
-            line-height: 1.4;
-            max-height: 2.8em;
-            overflow: hidden;
-            font-size: 15px;
-            color: white;
-        }
-
-        .uploader {
-            font-size: 13px;
-            color: #aaa;
-            display: flex;
-            align-items: center;
-        }
-
-        .badge {
-            background: var(--danger);
-            color: white;
-            font-size: 9px;
-            padding: 2px 4px;
-            border-radius: 3px;
-            margin-left: 5px;
-            font-weight: bold;
-        }
-
-        .watch-layout {
-            grid-template-columns: 1fr 350px;
-            gap: 24px;
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .player-box {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: black;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn {
-            background: #272727;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 18px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn:hover {
-            background: #3f3f3f;
-        }
-
-        .btn-primary {
-            background: white;
-            color: black;
-            font-weight: bold;
-        }
-
-        .btn-danger {
-            background: rgba(255, 68, 68, 0.1);
-            color: #ff4444;
-        }
-
-        .btn-danger:hover {
-            background: rgba(255, 68, 68, 0.2);
-        }
-
-        .comment-section {
-            margin-top: 20px;
-        }
-
-        .comment-input-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .comment-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid #444;
-            color: white;
-            padding: 8px;
-            font-family: inherit;
-        }
-
-        .comment-input:focus {
-            border-bottom-color: var(--text);
-            outline: none;
-        }
-
-        .comment {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .upload-box {
-            max-width: 600px;
-            margin: 50px auto;
-            background: #181818;
-            padding: 40px;
-            border-radius: 16px;
-            border: 1px solid #333;
-            text-align: center;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            background: #0f0f0f;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-
-        .form-input:focus {
-            border-color: var(--accent);
-            outline: none;
-        }
-
-        /* Tabs für Upload */
-        .tab-bar {
-            display: flex;
-            border-bottom: 1px solid #333;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            background: none;
-            border: none;
-            color: #888;
-            padding: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .tab-btn.active {
-            color: var(--accent);
-            border-bottom: 3px solid var(--accent);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            background: #333;
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--danger);
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        @media (max-width: 1000px) {
-            .watch-layout {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 1000px) { .watch-layout { grid-template-columns: 1fr; } }
     </style>
 </head>
 
 <body>
+
+    <div id="ipv6-warning">
+        <span id="ipv6-warning-text">⚠️ Dein Netzwerk blockiert IPv6. Videos können hier nicht abgespielt werden.</span>
+        <button class="close-warning" onclick="document.getElementById('ipv6-warning').style.display='none'" title="Ausblenden">✖</button>
+    </div>
 
     <header>
         <a onclick="navigate('?')" class="logo"><span class="lim">Lim</span><span class="tube">Tube</span></a>
@@ -426,8 +133,7 @@
             <input id="searchInput" class="search-input" placeholder="Suchen...">
             <button type="submit" class="search-btn">
                 <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#777">
-                    <path
-                        d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+                    <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
                 </svg>
             </button>
         </form>
@@ -435,8 +141,7 @@
         <div class="user-controls">
             <a onclick="navigate('?p=upload')" class="icon-btn" title="Upload">
                 <svg viewBox="0 0 24 24">
-                    <path
-                        d="M14 13V17H10V13H7L12 8L17 13H14M23 12L19 8V4H15L12 1L9 4H5V8L1 12H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V12H23Z" />
+                    <path d="M14 13V17H10V13H7L12 8L17 13H14M23 12L19 8V4H15L12 1L9 4H5V8L1 12H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V12H23Z" />
                 </svg>
             </a>
             <a onclick="navigate('?p=channel')" class="header-avatar" id="myAvatar" title="Mein Kanal">?</a>
@@ -453,34 +158,35 @@
     <div id="view-watch" class="view-section watch-layout">
         <div>
             <div class="player-box">
-                <video id="mainPlayer" playsinline controls style="width:100%;height:100%;"></video>
+                <video id="mainPlayer" playsinline controls></video>
+                
+                <!-- WERBUNG OVERLAY -->
+                <div id="ad-overlay" style="display:none; position:absolute; bottom:60px; right:20px; z-index:50; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; align-items: center; gap: 15px; border: 1px solid #444;">
+                    <span style="color: #ffd700; font-weight: bold; font-size: 12px; letter-spacing: 1px;">WERBUNG</span>
+                    <button id="skip-ad-btn" class="btn btn-primary" disabled style="background: #333; color: #888; border: none;">Überspringen in 5s</button>
+                </div>
             </div>
 
             <div style="margin-top:20px;">
                 <h1 id="vidTitle" style="margin:0 0 10px 0;font-size:20px;">Lade Video...</h1>
 
-                <div
-                    style="display:flex;justify-content:space-between;border-bottom:1px solid #333;padding-bottom:15px;align-items:center; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid #333;padding-bottom:15px;align-items:center; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex;align-items:center;gap:15px;">
                         <div class="avatar" id="vidAvatar" style="width:48px;height:48px;">?</div>
                         <div>
                             <div style="color:white;font-weight:bold;font-size:16px;" id="vidUploader">Uploader</div>
                             <div style="color:#aaa;font-size:12px;" id="vidSubs">0 Abonnenten</div>
                         </div>
-                        <button id="subBtn" class="btn" style="margin-left:10px;"
-                            onclick="toggleSubscribe()">Abonnieren</button>
+                        <button id="subBtn" class="btn" style="margin-left:10px;" onclick="toggleSubscribe()">Abonnieren</button>
                     </div>
 
                     <div style="display:flex;gap:10px; align-items:center;">
                         <div style="background:#272727; border-radius:18px; display:flex; overflow:hidden;">
-                            <button id="likeBtn" class="btn" style="border-radius:0; border-right:1px solid #444;"
-                                onclick="toggleRate('like')">👍 <span id="likeCount">0</span></button>
-                            <button id="dislikeBtn" class="btn" style="border-radius:0;"
-                                onclick="toggleRate('dislike')">👎</button>
+                            <button id="likeBtn" class="btn" style="border-radius:0; border-right:1px solid #444;" onclick="toggleRate('like')">👍 <span id="likeCount">0</span></button>
+                            <button id="dislikeBtn" class="btn" style="border-radius:0;" onclick="toggleRate('dislike')">👎</button>
                         </div>
                         <button class="btn btn-secondary" onclick="reportVideo()">🚩 Melden</button>
-                        <button id="delBtn" class="btn btn-danger" style="display:none;"
-                            onclick="deleteVideo()">Löschen</button>
+                        <button id="delBtn" class="btn btn-danger" style="display:none;" onclick="deleteVideo()">Löschen</button>
                     </div>
                 </div>
             </div>
@@ -512,7 +218,6 @@
     <!-- 3. UPLOAD VIEW -->
     <div id="view-upload" class="view-section container">
         <div class="upload-box">
-
             <div class="tab-bar">
                 <button class="tab-btn active" onclick="switchUploadTab('file')">Lokaler Upload</button>
                 <button class="tab-btn" onclick="switchUploadTab('yt')">YouTube Import</button>
@@ -523,25 +228,21 @@
                 <input type="text" id="upTitle" class="form-input" placeholder="Video Titel (min 5 Z.)">
                 <textarea id="upDesc" class="form-input" rows="4" placeholder="Beschreibung"></textarea>
                 <input type="file" id="upFile" accept=".mp4" style="margin-bottom:20px; color:#aaa; width:100%;">
-                <button class="btn btn-primary" id="doUploadBtn" style="width:100%;"
-                    onclick="startUpload()">Hochladen</button>
+                <button class="btn btn-primary" id="doUploadBtn" style="width:100%;" onclick="startUpload()">Hochladen</button>
                 <div id="upStatus" style="margin-top:15px; font-size:14px; color:#aaa;"></div>
             </div>
 
             <!-- Tab 2: YouTube Import -->
             <div id="tab-yt" class="tab-content">
-                <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Füge die YouTube Video-ID (11 Zeichen, z.B.
-                    <i>dQw4w9WgXcQ</i>) ein, um das Video ins CDN zu ziehen.</p>
+                <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Füge die YouTube Video-ID (11 Zeichen, z.B. <i>dQw4w9WgXcQ</i>) ein, um das Video ins CDN zu ziehen.</p>
                 <input type="text" id="ytIdInput" class="form-input" placeholder="YouTube Video ID">
-                <button class="btn btn-danger" id="doYtBtn" style="width:100%; color:white;"
-                    onclick="startYoutubeImport()">Von YouTube Importieren</button>
+                <button class="btn btn-danger" id="doYtBtn" style="width:100%; color:white;" onclick="startYoutubeImport()">Von YouTube Importieren</button>
 
                 <div id="ytProgressBarBg" class="progress-bar-bg">
                     <div id="ytProgressBar" class="progress-bar-fill"></div>
                 </div>
                 <div id="ytStatus" style="margin-top:15px; font-size:14px; color:#aaa;"></div>
             </div>
-
         </div>
     </div>
 
@@ -570,17 +271,30 @@
             <p style="color:#777;">Lade Videos...</p>
         </div>
 
-        <!-- ADMIN BEREICH (Wird nur für Admins eingeblendet) -->
+        <!-- ADMIN BEREICH -->
         <div id="adminSection" style="display:none; border-top: 1px solid #333; padding-top:30px;">
             <h2 style="color:var(--danger); margin-top:0;">🛡️ Admin Zentrale</h2>
             
             <div class="tab-bar">
                 <button class="tab-btn active" id="btn-admin-videos" onclick="switchAdminTab('videos')">Alle Videos (Server)</button>
                 <button class="tab-btn" id="btn-admin-reports" onclick="switchAdminTab('reports')">Meldungen</button>
+                <button class="tab-btn" id="btn-admin-ads" onclick="switchAdminTab('ads')">Werbung verwalten</button>
             </div>
 
             <div id="admin-videos" class="tab-content active" style="display:flex; flex-direction:column; gap:10px;"></div>
-            <div id="admin-reports" class="tab-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <div id="admin-reports" class="tab-content" style="display:none; flex-direction:column; gap:10px;"></div>
+            
+            <!-- ADMIN ADS -->
+            <div id="admin-ads" class="tab-content" style="display:none; flex-direction:column; gap:10px;">
+                <div style="background:#222; padding:15px; border-radius:10px; border:1px dashed #555; margin-bottom:10px;">
+                    <h4 style="margin-top:0; color:var(--accent);">Neue Werbung hochladen</h4>
+                    <input type="text" id="adTitleInput" class="form-input" placeholder="Titel der Werbung (intern)">
+                    <input type="file" id="adFileInput" accept=".mp4" class="form-input" style="padding: 5px;">
+                    <button class="btn btn-primary" id="adUploadBtn" onclick="uploadAdVideo()">Werbung Hochladen</button>
+                    <div id="adUpStatus" style="margin-top:10px; font-size:12px;"></div>
+                </div>
+                <div id="admin-ads-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+            </div>
         </div>
     </div>
 
@@ -588,16 +302,81 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
     <script>
-        const API_DOMAIN = "https://api.limazon.v6.rocks";
-        const STREAM_DOMAIN = "https://stream.limazon.v6.rocks";
+        // DYNAMISCHE URLS
+        let API_DOMAIN = "https://api.limazon.v6.rocks";
+        let STREAM_DOMAIN = "https://stream.limazon.v6.rocks";
+        const TAILSCALE_URL = "https://raspberrypi.tail75d81e.ts.net:8443";
         const fetchOptions = { credentials: 'include' };
 
         let currentUser = null;
         let currentVideoObj = null;
-        const player = new Plyr('#mainPlayer');
+        const player = new Plyr('#mainPlayer', {
+            ratio: '16:9',
+            controls: [
+                'play-large', // Der dicke Play-Button in der Mitte
+                'play',       // Start/Pause unten links
+                'progress',   // Fortschrittsleiste
+                'current-time', // Aktuelle Zeit
+                'duration',   // Gesamtlänge
+                'mute',       // Stummschalten
+                'volume',     // Lautstärkeregler
+                'settings',   // Zahnrad (Geschwindigkeit etc.)
+                'fullscreen'  // Vollbild-Button
+            ]
+        });
         let ytPollInterval = null;
 
+        // WERBUNG-VARIABLEN
+        let adTimer = null;
+        let adIsPlaying = false;
+
+        // --- HILFSFUNKTION: Ping mit Timeout ---
+        async function testConnection(domain, timeoutMs = 5000) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+                
+                // Ping ans CDN/Stream
+                await fetch(domain + "/health", { signal: controller.signal, mode: 'no-cors' });
+                clearTimeout(timeoutId);
+                return true; 
+            } catch (e) {
+                return false; 
+            }
+        }
+
         async function init() {
+            // 1. INTELLIGENTER VERBINDUNGS-CHECK (NUR FÜR DAS CDN/STREAMING!)
+            if (window.location.hostname.includes('ts.net')) {
+                API_DOMAIN = window.location.origin; 
+                STREAM_DOMAIN = window.location.origin;
+            } else {
+                const [primaryOk, tailscaleOk] = await Promise.all([
+                    testConnection(STREAM_DOMAIN, 5000),
+                    testConnection(TAILSCALE_URL, 5000)
+                ]);
+
+                if (primaryOk) {
+                    console.log("Haupt-CDN ist erreichbar.");
+                } else if (tailscaleOk) {
+                    console.warn("Haupt-CDN antwortet nicht, aber Tailscale ist da! Wechsle Stream-Tunnel...");
+                    
+                    // WICHTIG: NUR DIE STREAM DOMAIN WIRD AUF TAILSCALE GELEITET!
+                    STREAM_DOMAIN = TAILSCALE_URL;
+                    // API_DOMAIN bleibt auf api.limazon.v6.rocks, wegen der Cookies!
+                    
+                    const warnBanner = document.getElementById('ipv6-warning');
+                    const warnText = document.getElementById('ipv6-warning-text');
+                    if(warnBanner && warnText) {
+                        warnText.innerHTML = "⚠️ Standard-Video-Route blockiert. LimTube nutzt den sicheren Tailscale-Tunnel zum Streamen.";
+                        warnBanner.style.display = 'block';
+                    }
+                } else {
+                    console.warn("Beide Pings fehlgeschlagen. Bleibe bei Standard-URLs.");
+                }
+            }
+
+            // 2. Auth Status laden (läuft jetzt garantiert immer über API_DOMAIN)
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/dashboard`, fetchOptions);
                 if (res.ok) {
@@ -609,7 +388,9 @@
                         document.getElementById('myCommentAvatar').innerText = currentUser.username[0].toUpperCase();
                     }
                 }
-            } catch (e) { }
+            } catch (e) {
+                console.error("Auth Fetch Error:", e);
+            }
 
             handleRoute();
         }
@@ -624,6 +405,7 @@
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             player.stop();
             if (ytPollInterval) clearInterval(ytPollInterval);
+            if (adTimer) clearInterval(adTimer);
 
             if (videoId) {
                 document.getElementById('view-watch').classList.add('active');
@@ -708,7 +490,9 @@
                     if (currentVideoObj && v._id === currentVideoObj.id) return;
                     list.innerHTML += `
                         <div style="display:flex; gap:10px; margin-bottom:15px; cursor:pointer;" onclick="navigate('?v=${v._id}')">
-                            <div style="width:120px; aspect-ratio:16/9; background:#222; border-radius:8px; display:flex; align-items:center; justify-content:center;">▶</div>
+                            <div style="width:120px; aspect-ratio:16/9; background:#222; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                ${getThumbHTML(v)}
+                            </div>
                             <div style="flex:1; overflow:hidden;">
                                 <div style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v.title}</div>
                                 <div style="color:#aaa; font-size:12px;">${v.uploaderName}</div>
@@ -719,6 +503,9 @@
             } catch (e) { }
         }
 
+        // ==========================================
+        // WATCH VIEW & AD SYSTEM
+        // ==========================================
         async function loadWatchView(id) {
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/video/${id}`, fetchOptions);
@@ -734,14 +521,12 @@
                 document.getElementById('vidViews').innerText = `${v.views} Aufrufe`;
                 document.getElementById('vidDesc').innerText = v.description || "";
 
-                // Abos
                 document.getElementById('vidSubs').innerText = `${v.subscribersCount || 0} Abonnenten`;
                 const subBtn = document.getElementById('subBtn');
                 subBtn.innerText = v.isSubscribed ? "Abonniert" : "Abonnieren";
                 subBtn.className = v.isSubscribed ? "btn" : "btn btn-primary";
                 subBtn.style.display = (currentUser && currentUser.username === v.uploaderName) ? 'none' : 'block';
 
-                // Likes / Dislikes
                 document.getElementById('likeCount').innerText = v.likesCount;
                 document.getElementById('likeBtn').style.background = v.isLiked ? 'white' : 'transparent';
                 document.getElementById('likeBtn').style.color = v.isLiked ? 'black' : 'white';
@@ -754,11 +539,101 @@
 
                 renderComments(v.comments);
 
-                player.source = { type: 'video', sources: [{ src: `${STREAM_DOMAIN}/cdn/${v.filename}`, type: 'video/mp4' }] };
-
-                fetch(`${API_DOMAIN}/api/limtube/video/${id}/view`, { ...fetchOptions, method: 'POST' });
+                playVideoWithAd();
 
             } catch (e) { alert("Ladefehler."); navigate('?'); }
+        }
+
+        async function playVideoWithAd() {
+            const hasPrime = currentUser && currentUser.activeSubscriptions && currentUser.activeSubscriptions.includes('prime');
+            
+            if (!hasPrime && Math.random() < 0.3) {
+                try {
+                    const res = await fetch(`${API_DOMAIN}/api/limtube/ads/random`, fetchOptions);
+                    const adData = await res.json();
+
+                    if (adData.ad) {
+                        adIsPlaying = true;
+                        
+                        // Quelle setzen
+                        player.source = { 
+                            type: 'video', 
+                            sources: [{ src: `${STREAM_DOMAIN}/cdn/${adData.ad.filename}`, type: 'video/mp4' }] 
+                        };
+                        
+                        // FIX: Dem Player kurz Zeit geben, um das UI zu laden, bevor er startet!
+                        setTimeout(() => {
+                            player.play().catch(e => console.log("Autoplay blockiert vom Browser", e));
+                        }, 100);
+
+                        document.getElementById('ad-overlay').style.display = 'flex';
+                        const skipBtn = document.getElementById('skip-ad-btn');
+                        skipBtn.disabled = true;
+                        skipBtn.style.background = '#333';
+                        skipBtn.style.color = '#888';
+                        
+                        let timeLeft = 5;
+                        skipBtn.innerText = `Überspringen in ${timeLeft}s`;
+                        
+                        adTimer = setInterval(() => {
+                            timeLeft--;
+                            if (timeLeft <= 0) {
+                                clearInterval(adTimer);
+                                skipBtn.disabled = false;
+                                skipBtn.style.background = 'white';
+                                skipBtn.style.color = 'black';
+                                skipBtn.innerText = "Überspringen ▶|";
+                                skipBtn.onclick = skipAd;
+                            } else {
+                                skipBtn.innerText = `Überspringen in ${timeLeft}s`;
+                            }
+                        }, 1000);
+
+                        player.once('ended', () => {
+                            if (adIsPlaying) skipAd(); 
+                        });
+                        return; 
+                    }
+                } catch(e) {
+                    console.error("Konnte Werbung nicht laden, spiele Hauptvideo.");
+                }
+            } 
+            playMainVideo();
+        }
+
+        function skipAd() {
+            if (adTimer) clearInterval(adTimer);
+            adIsPlaying = false;
+            document.getElementById('ad-overlay').style.display = 'none';
+            playMainVideo();
+        }
+
+        function playMainVideo() {
+            // Quelle setzen
+            player.source = { 
+                type: 'video', 
+                sources: [{ src: `${STREAM_DOMAIN}/cdn/${currentVideoObj.filename}`, type: 'video/mp4' }] 
+            };
+            
+            // FIX: Dem Player kurz Zeit geben, um das UI zu laden
+            setTimeout(() => {
+                player.play().catch(e => console.log("Autoplay blockiert vom Browser", e));
+            }, 100);
+            
+            fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/view`, { ...fetchOptions, method: 'POST' });
+        }
+
+        function skipAd() {
+            if (adTimer) clearInterval(adTimer);
+            adIsPlaying = false;
+            document.getElementById('ad-overlay').style.display = 'none';
+            playMainVideo();
+        }
+
+        function playMainVideo() {
+            player.source = { type: 'video', sources: [{ src: `${STREAM_DOMAIN}/cdn/${currentVideoObj.filename}`, type: 'video/mp4' }] };
+            player.play();
+            fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/view`, { ...fetchOptions, method: 'POST' });
         }
 
         function renderComments(commentsArr) {
@@ -808,7 +683,6 @@
             if (!currentVideoObj) return;
             const res = await fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/${type}`, { ...fetchOptions, method: 'POST' });
             if (res.ok) {
-                // Einfacher reload der View, um die korrekten Zahlen für Like/Dislike zu bekommen
                 loadWatchView(currentVideoObj.id);
             }
         }
@@ -969,7 +843,6 @@
         // ==========================================
         async function loadDashboard() {
             try {
-                // 1. Creator Stats laden
                 const res = await fetch(`${API_DOMAIN}/api/limtube/dashboard`, fetchOptions);
                 const data = await res.json();
                 
@@ -978,7 +851,6 @@
                 document.getElementById('dashTotalViews').innerText = data.totalViews;
                 document.getElementById('dashUnpaidViews').innerText = data.unpaidViews;
 
-                // Meine Videos rendern
                 const list = document.getElementById('dashVideoList');
                 list.innerHTML = "";
                 if (data.videos.length === 0) {
@@ -988,7 +860,9 @@
                         list.innerHTML += `
                         <div style="display:flex; align-items:center; justify-content:space-between; background:#1e1e1e; padding:15px; border-radius:10px;">
                             <div style="display:flex; align-items:center; gap:15px; cursor:pointer;" onclick="navigate('?v=${v.id}')">
-                                <div style="width:80px; aspect-ratio:16/9; background:#000; border-radius:6px; display:flex; align-items:center; justify-content:center;">▶</div>
+                                <div style="width:80px; aspect-ratio:16/9; background:#000; border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                    ${getThumbHTML(v)}
+                                </div>
                                 <div>
                                     <div style="font-weight:bold;">${v.title}</div>
                                     <div style="color:#aaa; font-size:12px;">Aufrufe: ${v.views} | Erstellt: ${new Date(v.createdAt).toLocaleDateString()}</div>
@@ -999,7 +873,6 @@
                     });
                 }
 
-                // 2. Admin Daten laden, falls Admin
                 if (data.isAdmin) {
                     document.getElementById('adminSection').style.display = 'block';
                     loadAdminData();
@@ -1018,7 +891,7 @@
                 const data = await res.json();
                 if (res.ok) {
                     alert(data.message);
-                    loadDashboard(); // Aktualisiert die Zahlen
+                    loadDashboard(); 
                 } else {
                     alert(data.error);
                 }
@@ -1032,7 +905,7 @@
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/video/${id}`, { ...fetchOptions, method: 'DELETE' });
                 if (res.ok) {
-                    loadDashboard(); // Liste neu laden
+                    loadDashboard(); 
                 } else {
                     const data = await res.json();
                     alert(data.error);
@@ -1042,19 +915,20 @@
             }
         }
 
-        // --- ADMIN FUNKTIONEN ---
         function switchAdminTab(tab) {
             document.getElementById('btn-admin-videos').classList.remove('active');
             document.getElementById('btn-admin-reports').classList.remove('active');
+            document.getElementById('btn-admin-ads').classList.remove('active');
+            
             document.getElementById('admin-videos').style.display = 'none';
             document.getElementById('admin-reports').style.display = 'none';
+            document.getElementById('admin-ads').style.display = 'none';
 
             document.getElementById(`btn-admin-${tab}`).classList.add('active');
             document.getElementById(`admin-${tab}`).style.display = 'flex';
         }
 
         async function loadAdminData() {
-            // Alle Videos laden
             try {
                 const vidRes = await fetch(`${API_DOMAIN}/api/limtube/admin/videos`, fetchOptions);
                 const vidData = await vidRes.json();
@@ -1073,7 +947,6 @@
                 });
             } catch (e) { }
 
-            // Reports laden
             try {
                 const repRes = await fetch(`${API_DOMAIN}/api/limtube/admin/reports`, fetchOptions);
                 const repData = await repRes.json();
@@ -1096,6 +969,97 @@
                     });
                 }
             } catch (e) { }
+
+            // Werbe-Videos laden
+            try {
+                const adRes = await fetch(`${API_DOMAIN}/api/admin/limtube/ads`, fetchOptions);
+                const adData = await adRes.json();
+                const aList = document.getElementById('admin-ads-list');
+                aList.innerHTML = "";
+                
+                if (adData.ads.length === 0) {
+                    aList.innerHTML = "<p style='color:#777;'>Es sind noch keine Werbevideos im System.</p>";
+                } else {
+                    adData.ads.forEach(ad => {
+                        aList.innerHTML += `
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:#121212; padding:15px; border-radius:10px; border:1px solid #333;">
+                            <div style="display:flex; flex-direction:column;">
+                                <div style="font-weight:bold; color:white;">${ad.title}</div>
+                                <div style="color:#aaa; font-size:12px;">Ansichten: ${ad.views || 0} | Upload: ${new Date(ad.createdAt).toLocaleDateString()}</div>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteAdVideo('${ad._id}')">Löschen</button>
+                        </div>`;
+                    });
+                }
+            } catch (e) { }
+        }
+
+        async function uploadAdVideo() {
+            const title = document.getElementById('adTitleInput').value;
+            const file = document.getElementById('adFileInput').files[0];
+            const status = document.getElementById('adUpStatus');
+            const btn = document.getElementById('adUploadBtn');
+
+            if (!title) return status.innerHTML = "<span style='color:var(--danger)'>Titel fehlt!</span>";
+            if (!file) return status.innerHTML = "<span style='color:var(--danger)'>Kein Video ausgewählt!</span>";
+
+            const fd = new FormData();
+            fd.append('title', title);
+            fd.append('video', file);
+
+            btn.disabled = true;
+            status.innerHTML = "Lade Werbung hoch...";
+
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/admin/limtube/ads`, { ...fetchOptions, method: 'POST', body: fd });
+                if (res.ok) {
+                    status.innerHTML = "<span style='color:var(--accent)'>Werbung erfolgreich hochgeladen!</span>";
+                    document.getElementById('adTitleInput').value = "";
+                    document.getElementById('adFileInput').value = "";
+                    loadAdminData(); 
+                } else {
+                    status.innerHTML = "<span style='color:var(--danger)'>Fehler beim Upload.</span>";
+                }
+            } catch (e) {
+                status.innerHTML = "Netzwerkfehler.";
+            }
+            btn.disabled = false;
+        }
+
+        async function deleteAdVideo(id) {
+            if (!confirm("Diese Werbung löschen?")) return;
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/admin/limtube/ads/${id}`, { ...fetchOptions, method: 'DELETE' });
+                if (res.ok) {
+                    loadAdminData(); 
+                } else {
+                    alert("Konnte Werbung nicht löschen.");
+                }
+            } catch(e) {}
+        }
+
+        // --- HILFSFUNKTION FÜR THUMBNAILS ---
+        function getThumbHTML(v) {
+            let src = '';
+            
+            if (v.origin === 'youtube') {
+                let ytId = v.ytId;
+                // Fallback für alte YT Videos, bei denen ytId nicht in der DB steht
+                if (!ytId && v.filename) {
+                    const match = v.filename.match(/yt_\d+_([a-zA-Z0-9_-]{11})\.mp4/);
+                    if (match) ytId = match[1];
+                }
+                if (ytId) src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+            } else if (v.thumbnail) {
+                // Für lokale Uploads
+                src = `${STREAM_DOMAIN}/cdn/${v.thumbnail}`;
+            }
+
+            if (src) {
+                return `<img src="${src}" onerror="this.style.display='none';" style="width:100%;height:100%;object-fit:cover;">`;
+            } else {
+                return `<span style="font-size:40px;">▶</span>`;
+            }
         }
 
         init();
