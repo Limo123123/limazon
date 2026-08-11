@@ -158,7 +158,7 @@
     <div id="view-watch" class="view-section watch-layout">
         <div>
             <div class="player-box">
-                <video id="mainPlayer" playsinline controls></video>
+                <video id="mainPlayer" playsinline controls preload="auto"></video>
                 
                 <!-- WERBUNG OVERLAY -->
                 <div id="ad-overlay" style="display:none; position:absolute; bottom:60px; right:20px; z-index:50; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; align-items: center; gap: 15px; border: 1px solid #444;">
@@ -329,6 +329,7 @@
         // WERBUNG-VARIABLEN
         let adTimer = null;
         let adIsPlaying = false;
+        let isAdBuffering = false;
 
         // --- HILFSFUNKTION: Ping mit Timeout ---
         async function testConnection(domain, timeoutMs = 5000) {
@@ -554,17 +555,18 @@
 
                     if (adData.ad) {
                         adIsPlaying = true;
+                        isAdBuffering = false;
                         
                         // Quelle setzen
                         player.source = { 
                             type: 'video', 
                             sources: [{ src: `${STREAM_DOMAIN}/cdn/${adData.ad.filename}`, type: 'video/mp4' }] 
                         };
-                        
-                        // FIX: Dem Player kurz Zeit geben, um das UI zu laden, bevor er startet!
-                        setTimeout(() => {
-                            player.play().catch(e => console.log("Autoplay blockiert vom Browser", e));
-                        }, 100);
+
+                        // Warten, bis Plyr signalisiert, dass genug gepuffert wurde
+                        player.once('canplaythrough', () => {
+                            player.play().catch(e => console.log("Autoplay blockiert", e));
+                        });
 
                         document.getElementById('ad-overlay').style.display = 'flex';
                         const skipBtn = document.getElementById('skip-ad-btn');
@@ -572,10 +574,15 @@
                         skipBtn.style.background = '#333';
                         skipBtn.style.color = '#888';
                         
-                        let timeLeft = 5;
+                        let timeLeft = 10;
                         skipBtn.innerText = `Überspringen in ${timeLeft}s`;
                         
+                        player.on('waiting', () => { isAdBuffering = true; });
+                        player.on('playing', () => { isAdBuffering = false; });
+
                         adTimer = setInterval(() => {
+                            if (isAdBuffering) return;
+
                             timeLeft--;
                             if (timeLeft <= 0) {
                                 clearInterval(adTimer);
@@ -604,35 +611,22 @@
         function skipAd() {
             if (adTimer) clearInterval(adTimer);
             adIsPlaying = false;
+            isAdBuffering = false;
             document.getElementById('ad-overlay').style.display = 'none';
             playMainVideo();
         }
 
         function playMainVideo() {
-            // Quelle setzen
             player.source = { 
                 type: 'video', 
                 sources: [{ src: `${STREAM_DOMAIN}/cdn/${currentVideoObj.filename}`, type: 'video/mp4' }] 
             };
             
-            // FIX: Dem Player kurz Zeit geben, um das UI zu laden
-            setTimeout(() => {
-                player.play().catch(e => console.log("Autoplay blockiert vom Browser", e));
-            }, 100);
-            
-            fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/view`, { ...fetchOptions, method: 'POST' });
-        }
+            // Sauber über das Plyr-Event gesteuert, ohne manuelles document.getElementById
+            player.once('canplaythrough', () => {
+                player.play().catch(e => console.log("Autoplay blockiert", e));
+            });
 
-        function skipAd() {
-            if (adTimer) clearInterval(adTimer);
-            adIsPlaying = false;
-            document.getElementById('ad-overlay').style.display = 'none';
-            playMainVideo();
-        }
-
-        function playMainVideo() {
-            player.source = { type: 'video', sources: [{ src: `${STREAM_DOMAIN}/cdn/${currentVideoObj.filename}`, type: 'video/mp4' }] };
-            player.play();
             fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/view`, { ...fetchOptions, method: 'POST' });
         }
 
