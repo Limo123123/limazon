@@ -58,7 +58,7 @@
         .search-btn:hover { background: #333; color: white; }
 
         .user-controls { display: flex; gap: 15px; align-items: center; }
-        .icon-btn { background: transparent; border: none; color: var(--text); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 50%; transition: background 0.2s; }
+        .icon-btn { background: transparent; border: none; color: var(--text); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 50%; transition: background 0.2s; font-size: 20px; }
         .icon-btn:hover { background: rgba(255, 255, 255, 0.1); }
         .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
         .header-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; text-decoration: none; font-size: 14px; cursor: pointer; }
@@ -67,7 +67,7 @@
 
         .view-section { display: none; }
         .view-section.active { display: block; }
-        #view-watch.active { display: grid; } /* FIX: Damit Watch Layout korrekt funktioniert */
+        #view-watch.active { display: grid; } 
 
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .video-card { cursor: pointer; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
@@ -115,6 +115,21 @@
         .close-warning { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer; color: #000; font-weight: bold; opacity: 0.7; transition: 0.2s; }
         .close-warning:hover { opacity: 1; }
 
+        .channel-header { background: #1e1e1e; padding: 30px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; border: 1px solid #333; }
+        .playlist-box { background: #181818; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; transition: 0.2s; }
+        .playlist-box:hover { border-color: #555; }
+        .playlist-title { margin:0; color:var(--text); cursor:pointer; font-size:20px; font-weight:bold; }
+        .playlist-title:hover { color:white; text-decoration:underline; }
+
+        .yt-modal-content { background: #212121; border-radius: 12px; width: 350px; max-width: 90%; display: flex; flex-direction: column; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+        .yt-modal-header { padding: 16px 24px; border-bottom: 1px solid #3d3d3d; display: flex; justify-content: space-between; align-items: center; }
+        .yt-modal-header h3 { margin: 0; font-size: 16px; font-weight: 500; color: white; }
+        .yt-close-btn { background: none; border: none; color: #aaa; font-size: 20px; cursor: pointer; transition: 0.2s; }
+        .yt-close-btn:hover { color: white; }
+        .yt-playlist-row { display: flex; align-items: center; padding: 10px 24px; cursor: pointer; transition: background 0.2s; user-select: none; }
+        .yt-playlist-row:hover { background: #3d3d3d; }
+        .yt-checkbox { width: 18px; height: 18px; margin-right: 16px; cursor: pointer; accent-color: var(--accent); }
+
         @media (max-width: 1000px) { .watch-layout { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -139,6 +154,7 @@
         </form>
 
         <div class="user-controls">
+            <a onclick="navigate('?p=playlists')" class="icon-btn" title="Playlists">📂</a>
             <a onclick="navigate('?p=upload')" class="icon-btn" title="Upload">
                 <svg viewBox="0 0 24 24">
                     <path d="M14 13V17H10V13H7L12 8L17 13H14M23 12L19 8V4H15L12 1L9 4H5V8L1 12H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V12H23Z" />
@@ -160,10 +176,9 @@
             <div class="player-box">
                 <video id="mainPlayer" playsinline controls preload="auto"></video>
                 
-                <!-- WERBUNG OVERLAY -->
                 <div id="ad-overlay" style="display:none; position:absolute; bottom:60px; right:20px; z-index:50; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; align-items: center; gap: 15px; border: 1px solid #444;">
                     <span style="color: #ffd700; font-weight: bold; font-size: 12px; letter-spacing: 1px;">WERBUNG</span>
-                    <button id="skip-ad-btn" class="btn btn-primary" disabled style="background: #333; color: #888; border: none;">Überspringen in 5s</button>
+                    <button id="skip-ad-btn" class="btn btn-primary" disabled style="background: #333; color: #888; border: none;">Überspringen in 10s</button>
                 </div>
             </div>
 
@@ -172,9 +187,9 @@
 
                 <div style="display:flex;justify-content:space-between;border-bottom:1px solid #333;padding-bottom:15px;align-items:center; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex;align-items:center;gap:15px;">
-                        <div class="avatar" id="vidAvatar" style="width:48px;height:48px;">?</div>
+                        <div class="avatar" id="vidAvatar" style="width:48px;height:48px;cursor:pointer;" onclick="if(currentVideoObj) navigate('?u=' + currentVideoObj.uploaderName)">?</div>
                         <div>
-                            <div style="color:white;font-weight:bold;font-size:16px;" id="vidUploader">Uploader</div>
+                            <div style="color:white;font-weight:bold;font-size:16px;cursor:pointer;" id="vidUploader" onclick="if(currentVideoObj) navigate('?u=' + currentVideoObj.uploaderName)">Uploader</div>
                             <div style="color:#aaa;font-size:12px;" id="vidSubs">0 Abonnenten</div>
                         </div>
                         <button id="subBtn" class="btn" style="margin-left:10px;" onclick="toggleSubscribe()">Abonnieren</button>
@@ -185,6 +200,9 @@
                             <button id="likeBtn" class="btn" style="border-radius:0; border-right:1px solid #444;" onclick="toggleRate('like')">👍 <span id="likeCount">0</span></button>
                             <button id="dislikeBtn" class="btn" style="border-radius:0;" onclick="toggleRate('dislike')">👎</button>
                         </div>
+                        
+                        <button class="btn btn-secondary" onclick="showPlaylistModal()">💾 Speichern</button>
+
                         <button class="btn btn-secondary" onclick="reportVideo()">🚩 Melden</button>
                         <button id="delBtn" class="btn btn-danger" style="display:none;" onclick="deleteVideo()">Löschen</button>
                     </div>
@@ -223,7 +241,6 @@
                 <button class="tab-btn" onclick="switchUploadTab('yt')">YouTube Import</button>
             </div>
 
-            <!-- Tab 1: Normaler MP4 Upload -->
             <div id="tab-file" class="tab-content active">
                 <input type="text" id="upTitle" class="form-input" placeholder="Video Titel (min 5 Z.)">
                 <textarea id="upDesc" class="form-input" rows="4" placeholder="Beschreibung"></textarea>
@@ -232,7 +249,6 @@
                 <div id="upStatus" style="margin-top:15px; font-size:14px; color:#aaa;"></div>
             </div>
 
-            <!-- Tab 2: YouTube Import -->
             <div id="tab-yt" class="tab-content">
                 <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Füge die YouTube Video-ID (11 Zeichen, z.B. <i>dQw4w9WgXcQ</i>) ein, um das Video ins CDN zu ziehen.</p>
                 <input type="text" id="ytIdInput" class="form-input" placeholder="YouTube Video ID">
@@ -284,7 +300,6 @@
             <div id="admin-videos" class="tab-content active" style="display:flex; flex-direction:column; gap:10px;"></div>
             <div id="admin-reports" class="tab-content" style="display:none; flex-direction:column; gap:10px;"></div>
             
-            <!-- ADMIN ADS -->
             <div id="admin-ads" class="tab-content" style="display:none; flex-direction:column; gap:10px;">
                 <div style="background:#222; padding:15px; border-radius:10px; border:1px dashed #555; margin-bottom:10px;">
                     <h4 style="margin-top:0; color:var(--accent);">Neue Werbung hochladen</h4>
@@ -294,6 +309,59 @@
                     <div id="adUpStatus" style="margin-top:10px; font-size:12px;"></div>
                 </div>
                 <div id="admin-ads-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. KANAL PROFIL VIEW -->
+    <div id="view-channel-profile" class="view-section container">
+        <div class="channel-header">
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div class="avatar" id="profileAvatar" style="width:70px;height:70px;font-size:28px;">?</div>
+                <div>
+                    <h2 id="profileUsername" style="margin:0 0 5px 0;">Kanal</h2>
+                    <div style="color:#aaa;font-size:14px;" id="profileSubs">0 Abonnenten</div>
+                </div>
+            </div>
+            <button id="profileSubBtn" class="btn btn-primary" onclick="toggleChannelProfileSub()">Abonnieren</button>
+        </div>
+        
+        <!-- YOUTUBE-STYLE KANAL TABS -->
+        <div class="tab-bar">
+            <button class="tab-btn active" id="btn-channel-videos" onclick="switchChannelTab('videos')">Videos</button>
+            <button class="tab-btn" id="btn-channel-playlists" onclick="switchChannelTab('playlists')">Playlists</button>
+        </div>
+
+        <!-- Tab 1: Videos des Kanals -->
+        <div id="channel-videos" class="tab-content active">
+            <div class="video-grid" id="profileVideoGrid"></div>
+        </div>
+
+        <!-- Tab 2: Öffentliche Playlists des Kanals -->
+        <div id="channel-playlists" class="tab-content">
+            <div id="profilePlaylistGrid" style="display:flex; flex-direction:column; gap:15px;"></div>
+        </div>
+    </div>
+
+    <!-- 6. PLAYLISTS VIEW -->
+    <div id="view-playlists" class="view-section container">
+        <h2>Meine Playlists</h2>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input type="text" id="newPlaylistTitle" class="form-input" placeholder="Neue Playlist Name..." style="max-width:300px; margin:0;">
+            <button class="btn btn-primary" onclick="createPlaylist()">Erstellen</button>
+        </div>
+        <div id="playlistsContainer"></div>
+    </div>
+
+    <!-- 7. YOUTUBE STYLE PLAYLIST MODAL -->
+    <div id="playlistModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center;">
+        <div class="yt-modal-content">
+            <div class="yt-modal-header">
+                <h3>Speichern in...</h3>
+                <button class="yt-close-btn" onclick="document.getElementById('playlistModal').style.display='none'">✖</button>
+            </div>
+            <div id="modalPlaylistList" style="padding:12px 0; max-height:300px; overflow-y:auto;">
+                <!-- Dynamische Playlist-Reihen mit Checkboxen -->
             </div>
         </div>
     </div>
@@ -313,15 +381,8 @@
         const player = new Plyr('#mainPlayer', {
             ratio: '16:9',
             controls: [
-                'play-large', // Der dicke Play-Button in der Mitte
-                'play',       // Start/Pause unten links
-                'progress',   // Fortschrittsleiste
-                'current-time', // Aktuelle Zeit
-                'duration',   // Gesamtlänge
-                'mute',       // Stummschalten
-                'volume',     // Lautstärkeregler
-                'settings',   // Zahnrad (Geschwindigkeit etc.)
-                'fullscreen'  // Vollbild-Button
+                'play-large', 'play', 'progress', 'current-time', 
+                'duration', 'mute', 'volume', 'settings', 'fullscreen' 
             ]
         });
         let ytPollInterval = null;
@@ -331,13 +392,10 @@
         let adIsPlaying = false;
         let isAdBuffering = false;
 
-        // --- HILFSFUNKTION: Ping mit Timeout ---
         async function testConnection(domain, timeoutMs = 5000) {
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-                
-                // Ping ans CDN/Stream
                 await fetch(domain + "/health", { signal: controller.signal, mode: 'no-cors' });
                 clearTimeout(timeoutId);
                 return true; 
@@ -347,7 +405,6 @@
         }
 
         async function init() {
-            // 1. INTELLIGENTER VERBINDUNGS-CHECK (NUR FÜR DAS CDN/STREAMING!)
             if (window.location.hostname.includes('ts.net')) {
                 API_DOMAIN = window.location.origin; 
                 STREAM_DOMAIN = window.location.origin;
@@ -361,10 +418,7 @@
                     console.log("Haupt-CDN ist erreichbar.");
                 } else if (tailscaleOk) {
                     console.warn("Haupt-CDN antwortet nicht, aber Tailscale ist da! Wechsle Stream-Tunnel...");
-                    
-                    // WICHTIG: NUR DIE STREAM DOMAIN WIRD AUF TAILSCALE GELEITET!
                     STREAM_DOMAIN = TAILSCALE_URL;
-                    // API_DOMAIN bleibt auf api.limazon.v6.rocks, wegen der Cookies!
                     
                     const warnBanner = document.getElementById('ipv6-warning');
                     const warnText = document.getElementById('ipv6-warning-text');
@@ -377,7 +431,6 @@
                 }
             }
 
-            // 2. Auth Status laden (läuft jetzt garantiert immer über API_DOMAIN)
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/dashboard`, fetchOptions);
                 if (res.ok) {
@@ -402,9 +455,11 @@
             const videoId = params.get('v');
             const searchQuery = params.get('q');
             const uploaderQuery = params.get('u');
+            const playlistQuery = params.get('pl');
 
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            player.stop();
+            if(player && player.playing) player.stop();
+            
             if (ytPollInterval) clearInterval(ytPollInterval);
             if (adTimer) clearInterval(adTimer);
 
@@ -412,15 +467,21 @@
                 document.getElementById('view-watch').classList.add('active');
                 loadWatchView(videoId);
                 loadSuggestions();
+            } else if (playlistQuery) {
+                document.getElementById('view-feed').classList.add('active');
+                document.getElementById('feedTitle').innerText = `Lade Playlist...`;
+                loadPlaylistFeed(playlistQuery);
             } else if (page === 'upload') {
                 document.getElementById('view-upload').classList.add('active');
             } else if (page === 'channel') {
                 document.getElementById('view-channel').classList.add('active');
                 loadDashboard();
+            } else if (page === 'playlists') {
+                document.getElementById('view-playlists').classList.add('active');
+                loadPlaylistsView();
             } else if (uploaderQuery) {
-                document.getElementById('view-feed').classList.add('active');
-                document.getElementById('feedTitle').innerText = `Kanal: ${uploaderQuery}`;
-                loadFeed(null, uploaderQuery);
+                document.getElementById('view-channel-profile').classList.add('active');
+                loadChannelProfile(uploaderQuery);
             } else if (searchQuery) {
                 document.getElementById('view-feed').classList.add('active');
                 document.getElementById('feedTitle').innerText = `Suche: "${searchQuery}"`;
@@ -466,7 +527,40 @@
                     const ytBadge = v.origin === 'youtube' ? `<span class="badge">YT</span>` : '';
                     feed.innerHTML += `
                         <a onclick="navigate('?v=${v._id}')" class="video-card">
-                            <div class="thumb"><span style="font-size:40px;">▶</span></div>
+                            <div class="thumb">${getThumbHTML(v)}</div>
+                            <div class="details">
+                                <div class="avatar" onclick="event.stopPropagation(); navigate('?u=${v.uploaderName}')">${v.uploaderName[0].toUpperCase()}</div>
+                                <div class="meta">
+                                    <span class="title">${v.title}</span>
+                                    <span class="uploader">${v.uploaderName} ${ytBadge}</span>
+                                    <span class="uploader">${v.views} Aufrufe</span>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+            } catch (e) { feed.innerHTML = `<p style="color:var(--danger);">${e.message}</p>`; }
+        }
+
+        async function loadPlaylistFeed(id) {
+            const feed = document.getElementById('videoFeed');
+            feed.innerHTML = "<p>Lade Playlist...</p>";
+
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/playlists/${id}`, fetchOptions);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                document.getElementById('feedTitle').innerText = `Playlist: ${data.playlist.title} (von ${data.playlist.username})`;
+
+                if (data.videos.length === 0) return feed.innerHTML = "<p style='color:#aaa;'>Diese Playlist ist noch leer.</p>";
+
+                feed.innerHTML = "";
+                data.videos.forEach(v => {
+                    const ytBadge = v.origin === 'youtube' ? `<span class="badge">YT</span>` : '';
+                    feed.innerHTML += `
+                        <a onclick="navigate('?v=${v._id}')" class="video-card">
+                            <div class="thumb">${getThumbHTML(v)}</div>
                             <div class="details">
                                 <div class="avatar" onclick="event.stopPropagation(); navigate('?u=${v.uploaderName}')">${v.uploaderName[0].toUpperCase()}</div>
                                 <div class="meta">
@@ -504,9 +598,6 @@
             } catch (e) { }
         }
 
-        // ==========================================
-        // WATCH VIEW & AD SYSTEM
-        // ==========================================
         async function loadWatchView(id) {
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/video/${id}`, fetchOptions);
@@ -557,13 +648,11 @@
                         adIsPlaying = true;
                         isAdBuffering = false;
                         
-                        // Quelle setzen
                         player.source = { 
                             type: 'video', 
                             sources: [{ src: `${STREAM_DOMAIN}/cdn/${adData.ad.filename}`, type: 'video/mp4' }] 
                         };
 
-                        // Warten, bis Plyr signalisiert, dass genug gepuffert wurde
                         player.once('canplaythrough', () => {
                             player.play().catch(e => console.log("Autoplay blockiert", e));
                         });
@@ -622,7 +711,6 @@
                 sources: [{ src: `${STREAM_DOMAIN}/cdn/${currentVideoObj.filename}`, type: 'video/mp4' }] 
             };
             
-            // Sauber über das Plyr-Event gesteuert, ohne manuelles document.getElementById
             player.once('canplaythrough', () => {
                 player.play().catch(e => console.log("Autoplay blockiert", e));
             });
@@ -677,7 +765,18 @@
             if (!currentVideoObj) return;
             const res = await fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/${type}`, { ...fetchOptions, method: 'POST' });
             if (res.ok) {
-                loadWatchView(currentVideoObj.id);
+                // Wir holen uns nur die neuen Stats unsichtbar im Hintergrund, OHNE den Player neu zu laden!
+                const statRes = await fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}`, fetchOptions);
+                const statData = await statRes.json();
+                const v = statData.video;
+
+                // Zahlen und Farben direkt im HTML ändern
+                document.getElementById('likeCount').innerText = v.likesCount;
+                document.getElementById('likeBtn').style.background = v.isLiked ? 'white' : 'transparent';
+                document.getElementById('likeBtn').style.color = v.isLiked ? 'black' : 'white';
+
+                document.getElementById('dislikeBtn').style.background = v.isDisliked ? 'white' : 'transparent';
+                document.getElementById('dislikeBtn').style.color = v.isDisliked ? 'black' : 'white';
             }
         }
 
@@ -724,9 +823,6 @@
             else { alert((await res.json()).error); }
         }
 
-        // ==========================================
-        // UPLOAD & YT IMPORT
-        // ==========================================
         function switchUploadTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -832,9 +928,6 @@
             }
         }
 
-        // ==========================================
-        // CREATOR STUDIO & ADMIN DASHBOARD
-        // ==========================================
         async function loadDashboard() {
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/dashboard`, fetchOptions);
@@ -964,7 +1057,6 @@
                 }
             } catch (e) { }
 
-            // Werbe-Videos laden
             try {
                 const adRes = await fetch(`${API_DOMAIN}/api/admin/limtube/ads`, fetchOptions);
                 const adData = await adRes.json();
@@ -1032,20 +1124,262 @@
             } catch(e) {}
         }
 
-        // --- HILFSFUNKTION FÜR THUMBNAILS ---
+        // --- KANAL FUNKTIONEN ---
+        let currentProfileUser = null;
+
+        function switchChannelTab(tab) {
+            document.getElementById('btn-channel-videos').classList.remove('active');
+            document.getElementById('btn-channel-playlists').classList.remove('active');
+            document.getElementById('channel-videos').style.display = 'none';
+            document.getElementById('channel-playlists').style.display = 'none';
+
+            document.getElementById(`btn-channel-${tab}`).classList.add('active');
+            document.getElementById(`channel-${tab}`).style.display = 'block';
+        }
+
+        async function loadChannelProfile(username) {
+            currentProfileUser = username;
+            document.getElementById('profileUsername').innerText = username;
+            document.getElementById('profileAvatar').innerText = username[0].toUpperCase();
+            
+            // Standardmäßig Videos-Tab anzeigen
+            switchChannelTab('videos');
+
+            const grid = document.getElementById('profileVideoGrid');
+            const plGrid = document.getElementById('profilePlaylistGrid');
+            grid.innerHTML = "<p>Lade Videos...</p>";
+            plGrid.innerHTML = "";
+
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/channel/${username}`, fetchOptions);
+                const data = await res.json();
+                if(!res.ok) throw new Error("Fehler beim Laden.");
+
+                document.getElementById('profileSubs').innerText = `${data.subscribersCount} Abonnenten`;
+                const subBtn = document.getElementById('profileSubBtn');
+                subBtn.innerText = data.isSubscribed ? "Abonniert" : "Abonnieren";
+                subBtn.className = data.isSubscribed ? "btn" : "btn btn-primary";
+                subBtn.style.display = (currentUser && currentUser.username === username) ? 'none' : 'block';
+
+                grid.innerHTML = "";
+                if(data.videos.length === 0) {
+                    grid.innerHTML = "<p style='color:#777;'>Dieser Kanal hat noch keine Videos hochgeladen.</p>";
+                } else {
+                    data.videos.forEach(v => {
+                        grid.innerHTML += `
+                            <a onclick="navigate('?v=${v._id}')" class="video-card">
+                                <div class="thumb">${getThumbHTML(v)}</div>
+                                <div class="details">
+                                    <div class="avatar">${username[0].toUpperCase()}</div>
+                                    <div class="meta">
+                                        <span class="title">${v.title}</span>
+                                        <span class="uploader">${v.views} Aufrufe</span>
+                                    </div>
+                                </div>
+                            </a>`;
+                    });
+                }
+
+                // Playlists laden
+                plGrid.innerHTML = "";
+                if (!data.playlists || data.playlists.length === 0) {
+                    plGrid.innerHTML = "<p style='color:#777;'>Dieser Kanal hat noch keine öffentlichen Playlists.</p>";
+                } else {
+                    data.playlists.forEach(pl => {
+                        plGrid.innerHTML += `
+                            <div class="playlist-box" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="navigate('?pl=${pl._id}')">
+                                <div>
+                                    <h3 class="playlist-title" style="margin:0;">${pl.title}</h3>
+                                    <div style="color:#aaa; font-size:13px; margin-top:5px;">Enthaltene Videos: ${pl.videoIds.length}</div>
+                                </div>
+                                <button class="btn btn-primary" onclick="event.stopPropagation(); navigate('?pl=${pl._id}')">▶ Ansehen</button>
+                            </div>`;
+                    });
+                }
+
+            } catch(e) {
+                grid.innerHTML = "<p style='color:var(--danger);'>Kanal konnte nicht geladen werden.</p>";
+            }
+        }
+
+        async function toggleChannelProfileSub() {
+            if(!currentProfileUser) return;
+            const res = await fetch(`${API_DOMAIN}/api/limtube/subscribe/${currentProfileUser}`, { ...fetchOptions, method: 'POST' });
+            
+            if(res.ok) {
+                const data = await res.json();
+                
+                // Button sofort live umfärben
+                const subBtn = document.getElementById('profileSubBtn');
+                subBtn.innerText = data.isSubscribed ? "Abonniert" : "Abonnieren";
+                subBtn.className = data.isSubscribed ? "btn" : "btn btn-primary";
+
+                // Die Zahl im Text live anpassen (+1 oder -1)
+                let subText = document.getElementById('profileSubs').innerText;
+                let num = parseInt(subText.split(" ")[0]) || 0;
+                num = data.isSubscribed ? num + 1 : Math.max(0, num - 1);
+                document.getElementById('profileSubs').innerText = `${num} Abonnenten`;
+            }
+        }
+
+        async function loadPlaylistsView() {
+            const container = document.getElementById('playlistsContainer');
+            container.innerHTML = "<p>Lade Playlists...</p>";
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/playlists`, fetchOptions);
+                const data = await res.json();
+                container.innerHTML = "";
+                
+                if(data.playlists.length === 0) {
+                    container.innerHTML = "<p style='color:#777;'>Du hast noch keine Playlists erstellt.</p>";
+                    return;
+                }
+
+                data.playlists.forEach(pl => {
+                    const playlistId = pl._id;
+                    const isPublic = pl.isPublic || false;
+                    const visibilityText = isPublic ? "🌍 Öffentlich" : "🔒 Privat";
+                    const visibilityBtnText = isPublic ? "Auf Privat stellen" : "Öffentlich machen";
+
+                    container.innerHTML += `
+                        <div class="playlist-box" id="pl-${playlistId}">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <h3 class="playlist-title" onclick="navigate('?pl=${playlistId}')">${pl.title}</h3>
+                                <div style="display:flex; gap:10px; align-items:center;">
+                                    <button class="btn btn-primary" onclick="navigate('?pl=${playlistId}')">▶ Ansehen</button>
+                                    <span style="font-size:12px; color:#aaa; margin-left:10px;" id="vis-text-${playlistId}">${visibilityText}</span>
+                                    <button class="btn" style="font-size:12px; padding:4px 10px;" onclick="togglePlaylistVisibility('${playlistId}', ${!isPublic})">${visibilityBtnText}</button>
+                                    ${isPublic ? `<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="sharePlaylist('${playlistId}')">🔗 Teilen</button>` : ''}
+                                    <button class="btn btn-danger" style="font-size:12px; padding:4px 10px;" onclick="deletePlaylist('${playlistId}')">Löschen</button>
+                                </div>
+                            </div>
+                            <div style="color:#aaa; font-size:13px; margin-bottom:10px;">Enthaltene Videos: ${pl.videoIds.length}</div>
+                        </div>`;
+                });
+            } catch(e) {
+                container.innerHTML = "<p style='color:var(--danger);'>Fehler beim Laden.</p>";
+            }
+        }
+
+        async function createPlaylist() {
+            const titleInput = document.getElementById('newPlaylistTitle');
+            const title = titleInput.value;
+            if(!title) return alert("Bitte Titel eingeben.");
+
+            const res = await fetch(`${API_DOMAIN}/api/limtube/playlists`, {
+                ...fetchOptions, method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title })
+            });
+            if(res.ok) {
+                titleInput.value = "";
+                loadPlaylistsView();
+            } else {
+                alert("Fehler beim Erstellen.");
+            }
+        }
+
+        async function togglePlaylistVisibility(id, newStatus) {
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/playlists/${id}/visibility`, {
+                    ...fetchOptions, method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isPublic: newStatus })
+                });
+                if(res.ok) {
+                    loadPlaylistsView(); 
+                }
+            } catch(e) {
+                alert("Fehler beim Ändern.");
+            }
+        }
+
+        function sharePlaylist(id) {
+            const shareUrl = `${window.location.origin}${window.location.pathname}?pl=${id}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert("Link in die Zwischenablage kopiert! 📋");
+            });
+        }
+
+        async function deletePlaylist(id) {
+            if(!confirm("Möchtest du diese Playlist wirklich unwiderruflich löschen?")) return;
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/playlists/${id}`, { ...fetchOptions, method: 'DELETE' });
+                if(res.ok) {
+                    document.getElementById(`pl-${id}`).remove();
+                } else {
+                    alert("Fehler beim Löschen.");
+                }
+            } catch(e) {
+                alert("Netzwerkfehler.");
+            }
+        }
+
+        async function showPlaylistModal() {
+            if (!currentVideoObj) return;
+            const modal = document.getElementById('playlistModal');
+            const list = document.getElementById('modalPlaylistList');
+            
+            modal.style.display = 'flex';
+            list.innerHTML = "<div style='padding:16px 24px; color:#aaa;'>Lade Playlists...</div>";
+
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/playlists`, fetchOptions);
+                const data = await res.json();
+                list.innerHTML = "";
+
+                if (data.playlists.length === 0) {
+                    list.innerHTML = "<div style='padding:16px 24px; color:#aaa;'>Du hast noch keine Playlists. Erstelle zuerst eine.</div>";
+                    return;
+                }
+
+                data.playlists.forEach(pl => {
+                    const isAlreadyIn = pl.videoIds.includes(currentVideoObj.id);
+                    
+                    list.innerHTML += `
+                        <label class="yt-playlist-row">
+                            <input type="checkbox" class="yt-checkbox" 
+                                   ${isAlreadyIn ? 'checked' : ''} 
+                                   onchange="togglePlaylistVideo(this, '${pl._id}')">
+                            <span style="font-size:14px; color:white;">${pl.title}</span>
+                        </label>`;
+                });
+            } catch (e) {
+                list.innerHTML = "<div style='padding:16px 24px; color:var(--danger);'>Fehler beim Laden.</div>";
+            }
+        }
+
+        async function togglePlaylistVideo(checkbox, playlistId) {
+            if (!currentVideoObj) return;
+            
+            const isAdding = checkbox.checked;
+            const action = isAdding ? 'add' : 'remove';
+            
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/playlists/${playlistId}/${action}`, {
+                    ...fetchOptions, method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ videoId: currentVideoObj.id })
+                });
+                
+                if (!res.ok) {
+                    checkbox.checked = !isAdding;
+                    alert("Aktion konnte nicht ausgeführt werden.");
+                }
+            } catch (e) {
+                checkbox.checked = !isAdding; 
+                console.error("Netzwerkfehler.");
+            }
+        }
+
         function getThumbHTML(v) {
             let src = '';
             
             if (v.origin === 'youtube') {
                 let ytId = v.ytId;
-                // Fallback für alte YT Videos, bei denen ytId nicht in der DB steht
                 if (!ytId && v.filename) {
                     const match = v.filename.match(/yt_\d+_([a-zA-Z0-9_-]{11})\.mp4/);
                     if (match) ytId = match[1];
                 }
                 if (ytId) src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
             } else if (v.thumbnail) {
-                // Für lokale Uploads
                 src = `${STREAM_DOMAIN}/cdn/${v.thumbnail}`;
             }
 
