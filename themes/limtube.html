@@ -370,10 +370,8 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
     <script>
-        // DYNAMISCHE URLS
-        let API_DOMAIN = "https://api.limazon.v6.rocks";
-        let STREAM_DOMAIN = "https://stream.limazon.v6.rocks";
-        const TAILSCALE_URL = "https://raspberrypi.tail75d81e.ts.net:8443";
+        // NUR NOCH EINE DOMAIN
+        const API_DOMAIN = "https://api.limazon.v6.rocks";
         const fetchOptions = { credentials: 'include' };
 
         let currentUser = null;
@@ -392,45 +390,7 @@
         let adIsPlaying = false;
         let isAdBuffering = false;
 
-        async function testConnection(domain, timeoutMs = 5000) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-                await fetch(domain + "/health", { signal: controller.signal, mode: 'no-cors' });
-                clearTimeout(timeoutId);
-                return true; 
-            } catch (e) {
-                return false; 
-            }
-        }
-
         async function init() {
-            if (window.location.hostname.includes('ts.net')) {
-                API_DOMAIN = window.location.origin; 
-                STREAM_DOMAIN = window.location.origin;
-            } else {
-                const [primaryOk, tailscaleOk] = await Promise.all([
-                    testConnection(STREAM_DOMAIN, 5000),
-                    testConnection(TAILSCALE_URL, 5000)
-                ]);
-
-                if (primaryOk) {
-                    console.log("Haupt-CDN ist erreichbar.");
-                } else if (tailscaleOk) {
-                    console.warn("Haupt-CDN antwortet nicht, aber Tailscale ist da! Wechsle Stream-Tunnel...");
-                    STREAM_DOMAIN = TAILSCALE_URL;
-                    
-                    const warnBanner = document.getElementById('ipv6-warning');
-                    const warnText = document.getElementById('ipv6-warning-text');
-                    if(warnBanner && warnText) {
-                        warnText.innerHTML = "⚠️ Standard-Video-Route blockiert. LimTube nutzt den sicheren Tailscale-Tunnel zum Streamen.";
-                        warnBanner.style.display = 'block';
-                    }
-                } else {
-                    console.warn("Beide Pings fehlgeschlagen. Bleibe bei Standard-URLs.");
-                }
-            }
-
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/dashboard`, fetchOptions);
                 if (res.ok) {
@@ -650,7 +610,7 @@
                         
                         player.source = { 
                             type: 'video', 
-                            sources: [{ src: `${STREAM_DOMAIN}/cdn/${adData.ad.filename}`, type: 'video/mp4' }] 
+                            sources: [{ src: `${API_DOMAIN}/cdn/${adData.ad.filename}`, type: 'video/mp4' }] 
                         };
 
                         player.once('canplaythrough', () => {
@@ -708,7 +668,7 @@
         function playMainVideo() {
             player.source = { 
                 type: 'video', 
-                sources: [{ src: `${STREAM_DOMAIN}/cdn/${currentVideoObj.filename}`, type: 'video/mp4' }] 
+                sources: [{ src: `${API_DOMAIN}/cdn/${currentVideoObj.filename}`, type: 'video/mp4' }] 
             };
             
             player.once('canplaythrough', () => {
@@ -1380,7 +1340,7 @@
                 }
                 if (ytId) src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
             } else if (v.thumbnail) {
-                src = `${STREAM_DOMAIN}/cdn/${v.thumbnail}`;
+                src = `${API_DOMAIN}/cdn/${v.thumbnail}`;
             }
 
             if (src) {

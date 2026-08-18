@@ -313,22 +313,6 @@
         function openPostModal() { document.getElementById('postModal').style.display = 'flex'; }
         function closePostModal() { document.getElementById('postModal').style.display = 'none'; }
 
-        async function getMediaUrl() {
-            const cachedUrl = sessionStorage.getItem('limo_media_url');
-            if (cachedUrl) return cachedUrl;
-            const ipv6Url = 'https://stream.limazon.v6.rocks/cdn/';
-            const ipv4Url = 'https://raspberrypi.tail75d81e.ts.net:8443/cdn/';
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 1500);
-                await fetch('https://stream.limazon.v6.rocks/health', { signal: controller.signal, mode: 'no-cors' });
-                clearTimeout(timeoutId);
-                sessionStorage.setItem('limo_media_url', ipv6Url); return ipv6Url;
-            } catch (error) {
-                sessionStorage.setItem('limo_media_url', ipv4Url); return ipv4Url;
-            }
-        }
-
         function timeSince(dateString) {
             const date = new Date(dateString);
             const seconds = Math.floor((new Date() - date) / 1000);
@@ -403,7 +387,7 @@
             document.getElementById('createPostBox').style.display = 'none';
             
             try {
-                const baseCdnUrl = await getMediaUrl();
+                const baseCdnUrl = API_URL + '/cdn/';
                 const res = await fetch(`${API_URL}/api/limabook/post/${postId}`, { credentials: 'include' });
                 if (!res.ok) throw new Error();
                 const data = await res.json();
@@ -467,7 +451,7 @@
         // --- CORE LOGIK ---
         async function loadPosts() {
             try {
-                const baseCdnUrl = await getMediaUrl();
+                const baseCdnUrl = API_URL + '/cdn/';
                 
                 let url = `${API_URL}/api/limabook/feed?limit=50`;
                 if (currentContext.type === 'profile') url += `&username=${encodeURIComponent(currentContext.query)}`;
