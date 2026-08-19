@@ -101,6 +101,9 @@
         .upload-box { max-width: 600px; margin: 50px auto; background: #181818; padding: 40px; border-radius: 16px; border: 1px solid #333; text-align: center; }
         .form-input { width: 100%; padding: 12px; background: #0f0f0f; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
         .form-input:focus { border-color: var(--accent); outline: none; }
+        
+        .yt-select { background: #121212; color: white; border: 1px solid #444; padding: 6px 12px; border-radius: 8px; cursor: pointer; outline: none; font-size: 13px; }
+        .yt-select:hover { border-color: #777; }
 
         .tab-bar { display: flex; border-bottom: 1px solid #333; margin-bottom: 20px; overflow-x: auto; }
         .tab-btn { flex: 1; background: none; border: none; color: #888; padding: 10px; cursor: pointer; font-weight: bold; font-size: 16px; white-space: nowrap; }
@@ -116,7 +119,9 @@
         .close-warning:hover { opacity: 1; }
 
         .channel-header { background: #1e1e1e; padding: 30px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; border: 1px solid #333; }
-        .playlist-box { background: #181818; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; transition: 0.2s; }
+        
+        .playlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .playlist-box { background: #181818; padding: 20px; border-radius: 12px; border: 1px solid #333; transition: 0.2s; display:flex; flex-direction:column; justify-content:space-between;}
         .playlist-box:hover { border-color: #555; }
         .playlist-title { margin:0; color:var(--text); cursor:pointer; font-size:20px; font-weight:bold; }
         .playlist-title:hover { color:white; text-decoration:underline; }
@@ -154,7 +159,7 @@
         </form>
 
         <div class="user-controls">
-            <a onclick="navigate('?p=playlists')" class="icon-btn" title="Playlists">📂</a>
+            <a onclick="navigate('?p=playlists')" class="icon-btn" title="Meine Bibliothek">📂</a>
             <a onclick="navigate('?p=upload')" class="icon-btn" title="Upload">
                 <svg viewBox="0 0 24 24">
                     <path d="M14 13V17H10V13H7L12 8L17 13H14M23 12L19 8V4H15L12 1L9 4H5V8L1 12H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V12H23Z" />
@@ -201,7 +206,7 @@
                             <button id="dislikeBtn" class="btn" style="border-radius:0;" onclick="toggleRate('dislike')">👎</button>
                         </div>
                         
-                        <button class="btn btn-secondary" onclick="showPlaylistModal()">💾 Speichern</button>
+                        <button class="btn btn-secondary" onclick="showPlaylistModal()">➕ Speichern</button>
 
                         <button class="btn btn-secondary" onclick="reportVideo()">🚩 Melden</button>
                         <button id="delBtn" class="btn btn-danger" style="display:none;" onclick="deleteVideo()">Löschen</button>
@@ -244,14 +249,24 @@
             <div id="tab-file" class="tab-content active">
                 <input type="text" id="upTitle" class="form-input" placeholder="Video Titel (min 5 Z.)">
                 <textarea id="upDesc" class="form-input" rows="4" placeholder="Beschreibung"></textarea>
+                
+                <div style="text-align: left; margin-bottom: 15px;">
+                    <label style="color:#aaa; font-size:13px; margin-bottom:5px; display:block;">Sichtbarkeit</label>
+                    <select id="upVisibility" class="form-input yt-select" style="cursor:pointer; margin-bottom:0;">
+                        <option value="public">🌍 Öffentlich (Für jeden sichtbar)</option>
+                        <option value="unlisted">🔗 Nicht gelistet (Nur mit Link oder in Playlists)</option>
+                        <option value="private">🔒 Privat (Nur für dich)</option>
+                    </select>
+                </div>
+
                 <input type="file" id="upFile" accept=".mp4" style="margin-bottom:20px; color:#aaa; width:100%;">
                 <button class="btn btn-primary" id="doUploadBtn" style="width:100%;" onclick="startUpload()">Hochladen</button>
                 <div id="upStatus" style="margin-top:15px; font-size:14px; color:#aaa;"></div>
             </div>
 
             <div id="tab-yt" class="tab-content">
-                <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Füge die YouTube Video-ID (11 Zeichen, z.B. <i>dQw4w9WgXcQ</i>) ein, um das Video ins CDN zu ziehen.</p>
-                <input type="text" id="ytIdInput" class="form-input" placeholder="YouTube Video ID">
+                <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Füge die YouTube Video-ID ein, um das Video ins CDN zu ziehen. Wird standardmäßig als Öffentlich gespeichert.</p>
+                <input type="text" id="ytIdInput" class="form-input" placeholder="YouTube Video ID (z.B. dQw4w9WgXcQ)">
                 <button class="btn btn-danger" id="doYtBtn" style="width:100%; color:white;" onclick="startYoutubeImport()">Von YouTube Importieren</button>
 
                 <div id="ytProgressBarBg" class="progress-bar-bg">
@@ -326,31 +341,35 @@
             <button id="profileSubBtn" class="btn btn-primary" onclick="toggleChannelProfileSub()">Abonnieren</button>
         </div>
         
-        <!-- YOUTUBE-STYLE KANAL TABS -->
         <div class="tab-bar">
             <button class="tab-btn active" id="btn-channel-videos" onclick="switchChannelTab('videos')">Videos</button>
             <button class="tab-btn" id="btn-channel-playlists" onclick="switchChannelTab('playlists')">Playlists</button>
         </div>
 
-        <!-- Tab 1: Videos des Kanals -->
         <div id="channel-videos" class="tab-content active">
             <div class="video-grid" id="profileVideoGrid"></div>
         </div>
 
-        <!-- Tab 2: Öffentliche Playlists des Kanals -->
         <div id="channel-playlists" class="tab-content">
-            <div id="profilePlaylistGrid" style="display:flex; flex-direction:column; gap:15px;"></div>
+            <div class="playlist-grid" id="profilePlaylistGrid"></div>
         </div>
     </div>
 
     <!-- 6. PLAYLISTS VIEW -->
     <div id="view-playlists" class="view-section container">
-        <h2>Meine Playlists</h2>
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="newPlaylistTitle" class="form-input" placeholder="Neue Playlist Name..." style="max-width:300px; margin:0;">
-            <button class="btn btn-primary" onclick="createPlaylist()">Erstellen</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0;">Bibliothek & Playlists</h2>
         </div>
-        <div id="playlistsContainer"></div>
+        
+        <div style="background:#181818; padding:20px; border-radius:12px; border:1px solid #333; margin-bottom:30px; display:inline-block;">
+            <h4 style="margin:0 0 10px 0; color:#aaa;">Neue Playlist erstellen</h4>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="newPlaylistTitle" class="form-input" placeholder="Name der Playlist..." style="max-width:300px; margin:0;">
+                <button class="btn btn-primary" onclick="createPlaylist()">Erstellen</button>
+            </div>
+        </div>
+
+        <div id="playlistsContainer" class="playlist-grid"></div>
     </div>
 
     <!-- 7. YOUTUBE STYLE PLAYLIST MODAL -->
@@ -360,8 +379,12 @@
                 <h3>Speichern in...</h3>
                 <button class="yt-close-btn" onclick="document.getElementById('playlistModal').style.display='none'">✖</button>
             </div>
-            <div id="modalPlaylistList" style="padding:12px 0; max-height:300px; overflow-y:auto;">
+            <div id="modalPlaylistList" style="padding:12px 0; max-height:250px; overflow-y:auto;">
                 <!-- Dynamische Playlist-Reihen mit Checkboxen -->
+            </div>
+            <div id="modalCreatePl" style="padding: 15px 24px; border-top: 1px solid #3d3d3d; display:flex; gap:10px; background:#1a1a1a; border-radius: 0 0 12px 12px;">
+                <input type="text" id="modalNewPlName" placeholder="Neue Playlist..." style="flex:1; background:transparent; border:none; border-bottom:1px solid #555; color:white; outline:none; font-size:14px;">
+                <button class="btn" style="background:var(--accent); color:white; font-size:13px;" onclick="createPlaylistFromModal()">+ Erstellen</button>
             </div>
         </div>
     </div>
@@ -370,7 +393,6 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
     <script>
-        // NUR NOCH EINE DOMAIN
         const API_DOMAIN = "https://api.limazon.v6.rocks";
         const fetchOptions = { credentials: 'include' };
 
@@ -562,7 +584,7 @@
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/video/${id}`, fetchOptions);
                 const data = await res.json();
-                if (!res.ok) { alert("Video nicht gefunden."); return navigate('?'); }
+                if (!res.ok) { alert(data.error || "Video nicht gefunden."); return navigate('?'); }
 
                 const v = data.video;
                 currentVideoObj = v;
@@ -725,12 +747,10 @@
             if (!currentVideoObj) return;
             const res = await fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/${type}`, { ...fetchOptions, method: 'POST' });
             if (res.ok) {
-                // Wir holen uns nur die neuen Stats unsichtbar im Hintergrund, OHNE den Player neu zu laden!
                 const statRes = await fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}`, fetchOptions);
                 const statData = await statRes.json();
                 const v = statData.video;
 
-                // Zahlen und Farben direkt im HTML ändern
                 document.getElementById('likeCount').innerText = v.likesCount;
                 document.getElementById('likeBtn').style.background = v.isLiked ? 'white' : 'transparent';
                 document.getElementById('likeBtn').style.color = v.isLiked ? 'black' : 'white';
@@ -794,6 +814,7 @@
         async function startUpload() {
             const title = document.getElementById('upTitle').value;
             const file = document.getElementById('upFile').files[0];
+            const visibility = document.getElementById('upVisibility').value;
             const status = document.getElementById('upStatus');
             const btn = document.getElementById('doUploadBtn');
 
@@ -803,6 +824,7 @@
             const fd = new FormData();
             fd.append('title', title);
             fd.append('description', document.getElementById('upDesc').value);
+            fd.append('visibility', visibility);
             fd.append('video', file);
 
             status.innerHTML = "Lade hoch... (Bitte warten)";
@@ -816,7 +838,7 @@
                     setTimeout(() => {
                         document.getElementById('upTitle').value = ""; document.getElementById('upFile').value = "";
                         status.innerHTML = ""; btn.disabled = false;
-                        navigate('?');
+                        navigate('?p=channel');
                     }, 1000);
                 } else {
                     status.innerHTML = `<span style='color:var(--danger)'>${data.error}</span>`;
@@ -904,6 +926,10 @@
                     list.innerHTML = "<p style='color:#777;'>Du hast noch keine Videos hochgeladen.</p>";
                 } else {
                     data.videos.forEach(v => {
+                        const isPublic = v.visibility === 'public';
+                        const isUnlisted = v.visibility === 'unlisted';
+                        const isPrivate = v.visibility === 'private';
+                        
                         list.innerHTML += `
                         <div style="display:flex; align-items:center; justify-content:space-between; background:#1e1e1e; padding:15px; border-radius:10px;">
                             <div style="display:flex; align-items:center; gap:15px; cursor:pointer;" onclick="navigate('?v=${v.id}')">
@@ -915,7 +941,14 @@
                                     <div style="color:#aaa; font-size:12px;">Aufrufe: ${v.views} | Erstellt: ${new Date(v.createdAt).toLocaleDateString()}</div>
                                 </div>
                             </div>
-                            <button class="btn btn-danger" onclick="deleteVideoDash('${v.id}')">Löschen</button>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <select class="yt-select" onchange="updateVideoVisibility('${v.id}', this.value)">
+                                    <option value="public" ${isPublic ? 'selected' : ''}>🌍 Öffentlich</option>
+                                    <option value="unlisted" ${isUnlisted ? 'selected' : ''}>🔗 Nicht gelistet</option>
+                                    <option value="private" ${isPrivate ? 'selected' : ''}>🔒 Privat</option>
+                                </select>
+                                <button class="btn btn-danger" onclick="deleteVideoDash('${v.id}')">Löschen</button>
+                            </div>
                         </div>`;
                     });
                 }
@@ -929,6 +962,18 @@
 
             } catch (e) {
                 alert(e.message);
+            }
+        }
+
+        async function updateVideoVisibility(id, newVisibility) {
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/video/${id}/visibility`, {
+                    ...fetchOptions, method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ visibility: newVisibility })
+                });
+                if (!res.ok) alert("Konnte Sichtbarkeit nicht ändern.");
+            } catch (e) {
+                alert("Netzwerkfehler.");
             }
         }
 
@@ -1102,7 +1147,6 @@
             document.getElementById('profileUsername').innerText = username;
             document.getElementById('profileAvatar').innerText = username[0].toUpperCase();
             
-            // Standardmäßig Videos-Tab anzeigen
             switchChannelTab('videos');
 
             const grid = document.getElementById('profileVideoGrid');
@@ -1123,16 +1167,17 @@
 
                 grid.innerHTML = "";
                 if(data.videos.length === 0) {
-                    grid.innerHTML = "<p style='color:#777;'>Dieser Kanal hat noch keine Videos hochgeladen.</p>";
+                    grid.innerHTML = "<p style='color:#777;'>Dieser Kanal hat keine öffentlichen Videos.</p>";
                 } else {
                     data.videos.forEach(v => {
+                        const visibilityIcon = v.visibility === 'unlisted' ? '🔗 ' : (v.visibility === 'private' ? '🔒 ' : '');
                         grid.innerHTML += `
                             <a onclick="navigate('?v=${v._id}')" class="video-card">
                                 <div class="thumb">${getThumbHTML(v)}</div>
                                 <div class="details">
                                     <div class="avatar">${username[0].toUpperCase()}</div>
                                     <div class="meta">
-                                        <span class="title">${v.title}</span>
+                                        <span class="title">${visibilityIcon}${v.title}</span>
                                         <span class="uploader">${v.views} Aufrufe</span>
                                     </div>
                                 </div>
@@ -1169,12 +1214,10 @@
             if(res.ok) {
                 const data = await res.json();
                 
-                // Button sofort live umfärben
                 const subBtn = document.getElementById('profileSubBtn');
                 subBtn.innerText = data.isSubscribed ? "Abonniert" : "Abonnieren";
                 subBtn.className = data.isSubscribed ? "btn" : "btn btn-primary";
 
-                // Die Zahl im Text live anpassen (+1 oder -1)
                 let subText = document.getElementById('profileSubs').innerText;
                 let num = parseInt(subText.split(" ")[0]) || 0;
                 num = data.isSubscribed ? num + 1 : Math.max(0, num - 1);
@@ -1191,7 +1234,7 @@
                 container.innerHTML = "";
                 
                 if(data.playlists.length === 0) {
-                    container.innerHTML = "<p style='color:#777;'>Du hast noch keine Playlists erstellt.</p>";
+                    container.innerHTML = "<p style='color:#777; grid-column:1/-1;'>Du hast noch keine Playlists erstellt.</p>";
                     return;
                 }
 
@@ -1203,21 +1246,20 @@
 
                     container.innerHTML += `
                         <div class="playlist-box" id="pl-${playlistId}">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <div>
                                 <h3 class="playlist-title" onclick="navigate('?pl=${playlistId}')">${pl.title}</h3>
-                                <div style="display:flex; gap:10px; align-items:center;">
-                                    <button class="btn btn-primary" onclick="navigate('?pl=${playlistId}')">▶ Ansehen</button>
-                                    <span style="font-size:12px; color:#aaa; margin-left:10px;" id="vis-text-${playlistId}">${visibilityText}</span>
-                                    <button class="btn" style="font-size:12px; padding:4px 10px;" onclick="togglePlaylistVisibility('${playlistId}', ${!isPublic})">${visibilityBtnText}</button>
-                                    ${isPublic ? `<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="sharePlaylist('${playlistId}')">🔗 Teilen</button>` : ''}
-                                    <button class="btn btn-danger" style="font-size:12px; padding:4px 10px;" onclick="deletePlaylist('${playlistId}')">Löschen</button>
-                                </div>
+                                <div style="color:#aaa; font-size:13px; margin:10px 0;">Videos: ${pl.videoIds.length} | <span id="vis-text-${playlistId}">${visibilityText}</span></div>
                             </div>
-                            <div style="color:#aaa; font-size:13px; margin-bottom:10px;">Enthaltene Videos: ${pl.videoIds.length}</div>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
+                                <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="navigate('?pl=${playlistId}')">▶</button>
+                                <button class="btn" style="flex:1; justify-content:center; font-size:12px;" onclick="togglePlaylistVisibility('${playlistId}', ${!isPublic})">${visibilityBtnText}</button>
+                                ${isPublic ? `<button class="btn" style="flex:1; justify-content:center; font-size:12px;" onclick="sharePlaylist('${playlistId}')">🔗 Teilen</button>` : ''}
+                                <button class="btn btn-danger" style="flex:1; justify-content:center; font-size:12px;" onclick="deletePlaylist('${playlistId}')">Löschen</button>
+                            </div>
                         </div>`;
                 });
             } catch(e) {
-                container.innerHTML = "<p style='color:var(--danger);'>Fehler beim Laden.</p>";
+                container.innerHTML = "<p style='color:var(--danger); grid-column:1/-1;'>Fehler beim Laden.</p>";
             }
         }
 
@@ -1233,6 +1275,26 @@
             if(res.ok) {
                 titleInput.value = "";
                 loadPlaylistsView();
+            } else {
+                alert("Fehler beim Erstellen.");
+            }
+        }
+        
+        async function createPlaylistFromModal() {
+            const titleInput = document.getElementById('modalNewPlName');
+            const title = titleInput.value;
+            if(!title) return alert("Bitte Titel eingeben.");
+
+            const res = await fetch(`${API_DOMAIN}/api/limtube/playlists`, {
+                ...fetchOptions, method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title })
+            });
+            if(res.ok) {
+                titleInput.value = "";
+                // Nach dem Erstellen sofort neu laden und anhaken!
+                const data = await res.json();
+                await togglePlaylistVideo({checked: true}, data.playlist.id);
+                showPlaylistModal(); // Modal neu laden
             } else {
                 alert("Fehler beim Erstellen.");
             }
@@ -1287,7 +1349,7 @@
                 list.innerHTML = "";
 
                 if (data.playlists.length === 0) {
-                    list.innerHTML = "<div style='padding:16px 24px; color:#aaa;'>Du hast noch keine Playlists. Erstelle zuerst eine.</div>";
+                    list.innerHTML = "<div style='padding:16px 24px; color:#aaa;'>Du hast noch keine Playlists. Erstelle unten eine.</div>";
                     return;
                 }
 
