@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limo Print Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Styles für Dinge, die Tailwind nicht out-of-the-box kann */
+        body {
+            background-color: #0b0c10;
+            background-image: radial-gradient(circle at top right, #1f2937 0%, transparent 40%),
+                              radial-gradient(circle at bottom left, #164e63 0%, transparent 40%);
+            background-attachment: fixed;
+            color: #e2e8f0;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Die leuchtende Filament-Fortschrittsleiste */
+        .neon-progress {
+            background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981);
+            background-size: 200% 200%;
+            animation: flow 2s linear infinite;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+            transition: width 1s linear;
+        }
+
+        @keyframes flow {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Custom Scrollbar für die Textboxen */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 font-sans">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-12 relative">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 bg-cyan-500/20 blur-[100px] -z-10"></div>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 tracking-tight mb-2">
+                Limality Print Studio
+            </h1>
+            <p class="text-slate-400 font-mono text-sm tracking-widest uppercase">K1C Control Interface</p>
+        </div>
+
+        <div id="no-printer-warning" class="hidden glass-panel border-red-500/30 bg-red-900/10 text-red-400 p-6 rounded-2xl text-center max-w-2xl mx-auto mb-10 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
+            <span class="text-3xl block mb-2">⚠️</span>
+            <h3 class="text-lg font-bold">Kein 3D-Drucker gefunden</h3>
+            <p class="text-sm mt-1">Du besitzt noch keinen Drucker. Besuche den Limazon Shop, um dir das nötige Equipment zu kaufen.</p>
+        </div>
+
+        <div id="active-job-section" class="hidden max-w-3xl mx-auto mb-12">
+            <div class="glass-panel rounded-3xl p-6 md:p-8 border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.1)] relative overflow-hidden">
+                
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                    <div class="flex-shrink-0 w-32 h-32 bg-slate-900/80 rounded-2xl border border-slate-700/50 flex items-center justify-center text-6xl shadow-inner relative">
+                        <span id="job-icon" class="animate-pulse">🖨️</span>
+                        <div class="absolute inset-0 rounded-2xl ring-1 ring-inset ring-cyan-500/20"></div>
+                    </div>
+                    
+                    <div class="flex-grow w-full">
+                        <div class="flex justify-between items-end mb-2">
+                            <div>
+                                <p class="text-cyan-400 text-xs font-bold tracking-wider uppercase mb-1 flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> Druck läuft
+                                </p>
+                                <h3 id="job-name" class="text-2xl font-bold text-white">Lade Datei...</h3>
+                            </div>
+                            <span id="job-percent" class="text-3xl font-light text-slate-300 font-mono">0%</span>
+                        </div>
+
+                        <div class="h-3 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-700/50 mb-3">
+                            <div id="print-progress" class="h-full w-0 neon-progress rounded-full"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center text-sm font-mono text-slate-400">
+                            <span class="flex items-center gap-1">⏱️ <span id="job-time-left">Berechne...</span></span>
+                            <span>Temp: 220°C / 60°C</span>
+                        </div>
+
+                        <button id="claim-print-btn" onclick="claimPrint()" class="hidden w-full mt-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                            Druckplatte abkühlen & Objekt entnehmen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="model-list-section" class="hidden">
+            <div class="flex items-center justify-between mb-6 px-2">
+                <h3 class="text-xl font-bold text-slate-200">Verfügbare STL-Dateien</h3>
+                <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full border border-slate-700">Bereit zum Slicen</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="models-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.limazon.v6.rocks';
+        let printTimerInterval = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchPrinterStatus();
+        });
+
+        async function fetchPrinterStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/3dprint/status`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.error) return alert(data.error);
+
+                if (!data.hasPrinter) {
+                    document.getElementById('no-printer-warning').classList.remove('hidden');
+                    document.getElementById('active-job-section').classList.add('hidden');
+                    document.getElementById('model-list-section').classList.add('hidden');
+                    return;
+                }
+
+                if (data.activeJob) {
+                    showActiveJob(data.activeJob);
+                } else {
+                    showAvailableModels(data.availableModels);
+                }
+            } catch (err) {
+                console.error("Fehler beim Laden des Druckers:", err);
+            }
+        }
+
+        function showAvailableModels(models) {
+            document.getElementById('no-printer-warning').classList.add('hidden');
+            document.getElementById('active-job-section').classList.add('hidden');
+            document.getElementById('model-list-section').classList.remove('hidden');
+
+            const grid = document.getElementById('models-grid');
+            grid.innerHTML = '';
+
+            models.forEach(model => {
+                const timeStr = model.printTimeMinutes >= 60 
+                    ? `${(model.printTimeMinutes / 60).toFixed(1)}h` 
+                    : `${model.printTimeMinutes}m`;
+                
+                const successColor = model.successChance >= 0.8 ? 'text-emerald-400' : (model.successChance >= 0.5 ? 'text-yellow-400' : 'text-red-400');
+
+                const card = document.createElement('div');
+                card.className = 'glass-panel rounded-2xl p-6 flex flex-col justify-between group hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(6,182,212,0.1)]';
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-5xl transform group-hover:scale-110 transition-transform duration-300 group-hover:rotate-3">${model.icon}</div>
+                            <div class="text-right">
+                                <span class="bg-slate-900/80 border border-slate-700 text-slate-300 text-xs font-mono px-2 py-1 rounded-md block mb-1">⏱️ ${timeStr}</span>
+                                <span class="bg-slate-900/80 border border-slate-700 text-slate-300 text-xs font-mono px-2 py-1 rounded-md block">🧵 ${model.filamentCost}x ${model.filamentName}</span>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">${model.name}</h4>
+                        <p class="text-slate-400 text-sm mb-4 h-10 overflow-hidden leading-tight">${model.desc}</p>
+                        
+                        <div class="bg-slate-900/50 rounded-lg p-3 mb-5 border border-slate-700/50 flex justify-between items-center">
+                            <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">Erfolgschance</span>
+                            <span class="text-sm font-bold font-mono ${successColor}">${Math.round(model.successChance * 100)}%</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="startPrint('${model.id}')" class="w-full bg-slate-800 hover:bg-gradient-to-r hover:from-cyan-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl border border-slate-600 hover:border-transparent transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                        Slice & Print
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function showActiveJob(job) {
+            document.getElementById('no-printer-warning').classList.add('hidden');
+            document.getElementById('model-list-section').classList.add('hidden');
+            document.getElementById('active-job-section').classList.remove('hidden');
+
+            document.getElementById('job-icon').innerText = job.icon;
+            document.getElementById('job-name').innerText = job.modelName;
+
+            if (printTimerInterval) clearInterval(printTimerInterval);
+
+            const startTime = new Date(job.startTime).getTime();
+            const finishTime = new Date(job.finishTime).getTime();
+            const totalDuration = finishTime - startTime;
+
+            const btn = document.getElementById('claim-print-btn');
+            const progressFill = document.getElementById('print-progress');
+            const percentText = document.getElementById('job-percent');
+            const timeLeftText = document.getElementById('job-time-left');
+
+            btn.classList.add('hidden');
+            progressFill.classList.add('neon-progress');
+
+            printTimerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const elapsed = now - startTime;
+
+                if (now >= finishTime) {
+                    clearInterval(printTimerInterval);
+                    progressFill.style.width = '100%';
+                    progressFill.classList.remove('neon-progress');
+                    progressFill.classList.add('bg-emerald-500'); // Wird grün wenn fertig
+                    percentText.innerText = '100%';
+                    percentText.classList.add('text-emerald-400');
+                    timeLeftText.innerText = 'Druck abgeschlossen.';
+                    btn.classList.remove('hidden');
+                } else {
+                    const percent = Math.max(0, Math.min(100, (elapsed / totalDuration) * 100));
+                    progressFill.style.width = `${percent}%`;
+                    percentText.innerText = `${percent.toFixed(1)}%`;
+
+                    const msLeft = finishTime - now;
+                    const h = Math.floor(msLeft / (1000 * 60 * 60));
+                    const m = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((msLeft % (1000 * 60)) / 1000);
+                    
+                    if (h > 0) {
+                        timeLeftText.innerText = `${h}h ${m}m verbleibend`;
+                    } else {
+                        timeLeftText.innerText = `${m}m ${s}s verbleibend`;
+                    }
+                }
+            }, 1000);
+        }
+
+        async function startPrint(modelId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/3dprint/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ modelId }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                
+                if (data.error) return alert(data.error);
+                
+                fetchPrinterStatus();
+            } catch (e) {
+                console.error("Fehler beim Starten:", e);
+            }
+        }
+
+        async function claimPrint() {
+            try {
+                const res = await fetch(`${API_BASE}/api/3dprint/claim`, { 
+                    method: 'POST',
+                    credentials: 'include' 
+                });
+                const data = await res.json();
+                
+                if (data.error) return alert(data.error);
+
+                // Kleines Delay für das UI-Feeling
+                setTimeout(() => {
+                    alert(data.message);
+                    document.getElementById('job-percent').classList.remove('text-emerald-400');
+                    document.getElementById('print-progress').classList.remove('bg-emerald-500');
+                    fetchPrinterStatus();
+                }, 300);
+                
+            } catch (e) {
+                console.error("Fehler beim Einsammeln:", e);
+            }
+        }
+    </script>
+</body>
+</html>
