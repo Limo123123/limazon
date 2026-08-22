@@ -300,6 +300,11 @@
                     <label class="text-cyan-400 font-bold select-none cursor-pointer" for="edit-u-infinity">∞ Infinity Money</label>
                 </div>
 
+                <div class="flex items-center gap-2 p-2 bg-slate-800 rounded border border-orange-900/50">
+                    <input id="edit-u-deactivated" type="checkbox" class="w-4 h-4 text-orange-500">
+                    <label class="text-orange-400 font-bold select-none cursor-pointer" for="edit-u-deactivated">Account deaktiviert (Soft Block)</label>
+                </div>
+
                 <hr class="border-slate-700">
                 <div><label class="text-xs text-red-400">Passwort Reset (optional)</label><input id="edit-u-pass" type="text" placeholder="Neues Passwort" class="input-dark border-red-900/50"></div>
             </div>
@@ -532,6 +537,9 @@
                 if (u.infinityMoney || u.unlockedInfinityMoney) {
                     badges += '<span class="bg-cyan-900 text-cyan-300 text-xs px-2 py-1 rounded border border-cyan-700">∞</span>';
                 }
+                if (u.isDeactivated) {
+                    badges += '<span class="bg-orange-600 text-xs px-2 py-1 rounded border border-orange-700 ml-1">DEAKTIVIERT</span>';
+                }
                 if (badges === "") badges = '<span class="text-slate-500 text-xs">User</span>';
 
                 return `
@@ -599,6 +607,7 @@
 
             document.getElementById('edit-u-admin').checked = u.isAdmin || false;
             document.getElementById('edit-u-infinity').checked = u.infinityMoney || u.unlockedInfinityMoney || false;
+            document.getElementById('edit-u-deactivated').checked = u.isDeactivated || false;
 
             document.getElementById('edit-u-pass').value = "";
             document.getElementById('modal-user').classList.remove('hidden');
@@ -613,6 +622,7 @@
                 tokens: document.getElementById('edit-u-tok').value,
                 role: isAdminChecked ? 'admin' : 'user',
                 infinityMoney: document.getElementById('edit-u-infinity').checked,
+                isDeactivated: document.getElementById('edit-u-deactivated').checked
             };
 
             await fetch(API + '/api/admin/users/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'include' });
