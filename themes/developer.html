@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer API | Limazon</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+        }
+
+        .glass-header {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card {
+            background: #121212;
+            border: 1px solid #222;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            background: #181818;
+            padding: 16px 20px;
+            border-bottom: 1px solid #222;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-dark {
+            background: #050505;
+            border: 1px solid #333;
+            color: white;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            outline: none;
+        }
+
+        .code-block {
+            background: #050505;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: monospace;
+            color: #dcdcdc;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+
+<body class="min-h-screen selection:bg-blue-500 selection:text-white pb-20">
+
+    <!-- Hintergrund Effekte -->
+    <div class="fixed inset-0 z-[-1]" id="bgEffects">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiPjxwb2x5Z29uIHBvaW50cz0iNjAsMCA2MCw2MCAwLDYwIi8+PC9nPjwvc3ZnPg==')] opacity-20"></div>
+    </div>
+
+    <!-- Sticky Top Navigation -->
+    <header class="glass-header sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-3 sm:gap-6">
+                <a href="../index.html" class="text-gray-400 hover:text-white transition flex items-center gap-2 text-sm font-medium">
+                    <span>←</span> <span class="hidden sm:inline">Hub</span>
+                </a>
+                <div class="h-6 w-px bg-gray-800"></div>
+                <h1 class="text-lg font-bold tracking-tight">Limazon<span class="text-blue-500">.</span>Dev</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        
+        <div class="mb-8 text-center sm:text-left">
+            <h2 class="text-3xl font-bold text-white mb-2">Developer Dashboard</h2>
+            <p class="text-gray-400 max-w-2xl">Verwalte deine API-Zugänge, finde Repositories und baue eigene Tools für das Limazon-Ökosystem.</p>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
+            
+            <!-- LINKE SPALTE (API Keys) -->
+            <div class="xl:col-span-2 flex flex-col gap-6 sm:gap-8">
+                
+                <!-- Neu generieren Box -->
+                <div class="card p-5 sm:p-8 border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.05)] bg-gray-900/40">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-2">Neuer API Key</h2>
+                    <p class="text-sm text-gray-400 mb-6">Erstelle einen neuen Zugangsschlüssel für dein Projekt.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="keyNameInput" placeholder="Name (z.B. Python Discord Bot)" 
+                            class="flex-1 px-4 py-3 bg-black border border-gray-700 rounded-xl text-white input-glow focus:outline-none w-full">
+                        
+                        <button id="generateBtn" onclick="generateKey()"
+                            class="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.3)] shrink-0">
+                            Generieren
+                        </button>
+                    </div>
+                    <div id="createStatus" class="mt-4 text-sm font-bold text-center sm:text-left"></div>
+                </div>
+
+                <!-- Neues Key Alert (Erscheint nur nach dem Erstellen) -->
+                <div id="newKeyBox" class="hidden border border-green-500 shadow-[0_0_40px_rgba(76,175,80,0.15)] bg-green-950/30 p-5 sm:p-8 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-3xl">⚠️</span>
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-bold text-green-400">Speichere diesen Key sofort!</h2>
+                            <p class="text-xs sm:text-sm text-gray-300">Aus Sicherheitsgründen wird er nie wieder komplett angezeigt.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="newKeyValue" class="w-full bg-black border border-green-500/50 p-4 rounded-xl font-mono text-green-400 break-all mb-4 text-base sm:text-lg select-all"></div>
+                    
+                    <button onclick="copyNewKey()" class="w-full py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                        <span>📋</span> In die Zwischenablage kopieren
+                    </button>
+                </div>
+
+                <!-- Liste der aktiven Keys -->
+                <div class="card flex-1 min-h-[400px]">
+                    <div class="card-header border-b border-gray-800">
+                        <h2 class="text-lg sm:text-xl font-bold">Aktive API Keys</h2>
+                    </div>
+                    <div class="p-5 sm:p-8 flex-1 flex flex-col">
+                        <div id="keysContainer" class="flex flex-col gap-4 flex-1">
+                            <p class="text-gray-500 animate-pulse text-sm">Lade gesicherte Verbindung...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RECHTE SPALTE (Ressourcen & Doku) -->
+            <div class="flex flex-col gap-6 sm:gap-8">
+                
+                <!-- Dokumentation Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="flex items-center gap-2">
+                            <span>📖</span> Dokumentation
+                        </div>
+                    </div>
+                    <div class="p-5 sm:p-6">
+                        <p class="text-sm text-gray-400 mb-5">Lies die offizielle Dokumentation, um alle Endpunkte, Parameter und Funktionen der Limazon API kennenzulernen.</p>
+                        
+                        <a href="https://git.slimo.v6.rocks/limazon/nodejs/~files/main/documentation.md" target="_blank" 
+                           class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-xl transition flex items-center justify-center gap-2 border border-gray-700 mb-6 group">
+                            <span>📄</span> Zur vollständigen API-Doku
+                            <span class="group-hover:translate-x-1 transition-transform">→</span>
+                        </a>
+
+                        <h5 class="text-sm font-bold text-white mb-2">Beispiel-Aufruf (Header):</h5>
+                        <div class="code-block text-xs sm:text-sm">
+<span class="code-keyword">const</span> headers = {
+  <span class="code-string">"x-api-key"</span>: <span class="code-string">"limo_abc123..."</span>,
+  <span class="code-string">"Content-Type"</span>: <span class="code-string">"application/json"</span>
+};
+
+<span class="code-keyword">fetch</span>(<span class="code-string">"https://api.limazon.v6.rocks/api/auth/me"</span>, { headers })
+  .then(res => res.json())
+  .then(console.log);
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repositories -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="flex items-center gap-2">
+                            <span>📦</span> Repositories
+                        </div>
+                    </div>
+                    <div class="p-2">
+                        <!-- GitHub -->
+                        <div class="p-4 border-b border-gray-800 hover:bg-gray-900/50 transition">
+                            <h4 class="font-bold text-white mb-1 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+                                GitHub
+                            </h4>
+                            <div class="flex gap-3 text-sm mt-2 flex-wrap">
+                                <a href="https://github.com/Limo123123/limazon" target="_blank" class="text-blue-400 hover:text-blue-300">Frontend ↗</a>
+                                <span class="text-gray-700">|</span>
+                                <a href="https://github.com/Limo123123/nodejs" target="_blank" class="text-blue-400 hover:text-blue-300">Backend ↗</a>
+                            </div>
+                        </div>
+                        <!-- OneDev -->
+                        <div class="p-4 hover:bg-gray-900/50 transition">
+                            <h4 class="font-bold text-white mb-1 flex items-center gap-2">
+                                <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/onedev-light.svg" class="w-4 h-4 opacity-80" alt="OneDev">
+                                OneDev (Self-Hosted)
+                            </h4>
+                            <div class="flex gap-3 text-sm mt-2 flex-wrap">
+                                <a href="https://git.slimo.v6.rocks/limazon" target="_blank" class="text-purple-400 hover:text-purple-300">Frontend ↗</a>
+                                <span class="text-gray-700">|</span>
+                                <a href="https://git.slimo.v6.rocks/limazon/nodejs" target="_blank" class="text-purple-400 hover:text-purple-300">Backend ↗</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_DOMAIN = "https://api.limazon.v6.rocks"; 
+        const fetchOptions = { credentials: 'include' };
+
+        window.onload = async () => {
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/auth/me`, fetchOptions);
+                if (!res.ok) {
+                    alert("Zugriff verweigert! Bitte logge dich zuerst im Hub ein.");
+                    window.location.href = "../index.html"; 
+                    return;
+                }
+                loadApiKeys();
+            } catch(e) {
+                console.error("Auth Error:", e);
+                document.getElementById('keysContainer').innerHTML = "<p class='text-red-400 bg-red-900/20 p-4 rounded-xl border border-red-500/30'>Die Verbindung zum Server ist fehlgeschlagen.</p>";
+            }
+        };
+
+        async function loadApiKeys() {
+            const container = document.getElementById('keysContainer');
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/account/api-keys`, fetchOptions);
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error);
+
+                container.innerHTML = "";
+
+                if (data.apiKeys.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-16 border-2 border-dashed border-gray-800 rounded-xl bg-gray-900/30 flex-1 flex flex-col items-center justify-center">
+                            <span class="text-4xl block mb-3 opacity-50">🔑</span>
+                            <p class="text-gray-500 text-sm">Keine API Keys vorhanden.</p>
+                        </div>`;
+                    return;
+                }
+
+                data.apiKeys.forEach(key => {
+                    const createdDate = new Date(key.createdAt).toLocaleString('de-DE');
+                    const lastUsedStr = key.lastUsed ? new Date(key.lastUsed).toLocaleString('de-DE') : 'Bisher ungenutzt';
+
+                    container.innerHTML += `
+                        <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition hover:border-gray-600" id="key-${key.id}">
+                            <div class="w-full sm:w-auto">
+                                <h3 class="text-base sm:text-lg font-bold text-white mb-2 flex items-center gap-2">
+                                    ${key.name}
+                                </h3>
+                                <p class="font-mono text-blue-400 bg-blue-900/10 px-2.5 py-1 rounded border border-blue-900/30 inline-block text-xs break-all">${key.prefix}</p>
+                                <div class="text-[11px] text-gray-500 mt-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                                    <span title="Erstellt am">Erstellt: ${createdDate}</span>
+                                    <span class="hidden sm:inline">•</span>
+                                    <span title="Zuletzt genutzt">Nutzung: ${lastUsedStr}</span>
+                                </div>
+                            </div>
+                            <button onclick="revokeKey('${key.id}')" 
+                                class="w-full sm:w-auto text-red-400 hover:text-white bg-red-500/10 hover:bg-red-600 border border-red-500/20 hover:border-transparent px-4 py-2.5 rounded-lg transition-colors font-medium text-sm shrink-0 active:scale-95">
+                                Löschen
+                            </button>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                container.innerHTML = `<p class="text-red-400 text-sm">Fehler beim Laden: ${err.message}</p>`;
+            }
+        }
+
+        async function generateKey() {
+            const nameInput = document.getElementById('keyNameInput');
+            const btn = document.getElementById('generateBtn');
+            const status = document.getElementById('createStatus');
+            const newKeyBox = document.getElementById('newKeyBox');
+            const newKeyValue = document.getElementById('newKeyValue');
+
+            const name = nameInput.value.trim();
+            if (!name) {
+                status.innerHTML = "<span class='text-red-400'>Bitte gib einen Namen ein!</span>";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = "Lädt...";
+            status.innerHTML = "";
+
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/account/api-keys`, {
+                    ...fetchOptions,
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    nameInput.value = "";
+                    
+                    newKeyValue.innerText = data.apiKey;
+                    newKeyBox.classList.remove('hidden');
+                    
+                    newKeyBox.animate([
+                        { opacity: 0, transform: 'translateY(-10px)' },
+                        { opacity: 1, transform: 'translateY(0)' }
+                    ], { duration: 300, fill: 'forwards' });
+
+                    loadApiKeys();
+                } else {
+                    status.innerHTML = `<span class='text-red-400'>Fehler: ${data.error}</span>`;
+                }
+            } catch (e) {
+                status.innerHTML = "<span class='text-red-400'>Netzwerkfehler.</span>";
+            }
+            btn.disabled = false;
+            btn.innerHTML = "Generieren";
+        }
+
+        async function revokeKey(id) {
+            if (!confirm("Bist du sicher? Alle externen Skripte mit diesem Key verlieren sofort den Zugriff!")) return;
+
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/account/api-keys/${id}`, {
+                    ...fetchOptions,
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    const el = document.getElementById(`key-${id}`);
+                    el.style.opacity = 0;
+                    el.style.transform = "scale(0.95)";
+                    el.style.transition = "all 0.3s ease";
+                    
+                    setTimeout(() => {
+                        el.remove();
+                        if (document.querySelectorAll('.bg-gray-900\\/50').length === 0) {
+                            loadApiKeys(); 
+                        }
+                    }, 300);
+                } else {
+                    const data = await res.json();
+                    alert("Fehler: " + data.error);
+                }
+            } catch (e) {
+                alert("Netzwerkfehler beim Löschen.");
+            }
+        }
+
+        function copyNewKey() {
+            const keyText = document.getElementById('newKeyValue').innerText;
+            navigator.clipboard.writeText(keyText).then(() => {
+                alert("API Key kopiert! 📋");
+            }).catch(err => {
+                alert("Kopieren fehlgeschlagen. Bitte manuell markieren.");
+            });
+        }
+    </script>
+</body>
+</html>

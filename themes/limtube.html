@@ -81,10 +81,45 @@
         .badge { background: var(--danger); color: white; font-size: 9px; padding: 2px 4px; border-radius: 3px; margin-left: 5px; font-weight: bold; }
 
         .watch-layout { grid-template-columns: 1fr 350px; gap: 24px; max-width: 1600px; margin: 0 auto; padding: 20px; }
-        .player-box { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+        
+        /* Audio-Mode (Spotify-Style) */
+        .player-box { width: 100%; aspect-ratio: 16/9; background: black; border-radius: 12px; overflow: visible !important; position: relative; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); transition: background 0.3s, height 0.3s; }
+        .player-box.audio-mode {
+            aspect-ratio: auto; 
+            height: 380px; 
+            background: linear-gradient(145deg, #2b2b2b 0%, #0a0a0a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .player-box.audio-mode .plyr__video-wrapper { opacity: 0; position: absolute; width: 100%; height: 100%; pointer-events: none; }
+        
+        .audio-cover {
+            display: none; 
+            width: 200px; 
+            height: 200px; 
+            border-radius: 12px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
+            position: absolute; 
+            top: 40px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 5; 
+            object-fit: cover;
+        }
+        .player-box.audio-mode .audio-cover { display: block; }
+
         .plyr { width: 100%; height: 100%; }
-        .plyr__video-wrapper { height: 100%; background: black; }
+        .plyr__video-wrapper { height: 100%; background: black; border-radius: 12px; overflow: hidden; }
         .plyr__video-wrapper video { object-fit: contain !important; height: 100% !important; }
+
+        /* Zwingt das Plyr-Einstellungsmenü, sich nach UNTEN zu öffnen */
+        .plyr .plyr__menu__container {
+            bottom: auto !important;
+            top: 100% !important;
+            margin-top: 10px;
+            z-index: 100;
+        }
 
         .btn { background: #272727; color: white; border: none; padding: 8px 16px; border-radius: 18px; cursor: pointer; font-weight: 500; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; }
         .btn:hover { background: #3f3f3f; }
@@ -135,6 +170,30 @@
         .yt-playlist-row:hover { background: #3d3d3d; }
         .yt-checkbox { width: 18px; height: 18px; margin-right: 16px; cursor: pointer; accent-color: var(--accent); }
 
+        /* NEU: LRC Lyrics Styling */
+        .lyrics-container {
+            max-height: 400px; 
+            overflow-y: auto; 
+            scroll-behavior: smooth;
+        }
+        /* Versteckt die Scrollbar für einen sauberen Look */
+        .lyrics-container::-webkit-scrollbar { width: 0px; }
+        
+        .lyric-line {
+            transition: color 0.3s, font-size 0.3s, transform 0.3s; 
+            color: #666; /* Standardmäßig grau/abgedunkelt */
+            padding: 8px 0;
+            cursor: pointer;
+        }
+        .lyric-line:hover { color: #aaa; }
+        
+        .active-lyric {
+            color: var(--accent); /* Limazon Grün */
+            font-size: 1.15em;
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
         @media (max-width: 1000px) { .watch-layout { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -178,8 +237,11 @@
     <!-- 2. WATCH VIEW -->
     <div id="view-watch" class="view-section watch-layout">
         <div>
-            <div class="player-box">
-                <video id="mainPlayer" playsinline controls preload="auto"></video>
+            <div class="player-box" id="playerContainer">
+                <img id="audioCover" class="audio-cover" src="">
+                <video id="mainPlayer" playsinline controls preload="auto" crossorigin="anonymous"></video>
+                
+                <canvas id="audioVisualizer" style="display:none; position:absolute; bottom:0; left:0; width:100%; height:120px; pointer-events:none; z-index:4;"></canvas>
                 
                 <div id="ad-overlay" style="display:none; position:absolute; bottom:60px; right:20px; z-index:50; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; align-items: center; gap: 15px; border: 1px solid #444;">
                     <span style="color: #ffd700; font-weight: bold; font-size: 12px; letter-spacing: 1px;">WERBUNG</span>
@@ -231,9 +293,34 @@
         </div>
 
         <div>
-            <h3>Vorschläge</h3>
-            <div id="suggestedList">
-                <p style="color:#777;">Lade Vorschläge...</p>
+            <div class="tab-bar" style="margin-bottom: 15px; border-bottom: 1px solid #333;">
+                <button class="tab-btn active" id="btn-sidebar-suggestions" onclick="switchSidebarTab('suggestions')">Vorschläge</button>
+                <button class="tab-btn" id="btn-sidebar-lyrics" onclick="switchSidebarTab('lyrics')" style="display:none;">Lyrics</button>
+            </div>
+
+            <div id="sidebar-suggestions" class="tab-content active">
+                <div id="suggestedList">
+                    <p style="color:#777;">Lade Vorschläge...</p>
+                </div>
+            </div>
+
+            <div id="sidebar-lyrics" class="tab-content">
+                <div class="lyrics-container" style="background:#181818; padding:20px; border-radius:12px; border:1px solid #333; min-height: 250px; display: flex; flex-direction: column;">
+                    <div id="lyricsText" style="line-height: 1.8; font-size: 16px; font-weight: 500; color: #f1f1f1; text-align: center;">
+                        Lade Lyrics...
+                    </div>
+                </div>
+
+                <div id="lyricsEditBox" style="display:none; margin-top:20px; background:#1e1e1e; padding:20px; border-radius:12px; border:1px dashed #555;">
+                    <h4 style="margin-top:0; color:var(--accent);">🎵 Songtext bearbeiten</h4>
+                    <p style="color:#888; font-size:12px; margin-bottom:10px;">
+                        Tipp: Nutze das LRC-Format für synchronisierte Texte! Beispiel: <br>
+                        <code>[00:15.50] Das ist die erste Zeile</code><br>
+                        Lass das Feld leer, um die Lyrics zu löschen.
+                    </p>
+                    <textarea id="lyricsInput" class="form-input" rows="8" placeholder="Füge hier den Songtext ein..." style="font-family: monospace; resize: vertical;"></textarea>
+                    <button class="btn btn-primary" style="width:100%;" onclick="saveLyrics(this)">Lyrics Speichern</button>
+                </div>
             </div>
         </div>
     </div>
@@ -259,7 +346,7 @@
                     </select>
                 </div>
 
-                <input type="file" id="upFile" accept=".mp4" style="margin-bottom:20px; color:#aaa; width:100%;">
+                <input type="file" id="upFile" accept=".mp4,.mp3,.wav,.ogg" style="margin-bottom:20px; color:#aaa; width:100%;">
                 <button class="btn btn-primary" id="doUploadBtn" style="width:100%;" onclick="startUpload()">Hochladen</button>
                 <div id="upStatus" style="margin-top:15px; font-size:14px; color:#aaa;"></div>
             </div>
@@ -267,6 +354,12 @@
             <div id="tab-yt" class="tab-content">
                 <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Füge die YouTube Video-ID ein, um das Video ins CDN zu ziehen. Wird standardmäßig als Öffentlich gespeichert.</p>
                 <input type="text" id="ytIdInput" class="form-input" placeholder="YouTube Video ID (z.B. dQw4w9WgXcQ)">
+                
+                <div style="display:flex; justify-content:center; gap:15px; margin-bottom:15px;">
+                    <label style="color:white; cursor:pointer;"><input type="radio" name="ytFormat" value="video" checked> Als Video (MP4)</label>
+                    <label style="color:white; cursor:pointer;"><input type="radio" name="ytFormat" value="audio"> Nur Musik (MP3)</label>
+                </div>
+
                 <button class="btn btn-danger" id="doYtBtn" style="width:100%; color:white;" onclick="startYoutubeImport()">Von YouTube Importieren</button>
 
                 <div id="ytProgressBarBg" class="progress-bar-bg">
@@ -297,7 +390,7 @@
             </div>
         </div>
 
-        <h3>Meine hochgeladenen Videos</h3>
+        <h3>Meine hochgeladenen Videos & Tracks</h3>
         <div id="dashVideoList" style="display:flex; flex-direction:column; gap:10px; margin-bottom:40px;">
             <p style="color:#777;">Lade Videos...</p>
         </div>
@@ -380,7 +473,6 @@
                 <button class="yt-close-btn" onclick="document.getElementById('playlistModal').style.display='none'">✖</button>
             </div>
             <div id="modalPlaylistList" style="padding:12px 0; max-height:250px; overflow-y:auto;">
-                <!-- Dynamische Playlist-Reihen mit Checkboxen -->
             </div>
             <div id="modalCreatePl" style="padding: 15px 24px; border-top: 1px solid #3d3d3d; display:flex; gap:10px; background:#1a1a1a; border-radius: 0 0 12px 12px;">
                 <input type="text" id="modalNewPlName" placeholder="Neue Playlist..." style="flex:1; background:transparent; border:none; border-bottom:1px solid #555; color:white; outline:none; font-size:14px;">
@@ -398,6 +490,8 @@
 
         let currentUser = null;
         let currentVideoObj = null;
+        let parsedLyrics = []; // Speichert die Zeitstempel
+        
         const player = new Plyr('#mainPlayer', {
             ratio: '16:9',
             controls: [
@@ -411,6 +505,136 @@
         let adTimer = null;
         let adIsPlaying = false;
         let isAdBuffering = false;
+
+        // --- AUDIO VISUALIZER SETUP ---
+        let audioCtx = null;
+        let analyser = null;
+        let audioSource = null;
+        let animationId = null;
+
+        function initVisualizer() {
+            const videoEl = player.media;
+            const canvas = document.getElementById('audioVisualizer');
+            const ctx = canvas.getContext('2d');
+
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                
+                audioSource = audioCtx.createMediaElementSource(videoEl);
+                audioSource.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                
+                analyser.fftSize = 256; 
+                analyser.smoothingTimeConstant = 0.88; 
+            }
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            function draw() {
+                animationId = requestAnimationFrame(draw);
+                analyser.getByteFrequencyData(dataArray);
+
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const barWidth = (canvas.width / bufferLength) * 2.5;
+                let barHeight;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i] * (canvas.height / 255);
+
+                    const r = 76 + (barHeight / 2);
+                    const g = 175;
+                    const b = 80;
+
+                    ctx.fillStyle = `rgba(${r},${g},${b}, 0.4)`;
+                    ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+                    x += barWidth + 2;
+                }
+            }
+            draw();
+        }
+
+        // --- LYRICS & SIDEBAR LOGIK ---
+        function switchSidebarTab(tab) {
+            document.getElementById('btn-sidebar-suggestions').classList.remove('active');
+            document.getElementById('btn-sidebar-lyrics').classList.remove('active');
+            
+            document.getElementById('sidebar-suggestions').classList.remove('active');
+            document.getElementById('sidebar-lyrics').classList.remove('active');
+
+            document.getElementById(`btn-sidebar-${tab}`).classList.add('active');
+            document.getElementById(`sidebar-${tab}`).classList.add('active');
+        }
+
+        function renderLyricsText(rawText) {
+            const container = document.getElementById('lyricsText');
+            parsedLyrics = [];
+            
+            if (!rawText || rawText.trim().length === 0) {
+                container.innerHTML = "Noch keine Lyrics verfügbar.";
+                return;
+            }
+
+            const lines = rawText.split('\n');
+            let html = "";
+
+            lines.forEach((line, index) => {
+                const match = line.match(/^\[(\d{2}):(\d{2}(\.\d{1,3})?)\](.*)/);
+                if (match) {
+                    const minutes = parseInt(match[1], 10);
+                    const seconds = parseFloat(match[2]);
+                    const timeInSeconds = (minutes * 60) + seconds;
+                    const text = match[4].trim() || "♪";
+                    
+                    parsedLyrics.push({ time: timeInSeconds, index });
+                    
+                    html += `<div id="lyric-line-${index}" class="lyric-line" onclick="player.currentTime = ${timeInSeconds}">${text}</div>`;
+                } else {
+                    html += `<div style="padding: 4px 0;">${line}</div>`;
+                }
+            });
+
+            container.innerHTML = html;
+        }
+
+        async function saveLyrics(btnEl) {
+            if (!currentVideoObj) return;
+            const lyrics = document.getElementById('lyricsInput').value;
+            
+            const originalText = btnEl.innerText;
+            btnEl.innerText = "Speichere...";
+            btnEl.disabled = true;
+
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/lyrics`, {
+                    ...fetchOptions, method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lyrics: lyrics })
+                });
+
+                if (res.ok) {
+                    renderLyricsText(lyrics);
+                    currentVideoObj.lyrics = lyrics; 
+                    btnEl.innerText = "Erfolgreich!";
+                    setTimeout(() => { btnEl.innerText = originalText; btnEl.disabled = false; }, 2000);
+                } else {
+                    alert("Fehler beim Speichern der Lyrics.");
+                    btnEl.innerText = originalText; btnEl.disabled = false;
+                }
+            } catch (e) {
+                alert("Netzwerkfehler.");
+                btnEl.innerText = originalText; btnEl.disabled = false;
+            }
+        }
 
         async function init() {
             try {
@@ -441,6 +665,7 @@
 
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             if(player && player.playing) player.stop();
+            if(animationId) cancelAnimationFrame(animationId);
             
             if (ytPollInterval) clearInterval(ytPollInterval);
             if (adTimer) clearInterval(adTimer);
@@ -567,7 +792,7 @@
                     if (currentVideoObj && v._id === currentVideoObj.id) return;
                     list.innerHTML += `
                         <div style="display:flex; gap:10px; margin-bottom:15px; cursor:pointer;" onclick="navigate('?v=${v._id}')">
-                            <div style="width:120px; aspect-ratio:16/9; background:#222; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            <div style="width:120px; aspect-ratio:16/9; background:#222; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
                                 ${getThumbHTML(v)}
                             </div>
                             <div style="flex:1; overflow:hidden;">
@@ -612,6 +837,24 @@
                 document.getElementById('delBtn').style.display = isOwner ? 'block' : 'none';
 
                 renderComments(v.comments);
+
+                // --- LYRICS ANZEIGEN & VIDEO-FILTER ---
+                const isAudio = v.mediaType === 'audio';
+                const lyricsTabBtn = document.getElementById('btn-sidebar-lyrics');
+
+                if (isAudio) {
+                    lyricsTabBtn.style.display = 'block';
+                    renderLyricsText(v.lyrics);
+
+                    document.getElementById('lyricsEditBox').style.display = isOwner ? 'block' : 'none';
+                    if (isOwner) {
+                        document.getElementById('lyricsInput').value = v.lyrics || "";
+                    }
+                } else {
+                    lyricsTabBtn.style.display = 'none';
+                }
+                
+                switchSidebarTab('suggestions');
 
                 playVideoWithAd();
 
@@ -688,13 +931,63 @@
         }
 
         function playMainVideo() {
+            const isAudio = currentVideoObj.mediaType === 'audio';
+            const ext = isAudio ? 'audio/mp3' : 'video/mp4';
+            const plyrType = isAudio ? 'audio' : 'video';
+            
             player.source = { 
-                type: 'video', 
-                sources: [{ src: `${API_DOMAIN}/cdn/${currentVideoObj.filename}`, type: 'video/mp4' }] 
+                type: plyrType, 
+                sources: [{ src: `${API_DOMAIN}/cdn/${currentVideoObj.filename}`, type: ext }] 
             };
             
+            const container = document.getElementById('playerContainer');
+            const canvas = document.getElementById('audioVisualizer');
+            const cover = document.getElementById('audioCover');
+
+            if (isAudio) {
+                container.classList.add('audio-mode');
+                
+                const fallbackCover = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='400' height='400' fill='%231e1e1e'/%3E%3Ctext x='50%25' y='50%25' font-size='150' text-anchor='middle' dominant-baseline='middle'%3E🎵%3C/text%3E%3C/svg%3E";
+
+                cover.src = currentVideoObj.thumbnail && currentVideoObj.thumbnail !== 'default_audio_cover.jpg'
+                    ? `${API_DOMAIN}/cdn/${currentVideoObj.thumbnail}` 
+                    : fallbackCover;
+
+                canvas.style.display = 'block';
+                player.on('play', initVisualizer);
+            } else {
+                container.classList.remove('audio-mode');
+                canvas.style.display = 'none';
+                if (animationId) cancelAnimationFrame(animationId);
+            }
+
             player.once('canplaythrough', () => {
                 player.play().catch(e => console.log("Autoplay blockiert", e));
+            });
+
+            // LRC Sync Logik
+            player.on('timeupdate', () => {
+                if (parsedLyrics.length === 0) return;
+                
+                const currentTime = player.currentTime;
+                let activeIndex = -1;
+
+                for (let i = 0; i < parsedLyrics.length; i++) {
+                    if (currentTime >= parsedLyrics[i].time) {
+                        activeIndex = parsedLyrics[i].index;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (activeIndex !== -1) {
+                    const activeEl = document.getElementById(`lyric-line-${activeIndex}`);
+                    if (activeEl && !activeEl.classList.contains('active-lyric')) {
+                        document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active-lyric'));
+                        activeEl.classList.add('active-lyric');
+                        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
             });
 
             fetch(`${API_DOMAIN}/api/limtube/video/${currentVideoObj.id}/view`, { ...fetchOptions, method: 'POST' });
@@ -852,6 +1145,8 @@
 
         async function startYoutubeImport() {
             const ytId = document.getElementById('ytIdInput').value.trim();
+            const format = document.querySelector('input[name="ytFormat"]:checked').value; 
+            
             const status = document.getElementById('ytStatus');
             const barBg = document.getElementById('ytProgressBarBg');
             const bar = document.getElementById('ytProgressBar');
@@ -867,7 +1162,7 @@
             try {
                 const res = await fetch(`${API_DOMAIN}/api/limtube/import-youtube`, {
                     ...fetchOptions, method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ytId })
+                    body: JSON.stringify({ ytId, format })
                 });
                 const data = await res.json();
 
@@ -933,7 +1228,7 @@
                         list.innerHTML += `
                         <div style="display:flex; align-items:center; justify-content:space-between; background:#1e1e1e; padding:15px; border-radius:10px;">
                             <div style="display:flex; align-items:center; gap:15px; cursor:pointer;" onclick="navigate('?v=${v.id}')">
-                                <div style="width:80px; aspect-ratio:16/9; background:#000; border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                <div style="width:80px; aspect-ratio:16/9; background:#000; border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
                                     ${getThumbHTML(v)}
                                 </div>
                                 <div>
@@ -1291,10 +1586,9 @@
             });
             if(res.ok) {
                 titleInput.value = "";
-                // Nach dem Erstellen sofort neu laden und anhaken!
                 const data = await res.json();
                 await togglePlaylistVideo({checked: true}, data.playlist.id);
-                showPlaylistModal(); // Modal neu laden
+                showPlaylistModal(); 
             } else {
                 alert("Fehler beim Erstellen.");
             }
@@ -1393,6 +1687,9 @@
 
         function getThumbHTML(v) {
             let src = '';
+            const musicOverlay = v.mediaType === 'audio' 
+                ? `<div style="position:absolute; background:rgba(0,0,0,0.7); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; z-index:5;"><span style="font-size:20px;">🎵</span></div>` 
+                : '';
             
             if (v.origin === 'youtube') {
                 let ytId = v.ytId;
@@ -1406,9 +1703,9 @@
             }
 
             if (src) {
-                return `<img src="${src}" onerror="this.style.display='none';" style="width:100%;height:100%;object-fit:cover;">`;
+                return `${musicOverlay}<img src="${src}" onerror="this.style.display='none';" style="width:100%;height:100%;object-fit:cover;">`;
             } else {
-                return `<span style="font-size:40px;">▶</span>`;
+                return `${musicOverlay}<span style="font-size:40px;">▶</span>`;
             }
         }
 
