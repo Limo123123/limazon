@@ -1,6 +1,7 @@
-// js/limo-global.js - V2 Update mit Bewegungen & neuen Modulen
+// js/limo-global.js - V2 Update mit Bewegungen, Modul-Deaktivierung & proaktivem Check
 
 document.addEventListener("DOMContentLoaded", () => {
+    // 1. STYLES EINBETTEN
     if (!document.getElementById('limo-global-styles')) {
         const style = document.createElement('style');
         style.id = 'limo-global-styles';
@@ -39,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
             .strike-title { color: #f8fafc; font-size: 1.8rem; font-weight: 700; margin: 0; }
             .strike-subtitle { color: #ef4444; font-size: 1rem; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; }
             
-            /* NEU: Styling für die Bewegung/Organisation */
             .strike-movement-badge {
                 display: inline-block; background: rgba(168, 85, 247, 0.15); color: #d8b4fe;
                 padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; margin-top: 8px;
@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.head.appendChild(style);
     }
 
+    // 2. OVERLAY DOM ELEMENT ERSTELLEN
     if (!document.getElementById('strike-overlay')) {
         const overlay = document.createElement('div');
         overlay.id = 'strike-overlay';
@@ -80,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p id="st-reason" style="color:#f8fafc; font-size:1rem; font-style:italic; margin:0;"></p>
                 </div>
                 <div id="st-leaders" style="margin-bottom: 20px;"></div>
-                <p style="color: #666; font-size: 0.8rem; margin-bottom: 15px;">Ende: <b id="st-end"></b></p>
+                <p style="color: #666; font-size: 0.8rem; margin-bottom: 15px;" id="st-end-container">Ende: <b id="st-end"></b></p>
                 <button class="strike-btn" onclick="window.exitStrikeArea()">Verstanden</button>
             </div>
             <div class="barricade-tape bottom"></div>
@@ -88,12 +89,12 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(overlay);
     }
 
+    // 3. PAGE TYPE AUSLESEN
     const pageType = document.currentScript ? document.currentScript.getAttribute('data-page') : 'unknown';
     
     window.exitStrikeArea = function() {
-        // V2 UPDATE: Die neuen Module hinzugefügt!
         const gameModules = ['teachermon', 'casino', 'restaurant', 'jobs', 'crime', 'gangs', 'auctions', 'wheels', 'pets'];
-        const economyModules = ['shop', 'bank', 'realestate', 'delivery'];
+        const economyModules = ['shop', 'bank', 'realestate', 'delivery', 'kleinanzeigen', 'logistics', 'finance'];
 
         if (gameModules.includes(pageType)) {
             window.location.href = 'games.html'; // Schickt Gamer zurück zur Spieleliste
@@ -103,54 +104,82 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = '/index.html'; // Alles andere zurück zum Portal
         }
     };
+
+    // 4. PROAKTIVER CHECK BEIM LADEN
+    if (pageType && pageType !== 'unknown' && pageType !== 'admin') {
+        const baseUrl = window.LIMO_API || ''; 
+        
+        fetch(`${baseUrl}/api/system/check-access/${pageType}`, { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.locked) {
+                    showLockedOverlay(data);
+                }
+            })
+            .catch(e => console.error("Konnte Zugriffsrechte nicht proaktiv laden.", e));
+    }
 });
 
-// V2 UPDATE: Name geändert, um Konflikte mit security.js zu vermeiden!
+// 5. ZENTRALE FUNKTION UM DAS OVERLAY ANZUZEIGEN
+function showLockedOverlay(data) {
+    const overlay = document.getElementById('strike-overlay');
+    const title = document.getElementById('st-title');
+    const reason = document.getElementById('st-reason');
+    const leaders = document.getElementById('st-leaders');
+    const endText = document.getElementById('st-end');
+    const endContainer = document.getElementById('st-end-container');
+    
+    if (!overlay) return; // Falls DOM noch nicht ready ist
+
+    if (data.type === 'DISABLED' || data.error === 'MODULE_DISABLED') {
+        title.innerHTML = `MODUL DEAKTIVIERT`;
+        title.style.color = "#94a3b8"; // Grau
+        reason.innerText = data.message || "Der Server-Administrator hat diese Funktion für diese Instanz ausgeschaltet.";
+        leaders.innerHTML = "";
+        endContainer.style.display = "none";
+        
+        document.querySelectorAll('.barricade-tape').forEach(t => {
+            t.style.background = 'repeating-linear-gradient(45deg, #475569, #475569 20px, #1e293b 20px, #1e293b 40px)';
+        });
+    } 
+    else if (data.type === 'STRIKE' || data.error === 'STRIKE_ACTIVE') {
+        const strikeData = data.strikeData;
+        let titleHtml = `MODUL: ${strikeData.module.toUpperCase()}`;
+        if (strikeData.movementName) {
+            titleHtml += `<br><span class="strike-movement-badge">🏴 Im Namen von: ${strikeData.movementName}</span>`;
+        }
+        title.innerHTML = titleHtml;
+        title.style.color = "#ef4444"; // Rot
+        reason.innerText = `"${strikeData.reason}"`;
+        leaders.innerHTML = (strikeData.strikers || []).map(s => `<span class="striker-tag">✊ ${s}</span>`).join('');
+        
+        if (strikeData.endsAt) {
+            endText.innerText = new Date(strikeData.endsAt).toLocaleString('de-DE');
+            endContainer.style.display = "block";
+        } else {
+            endContainer.style.display = "none";
+        }
+    }
+    overlay.classList.remove('strike-hidden');
+}
+
+// 6. GLOBALER FETCH INTERCEPTOR (Fängt nachträgliche Requests ab)
 const limoGlobalFetch = window.fetch;
 window.fetch = async function(...args) {
     const response = await limoGlobalFetch(...args);
     
-    // 1. STREIK ABFANGEN (HTTP 423 Locked)
-    if (response.status === 423) {
+    // Fange 423 (Streik) oder 403 (Modul deaktiviert) ab
+    if (response.status === 423 || response.status === 403) {
         response.clone().json().then(data => {
-            if (data.error === "STRIKE_ACTIVE") {
-                let titleHtml = `MODUL: ${data.strikeData.module.toUpperCase()}`;
-                
-                if (data.strikeData.movementName) {
-                    titleHtml += `<br><span class="strike-movement-badge">🏴 Im Namen von: ${data.strikeData.movementName}</span>`;
+            if (data.error === "STRIKE_ACTIVE" || data.error === "MODULE_DISABLED") {
+                // Warte kurz, falls DOM noch nicht ready (beim allerersten Fetch)
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => showLockedOverlay(data));
+                } else {
+                    showLockedOverlay(data);
                 }
-
-                document.getElementById('st-title').innerHTML = titleHtml;
-                document.getElementById('st-title').style.color = "#ef4444"; // Rot für Streik
-                document.getElementById('st-reason').innerText = `"${data.strikeData.reason}"`;
-                document.getElementById('st-leaders').innerHTML = data.strikeData.strikers.map(s => `<span class="striker-tag">✊ ${s}</span>`).join('');
-                document.getElementById('st-end').innerText = new Date(data.strikeData.endsAt).toLocaleString('de-DE');
-                document.getElementById('strike-overlay').classList.remove('strike-hidden');
             }
-        }).catch(e => console.error("Strike Overlay Error:", e));
-    }
-    
-    // 2. MODUL DEAKTIVIERT ABFANGEN (HTTP 403 Forbidden)
-    if (response.status === 403) {
-        response.clone().json().then(data => {
-            if (data.error === "MODULE_DISABLED") {
-                document.getElementById('st-title').innerHTML = `MODUL DEAKTIVIERT`;
-                document.getElementById('st-title').style.color = "#94a3b8"; // Grau für Deaktiviert
-                document.getElementById('st-reason').innerText = data.message || "Der Server-Administrator hat diese Funktion für diese Instanz ausgeschaltet.";
-                
-                // Streik-spezifische Felder leeren
-                document.getElementById('st-leaders').innerHTML = "";
-                document.getElementById('st-end').innerText = "Unbekannt";
-                
-                // Die Barrikaden auf Grau/Schwarz ändern (sieht nach "Abgeschaltet" statt "Streik" aus)
-                const tapes = document.querySelectorAll('.barricade-tape');
-                tapes.forEach(t => {
-                    t.style.background = 'repeating-linear-gradient(45deg, #475569, #475569 20px, #1e293b 20px, #1e293b 40px)';
-                });
-
-                document.getElementById('strike-overlay').classList.remove('strike-hidden');
-            }
-        }).catch(e => console.error("Module Disabled Overlay Error:", e));
+        }).catch(e => console.error("Overlay Error in Fetch Interceptor:", e));
     }
 
     return response;

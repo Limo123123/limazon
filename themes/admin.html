@@ -3,7 +3,7 @@
 
 <head>
     <script src="/themes/js/config.js?v=1788215655"></script>
-    <script src="/themes/js/security.js?v=1788215655"></script>
+    <script src="/themes/js/security.js?v=1789215655"></script>
     <script src="/themes/js/limo-global.js?v=1788215655" data-page="admin"></script>
     <meta name="robots" content="noindex, nofollow">
     <meta charset="UTF-8">
@@ -665,7 +665,10 @@
             document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
             document.getElementById('nav-' + id).classList.add('active');
 
-            if (id === 'system') refreshHealth();
+            if (id === 'system') {
+                refreshHealth();
+                loadModules();
+            }
             loadInstanceRequests();
         }
 
@@ -782,7 +785,15 @@
         async function loadUsers() {
             const res = await fetch(API + '/api/admin/users', { credentials: 'include' });
             const data = await res.json();
-            users = data.users;
+            
+            // --- Verhindert Absturz, wenn der User keine Rechte hat ---
+            if (!res.ok) {
+                document.getElementById('user-list').innerHTML = `<tr><td colspan="5" class="p-3 text-red-500 text-center font-bold">${data.error || 'Zugriff verweigert'}</td></tr>`;
+                document.getElementById('user-pagination').classList.add('hidden');
+                return;
+            }
+
+            users = data.users || [];
             users.sort((a, b) => b.balance - a.balance);
             renderUsers();
         }
@@ -967,7 +978,14 @@
             try {
                 const res = await fetch(API + '/api/products', { credentials: 'include' });
                 const data = await res.json();
-                products = data.products;
+                
+                // --- Verhindert Absturz, wenn Shop gesperrt ist ---
+                if (!res.ok) {
+                    document.getElementById('product-list-container').innerHTML = `<div class="col-span-full text-center text-red-500 py-10 font-bold">${data.error || 'Zugriff verweigert'}</div>`;
+                    return;
+                }
+
+                products = data.products || [];
                 renderProducts();
             } catch (e) { console.error(e); }
             finally { document.getElementById('product-loader').classList.add('hidden'); }
