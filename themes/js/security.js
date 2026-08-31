@@ -1,6 +1,6 @@
 // security.js - Zentrale Security & API Logik für Limazon
 
-const API_HOST = "api.limazon.v6.rocks";
+const API_HOST = new URL(window.LIMO_API).hostname;
 const FP_STORAGE_KEY = "limo_fingerprint";
 
 // ------------------------------------------------------------

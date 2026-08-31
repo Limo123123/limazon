@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <script src="/themes/js/config.js"></script>
-    <script src="/themes/js/security.js?v=1785963851"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
+    
     
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
@@ -89,7 +93,7 @@
     <main class="relative z-10 w-full max-w-4xl flex flex-col items-center">
         
         <div class="relative mb-24 flex justify-center items-center">
-            <img src="/assets/holy_pi.png" alt="Der Heilige Pi" class="pi-image" onerror="this.src='https://api.limazon.v6.rocks/cdn/img_1776707490180_343.webp'">
+            <img src="/assets/holy_pi.png" alt="Der Heilige Pi" class="pi-image" onerror="this.src=window.LIMO_API + `/cdn/img_1776707490180_343.webp`">
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 w-full">
@@ -139,7 +143,7 @@
     </main>
 
     <script>
-        const API_URL = 'https://api.limazon.v6.rocks'; // Deine URL anpassen falls nötig
+        const API_URL = window.LIMO_API; // Deine URL anpassen falls nötig
 
         // Lädt den aktuellen Spendenstand
         async function loadFund() {

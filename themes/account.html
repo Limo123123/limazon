@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <script src="/themes/js/config.js"></script>
-    <script src="/themes/js/security.js?v=1785963851"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
+    
     
     <!-- Das SimpleWebAuthn Paket für das Frontend -->
     <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
@@ -429,7 +433,7 @@
 
     <script>
         // --- CONFIG ---
-        const API_BASE = 'https://api.limazon.v6.rocks'; 
+        const API_BASE = window.LIMO_API; 
         const STORAGE_KEY = 'limazon_saved_accounts';
 
         let currentUser = null;

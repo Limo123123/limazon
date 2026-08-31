@@ -2,8 +2,12 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js"></script>
-    <script src="/themes/js/security.js?v=1785963851"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
+    
     
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
@@ -92,7 +96,7 @@
 
     <script>
         async function loadStatus() {
-            const res = await fetch('https://api.limazon.v6.rocks/api/lottery/status', { credentials: 'include' });
+            const res = await fetch(window.LIMO_API + `/api/lottery/status`, { credentials: 'include' });
             const data = await res.json();
             document.getElementById('potDisplay').innerText = '$' + data.pot.toLocaleString();
             document.getElementById('myTickets').innerText = data.myTickets;
@@ -109,7 +113,7 @@
             }
 
             try {
-                const res = await fetch('https://api.limazon.v6.rocks/api/lottery/buy', {
+                const res = await fetch(window.LIMO_API + `/api/lottery/buy`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',

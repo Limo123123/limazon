@@ -2,7 +2,11 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Limtube | Limazon</title>
@@ -486,7 +490,7 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
     <script>
-        const API_DOMAIN = "https://api.limazon.v6.rocks";
+        const API_DOMAIN = window.LIMO_API;
         const fetchOptions = { credentials: 'include' };
 
         let currentUser = null;

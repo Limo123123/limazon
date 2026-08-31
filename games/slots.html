@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <script src="/themes/js/config.js"></script>
-    <script src="/themes/js/security.js?v=1785963851"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
+    
     
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,7 +40,7 @@
             isSpinning = true;
             btn.disabled = true;
 
-            const res = await fetch('https://api.limazon.v6.rocks/api/games/start', { 
+            const res = await fetch(window.LIMO_API + `/api/games/start`, { 
                 method:'POST', headers:{'Content-Type':'application/json'}, 
                 body:JSON.stringify({gameId:'slots'}), credentials:'include' 
             });
@@ -71,7 +75,7 @@
             if(res[0] === res[1] && res[1] === res[2]) score = 100;
             else if(res[0] === res[1] || res[1] === res[2] || res[0] === res[2]) score = 10;
 
-            await fetch('https://api.limazon.v6.rocks/api/games/submit-score', { 
+            await fetch(window.LIMO_API + `/api/games/submit-score`, { 
                 method:'POST', headers:{'Content-Type':'application/json'}, 
                 body:JSON.stringify({gameId:'slots', score}), credentials:'include' 
             });

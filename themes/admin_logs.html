@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <script src="/themes/js/config.js"></script>
-    <script src="/themes/js/security.js?v=1785963851"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
+    
     
     <meta name="robots" content="noindex, nofollow">
     <meta charset="UTF-8">
@@ -40,7 +44,7 @@
 
     <script>
         async function fetchLogs() {
-            const res = await fetch('https://api.limazon.v6.rocks/api/admin/activity-logs', { credentials: 'include' });
+            const res = await fetch(window.LIMO_API + `/api/admin/activity-logs`, { credentials: 'include' });
             const data = await res.json();
             
             if(data.error) {

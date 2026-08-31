@@ -2,7 +2,11 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
     <meta name="robots" content="noindex, nofollow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -156,6 +160,41 @@
                     </div>
                 </div>
 
+                <!-- SERVER BEANTRAGEN -->
+                <div class="card p-5 sm:p-8 border border-purple-500/30 shadow-[0_0_50px_rgba(168,85,247,0.05)] bg-gray-900/40 mt-8">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-2 text-purple-400">Eigene Server-Instanz beantragen</h2>
+                    <p class="text-sm text-gray-400 mb-6">Erhalte eine komplett isolierte Limazon-Datenbank. Du wirst automatisch zum Admin (Owner) deines Servers ernannt. Eigene API-Keys sind optional, aber empfohlen, um die KI-Features (LNN News, Tinda) nutzen zu können.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 ml-1">Wunschname (wird zur ID)</label>
+                                <input type="text" id="reqInstanceName" placeholder="z.B. peter" class="w-full px-4 py-3 bg-black border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 ml-1">Frontend Domain</label>
+                                <input type="text" id="reqDomain" placeholder="https://peter.limazon.de" class="w-full px-4 py-3 bg-black border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 ml-1">Gemini API Key (Optional)</label>
+                                <input type="password" id="reqGemini" placeholder="AI Studio Key..." class="w-full px-4 py-3 bg-black border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 ml-1">Groq API Key (Optional)</label>
+                                <input type="password" id="reqGroq" placeholder="gsk_..." class="w-full px-4 py-3 bg-black border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                            </div>
+                        </div>
+
+                        <button id="requestInstanceBtn" onclick="submitInstanceRequest()"
+                            class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(168,85,247,0.3)] mt-2">
+                            Antrag beim Server-Admin einreichen
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
             <!-- RECHTE SPALTE (Ressourcen & Doku) -->
@@ -184,7 +223,7 @@
   <span class="code-string">"Content-Type"</span>: <span class="code-string">"application/json"</span>
 };
 
-<span class="code-keyword">fetch</span>(<span class="code-string">"https://api.limazon.v6.rocks/api/auth/me"</span>, { headers })
+<span class="code-keyword">fetch</span>(<span class="code-string">window.LIMO_API + `/api/auth/me`</span>, { headers })
   .then(res => res.json())
   .then(console.log);
                         </div>
@@ -231,7 +270,7 @@
     </main>
 
     <script>
-        const API_DOMAIN = "https://api.limazon.v6.rocks"; 
+        const API_DOMAIN = window.LIMO_API; 
         const fetchOptions = { credentials: 'include' };
 
         window.onload = async () => {
@@ -383,6 +422,36 @@
             }).catch(err => {
                 alert("Kopieren fehlgeschlagen. Bitte manuell markieren.");
             });
+        }
+
+        async function submitInstanceRequest() {
+            const btn = document.getElementById('requestInstanceBtn');
+            btn.disabled = true;
+            btn.innerText = "Wird eingereicht...";
+
+            const payload = {
+                instanceName: document.getElementById('reqInstanceName').value,
+                frontendUrl: document.getElementById('reqDomain').value,
+                geminiKey: document.getElementById('reqGemini').value,
+                groqKey: document.getElementById('reqGroq').value
+            };
+
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/instances/request`, {
+                    ...fetchOptions, method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Antrag erfolgreich eingereicht! Sobald der Admin ihn annimmt, ist dein Server unter deiner Domain erreichbar.");
+                    document.getElementById('reqInstanceName').value = "";
+                    document.getElementById('reqDomain').value = "";
+                } else {
+                    alert(data.error);
+                }
+            } catch(e) { alert("Netzwerkfehler."); }
+            
+            btn.disabled = false;
+            btn.innerText = "Antrag beim Server-Admin einreichen";
         }
     </script>
 </body>

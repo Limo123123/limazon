@@ -2,8 +2,12 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js"></script>
-    <script src="/themes/js/security.js?v=1785963851"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
+    
     
     <meta name="robots" content="index, follow">
     <meta charset="utf-8" />
@@ -874,7 +878,7 @@
         const SELL_COOLDOWN_SECONDS = 60;
         const debouncedApplySearchFilter = debounce(() => { applySearchFilter(); }, 350);
 
-        const getApiUrl = () => 'https://api.limazon.v6.rocks/api';
+        const getApiUrl = () => window.LIMO_API + `/api`;
 
         // --- Hilfsfunktionen für Modals ---
         function openModal(modalId, callbackBeforeOpen = null) {

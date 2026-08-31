@@ -2,9 +2,13 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js"></script>
-    <script src="/themes/js/security.js?v=1785963851"></script>
-    
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+
+
+
+
+
     <meta name="robots" content="noindex, nofollow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,17 +69,55 @@
             transition: 0.2s;
         }
 
-        .btn-primary { background: #4f46e5; color: white; }
-        .btn-primary:hover { background: #4338ca; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-warning { background: #f59e0b; color: white; }
-        .btn-warning:hover { background: #d97706; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-success:hover { background: #059669; }
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
 
-        .fade-in { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
 
         .stat-box {
             background: #1e293b;
@@ -99,30 +141,44 @@
             margin-top: 4px;
         }
 
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
-    
+
 </head>
 
 <body class="h-screen flex flex-col md:flex-row overflow-hidden">
 
     <!-- Sidebar -->
-    <aside class="w-full md:w-64 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col p-4 shrink-0">
+    <aside
+        class="w-full md:w-64 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col p-4 shrink-0">
         <div class="mb-2 md:mb-8 flex items-center justify-between px-2">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white">L</div>
+                <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white">L
+                </div>
                 <h1 class="text-xl font-bold tracking-tight">Limo Admin</h1>
             </div>
-            <a href="/" class="md:hidden text-xs font-bold text-slate-400 border border-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-800 transition">Hub ⤶</a>
+            <a href="/"
+                class="md:hidden text-xs font-bold text-slate-400 border border-slate-700 px-3 py-1.5 rounded-md hover:bg-slate-800 transition">Hub
+                ⤶</a>
         </div>
 
         <!-- Navigation -->
         <nav class="flex md:flex-col gap-2 md:gap-0 md:space-y-1 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
             <a onclick="switchTab('users')" id="nav-users" class="sidebar-link active whitespace-nowrap">👥 Benutzer</a>
             <a onclick="switchTab('products')" id="nav-products" class="sidebar-link whitespace-nowrap">🛒 Produkte</a>
-            <a onclick="switchTab('invites')" id="nav-invites" class="sidebar-link whitespace-nowrap">🔑 Invite-Codes</a>
-            <a onclick="switchTab('system')" id="nav-system" class="sidebar-link text-red-400 hover:text-red-300 whitespace-nowrap">⚙️ System & Notfall</a>
+            <a onclick="switchTab('invites')" id="nav-invites" class="sidebar-link whitespace-nowrap">🔑
+                Invite-Codes</a>
+            <a onclick="switchTab('system')" id="nav-system"
+                class="sidebar-link text-red-400 hover:text-red-300 whitespace-nowrap">⚙️ System & Notfall</a>
+            <a onclick="switchTab('instances')" id="nav-instances"
+                class="sidebar-link text-cyan-400 hover:text-cyan-300 whitespace-nowrap">🖥️ Instanzen</a>
         </nav>
 
         <div class="hidden md:block mt-auto border-t border-slate-800 pt-4">
@@ -136,7 +192,8 @@
         <div id="tab-users" class="space-y-6 fade-in">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <h2 class="text-2xl sm:text-3xl font-bold">Benutzerverwaltung</h2>
-                <input type="text" oninput="handleUserSearch(this.value)" placeholder="User suchen..." class="input-dark w-full md:w-64">
+                <input type="text" oninput="handleUserSearch(this.value)" placeholder="User suchen..."
+                    class="input-dark w-full md:w-64">
             </div>
 
             <div class="content-card overflow-x-auto">
@@ -155,10 +212,14 @@
                 <div class="text-center py-4 text-slate-500 hidden" id="user-empty">Keine User gefunden.</div>
             </div>
 
-            <div id="user-pagination" class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
-                <button onclick="changeUserPage(-1)" id="btn-user-prev" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
-                <span class="text-sm font-bold text-slate-300">Seite <span id="user-page-disp">1</span> / <span id="user-page-total">1</span></span>
-                <button onclick="changeUserPage(1)" id="btn-user-next" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
+            <div id="user-pagination"
+                class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
+                <button onclick="changeUserPage(-1)" id="btn-user-prev"
+                    class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
+                <span class="text-sm font-bold text-slate-300">Seite <span id="user-page-disp">1</span> / <span
+                        id="user-page-total">1</span></span>
+                <button onclick="changeUserPage(1)" id="btn-user-next"
+                    class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
             </div>
         </div>
 
@@ -167,26 +228,32 @@
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <h2 class="text-3xl font-bold">Produkte</h2>
                 <div class="flex gap-2 w-full md:w-auto">
-                    <input type="text" oninput="handleProductSearch(this.value)" placeholder="Produkt suchen..." class="input-dark w-full md:w-64">
+                    <input type="text" oninput="handleProductSearch(this.value)" placeholder="Produkt suchen..."
+                        class="input-dark w-full md:w-64">
                     <button onclick="editProduct()" class="btn btn-primary whitespace-nowrap">+ Neu</button>
                 </div>
             </div>
 
-            <div id="product-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+            <div id="product-list-container"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
 
             <div id="product-loader" class="hidden text-center py-20">
                 <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500 mx-auto mb-4"></div>
                 <p class="text-slate-400">Lade Produkte...</p>
             </div>
 
-            <div id="product-pagination" class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
-                <button onclick="changeProductPage(-1)" id="btn-prod-prev" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
-                <span class="text-sm font-bold text-slate-300">Seite <span id="prod-page-disp">1</span> / <span id="prod-page-total">1</span></span>
-                <button onclick="changeProductPage(1)" id="btn-prod-next" class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
+            <div id="product-pagination"
+                class="hidden flex justify-center items-center gap-4 bg-slate-900 p-3 rounded-lg border border-slate-800 w-fit mx-auto">
+                <button onclick="changeProductPage(-1)" id="btn-prod-prev"
+                    class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">← Zurück</button>
+                <span class="text-sm font-bold text-slate-300">Seite <span id="prod-page-disp">1</span> / <span
+                        id="prod-page-total">1</span></span>
+                <button onclick="changeProductPage(1)" id="btn-prod-next"
+                    class="text-slate-400 hover:text-white disabled:opacity-30 font-bold px-3 py-1">Vor →</button>
             </div>
         </div>
 
-        <!-- TAB: INVITE CODES (NEU) -->
+        <!-- TAB: INVITE CODES -->
         <div id="tab-invites" class="hidden space-y-6 fade-in">
             <h2 class="text-3xl font-bold text-purple-400">Invite-Codes Generieren</h2>
             <p class="text-slate-400">Ohne diese Codes kann sich niemand neues auf Limazon registrieren.</p>
@@ -198,14 +265,16 @@
                         <input type="number" id="invite-count" value="1" min="1" max="50" class="input-dark">
                     </div>
                     <button onclick="generateInvites()" class="btn btn-primary whitespace-nowrap">Generieren</button>
-                    <button onclick="exportInvitesPDF()" id="btn-export-pdf" class="btn btn-success whitespace-nowrap hidden flex items-center gap-2">
+                    <button onclick="exportInvitesPDF()" id="btn-export-pdf"
+                        class="btn btn-success whitespace-nowrap hidden flex items-center gap-2">
                         <span>📄</span> Als PDF speichern
                     </button>
                 </div>
-                
+
                 <div id="invite-results" class="mt-6 hidden">
                     <h3 class="text-lg font-bold mb-3 text-indigo-400">Generierte Codes:</h3>
-                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 font-mono text-sm max-h-96 overflow-y-auto" id="invite-list">
+                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 font-mono text-sm max-h-96 overflow-y-auto"
+                        id="invite-list">
                         <!-- Codes werden hier per JS eingefügt -->
                     </div>
                 </div>
@@ -219,13 +288,26 @@
             <div class="content-card border-blue-900/50">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-bold text-blue-400">📡 Server Status (Pi 5)</h3>
-                    <button onclick="refreshHealth()" class="text-xs bg-slate-800 px-2 py-1 rounded hover:bg-slate-700">Refresh</button>
+                    <button onclick="refreshHealth()"
+                        class="text-xs bg-slate-800 px-2 py-1 rounded hover:bg-slate-700">Refresh</button>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="health-stats">
-                    <div class="stat-box"><div class="stat-label">RAM</div><div class="stat-value text-gray-500">...</div></div>
-                    <div class="stat-box"><div class="stat-label">Uptime</div><div class="stat-value text-gray-500">...</div></div>
-                    <div class="stat-box"><div class="stat-label">DB Status</div><div class="stat-value text-gray-500">...</div></div>
-                    <div class="stat-box"><div class="stat-label">Cache Items</div><div class="stat-value text-gray-500">...</div></div>
+                    <div class="stat-box">
+                        <div class="stat-label">RAM</div>
+                        <div class="stat-value text-gray-500">...</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Uptime</div>
+                        <div class="stat-value text-gray-500">...</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">DB Status</div>
+                        <div class="stat-value text-gray-500">...</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Cache Items</div>
+                        <div class="stat-value text-gray-500">...</div>
+                    </div>
                 </div>
             </div>
 
@@ -233,14 +315,19 @@
                 <div class="content-card border-orange-900/50">
                     <h3 class="text-xl font-bold mb-4 text-orange-400">🔧 Reparatur & Wartung</h3>
                     <div class="space-y-3">
-                        <button onclick="fixImages()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
-                            <span>🖼️ Bilder Fixen (via.placeholder)</span><span class="text-xs opacity-50">Auto-Replace</span>
+                        <button onclick="fixImages()"
+                            class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>🖼️ Bilder Fixen (via.placeholder)</span><span
+                                class="text-xs opacity-50">Auto-Replace</span>
                         </button>
-                        <button onclick="fixDecimals()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                        <button onclick="fixDecimals()"
+                            class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
                             <span>🔢 Kommastellen Fixen</span><span class="text-xs opacity-50">Rundet auf .00</span>
                         </button>
-                        <button onclick="triggerNormalize()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
-                            <span>💰 Anti-Cheat / Balance Normalize</span><span class="text-xs opacity-50">Max 100 Bio.</span>
+                        <button onclick="triggerNormalize()"
+                            class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>💰 Anti-Cheat / Balance Normalize</span><span class="text-xs opacity-50">Max 100
+                                Bio.</span>
                         </button>
                     </div>
                 </div>
@@ -248,17 +335,25 @@
                 <div class="content-card border-red-900/50">
                     <h3 class="text-xl font-bold mb-4 text-red-400">🚨 Wirtschafts-Notfall</h3>
                     <div class="space-y-3">
-                        <button onclick="revokeInfinityGlobal()" class="btn bg-red-900/80 text-white w-full hover:bg-red-800 border border-red-700 flex justify-between items-center">
-                            <span>🚫 INFINITY MONEY REVOKE (ALLE)</span><span class="text-xs font-bold text-red-200">Anti-Exploit</span>
+                        <button onclick="revokeInfinityGlobal()"
+                            class="btn bg-red-900/80 text-white w-full hover:bg-red-800 border border-red-700 flex justify-between items-center">
+                            <span>🚫 INFINITY MONEY REVOKE (ALLE)</span><span
+                                class="text-xs font-bold text-red-200">Anti-Exploit</span>
                         </button>
-                        <button onclick="resetEconomyGlobal()" class="btn bg-red-900/80 text-white w-full hover:bg-red-800 border border-red-700 flex justify-between items-center">
-                            <span>📉 WIRTSCHAFT RESET (>100k)</span><span class="text-xs font-bold text-red-200">Reiche -> $5k</span>
+                        <button onclick="resetEconomyGlobal()"
+                            class="btn bg-red-900/80 text-white w-full hover:bg-red-800 border border-red-700 flex justify-between items-center">
+                            <span>📉 WIRTSCHAFT RESET (>100k)</span><span class="text-xs font-bold text-red-200">Reiche
+                                -> $5k</span>
                         </button>
 
                         <div class="border-t border-slate-700 my-4 pt-4">
                             <h4 class="text-indigo-400 font-bold mb-2 text-sm uppercase">Tools</h4>
-                            <button onclick="triggerAI()" class="btn bg-indigo-600 text-white w-full hover:bg-indigo-700 mb-2">📰 Breaking News generieren</button>
-                            <button onclick="resetHumanGrades()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600">🗑️ Human Grades DB Reset</button>
+                            <button onclick="triggerAI()"
+                                class="btn bg-indigo-600 text-white w-full hover:bg-indigo-700 mb-2">📰 Breaking News
+                                generieren</button>
+                            <button onclick="resetHumanGrades()"
+                                class="btn bg-slate-700 text-white w-full hover:bg-slate-600">🗑️ Human Grades DB
+                                Reset</button>
                         </div>
                     </div>
                 </div>
@@ -266,16 +361,65 @@
                 <div class="content-card border-purple-900/50">
                     <h3 class="text-xl font-bold mb-4 text-purple-400">📦 Lager & Steuern</h3>
                     <div class="space-y-3">
-                        <button onclick="resetStock(false)" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
-                            <span>📦 Lager Reset (Standard)</span><span class="text-xs opacity-50">Füllt Regale auf</span>
+                        <button onclick="resetStock(false)"
+                            class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                            <span>📦 Lager Reset (Standard)</span><span class="text-xs opacity-50">Füllt Regale
+                                auf</span>
                         </button>
-                        <button onclick="resetStock(true)" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                        <button onclick="resetStock(true)"
+                            class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
                             <span>🚫 Lager Nullen</span><span class="text-xs opacity-50">Alles auf 0</span>
                         </button>
-                        <button onclick="forceTax()" class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
+                        <button onclick="forceTax()"
+                            class="btn bg-slate-700 text-white w-full hover:bg-slate-600 flex justify-between items-center">
                             <span>👮 Sofort-Steuer (0,5%)</span><span class="text-xs opacity-50">Bei >100M Usern</span>
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: INSTANZEN -->
+        <div id="tab-instances" class="hidden space-y-6 fade-in">
+            <div class="flex justify-between items-center">
+                <h2 class="text-3xl font-bold text-cyan-400">Server-Anträge prüfen</h2>
+                <button onclick="loadInstanceRequests()" class="text-xs bg-slate-800 px-3 py-1.5 rounded hover:bg-slate-700">Aktualisieren</button>
+            </div>
+
+            <!-- Liste der offenen Anträge -->
+            <div class="content-card border-slate-700">
+                <h3 class="text-xl font-bold mb-4 text-white">Offene Anträge</h3>
+                <div id="requests-list" class="space-y-3">
+                    <div class="p-3 bg-slate-800 rounded text-sm text-slate-400 text-center">Lade Anträge...</div>
+                </div>
+            </div>
+
+            <!-- Deployment Checkliste (Erscheint nach Genehmigung) -->
+            <div id="deployment-instructions" class="hidden space-y-6 mt-8 p-6 bg-slate-900 border-2 border-emerald-500/50 rounded-xl relative">
+                <div class="absolute -top-4 left-6 bg-emerald-600 text-white px-4 py-1 rounded-full font-bold text-sm">Deployment Checkliste</div>
+                
+                <p class="text-slate-300">Antrag genehmigt! Bitte führe nun diese 3 Schritte auf dem Raspberry Pi (oder per Git) aus:</p>
+
+                <!-- Schritt 1 -->
+                <div class="border-l-4 border-emerald-500 pl-4 py-2">
+                    <h4 class="font-bold text-white mb-2">1. Erstelle die Umgebungs-Datei</h4>
+                    <p class="text-sm text-slate-400 mb-2">Erstelle eine neue Datei namens <span id="deploy-filename" class="font-bold text-emerald-400 bg-slate-800 px-1 rounded">.env.user</span> in deinem Repository und füge diesen (vom User gesendeten) Inhalt ein:</p>
+                    <textarea id="deploy-env" class="input-dark h-32 font-mono text-xs" readonly onclick="this.select()"></textarea>
+                </div>
+
+                <!-- Schritt 2 -->
+                <div class="border-l-4 border-purple-500 pl-4 py-2">
+                    <h4 class="font-bold text-white mb-2">2. Docker-Compose aktualisieren</h4>
+                    <p class="text-sm text-slate-400 mb-2">Füge diesen Block <span class="font-bold text-white">ganz unten</span> in deine <code>docker-compose.yml</code> ein:</p>
+                    <textarea id="deploy-compose" class="input-dark h-48 font-mono text-xs" readonly onclick="this.select()"></textarea>
+                </div>
+
+                <!-- Schritt 3 -->
+                <div class="border-l-4 border-sky-500 pl-4 py-2">
+                    <h4 class="font-bold text-white mb-2">3. Volume eintragen & Pushen</h4>
+                    <p class="text-sm text-slate-400">Scrolle in der <code>docker-compose.yml</code> GANZ nach unten zum Abschnitt <code>volumes:</code> und füge folgende Zeile hinzu:</p>
+                    <code id="deploy-volume" class="block bg-slate-800 p-2 rounded text-sky-400 font-bold mt-2 select-all">limazon_cdn_data_user:</code>
+                    <p class="text-sm text-slate-400 mt-4 font-bold">Lade die Änderungen nun auf OneDev hoch. Das Auto-Update-Skript erledigt den Rest!</p>
                 </div>
             </div>
         </div>
@@ -283,31 +427,39 @@
 
     <!-- Modal: User -->
     <div id="modal-user" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 p-5 sm:p-6 rounded-xl w-full max-w-sm border border-slate-700 shadow-2xl fade-in overflow-y-auto max-h-[90vh]">
+        <div
+            class="bg-slate-900 p-5 sm:p-6 rounded-xl w-full max-w-sm border border-slate-700 shadow-2xl fade-in overflow-y-auto max-h-[90vh]">
             <h3 class="text-xl font-bold mb-4">User bearbeiten</h3>
             <input type="hidden" id="edit-u-id">
             <div class="space-y-3">
-                <div><label class="text-xs text-slate-400">Username</label><input id="edit-u-name" class="input-dark" disabled></div>
-                <div><label class="text-xs text-slate-400">Balance ($)</label><input id="edit-u-bal" type="number" class="input-dark"></div>
-                <div><label class="text-xs text-slate-400">Tokens</label><input id="edit-u-tok" type="number" class="input-dark"></div>
+                <div><label class="text-xs text-slate-400">Username</label><input id="edit-u-name" class="input-dark"
+                        disabled></div>
+                <div><label class="text-xs text-slate-400">Balance ($)</label><input id="edit-u-bal" type="number"
+                        class="input-dark"></div>
+                <div><label class="text-xs text-slate-400">Tokens</label><input id="edit-u-tok" type="number"
+                        class="input-dark"></div>
 
                 <div class="flex items-center gap-2 p-2 bg-slate-800 rounded">
                     <input id="edit-u-admin" type="checkbox" class="w-4 h-4">
-                    <label class="text-indigo-400 font-bold select-none cursor-pointer" for="edit-u-admin">Ist Echter Admin</label>
+                    <label class="text-indigo-400 font-bold select-none cursor-pointer" for="edit-u-admin">Ist Echter
+                        Admin</label>
                 </div>
 
                 <div class="flex items-center gap-2 p-2 bg-slate-800 rounded border border-cyan-900/50">
                     <input id="edit-u-infinity" type="checkbox" class="w-4 h-4 text-cyan-500">
-                    <label class="text-cyan-400 font-bold select-none cursor-pointer" for="edit-u-infinity">∞ Infinity Money</label>
+                    <label class="text-cyan-400 font-bold select-none cursor-pointer" for="edit-u-infinity">∞ Infinity
+                        Money</label>
                 </div>
 
                 <div class="flex items-center gap-2 p-2 bg-slate-800 rounded border border-orange-900/50">
                     <input id="edit-u-deactivated" type="checkbox" class="w-4 h-4 text-orange-500">
-                    <label class="text-orange-400 font-bold select-none cursor-pointer" for="edit-u-deactivated">Account deaktiviert (Soft Block)</label>
+                    <label class="text-orange-400 font-bold select-none cursor-pointer" for="edit-u-deactivated">Account
+                        deaktiviert (Soft Block)</label>
                 </div>
 
                 <hr class="border-slate-700">
-                <div><label class="text-xs text-red-400">Passwort Reset (optional)</label><input id="edit-u-pass" type="text" placeholder="Neues Passwort" class="input-dark border-red-900/50"></div>
+                <div><label class="text-xs text-red-400">Passwort Reset (optional)</label><input id="edit-u-pass"
+                        type="text" placeholder="Neues Passwort" class="input-dark border-red-900/50"></div>
             </div>
             <div class="mt-6 flex gap-2">
                 <button onclick="closeModal('modal-user')" class="btn bg-slate-700 text-white flex-1">Abbrechen</button>
@@ -318,7 +470,8 @@
 
     <!-- Modal: Product -->
     <div id="modal-product" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 p-5 sm:p-6 rounded-xl w-full max-w-sm border border-slate-700 shadow-2xl fade-in overflow-y-auto max-h-[90vh]">
+        <div
+            class="bg-slate-900 p-5 sm:p-6 rounded-xl w-full max-w-sm border border-slate-700 shadow-2xl fade-in overflow-y-auto max-h-[90vh]">
             <h3 class="text-xl font-bold mb-4">Produkt</h3>
             <input type="hidden" id="edit-p-oid">
             <div class="space-y-3">
@@ -330,14 +483,15 @@
                 <textarea id="edit-p-desc" placeholder="Beschreibung" class="input-dark h-20"></textarea>
             </div>
             <div class="mt-6 flex gap-2">
-                <button onclick="closeModal('modal-product')" class="btn bg-slate-700 text-white flex-1">Abbrechen</button>
+                <button onclick="closeModal('modal-product')"
+                    class="btn bg-slate-700 text-white flex-1">Abbrechen</button>
                 <button onclick="saveProduct()" class="btn btn-primary flex-1">Speichern</button>
             </div>
         </div>
     </div>
 
     <script>
-        const API = 'https://api.limazon.v6.rocks';
+        const API = window.LIMO_API;
 
         let users = [];
         let products = [];
@@ -366,15 +520,17 @@
             document.getElementById('tab-products').classList.add('hidden');
             document.getElementById('tab-invites').classList.add('hidden');
             document.getElementById('tab-system').classList.add('hidden');
-            
+            document.getElementById('tab-instances').classList.add('hidden');
+
             // Ausgewählten Tab anzeigen
             document.getElementById('tab-' + id).classList.remove('hidden');
-            
+
             // Nav-Links aktualisieren
             document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
             document.getElementById('nav-' + id).classList.add('active');
-            
+
             if (id === 'system') refreshHealth();
+            loadInstanceRequests();
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
@@ -403,7 +559,7 @@
                 if (res.ok) {
                     lastGeneratedInvites = data.codes;
                     const listEl = document.getElementById('invite-list');
-                    
+
                     // Render die Codes als Liste mit Kopier-Button
                     listEl.innerHTML = data.codes.map((code, idx) => `
                         <div class="py-2 border-b border-slate-800 last:border-0 flex justify-between items-center hover:bg-slate-800/50 px-2 rounded">
@@ -455,7 +611,7 @@
             doc.setFontSize(14);
             doc.setFont("courier", "bold");
             doc.setTextColor(15, 23, 42); // Slate-900
-            
+
             let yPos = 55;
             let pageHeight = doc.internal.pageSize.height;
 
@@ -469,13 +625,13 @@
                 // Checkbox-Quadrat simulieren [ ] 
                 doc.setDrawColor(148, 163, 184); // Slate-400
                 doc.rect(20, yPos - 4, 5, 5);
-                
+
                 doc.text(`${String(index + 1).padStart(2, '0')}. ${code}`, 30, yPos);
-                
+
                 // Leichte Trennlinie zwischen den Codes für Ausschneiden
                 doc.setDrawColor(226, 232, 240); // Slate-200
                 doc.line(20, yPos + 3, 190, yPos + 3);
-                
+
                 yPos += 12; // Abstand zum nächsten Code
             });
 
@@ -864,6 +1020,79 @@
                     container(3).innerText = data.productCacheSize || "0";
                 }
             } catch (e) { }
+        }
+
+        // ========================
+        // === INSTANZ ANTRÄGE ===
+        // ========================
+        let nextAvailablePort = 5501;
+
+        async function loadInstanceRequests() {
+            try {
+                const res = await fetch(API + '/api/admin/instances/requests', { credentials: 'include' });
+                const data = await res.json();
+                
+                nextAvailablePort = data.nextPort;
+                const list = document.getElementById('requests-list');
+                
+                if (data.requests.length === 0) {
+                    list.innerHTML = `<div class="p-3 bg-slate-800 rounded border border-slate-700 text-sm text-slate-400 text-center">Keine offenen Anträge.</div>`;
+                    return;
+                }
+
+                list.innerHTML = data.requests.map(r => `
+                    <div class="p-4 bg-slate-800/50 rounded-lg border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h4 class="font-bold text-white text-lg">${r.instanceName} <span class="text-xs text-slate-500 font-normal">(von User: ${r.username})</span></h4>
+                            <p class="text-sm text-blue-400 font-mono mt-1">${r.frontendUrl}</p>
+                            <div class="flex gap-2 mt-2">
+                                ${r.geminiKey ? '<span class="text-[10px] bg-green-900/30 text-green-400 px-2 py-0.5 rounded border border-green-700/50">Gemini Key ✅</span>' : '<span class="text-[10px] bg-red-900/30 text-red-400 px-2 py-0.5 rounded border border-red-700/50">Kein Gemini Key</span>'}
+                                ${r.groqKey ? '<span class="text-[10px] bg-green-900/30 text-green-400 px-2 py-0.5 rounded border border-green-700/50">Groq Key ✅</span>' : '<span class="text-[10px] bg-red-900/30 text-red-400 px-2 py-0.5 rounded border border-red-700/50">Kein Groq Key</span>'}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <input type="number" id="port-${r._id}" value="${nextAvailablePort}" class="input-dark w-24 text-center text-sm" title="Zuzuweisender Port">
+                            <button onclick="approveRequest('${r._id}')" class="btn bg-emerald-600 hover:bg-emerald-500 text-white text-sm">Annehmen</button>
+                            <button onclick="rejectRequest('${r._id}')" class="btn bg-red-600 hover:bg-red-500 text-white text-sm">Ablehnen</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function approveRequest(id) {
+            const port = document.getElementById(`port-${id}`).value;
+            if(!confirm(`Antrag genehmigen und Port ${port} zuweisen?`)) return;
+
+            try {
+                const res = await fetch(`${API}/api/admin/instances/requests/${id}/approve`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ port }), credentials: 'include'
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Checkliste füllen und anzeigen
+                    document.getElementById('deploy-filename').innerText = `.env.${data.instanceName}`;
+                    document.getElementById('deploy-env').value = data.envTemplate;
+                    document.getElementById('deploy-compose').value = data.composeBlock;
+                    document.getElementById('deploy-volume').innerText = data.volumeBlock;
+                    document.getElementById('deployment-instructions').classList.remove('hidden');
+                    
+                    loadInstanceRequests(); // Liste aktualisieren
+                    // Scrolle sanft zur Checkliste runter
+                    document.getElementById('deployment-instructions').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert(data.error);
+                }
+            } catch(e) { alert("Netzwerkfehler."); }
+        }
+
+        async function rejectRequest(id) {
+            if(!confirm("Diesen Antrag wirklich ablehnen?")) return;
+            try {
+                await fetch(`${API}/api/admin/instances/requests/${id}/reject`, { method: 'POST', credentials: 'include' });
+                loadInstanceRequests();
+            } catch(e) { alert("Netzwerkfehler."); }
         }
     </script>
 </body>

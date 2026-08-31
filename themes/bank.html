@@ -2,8 +2,12 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js"></script>
-    <script src="/themes/js/security.js?v=1785963851"></script>
+    <script src="/themes/js/config.js?v=1788191804"></script>
+    <script src="/themes/js/security.js?v=1788191804"></script>
+    
+    
+    
+    
     
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
@@ -484,7 +488,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://api.limazon.v6.rocks';
+        const API_URL = window.LIMO_API;
         let currentUser = null;
         let searchTimeout = null;
         let currentLoanData = null; // Speichert Daten für Kredite
@@ -886,7 +890,7 @@
 
         async function claimDaily() {
             try {
-                const res = await fetch('https://api.limazon.v6.rocks/api/daily', { method: 'POST', credentials: 'include' });
+                const res = await fetch(window.LIMO_API + `/api/daily`, { method: 'POST', credentials: 'include' });
                 const data = await res.json();
 
                 if (res.ok) {
