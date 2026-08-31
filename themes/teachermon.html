@@ -2,20 +2,14 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js?v=1788191804"></script>
-    <script src="/themes/js/security.js?v=1788191804"></script>
-    
-    
-    
-    
-    
+    <script src="/themes/js/config.js?v=1788215655"></script>
+    <script src="/themes/js/security.js?v=1788215655"></script>
+    <script src="/themes/js/limo-global.js?v=1788215655" data-page="teachermon"></script>
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teachermon 🃏 Multiverse</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/themes/js/limo-global.js" data-page="teachermon"></script>
-    <link
+    <script src="https://cdn.tailwindcss.com"></script><link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;600;700&family=Inter:wght@400;600&display=swap"
         rel="stylesheet">
     <style>
@@ -1240,8 +1234,6 @@
             if (!confirm("ACHTUNG! Willst du diese Karte wirklich löschen? Alle Besitzer bekommen ihr Geld erstattet.")) return;
             try { const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/cards/${id}`, { method: 'DELETE' }); if (res.ok) { showAlert((await res.json()).message); loadAlbumData(); } else showAlert((await res.json()).error, true); } catch (e) { }
         }
-    </script>
-    <script src="js/limo-global.js?v=3" data-page="teachermon"></script>
-</body>
+    </script></body>
 
 </html>

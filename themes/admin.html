@@ -2,13 +2,9 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js?v=1788191804"></script>
-    <script src="/themes/js/security.js?v=1788191804"></script>
-
-
-
-
-
+    <script src="/themes/js/config.js?v=1788215655"></script>
+    <script src="/themes/js/security.js?v=1788215655"></script>
+    <script src="/themes/js/limo-global.js?v=1788215655" data-page="admin"></script>
     <meta name="robots" content="noindex, nofollow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -377,13 +373,142 @@
                     </div>
                 </div>
             </div>
+
+            <!-- MODULE DEAKTIVIEREN -->
+            <div class="content-card border-indigo-900/50 mt-6 md:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-indigo-400">🔌 Modul-Verwaltung</h3>
+                    <button onclick="saveModules()"
+                        class="btn bg-indigo-600 hover:bg-indigo-500 text-white text-sm">Speichern</button>
+                </div>
+                <p class="text-xs text-slate-400 mb-6">Schalte Funktionen serverweit ab (ideal für Schul-Instanzen oder
+                    strenge Wirtschaftssimulationen).</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="module-toggles">
+
+                    <!-- Social Media -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs uppercase text-slate-500 font-bold border-b border-slate-700 pb-1 mb-2">
+                            Social & Media</h4>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-limabook" class="w-4 h-4 rounded text-indigo-500">
+                            Limabook</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-limtube" class="w-4 h-4 rounded text-indigo-500">
+                            LimTube</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-limterest" class="w-4 h-4 rounded text-indigo-500">
+                            Limterest</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-tinda" class="w-4 h-4 rounded text-indigo-500"> Tinda</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-whatslim" class="w-4 h-4 rounded text-indigo-500">
+                            Whatslim</label>
+                    </div>
+
+                    <!-- Crime & Justiz -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs uppercase text-slate-500 font-bold border-b border-slate-700 pb-1 mb-2">
+                            Unterwelt & Justiz</h4>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-crime" class="w-4 h-4 rounded text-indigo-500"> Untergrund /
+                            Blackmarket</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-gangs" class="w-4 h-4 rounded text-indigo-500"> Clans</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-court" class="w-4 h-4 rounded text-indigo-500"> Gericht</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-wanted" class="w-4 h-4 rounded text-indigo-500"> Wanted
+                            (Bounty)</label>
+                    </div>
+
+                    <!-- Wirtschaft -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs uppercase text-slate-500 font-bold border-b border-slate-700 pb-1 mb-2">
+                            Wirtschaft & Shopping</h4>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-bank" class="w-4 h-4 rounded text-indigo-500"> Bank</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-finance" class="w-4 h-4 rounded text-indigo-500"> Finance /
+                            Krypto</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-realestate" class="w-4 h-4 rounded text-indigo-500">
+                            Immobilien</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-shop" class="w-4 h-4 rounded text-indigo-500"> Shop
+                            (Produkte)</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-kleinanzeigen" class="w-4 h-4 rounded text-indigo-500">
+                            Kleinanzeigen</label>
+                    </div>
+
+                    <!-- Games & Entertainment -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs uppercase text-slate-500 font-bold border-b border-slate-700 pb-1 mb-2">
+                            Entertainment</h4>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-casino" class="w-4 h-4 rounded text-indigo-500"> Casino</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-wheel" class="w-4 h-4 rounded text-indigo-500">
+                            Glücksrad</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-lottery" class="w-4 h-4 rounded text-indigo-500">
+                            Lottery</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-teachermon" class="w-4 h-4 rounded text-indigo-500">
+                            Teachermon</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-restaurant" class="w-4 h-4 rounded text-indigo-500">
+                            Restaurant</label>
+                    </div>
+
+                    <!-- Leben & Gesellschaft -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs uppercase text-slate-500 font-bold border-b border-slate-700 pb-1 mb-2">Leben
+                            & Gesellschaft</h4>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-schule" class="w-4 h-4 rounded text-indigo-500"> Schule</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-family-dashboard" class="w-4 h-4 rounded text-indigo-500">
+                            Familie</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-pets" class="w-4 h-4 rounded text-indigo-500"> Haustiere /
+                            Tierpark</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-therapy" class="w-4 h-4 rounded text-indigo-500">
+                            Therapie</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-kirche" class="w-4 h-4 rounded text-indigo-500"> Kirche</label>
+                    </div>
+
+                    <!-- Politik -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs uppercase text-slate-500 font-bold border-b border-slate-700 pb-1 mb-2">
+                            Politik & System</h4>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-news" class="w-4 h-4 rounded text-indigo-500"> News
+                            (Nachrichten)</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-petitions" class="w-4 h-4 rounded text-indigo-500">
+                            Petitionen</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-gewerkschaft" class="w-4 h-4 rounded text-indigo-500">
+                            Gewerkschaft</label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-indigo-400"><input
+                                type="checkbox" id="mod-rathaus" class="w-4 h-4 rounded text-indigo-500">
+                            Rathaus</label>
+                    </div>
+
+                </div>
+            </div>
         </div>
 
         <!-- TAB: INSTANZEN -->
         <div id="tab-instances" class="hidden space-y-6 fade-in">
             <div class="flex justify-between items-center">
                 <h2 class="text-3xl font-bold text-cyan-400">Server-Anträge prüfen</h2>
-                <button onclick="loadInstanceRequests()" class="text-xs bg-slate-800 px-3 py-1.5 rounded hover:bg-slate-700">Aktualisieren</button>
+                <button onclick="loadInstanceRequests()"
+                    class="text-xs bg-slate-800 px-3 py-1.5 rounded hover:bg-slate-700">Aktualisieren</button>
             </div>
 
             <!-- Liste der offenen Anträge -->
@@ -395,31 +520,42 @@
             </div>
 
             <!-- Deployment Checkliste (Erscheint nach Genehmigung) -->
-            <div id="deployment-instructions" class="hidden space-y-6 mt-8 p-6 bg-slate-900 border-2 border-emerald-500/50 rounded-xl relative">
-                <div class="absolute -top-4 left-6 bg-emerald-600 text-white px-4 py-1 rounded-full font-bold text-sm">Deployment Checkliste</div>
-                
-                <p class="text-slate-300">Antrag genehmigt! Bitte führe nun diese 3 Schritte auf dem Raspberry Pi (oder per Git) aus:</p>
+            <div id="deployment-instructions"
+                class="hidden space-y-6 mt-8 p-6 bg-slate-900 border-2 border-emerald-500/50 rounded-xl relative">
+                <div class="absolute -top-4 left-6 bg-emerald-600 text-white px-4 py-1 rounded-full font-bold text-sm">
+                    Deployment Checkliste</div>
+
+                <p class="text-slate-300">Antrag genehmigt! Bitte führe nun diese 3 Schritte auf dem Raspberry Pi (oder
+                    per Git) aus:</p>
 
                 <!-- Schritt 1 -->
                 <div class="border-l-4 border-emerald-500 pl-4 py-2">
                     <h4 class="font-bold text-white mb-2">1. Erstelle die Umgebungs-Datei</h4>
-                    <p class="text-sm text-slate-400 mb-2">Erstelle eine neue Datei namens <span id="deploy-filename" class="font-bold text-emerald-400 bg-slate-800 px-1 rounded">.env.user</span> in deinem Repository und füge diesen (vom User gesendeten) Inhalt ein:</p>
-                    <textarea id="deploy-env" class="input-dark h-32 font-mono text-xs" readonly onclick="this.select()"></textarea>
+                    <p class="text-sm text-slate-400 mb-2">Erstelle eine neue Datei namens <span id="deploy-filename"
+                            class="font-bold text-emerald-400 bg-slate-800 px-1 rounded">.env.user</span> in deinem
+                        Repository und füge diesen (vom User gesendeten) Inhalt ein:</p>
+                    <textarea id="deploy-env" class="input-dark h-32 font-mono text-xs" readonly
+                        onclick="this.select()"></textarea>
                 </div>
 
                 <!-- Schritt 2 -->
                 <div class="border-l-4 border-purple-500 pl-4 py-2">
                     <h4 class="font-bold text-white mb-2">2. Docker-Compose aktualisieren</h4>
-                    <p class="text-sm text-slate-400 mb-2">Füge diesen Block <span class="font-bold text-white">ganz unten</span> in deine <code>docker-compose.yml</code> ein:</p>
-                    <textarea id="deploy-compose" class="input-dark h-48 font-mono text-xs" readonly onclick="this.select()"></textarea>
+                    <p class="text-sm text-slate-400 mb-2">Füge diesen Block <span class="font-bold text-white">ganz
+                            unten</span> in deine <code>docker-compose.yml</code> ein:</p>
+                    <textarea id="deploy-compose" class="input-dark h-48 font-mono text-xs" readonly
+                        onclick="this.select()"></textarea>
                 </div>
 
                 <!-- Schritt 3 -->
                 <div class="border-l-4 border-sky-500 pl-4 py-2">
                     <h4 class="font-bold text-white mb-2">3. Volume eintragen & Pushen</h4>
-                    <p class="text-sm text-slate-400">Scrolle in der <code>docker-compose.yml</code> GANZ nach unten zum Abschnitt <code>volumes:</code> und füge folgende Zeile hinzu:</p>
-                    <code id="deploy-volume" class="block bg-slate-800 p-2 rounded text-sky-400 font-bold mt-2 select-all">limazon_cdn_data_user:</code>
-                    <p class="text-sm text-slate-400 mt-4 font-bold">Lade die Änderungen nun auf OneDev hoch. Das Auto-Update-Skript erledigt den Rest!</p>
+                    <p class="text-sm text-slate-400">Scrolle in der <code>docker-compose.yml</code> GANZ nach unten zum
+                        Abschnitt <code>volumes:</code> und füge folgende Zeile hinzu:</p>
+                    <code id="deploy-volume"
+                        class="block bg-slate-800 p-2 rounded text-sky-400 font-bold mt-2 select-all">limazon_cdn_data_user:</code>
+                    <p class="text-sm text-slate-400 mt-4 font-bold">Lade die Änderungen nun auf OneDev hoch. Das
+                        Auto-Update-Skript erledigt den Rest!</p>
                 </div>
             </div>
         </div>
@@ -1031,10 +1167,10 @@
             try {
                 const res = await fetch(API + '/api/admin/instances/requests', { credentials: 'include' });
                 const data = await res.json();
-                
+
                 nextAvailablePort = data.nextPort;
                 const list = document.getElementById('requests-list');
-                
+
                 if (data.requests.length === 0) {
                     list.innerHTML = `<div class="p-3 bg-slate-800 rounded border border-slate-700 text-sm text-slate-400 text-center">Keine offenen Anträge.</div>`;
                     return;
@@ -1057,12 +1193,12 @@
                         </div>
                     </div>
                 `).join('');
-            } catch(e) { console.error(e); }
+            } catch (e) { console.error(e); }
         }
 
         async function approveRequest(id) {
             const port = document.getElementById(`port-${id}`).value;
-            if(!confirm(`Antrag genehmigen und Port ${port} zuweisen?`)) return;
+            if (!confirm(`Antrag genehmigen und Port ${port} zuweisen?`)) return;
 
             try {
                 const res = await fetch(`${API}/api/admin/instances/requests/${id}/approve`, {
@@ -1077,22 +1213,67 @@
                     document.getElementById('deploy-compose').value = data.composeBlock;
                     document.getElementById('deploy-volume').innerText = data.volumeBlock;
                     document.getElementById('deployment-instructions').classList.remove('hidden');
-                    
+
                     loadInstanceRequests(); // Liste aktualisieren
                     // Scrolle sanft zur Checkliste runter
                     document.getElementById('deployment-instructions').scrollIntoView({ behavior: 'smooth' });
                 } else {
                     alert(data.error);
                 }
-            } catch(e) { alert("Netzwerkfehler."); }
+            } catch (e) { alert("Netzwerkfehler."); }
         }
 
         async function rejectRequest(id) {
-            if(!confirm("Diesen Antrag wirklich ablehnen?")) return;
+            if (!confirm("Diesen Antrag wirklich ablehnen?")) return;
             try {
                 await fetch(`${API}/api/admin/instances/requests/${id}/reject`, { method: 'POST', credentials: 'include' });
                 loadInstanceRequests();
-            } catch(e) { alert("Netzwerkfehler."); }
+            } catch (e) { alert("Netzwerkfehler."); }
+        }
+
+        // Liste aller Modul-IDs (Müssen mit dem 'id' Attribut oben übereinstimmen, ohne das 'mod-')
+        const allModKeys = [
+            'limabook', 'limtube', 'limterest', 'tinda', 'whatslim',
+            'crime', 'gangs', 'court', 'wanted',
+            'bank', 'finance', 'realestate', 'shop', 'kleinanzeigen',
+            'casino', 'wheel', 'lottery', 'teachermon', 'restaurant',
+            'schule', 'family-dashboard', 'pets', 'therapy', 'kirche',
+            'news', 'petitions', 'gewerkschaft', 'rathaus'
+        ];
+
+        async function loadModules() {
+            try {
+                const res = await fetch(API + '/api/system/active-modules', { credentials: 'include' });
+                const data = await res.json();
+                const mods = data.modules || {};
+
+                allModKeys.forEach(key => {
+                    const checkbox = document.getElementById(`mod-${key}`);
+                    if (checkbox) {
+                        // Wenn nichts in der DB steht (undefined) oder true, setze Haken
+                        checkbox.checked = mods[key] !== false;
+                    }
+                });
+            } catch (e) { console.error("Konnte Modul-Status nicht laden."); }
+        }
+
+        async function saveModules() {
+            const settings = {};
+
+            allModKeys.forEach(key => {
+                const checkbox = document.getElementById(`mod-${key}`);
+                if (checkbox) {
+                    settings[key] = checkbox.checked;
+                }
+            });
+
+            try {
+                const res = await fetch(API + '/api/admin/system/modules', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings), credentials: 'include'
+                });
+                const data = await res.json();
+                alert(data.message);
+            } catch (e) { alert("Fehler beim Speichern der Module."); }
         }
     </script>
 </body>

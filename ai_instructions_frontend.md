@@ -21,3 +21,11 @@ Dieses Projekt ist das Frontend für Limazon, ein browserbasiertes Multiplayer-W
 ## 4. State Management & Authentifizierung
 - Der API-Endpunkt wird vom User über ein Dropdown gewählt und in `localStorage.getItem('limazon_api_target')` gespeichert. Die `config.js` kümmert sich um das korrekte Routing.
 - Die Authentifizierung läuft über Session-Cookies. Du MUSST bei jedem einzelnen `fetch()`-Aufruf zwingend `credentials: 'include'` mitsenden, sonst wird der Request vom Backend blockiert.
+
+## 5. Error Handling (403 & 423) & Modul-System
+Das Frontend verfügt über eine globale Fehlerbehandlung (`limo-global.js`).
+- **HTTP 403 (Forbidden):** Tritt auf, wenn der Admin ein Modul deaktiviert hat (z.B. für Schul-Server).
+- **HTTP 423 (Locked):** Tritt auf, wenn die Gewerkschaft dieses Modul erfolgreich bestreikt.
+
+**Du musst im Frontend für diese Fehler keine eigene UI bauen!** 
+Das Python-Skript `autopatch-security.py` liest den HTML-Dateinamen (z.B. `casino.html`) aus und setzt automatisch `<script src="..." data-page="casino"></script>`. Die `limo-global.js` überschreibt `window.fetch`, fängt diese Fehlercodes bei API-Anfragen vollautomatisch ab und wirft ein bildschirmfüllendes Absperrband-Overlay (Rot für Streik, Grau für Deaktiviert) über die Seite.

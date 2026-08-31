@@ -110,22 +110,18 @@ const limoGlobalFetch = window.fetch;
 window.fetch = async function(...args) {
     const response = await limoGlobalFetch(...args);
     
+    // 1. STREIK ABFANGEN (HTTP 423 Locked)
     if (response.status === 423) {
         response.clone().json().then(data => {
             if (data.error === "STRIKE_ACTIVE") {
-                
-                // V2 UPDATE: Prüfen, ob der Streik von einer Bewegung/Organisation kommt
                 let titleHtml = `MODUL: ${data.strikeData.module.toUpperCase()}`;
                 
-                // Falls die API im Streik-Objekt eine Bewegung mitschickt (aus deinem Server.js Update)
-                // Da im Server.js die Bewegung im Objekt mitgeliefert wird, müssen wir evtl. auf data.strikeData.movementName prüfen
-                // Wenn du es in der API "strikers" nennst und die Bewegung nicht explizit drin steht, 
-                // kannst du es im Server auch noch ans "strikeData" Objekt hängen!
                 if (data.strikeData.movementName) {
                     titleHtml += `<br><span class="strike-movement-badge">🏴 Im Namen von: ${data.strikeData.movementName}</span>`;
                 }
 
                 document.getElementById('st-title').innerHTML = titleHtml;
+                document.getElementById('st-title').style.color = "#ef4444"; // Rot für Streik
                 document.getElementById('st-reason').innerText = `"${data.strikeData.reason}"`;
                 document.getElementById('st-leaders').innerHTML = data.strikeData.strikers.map(s => `<span class="striker-tag">✊ ${s}</span>`).join('');
                 document.getElementById('st-end').innerText = new Date(data.strikeData.endsAt).toLocaleString('de-DE');
@@ -133,5 +129,29 @@ window.fetch = async function(...args) {
             }
         }).catch(e => console.error("Strike Overlay Error:", e));
     }
+    
+    // 2. MODUL DEAKTIVIERT ABFANGEN (HTTP 403 Forbidden)
+    if (response.status === 403) {
+        response.clone().json().then(data => {
+            if (data.error === "MODULE_DISABLED") {
+                document.getElementById('st-title').innerHTML = `MODUL DEAKTIVIERT`;
+                document.getElementById('st-title').style.color = "#94a3b8"; // Grau für Deaktiviert
+                document.getElementById('st-reason').innerText = data.message || "Der Server-Administrator hat diese Funktion für diese Instanz ausgeschaltet.";
+                
+                // Streik-spezifische Felder leeren
+                document.getElementById('st-leaders').innerHTML = "";
+                document.getElementById('st-end').innerText = "Unbekannt";
+                
+                // Die Barrikaden auf Grau/Schwarz ändern (sieht nach "Abgeschaltet" statt "Streik" aus)
+                const tapes = document.querySelectorAll('.barricade-tape');
+                tapes.forEach(t => {
+                    t.style.background = 'repeating-linear-gradient(45deg, #475569, #475569 20px, #1e293b 20px, #1e293b 40px)';
+                });
+
+                document.getElementById('strike-overlay').classList.remove('strike-hidden');
+            }
+        }).catch(e => console.error("Module Disabled Overlay Error:", e));
+    }
+
     return response;
 };
