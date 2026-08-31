@@ -272,6 +272,18 @@
 
             <!-- Register Form -->
             <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-4">
+                <!-- Instanz-Wähler -->
+                <div class="mb-4 relative">
+                    <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
+                    <select id="instanceSelect" onchange="switchInstance(this.value)"
+                        class="w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
+                        <option value="https://api.limazon.v6.rocks"> Hauptserver (Limazon Universe)</option>
+                        <option value="https://api.tfl.limazon.v6.rocks">TFL</option>
+                        <!-- Hier kommen weitere Instanzen hinzu -->
+                    </select>
+                    <!-- Kleiner Pfeil fürs Design -->
+                    <span class="absolute right-4 top-[38px] pointer-events-none text-gray-500">▼</span>
+                </div>
                 <div>
                     <input type="text" id="regUsername" required placeholder="Benutzername (Min. 3 Zeichen)"
                         class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
@@ -904,7 +916,7 @@
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
                 onclick="nav('themes/sharktank.html')"
-                data-tags="investor löwen shark tank geld pitch startup business ki">
+                data-tags="investor löwen shark tank geld pitch startup business ki höhle barbara">
                 <div
                     class="h-32 bg-gradient-to-br from-cyan-800 via-blue-900 to-slate-900 flex items-center justify-center relative overflow-hidden">
                     <span class="text-6xl card-icon">🦈</span>
