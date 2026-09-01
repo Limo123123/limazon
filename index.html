@@ -327,22 +327,34 @@
         </div>
 
         <header class="text-center mb-12 relative">
-            <div class="absolute right-0 top-0 text-right hidden sm:block">
-                <p class="text-sm text-gray-400">Eingeloggt als</p>
-                <p id="navUsername" class="text-lg font-bold text-blue-400">...</p>
-                <button onclick="handleLogout()"
-                    class="text-xs text-red-400 hover:text-red-300 mt-1 underline">Logout</button>
+            
+            <div class="sm:absolute sm:right-0 sm:top-0 flex flex-col items-center sm:items-end mb-6 sm:mb-0">
+                <div class="inline-flex items-center gap-3 bg-gray-900/60 sm:bg-transparent border border-gray-800 sm:border-none rounded-full px-4 py-1.5 text-xs sm:p-0 sm:rounded-none">
+                    <div class="text-gray-400">
+                        <span class="hidden sm:inline">Spieler:</span>
+                        <span class="sm:hidden">👤</span> 
+                        <span id="navUsername" class="font-bold text-blue-400 ml-0.5">...</span>
+                    </div>
+                    
+                    <div class="w-px h-3 bg-gray-700"></div>
+                    
+                    <div class="flex items-center gap-1.5" title="Aktueller Server">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="navServer" class="font-mono text-emerald-400 font-bold truncate max-w-[120px] sm:max-w-none">...</span>
+                    </div>
+                </div>
+                
+                <button onclick="handleLogout()" class="text-[10px] sm:text-xs text-red-500/80 hover:text-red-400 mt-2 sm:mt-1 underline decoration-red-500/30">Abmelden</button>
             </div>
 
-            <h1 class="text-4xl sm:text-5xl md:text-7xl font-black mb-4 tracking-tighter">
+            <!-- Haupttitel mit minimalem Abstand nach oben auf dem Handy -->
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-black mb-4 tracking-tighter pt-2 sm:pt-0">
                 Limazon<span class="text-blue-500">.</span><wbr>Universe
             </h1>
             <p class="text-xl text-gray-400 font-light">Willkommen im Hub.</p>
 
             <div class="mt-8 relative max-w-md mx-auto">
-                <input type="text" id="searchInput"
-                    class="w-full pl-12 pr-4 py-4 bg-gray-900/80 border border-gray-700 rounded-2xl text-white input-glow focus:outline-none transition-all"
-                    placeholder="Suche Module...">
+                <input type="text" id="searchInput" class="w-full pl-12 pr-4 py-4 bg-gray-900/80 border border-gray-700 rounded-2xl text-white input-glow focus:outline-none transition-all" placeholder="Suche Module...">
                 <span class="absolute left-4 top-4 opacity-50">🔍</span>
             </div>
         </header>
@@ -1161,7 +1173,24 @@
         }
 
         function showPortal(username, instant = false) {
+            // Username setzen
             document.getElementById('navUsername').textContent = username;
+
+            const currentApi = window.LIMO_API || "https://api.limazon.v6.rocks";
+            let serverName = "Hauptserver";
+            
+            if (currentApi.includes("api.tfl.limazon.v6.rocks")) {
+                serverName = "TFL Instanz";
+            } else if (currentApi !== "https://api.limazon.v6.rocks") {
+                // Falls es eine custom Instanz ist, extrahieren wir die Subdomain aus der URL
+                try {
+                    const host = new URL(currentApi).hostname;
+                    serverName = host.replace('.limazon.v6.rocks', '').toUpperCase();
+                } catch(e) {
+                    serverName = "Custom Instanz";
+                }
+            }
+            document.getElementById('navServer').textContent = serverName;
 
             if (instant) {
                 authScreen.classList.add('hidden');
@@ -1170,7 +1199,6 @@
                 loadAd();
             } else {
                 authScreen.classList.add('opacity-0');
-
                 setTimeout(() => {
                     authScreen.classList.add('hidden');
                     mainContent.classList.remove('hidden');
