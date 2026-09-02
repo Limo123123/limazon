@@ -1,0 +1,443 @@
+<!DOCTYPE html><html lang="de"><head>
+    <script src="/themes/js/config.js?v=1788215655"></script>
+    <script src="/themes/js/security.js?v=1788215655"></script>
+    <script src="/themes/js/limo-global.js?v=1788215655" data-page="sharktank"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Die Höhle der Löwen - Limazon</title>
+    <link href="/assets_offline/1788387924118_dl_asset_famil.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --card-bg: #151a23;
+            --border-color: #2a303c;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, rgba(79, 172, 254, 0.1), transparent 400px);
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Geändert von center, damit man besser scrollen kann */
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            color: var(--text-main);
+        }
+
+        .shark-tank-container {
+            width: 100%;
+            max-width: 550px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .shark-tank-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .header-content {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: inline-block;
+            filter: drop-shadow(0 0 10px rgba(79, 172, 254, 0.5));
+        }
+
+        .shark-header h2 {
+            margin: 0 0 10px 0;
+            font-weight: 800;
+            font-size: 1.8rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .shark-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .form-group input, 
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.1);
+        }
+
+        .btn-pitch {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+            margin-top: 10px;
+        }
+
+        .btn-pitch:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(79, 172, 254, 0.4); }
+        .btn-pitch:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* --- RESPONSE BOX --- */
+        .shark-response {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            animation: popIn 0.4s ease-out forwards;
+        }
+
+        .shark-response h3 { margin: 0 0 15px 0; font-size: 1.5rem; font-weight: 800; }
+        .shark-response p { font-size: 0.95rem; line-height: 1.6; margin: 0 0 15px 0; }
+        .shark-response.success { background: var(--success-bg); border: 2px solid var(--success); }
+        .shark-response.success h3 { color: var(--success); }
+        .shark-response.rejected { background: var(--danger-bg); border: 2px solid var(--danger); }
+        .shark-response.rejected h3 { color: var(--danger); }
+        
+        .payout-amount { font-size: 2rem; font-weight: 800; margin-top: 10px; letter-spacing: -1px; }
+
+        /* --- LEADERBOARD STYLES --- */
+        .leaderboard-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px dashed var(--border-color);
+        }
+
+        .leaderboard-section h3 {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .leaderboard-item:hover {
+            transform: scale(1.02);
+            border-color: rgba(79, 172, 254, 0.4);
+        }
+
+        .lb-rank {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+            font-weight: 800;
+            color: var(--text-muted);
+        }
+
+        /* Medaillen-Glow für Top 3 */
+        .lb-rank.gold { filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6)); }
+        .lb-rank.silver { filter: drop-shadow(0 0 8px rgba(192, 192, 192, 0.6)); }
+        .lb-rank.bronze { filter: drop-shadow(0 0 8px rgba(205, 127, 50, 0.6)); }
+
+        .lb-details {
+            flex: 1;
+            margin-left: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .lb-user {
+            font-weight: 800;
+            color: var(--secondary);
+            font-size: 1rem;
+        }
+
+        .lb-startup {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lb-amount {
+            font-weight: 800;
+            color: var(--success);
+            font-size: 1.2rem;
+            text-align: right;
+            min-width: 90px;
+        }
+
+        .spinner { width: 22px; height: 22px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; }
+        .spinner.dark { margin: 0 auto; border-top-color: var(--secondary); }
+        .hidden { display: none !important; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.9) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="shark-tank-container">
+        <div class="header-content">
+            <span class="header-icon">🦈</span>
+            <div class="shark-header">
+                <h2>Die Höhle der Löwen</h2>
+                <p>Überzeuge die knallharten Investoren <b>Frank Limo</b>, <b>Barbara</b> und <b>Carsten</b>. Ist deine Idee genial, wirst du reich. Ist sie Müll, fliegst du raus.</p>
+            </div>
+        </div>
+
+        <!-- Pitch Formular -->
+        <form id="pitchForm" class="shark-form">
+            <div class="form-group">
+                <label for="startupName">Name deines Startups</label>
+                <input type="text" id="startupName" placeholder="z.B. Limo-Aura Wasser" minlength="3" maxlength="50" required="">
+            </div>
+
+            <div class="form-group">
+                <label for="requestedAmount">Gewünschtes Investment ($)</label>
+                <input type="number" id="requestedAmount" placeholder="z.B. 25000" min="100" max="50000" required="">
+                <small>Maximal $50.000 möglich.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="pitchDescription">Dein Pitch (Sei kreativ!)</label>
+                <textarea id="pitchDescription" rows="4" placeholder="Wir revolutionieren den Markt, indem wir Leitungswasser abfüllen und..." minlength="20" maxlength="1000" required=""></textarea>
+            </div>
+
+            <button type="submit" id="submitPitchBtn" class="btn-pitch">
+                <span id="btnText">Idee pitchen!</span>
+                <div id="btnSpinner" class="spinner hidden"></div>
+            </button>
+        </form>
+
+        <!-- Response Box -->
+        <div id="sharkResponse" class="shark-response hidden">
+            <h3 id="responseTitle"></h3>
+            <p id="responseFeedback"></p>
+            <div id="responsePayout" class="payout-amount"></div>
+        </div>
+
+        <div class="leaderboard-section">
+            <h3>🏆 Die größten Deals</h3>
+            <div id="leaderboardList" class="leaderboard-list">
+                <!-- Spinner läuft, bis Daten geladen sind -->
+                <div class="spinner dark" id="lbSpinner"></div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        // 1. Beim Laden der Seite direkt das Leaderboard abrufen
+        document.addEventListener('DOMContentLoaded', loadLeaderboard);
+
+        // 2. Formular Logic
+        document.getElementById('pitchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('submitPitchBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const responseBox = document.getElementById('sharkResponse');
+            
+            btn.disabled = true;
+            btnText.textContent = "Die Löwen streiten...";
+            btnSpinner.classList.remove('hidden');
+            responseBox.classList.add('hidden');
+
+            const payload = {
+                startupName: document.getElementById('startupName').value,
+                requestedAmount: document.getElementById('requestedAmount').value,
+                pitchDescription: document.getElementById('pitchDescription').value
+            };
+
+            try {
+                const response = await fetch(window.LIMO_API + `/api/investors/pitch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || "Fehler beim Pitch.");
+                    resetButton();
+                    return;
+                }
+
+                renderSharkResponse(data);
+
+                // Wenn Geld gutgeschrieben wurde, Leaderboard aktualisieren!
+                if (data.invested) {
+                    loadLeaderboard();
+                }
+
+                if (data.newBalance !== undefined && typeof window.updateNavBalance === 'function') {
+                    window.updateNavBalance(data.newBalance);
+                }
+
+            } catch (err) {
+                console.error("Pitch Error:", err);
+                alert("Der Server ist offline oder die Löwen schlafen gerade.");
+            } finally {
+                resetButton();
+            }
+
+            function resetButton() {
+                btn.disabled = false;
+                btnText.textContent = "Idee pitchen!";
+                btnSpinner.classList.add('hidden');
+            }
+        });
+
+        // 3. UI Formatierung für die KI-Antwort
+        function renderSharkResponse(data) {
+            const responseBox = document.getElementById('sharkResponse');
+            const title = document.getElementById('responseTitle');
+            const feedback = document.getElementById('responseFeedback');
+            const payout = document.getElementById('responsePayout');
+
+            responseBox.classList.remove('hidden', 'success', 'rejected');
+
+            // Zeilenumbrüche an den [BR]-Tags zerschneiden und Namen fett machen
+            let formattedLines = data.feedback.split(/\[BR\]/i).map(line => {
+                return line.trim().replace(/^(.*?):/, '<b>$1:</b>');
+            });
+            let formattedFeedback = formattedLines.join('<br><br>');
+
+            if (data.invested) {
+                responseBox.classList.add('success');
+                title.innerHTML = "🤝 DEAL PERFEKT!";
+                feedback.innerHTML = formattedFeedback;
+                payout.textContent = `+ $${data.payout.toLocaleString()}`;
+                payout.style.color = "var(--success)";
+                document.getElementById('pitchForm').reset();
+            } else {
+                responseBox.classList.add('rejected');
+                title.innerHTML = "🛑 ABGELEHNT!";
+                feedback.innerHTML = formattedFeedback;
+                payout.textContent = "Kein Investment.";
+                payout.style.color = "var(--danger)";
+            }
+        }
+
+        // 4. Leaderboard Fetch & Render Logik
+        async function loadLeaderboard() {
+            const listContainer = document.getElementById('leaderboardList');
+            
+            try {
+                const res = await fetch(window.LIMO_API + `/api/investors/leaderboard`, { 
+                    credentials: 'include' 
+                });
+                
+                if (!res.ok) throw new Error("Netzwerkfehler");
+                const data = await res.json();
+                
+                listContainer.innerHTML = ''; // Liste leeren
+
+                if (data.leaderboard && data.leaderboard.length > 0) {
+                    data.leaderboard.forEach((deal, index) => {
+                        // Medaillen und Ränge bestimmen
+                        let rankText = `#${index + 1}`;
+                        let rankClass = '';
+                        
+                        if (index === 0) { rankText = '🥇'; rankClass = 'gold'; }
+                        else if (index === 1) { rankText = '🥈'; rankClass = 'silver'; }
+                        else if (index === 2) { rankText = '🥉'; rankClass = 'bronze'; }
+
+                        // HTML für jedes Item erstellen
+                        const item = document.createElement('div');
+                        item.className = 'leaderboard-item';
+                        item.innerHTML = `
+                            <div class="lb-rank ${rankClass}">${rankText}</div>
+                            <div class="lb-details">
+                                <div class="lb-user">${deal.username}</div>
+                                <div class="lb-startup">${deal.startupName}</div>
+                            </div>
+                            <div class="lb-amount">$${deal.amount.toLocaleString()}</div>
+                        `;
+                        listContainer.appendChild(item);
+                    });
+                } else {
+                    listContainer.innerHTML = '<p style="text-align:center; color: var(--text-muted); padding: 15px;">Noch hat sich niemand getraut. Sei der Erste!</p>';
+                }
+            } catch (e) {
+                console.error("Leaderboard Error:", e);
+                listContainer.innerHTML = '<p style="text-align:center; color: var(--danger); padding: 15px;">Leaderboard konnte nicht geladen werden.</p>';
+            }
+        }
+    </script>
+
+</body></html>

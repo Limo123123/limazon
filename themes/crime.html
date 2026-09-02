@@ -1,0 +1,867 @@
+<!DOCTYPE html><html lang="de"><head>
+    <script src="/themes/js/config.js?v=1788215655"></script>
+    <script src="/themes/js/security.js?v=1788215655"></script>
+    <script src="/themes/js/limo-global.js?v=1788215655" data-page="crime"></script>
+    <meta name="robots" content="index, follow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limo Underground 💀</title>
+    <script src="/assets_offline/1788387909213_dl_asset.css"></script>
+    <link href="/assets_offline/1788387915222_dl_asset_famil.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #ccc;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+        .font-mono { font-family: 'Courier Prime', monospace; }
+
+        /* Background Grid */
+        .bg-grid {
+            position: fixed; inset: 0; z-index: -1; opacity: 0.15;
+            background-image: linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Glass Panels */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 50, 50, 0.15);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Tabs */
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover { color: #fff; }
+
+        .tab-btn.active {
+            color: #ef4444; border-color: #ef4444;
+            background: linear-gradient(to top, rgba(239, 68, 68, 0.1), transparent);
+        }
+
+        .tab-btn.active-heist {
+            color: #eab308; border-color: #eab308;
+            background: linear-gradient(to top, rgba(234, 179, 8, 0.1), transparent);
+        }
+
+        .tab-btn.active-boss {
+            color: #a855f7; border-color: #a855f7;
+            background: linear-gradient(to top, rgba(168, 85, 247, 0.1), transparent);
+        }
+
+        /* Inputs */
+        .cyber-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: #ef4444;
+            font-family: 'Courier Prime', monospace;
+            transition: 0.3s;
+        }
+        .cyber-input:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+            outline: none;
+        }
+
+        /* Buttons */
+        .btn-glitch {
+            position: relative; overflow: hidden; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;
+        }
+        .btn-glitch:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        .btn-glitch:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn { padding: 12px 20px; border-radius: 12px; font-weight: bold; transition: all 0.2s; cursor: pointer; }
+        .btn-red { background: #ef4444; color: white; }
+        .btn-red:hover { background: #dc2626; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+        .btn-gray { background: #1e293b; color: white; border: 1px solid #334155; }
+        .btn-gray:hover { background: #334155; }
+
+        /* Heist Terminal */
+        .terminal {
+            background: #080808; border: 1px solid #333; padding: 15px; font-family: 'Courier Prime', monospace; font-size: 0.85rem;
+            color: #22c55e; height: 150px; overflow-y: auto; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8); position: relative;
+        }
+        .terminal::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
+        /* Firewall Bar */
+        .fw-bar-container { background: #111; height: 24px; border-radius: 4px; overflow: hidden; border: 1px solid #333; position: relative; }
+        .fw-bar-fill { height: 100%; background: repeating-linear-gradient(45deg, #b91c1c, #b91c1c 10px, #991b1b 10px, #991b1b 20px); transition: width 0.5s ease; }
+        .fw-open .fw-bar-fill { background: #22c55e; box-shadow: 0 0 20px #22c55e; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Secret Glitch */
+        @keyframes secret-shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); filter: hue-rotate(90deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); filter: invert(1); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); filter: hue-rotate(45deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); filter: invert(0); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .trigger-active { animation: secret-shake 0.2s infinite; cursor: pointer; }
+        #secret-flash { position: fixed; inset: 0; background: red; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+
+        /* Panic Mode (Wenn verhaftet) */
+        .panic-mode { animation: red-alert 1.5s infinite; pointer-events: none; }
+        .panic-content { pointer-events: auto; }
+        @keyframes red-alert {
+            0% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
+            50% { box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.5); }
+            100% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
+        }
+
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+    
+</head>
+
+<body class="flex flex-col items-center min-h-screen p-4">
+
+    <!-- OVERLAY: VERHÖRZIMMER (Nur sichtbar wenn needsToSnitch = true) -->
+    <div id="snitch-overlay" class="hidden fixed inset-0 z-50 bg-black/95 panic-mode flex items-center justify-center p-4">
+        <div class="glass-panel panic-content p-8 rounded-2xl border-2 border-red-600 max-w-md w-full text-center shadow-[0_0_50px_rgba(239,68,68,0.3)]">
+            <h1 class="text-5xl mb-4">🚨</h1>
+            <h2 class="text-3xl font-black text-red-500 mb-2 tracking-widest">RAZZIA!</h2>
+            <!-- FIX: Hier hat der Text eine ID bekommen, damit wir ihn überschreiben können -->
+            <p id="snitch-text" class="text-gray-300 text-sm mb-6">Das SEK hat dich hochgenommen! Nenne uns sofort den Namen deines Dealers, sonst wanderst du in den Knast und verlierst dein Geld.</p>
+            
+            <p id="snitch-attempts" class="text-sm font-bold text-yellow-500 mb-4 bg-yellow-900/30 py-2 rounded border border-yellow-500/30">Du hast noch 3 Versuche.</p>
+            
+            <input type="text" id="snitch-name" placeholder="Name des Dealers..." class="cyber-input w-full p-4 rounded-xl text-center font-bold tracking-wider mb-4">
+            
+            <button onclick="snitchDealer()" class="btn-glitch w-full py-4 bg-red-600 hover:bg-red-500 text-black rounded font-bold text-lg shadow-lg shadow-red-900/20">
+                VERRATEN &amp; DEAL AUSHANDELN
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-grid"></div>
+
+    <!-- Header / Yakuza Entry -->
+    <div class="w-full max-w-2xl flex justify-between items-center mb-8 mt-4">
+        <div class="flex items-center gap-3">
+            <div id="secret-skull" class="w-10 h-10 bg-red-900/20 border border-red-500/50 rounded flex items-center justify-center text-2xl cursor-pointer select-none active:scale-95 transition-transform">
+                💀
+            </div>
+            <div id="secret-flash"></div>
+            <div>
+                <h1 class="text-2xl font-bold text-white tracking-wider">UNDERGROUND</h1>
+                <p class="text-xs text-red-500 font-mono">CONNECTION: ENCRYPTED</p>
+            </div>
+        </div>
+        <div class="text-right">
+            <a href="/" class="text-gray-500 hover:text-white transition-colors text-[10px] uppercase font-bold tracking-widest block mb-1">← DASHBOARD</a>
+            <div id="user-balance" class="text-emerald-400 font-mono font-bold bg-emerald-900/20 px-3 py-1 rounded border border-emerald-500/30 text-sm inline-block">Lade...</div>
+        </div>
+    </div>
+
+    <div id="alert-box" class="hidden w-full max-w-2xl mb-6 text-center p-4 rounded-xl font-bold text-sm shadow-lg border"></div>
+
+    <div class="glass-panel w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col min-h-[600px] mb-12">
+
+        <!-- TABS -->
+        <div class="flex border-b border-white/10 bg-black/40 overflow-x-auto">
+            <button onclick="switchTab('rob')" id="tab-rob-btn" class="tab-btn px-6 py-4 font-bold text-sm uppercase tracking-widest active">
+                🔫 Überfall
+            </button>
+            <button onclick="switchTab('cartel')" id="tab-cartel-btn" class="tab-btn px-6 py-4 font-bold text-sm uppercase tracking-widest">
+                💊 Kartell
+            </button>
+            <button onclick="switchTab('heist')" id="tab-heist-btn" class="tab-btn px-6 py-4 font-bold text-sm uppercase tracking-widest">
+                💰 Heist
+            </button>
+            <button onclick="switchTab('security')" id="tab-security-btn" class="tab-btn px-6 py-4 font-bold text-sm uppercase tracking-widest">
+                🛡️ Defense
+            </button>
+            <button onclick="switchTab('boss')" id="tab-boss-btn" class="tab-btn px-6 py-4 font-bold text-sm uppercase tracking-widest hidden">
+                👑 Boss
+            </button>
+        </div>
+
+        <!-- TAB: ROBBERY -->
+        <div id="tab-rob" class="p-8 flex flex-col gap-6 fade-in">
+            <div class="text-center mb-4">
+                <h2 class="text-3xl font-bold text-white mb-2">TARGET ACQUISITION</h2>
+                <p class="text-gray-400 text-sm">PvP Zone. Raube andere User aus.<br>Hohes Risiko, hohe Belohnung.</p>
+            </div>
+
+            <div class="bg-black/30 p-6 rounded-xl border border-white/5">
+                <label class="block text-xs font-mono text-red-400 mb-2 uppercase">Ziel-Benutzername</label>
+                <input type="text" id="target-name" placeholder="Name eingeben..." class="cyber-input w-full p-4 rounded text-lg text-center">
+            </div>
+
+            <button id="btn-start-rob" onclick="commitCrime()" class="btn-glitch w-full py-4 bg-red-600 hover:bg-red-500 text-black rounded font-bold text-lg shadow-lg shadow-red-900/20">
+                EXECUTE ROBBERY
+            </button>
+
+            <div id="rob-result" class="hidden p-4 rounded border text-center animate-pulse mt-2"></div>
+        </div>
+
+        <!-- TAB: CARTELL -->
+        <div id="tab-cartel" class="p-8 flex flex-col gap-6 hidden fade-in">
+            <div class="text-center mb-4">
+                <h2 class="text-3xl font-bold text-white mb-2 text-cyan-400">PHARMA &amp; SYNDIKAT</h2>
+                <p class="text-gray-400 text-sm">Werde Teil der Familie oder pushe deine Limits.</p>
+            </div>
+
+            <!-- Konsum & Inventar -->
+            <div class="bg-black/30 p-6 rounded-xl border border-cyan-900/50">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-cyan-400 mb-1">Limo-Kristalle konsumieren</h3>
+                        <p class="text-xs text-gray-400">85% Mega-Buff | 10% Überdosis | 5% Razzia</p>
+                    </div>
+                    <div class="bg-cyan-900/30 px-3 py-1 rounded border border-cyan-500/30 text-cyan-300 font-mono text-sm">
+                        Auf Lager: <span id="crystal-count" class="font-bold">0</span>
+                    </div>
+                </div>
+                <button onclick="useCrystals()" class="btn-glitch bg-cyan-600 hover:bg-cyan-500 text-black w-full py-3 rounded">Kristall nehmen 💠</button>
+            </div>
+
+            <!-- Dealer Status & Bewerbung -->
+            <div id="dealer-status-box" class="bg-black/30 p-6 rounded-xl border border-white/5">
+                <div id="apply-section">
+                    <h3 class="text-lg font-bold mb-2">Beim Kartell bewerben</h3>
+                    <p class="text-sm text-gray-400 mb-4">Werde Teil des Syndikats. Du kannst günstig Kristalle beim Boss bestellen und im Darknet weiterverkaufen.</p>
+                    <textarea id="apply-motivation" placeholder="Warum bist du der Richtige für den Job?" class="cyber-input w-full p-4 rounded h-24 mb-4 text-sm" maxlength="500"></textarea>
+                    <button onclick="applyForCartel()" class="btn btn-gray w-full text-white">Akte einreichen</button>
+                </div>
+
+                <div id="active-dealer-section" class="hidden">
+                    <h3 class="text-lg font-bold text-green-400 mb-2">Du gehörst zur Familie 🕴️</h3>
+                    <p class="text-sm text-gray-400 mb-4">Kaufe die Kristalle hier direkt an der Quelle und verticke sie im Darknet teurer weiter!</p>
+                    
+                    <button onclick="buyStock()" class="btn-glitch bg-green-600 hover:bg-green-500 text-black w-full py-3 rounded mb-4">
+                        50x Kristalle kaufen ($25.000)
+                    </button>
+
+                    <div class="bg-red-900/20 border border-red-500/20 p-4 rounded-xl text-center">
+                        <span class="block text-xs text-red-400 uppercase tracking-widest mb-1">Deine Verwarnungen</span>
+                        <span id="dealer-strikes" class="text-3xl font-black text-red-500">0 / 3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: HEIST -->
+        <div id="tab-heist" class="p-8 flex flex-col gap-6 hidden fade-in">
+            <div class="flex justify-between items-end border-b border-white/10 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-yellow-500">STAATSKASSE</h2>
+                    <p class="text-xs text-gray-500 font-mono">TARGET: CENTRAL BANK</p>
+                </div>
+                <div id="heist-pot" class="text-3xl font-mono text-white font-bold tracking-widest">$---</div>
+            </div>
+
+            <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                    <span id="fw-status-text" class="text-red-400">FIREWALL INTEGRITY</span>
+                    <span id="fw-percent" class="text-white">100%</span>
+                </div>
+                <div id="firewall-container" class="fw-bar-container">
+                    <div id="fw-bar" class="fw-bar-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button id="btn-hack" onclick="doHack()" class="btn-glitch bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white py-6 rounded flex flex-col items-center gap-1">
+                    <span class="text-2xl">💻</span>
+                    <span class="text-xs font-mono">BRUTE FORCE ($500)</span>
+                </button>
+
+                <button id="btn-raid" onclick="doRaid()" disabled="" class="btn-glitch bg-black border border-yellow-600/30 text-yellow-600/50 py-6 rounded flex flex-col items-center gap-1 cursor-not-allowed">
+                    <span class="text-2xl">💣</span>
+                    <span class="text-xs font-mono" id="raid-subtext">LOCKED</span>
+                </button>
+            </div>
+
+            <div class="terminal rounded" id="heist-console">
+                <div class="mb-1 text-gray-500">&gt; System initialized...</div>
+                <div class="mb-1 text-gray-500">&gt; Connected to Limazon Underground Network.</div>
+                <div class="mb-1 text-green-500">&gt; Ready for input_</div>
+            </div>
+        </div>
+
+        <!-- TAB: SECURITY -->
+        <div id="tab-security" class="p-8 flex flex-col gap-6 hidden fade-in">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-white">HOME DEFENSE</h2>
+                <p class="text-gray-400 text-sm">Überwache deine Sicherheit.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-900/50 p-4 rounded border border-white/5 text-center">
+                    <div class="text-xs text-gray-500 uppercase mb-1">Risiko-Level</div>
+                    <div id="risk-display" class="text-3xl font-bold text-green-400">0%</div>
+                </div>
+                <div class="bg-slate-900/50 p-4 rounded border border-white/5 text-center flex flex-col justify-center">
+                    <div id="risk-details" class="text-xs text-gray-400">Lade Status...</div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-bold text-white mb-3 uppercase tracking-wider border-b border-white/10 pb-2">Vorfall-Protokoll</h3>
+                <div id="log-list" class="space-y-2 max-h-[250px] overflow-y-auto pr-2">
+                    <div class="text-center text-gray-600 text-xs py-4">Lade Logs...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: BOSS PANEL -->
+        <div id="tab-boss" class="p-8 flex flex-col gap-6 hidden fade-in">
+            <div class="text-center mb-2">
+                <h2 class="text-2xl font-bold text-purple-400">BOSS PANEL</h2>
+                <p class="text-gray-400 text-sm">Organisierte Kriminalität verwalten.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-black/30 p-4 rounded-xl border border-purple-500/30 text-center">
+                    <span class="block text-[10px] text-purple-400 uppercase mb-1">Kristalle im Umlauf</span>
+                    <span id="boss-circulation" class="text-2xl font-bold text-white">0</span>
+                </div>
+                <div class="bg-black/30 p-4 rounded-xl border border-purple-500/30 text-center">
+                    <span class="block text-[10px] text-purple-400 uppercase mb-1">Aktive Dealer</span>
+                    <span id="boss-dealers-count" class="text-2xl font-bold text-white">0</span>
+                </div>
+            </div>
+
+            <div class="bg-black/30 p-6 rounded-xl border border-white/5">
+                <h3 class="text-lg font-bold mb-4">Offene Bewerbungen</h3>
+                <div id="boss-applications" class="space-y-3 max-h-48 overflow-y-auto pr-2">
+                    <p class="text-sm text-gray-500">Lade Akten...</p>
+                </div>
+            </div>
+
+            <div class="bg-black/30 p-6 rounded-xl border border-white/5">
+                <h3 class="text-lg font-bold mb-4 text-red-400">Straßen-Crew (Dealer)</h3>
+                <div id="boss-active-dealers" class="space-y-3 max-h-48 overflow-y-auto pr-2">
+                    <p class="text-sm text-gray-500">Lade Akten...</p>
+                </div>
+            </div>
+            
+            <div class="bg-black/30 p-6 rounded-xl border border-yellow-500/30">
+                <h3 class="text-lg font-bold mb-2 text-yellow-500">Verräter entlarven ($500.000)</h3>
+                <p class="text-xs text-gray-400 mb-4">Wurde ein Dealer hochgenommen? Hacke die Polizeiakten, um zu sehen, wer gesungen hat.</p>
+                <div class="flex gap-2">
+                    <input type="text" id="hack-dealer-name" placeholder="Name des Dealers..." class="cyber-input flex-grow p-3 rounded text-sm">
+                    <button onclick="hackSnitchLogs()" class="btn-glitch bg-yellow-600 hover:bg-yellow-500 text-black px-4 rounded text-sm">Hacken</button>
+                </div>
+            </div>
+        </div>
+
+    </div><script>
+        const API_URL = window.LIMO_API;
+        let heistInterval = null;
+        let currentUser = null;
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    currentUser = await res.json();
+                    document.getElementById('user-balance').innerText = formatMoneySmart(currentUser.balance);
+                    
+                    if (currentUser.isAdmin) {
+                        document.getElementById('tab-boss-btn').classList.remove('hidden');
+                    }
+                } else {
+                    window.location.href = '/'; 
+                }
+            } catch (e) { console.error(e); }
+            
+            loadCrimeStatus();
+            loadInventory();
+        });
+
+        // --- UTILS ---
+        function formatMoneySmart(amount) {
+            if (amount >= 1.0e+12) return '$' + (amount / 1.0e+12).toFixed(2) + ' Bio.'; 
+            if (amount >= 1.0e+9) return '$' + (amount / 1.0e+9).toFixed(2) + ' Mrd.'; 
+            if (amount >= 1.0e+6) return '$' + (amount / 1.0e+6).toFixed(2) + ' Mio.';
+            if (amount >= 1.0e+3) return '$' + (amount / 1.0e+3).toFixed(2) + ' k';
+            return '$' + amount.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function showAlert(msg, isError = false) {
+            const box = document.getElementById('alert-box');
+            box.innerText = msg;
+            box.className = `mb-6 text-center p-4 rounded-xl font-bold text-sm block shadow-lg fade-in ${isError ? 'bg-red-900/30 text-red-400 border border-red-500/50' : 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/50'}`;
+            setTimeout(() => { box.classList.add('hidden'); }, 6000);
+        }
+
+        // --- TABS ---
+        function switchTab(tabName) {
+            ['rob', 'heist', 'security', 'cartel', 'boss'].forEach(t => {
+                const tabEl = document.getElementById(`tab-${t}`);
+                const btnEl = document.getElementById(`tab-${t}-btn`);
+                if (tabEl) tabEl.classList.add('hidden');
+                if (btnEl) {
+                    btnEl.classList.remove('active', 'active-heist', 'active-boss');
+                    btnEl.style.color = '#666';
+                }
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}-btn`);
+            activeBtn.style.color = ''; 
+
+            if (tabName === 'heist') {
+                activeBtn.classList.add('active-heist');
+                updateHeistData();
+                if (!heistInterval) heistInterval = setInterval(updateHeistData, 5000);
+            } else if (tabName === 'boss') {
+                activeBtn.classList.add('active-boss');
+                loadBossPanel();
+                if (heistInterval) { clearInterval(heistInterval); heistInterval = null; }
+            } else {
+                activeBtn.classList.add('active');
+                if (heistInterval) { clearInterval(heistInterval); heistInterval = null; }
+            }
+
+            if (tabName === 'security') loadSecurityData();
+        }
+
+        // --- STATUS LOADER ---
+        async function loadCrimeStatus() {
+            try {
+                const carRes = await fetch(`${API_URL}/api/cartel/status`, { credentials: 'include' });
+                if (carRes.ok) {
+                    const carData = await carRes.json();
+
+                    if (carData.isUnderArrest) {
+                        document.getElementById('snitch-overlay').classList.remove('hidden');
+                        document.getElementById('snitch-attempts').innerText = `Du hast noch ${carData.snitchAttemptsLeft} Versuche.`;
+                        
+                        // FIX: Hier schauen wir nach, ob eine Spezial-Nachricht im Speicher liegt!
+                        const specialMessage = localStorage.getItem('limo_raid_msg');
+                        if (specialMessage) {
+                            document.getElementById('snitch-text').innerText = specialMessage;
+                        } else {
+                            document.getElementById('snitch-text').innerText = "Das SEK hat dich hochgenommen! Nenne uns sofort den Namen deines Dealers, sonst wanderst du in den Knast und verlierst dein Geld.";
+                        }
+                    } else {
+                        document.getElementById('snitch-overlay').classList.add('hidden');
+                        localStorage.removeItem('limo_raid_msg'); // Wenn wir wieder frei sind, löschen wir den Speicher
+                    }
+
+                    if (carData.isDealer) {
+                        document.getElementById('apply-section').classList.add('hidden');
+                        document.getElementById('active-dealer-section').classList.remove('hidden');
+                        document.getElementById('dealer-strikes').innerText = `${carData.strikes} / 3`;
+                    }
+                }
+            } catch (e) { console.error("Status Load Error", e); }
+        }
+
+        async function loadSecurityData() {
+            try {
+                const response = await fetch(`${API_URL}/api/crime/security`, { credentials: 'include' });
+                const data = await response.json();
+
+                const riskEl = document.getElementById('risk-display');
+                const detailsEl = document.getElementById('risk-details');
+
+                if (data.isProtected) {
+                    riskEl.innerText = "0%";
+                    riskEl.className = "text-3xl font-bold text-blue-400";
+                    detailsEl.innerText = "Safe Mode aktiv (Admin/Armutsschutz).";
+                } else {
+                    riskEl.innerText = data.riskPercent + "%";
+                    const val = parseFloat(data.riskPercent);
+                    if (val < 20) riskEl.className = "text-3xl font-bold text-green-400";
+                    else if (val < 40) riskEl.className = "text-3xl font-bold text-yellow-400";
+                    else riskEl.className = "text-3xl font-bold text-red-500 animate-pulse";
+
+                    let info = "Basisrisiko";
+                    if (data.hasAlarm) info += " + Alarmanlage (-15% Risiko)";
+                    else info += " (Keine Alarmanlage)";
+                    detailsEl.innerText = info;
+                }
+
+                const list = document.getElementById('log-list');
+                list.innerHTML = "";
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const div = document.createElement('div');
+                        const date = new Date(log.timestamp).toLocaleString();
+                        if (log.success) {
+                            div.className = "bg-red-900/20 border-l-4 border-red-500 p-3 rounded text-sm";
+                            div.innerHTML = `<div class="flex justify-between font-bold text-red-300"><span>EINBRUCH!</span> <span>${date}</span></div>
+                                             <div><span class="text-white">${log.attackerName}</span> stahl <span class="text-red-400">$${log.amountLost}</span></div>`;
+                        } else {
+                            div.className = "bg-green-900/20 border-l-4 border-green-500 p-3 rounded text-sm";
+                            div.innerHTML = `<div class="flex justify-between font-bold text-green-300"><span>ABGEWEHRT</span> <span>${date}</span></div>
+                                             <div><span class="text-white">${log.attackerName}</span> ist gescheitert.</div>`;
+                        }
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerHTML = '<div class="text-center text-gray-600 text-xs py-4">Keine Einträge in der Sicherheits-Datenbank.</div>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadInventory() {
+            try {
+                const res = await fetch(`${API_URL}/api/inventory`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    const crystals = data.inventory.find(i => i.productId === 'limo_crystals');
+                    document.getElementById('crystal-count').innerText = crystals ? crystals.quantityOwned : "0";
+                }
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // === ROBBERY ===
+        // ==========================================
+        async function commitCrime() {
+            const target = document.getElementById('target-name').value;
+            const btn = document.getElementById('btn-start-rob');
+            const resBox = document.getElementById('rob-result');
+
+            if (!target) return;
+            btn.disabled = true; btn.innerText = "CALCULATING..."; resBox.className = "hidden";
+
+            try {
+                const response = await fetch(`${API_URL}/api/crime/rob`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', body: JSON.stringify({ targetUsername: target })
+                });
+
+                const data = await response.json();
+                btn.disabled = false; btn.innerText = "EXECUTE ROBBERY";
+                resBox.classList.remove('hidden');
+
+                if (response.ok) {
+                    document.getElementById('user-balance').innerText = formatMoneySmart(data.newBalance);
+                    if (data.success) {
+                        resBox.className = "p-4 rounded border text-center bg-green-900/30 border-green-500 text-green-400 mt-4";
+                        resBox.innerHTML = `<strong class="text-xl">ERFOLG!</strong><br>${data.message}`;
+                    } else {
+                        resBox.className = "p-4 rounded border text-center bg-red-900/30 border-red-500 text-red-400 mt-4";
+                        resBox.innerHTML = `<strong class="text-xl">FEHLSCHLAG!</strong><br>${data.message}`;
+                    }
+                } else {
+                    resBox.className = "p-4 rounded border text-center bg-red-900/30 border-red-500 text-red-400 mt-4";
+                    resBox.innerText = data.error || "Server Fehler.";
+                }
+            } catch (e) {
+                btn.disabled = false; alert("Netzwerkfehler");
+            }
+        }
+
+        // ==========================================
+        // === HEIST ===
+        // ==========================================
+        function logHeist(msg, type = 'info') {
+            const con = document.getElementById('heist-console');
+            const line = document.createElement('div');
+            let colorClass = 'text-green-500';
+            if (type === 'err') colorClass = 'text-red-500';
+            if (type === 'warn') colorClass = 'text-yellow-500';
+
+            const time = new Date().toLocaleTimeString('de-DE', { hour12: false });
+            line.className = `mb-1 ${colorClass} font-mono text-xs`;
+            line.innerHTML = `<span class="opacity-50">[${time}]</span> ${msg}`;
+            con.prepend(line);
+            if (con.children.length > 30) con.lastChild.remove();
+        }
+
+        async function updateHeistData() {
+            try {
+                const res = await fetch(`${API_URL}/api/heist/info`, { credentials: 'include' });
+                const data = await res.json();
+
+                const potEl = document.getElementById('heist-pot');
+                potEl.innerText = formatMoneySmart(data.treasuryBalance);
+                potEl.title = '$' + data.treasuryBalance.toLocaleString('de-DE');
+
+                const integrity = data.integrity.toFixed(1);
+                document.getElementById('fw-percent').innerText = integrity + '%';
+                const bar = document.getElementById('fw-bar');
+                bar.style.width = integrity + '%';
+
+                const fwContainer = document.getElementById('firewall-container');
+                const btnRaid = document.getElementById('btn-raid');
+                const btnHack = document.getElementById('btn-hack');
+                const raidText = document.getElementById('raid-subtext');
+                const fwText = document.getElementById('fw-status-text');
+
+                if (data.isOpen) {
+                    fwContainer.classList.add('fw-open');
+                    fwText.innerText = "SYSTEM EXPOSED"; fwText.className = "text-green-500 animate-pulse";
+                    bar.style.width = '100%';
+                    btnHack.disabled = true; btnHack.classList.add('opacity-30');
+                    btnRaid.disabled = false;
+                    btnRaid.classList.remove('bg-black', 'text-yellow-600/50', 'border-yellow-600/30', 'cursor-not-allowed');
+                    btnRaid.classList.add('bg-yellow-600', 'text-black', 'hover:bg-yellow-500', 'shadow-yellow-500/50', 'shadow-lg');
+                    raidText.innerText = "COST: $2000 | 25% CHANCE";
+                } else {
+                    fwContainer.classList.remove('fw-open');
+                    fwText.innerText = "FIREWALL INTEGRITY"; fwText.className = "text-red-400";
+                    btnHack.disabled = false; btnHack.classList.remove('opacity-30');
+                    btnRaid.disabled = true;
+                    btnRaid.className = "btn-glitch bg-black border border-yellow-600/30 text-yellow-600/50 py-6 rounded flex flex-col items-center gap-1 cursor-not-allowed";
+                    raidText.innerText = "LOCKED (WAIT FOR 0%)";
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function doHack() {
+            const btn = document.getElementById('btn-hack');
+            btn.disabled = true; btn.classList.add('opacity-50');
+            logHeist("Injecting payload...", "warn");
+            try {
+                const res = await fetch(`${API_URL}/api/heist/hack`, { method: 'POST', credentials: 'include' });
+                const json = await res.json();
+                if (res.ok) {
+                    logHeist("ACCESS GRANTED: " + json.message);
+                    updateHeistData();
+                    startHackCooldown(60);
+                } else {
+                    logHeist("ACCESS DENIED: " + json.error, "err");
+                    if (json.error.includes("überhitzt")) {
+                        setTimeout(() => { btn.disabled = false; btn.classList.remove('opacity-50'); }, 5000);
+                    } else { btn.disabled = false; btn.classList.remove('opacity-50'); }
+                }
+            } catch (e) {
+                logHeist("Connection lost.", "err");
+                btn.disabled = false; btn.classList.remove('opacity-50');
+            }
+        }
+
+        function startHackCooldown(seconds) {
+            const btn = document.getElementById('btn-hack');
+            const originalHTML = btn.innerHTML;
+            let left = seconds;
+            const interval = setInterval(() => {
+                left--;
+                btn.innerHTML = `<span class="text-2xl">⏳</span><span class="text-xs font-mono">COOLDOWN ${left}s</span>`;
+                if (left <= 0) {
+                    clearInterval(interval);
+                    btn.innerHTML = originalHTML; btn.disabled = false; btn.classList.remove('opacity-50');
+                }
+            }, 1000);
+        }
+
+        async function doRaid() {
+            if (!confirm("Einsatztrupp losschicken ($2000)?")) return;
+            logHeist("Deploying squad...", "warn");
+            try {
+                const res = await fetch(`${API_URL}/api/heist/start`, { method: 'POST', credentials: 'include' });
+                const json = await res.json();
+                if (res.ok) {
+                    if (json.success) {
+                        logHeist("💰 PAYDAY! " + json.message);
+                        alert("ERFOLG! " + json.message);
+                    } else {
+                        logHeist("💀 BUSTED! " + json.message, "err");
+                        alert("GESCHEITERT! " + json.message);
+                    }
+                    updateHeistData();
+                    const meRes = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+                    const meData = await meRes.json();
+                    document.getElementById('user-balance').innerText = formatMoneySmart(meData.balance);
+                } else { logHeist("Error: " + json.error, "err"); }
+            } catch (e) { logHeist("Network error", "err"); }
+        }
+
+        // ==========================================
+        // === CARTEL & DRUGS ===
+        // ==========================================
+        async function useCrystals() {
+            try {
+                const res = await fetch(`${API_URL}/api/drugs/use`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ drugId: 'limo_crystals' }),
+                    credentials: 'include' 
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    showAlert(data.message, data.event !== 'buff');
+                    loadInventory(); 
+                    if (data.event === 'raid') { 
+                        // FIX: Hier speichern wir die Celina-Nachricht ab, BEVOR das Fenster neu lädt
+                        localStorage.setItem('limo_raid_msg', data.message);
+                        setTimeout(loadCrimeStatus, 1500); 
+                    }
+                } else { showAlert(data.error, true); }
+            } catch (e) { showAlert("Verbindungsfehler.", true); }
+        }
+
+        async function snitchDealer() {
+            const dealerName = document.getElementById('snitch-name').value;
+            try {
+                const res = await fetch(`${API_URL}/api/cartel/snitch`, { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dealerName }), credentials: 'include' 
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message); 
+                    document.getElementById('snitch-overlay').classList.add('hidden');
+                    localStorage.removeItem('limo_raid_msg'); // Deal gemacht, Speicher leeren
+                    loadCrimeStatus();
+                } else {
+                    alert(data.error); 
+                    loadCrimeStatus(); 
+                }
+            } catch (e) { alert("Verbindungsfehler."); }
+        }
+
+        async function applyForCartel() {
+            const motivation = document.getElementById('apply-motivation').value;
+            try {
+                const res = await fetch(`${API_URL}/api/cartel/apply`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ motivation }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showAlert(data.message);
+                    document.getElementById('apply-motivation').value = '';
+                } else { showAlert(data.error, true); }
+            } catch (e) { showAlert("Verbindungsfehler.", true); }
+        }
+
+        async function buyStock() {
+            try {
+                const res = await fetch(`${API_URL}/api/cartel/buy-stock`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ drugId: 'limo_crystals', quantity: 50 }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showAlert(data.message);
+                    loadInventory();
+                } else { showAlert(data.error, true); }
+            } catch (e) { showAlert("Verbindungsfehler.", true); }
+        }
+
+        // ==========================================
+        // === BOSS PANEL ===
+        // ==========================================
+        async function loadBossPanel() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/cartel/dashboard`, { credentials: 'include' });
+                if (!res.ok) return;
+                const data = await res.json();
+
+                document.getElementById('boss-circulation').innerText = data.marketStats.totalDrugsInCirculation;
+                document.getElementById('boss-dealers-count').innerText = data.marketStats.dealerCount;
+
+                const appList = document.getElementById('boss-applications');
+                if (data.applications.length === 0) appList.innerHTML = '<p class="text-sm text-gray-500">Keine neuen Bewerbungen.</p>';
+                else {
+                    appList.innerHTML = data.applications.map(app => `
+                        <div class="bg-black/30 p-3 rounded-lg border border-gray-700 flex justify-between items-center text-sm">
+                            <div><h4 class="font-bold text-white">${app.username}</h4><p class="text-xs text-gray-400 italic">"${app.motivation}"</p></div>
+                            <div class="flex gap-2">
+                                <button onclick="processApp('${app._id}', 'approve')" class="btn-glitch bg-green-600 hover:bg-green-500 text-white px-2 py-1 rounded">Ja</button>
+                                <button onclick="processApp('${app._id}', 'reject')" class="btn-glitch bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded">Nein</button>
+                            </div>
+                        </div>`).join('');
+                }
+
+                const dealerList = document.getElementById('boss-active-dealers');
+                if (data.dealers.length === 0) dealerList.innerHTML = '<p class="text-sm text-gray-500">Keine Dealer aktiv.</p>';
+                else {
+                    dealerList.innerHTML = data.dealers.map(d => `
+                        <div class="bg-red-900/20 p-3 rounded-lg border border-red-500/20 flex justify-between items-center text-sm">
+                            <div><h4 class="font-bold text-red-400">${d.username}</h4></div>
+                            <button onclick="fireDealer('${d._id}')" class="btn-glitch bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded">Razzia</button>
+                        </div>`).join('');
+                }
+            } catch (e) { console.error("Boss Panel Error", e); }
+        }
+
+        async function processApp(appId, action) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/cartel/applications/${appId}/process`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }), credentials: 'include'
+                });
+                const data = await res.json();
+                if(res.ok) { showAlert(data.message); loadBossPanel(); }
+                else { showAlert(data.error, true); }
+            } catch (e) {}
+        }
+
+        async function fireDealer(userId) {
+            if(!confirm("Diesen Dealer aus dem Kartell werfen und Razzia auslösen?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/admin/cartel/dealers/${userId}/fire`, { method: 'DELETE', credentials: 'include' });
+                const data = await res.json();
+                if(res.ok) { showAlert(data.message); loadBossPanel(); }
+                else { showAlert(data.error, true); }
+            } catch (e) {}
+        }
+
+        async function hackSnitchLogs() {
+            const dealerUsername = document.getElementById('hack-dealer-name').value;
+            if(!confirm(`Die Akte kostet $500.000. Willst du sehen, wer ${dealerUsername} verpfiffen hat?`)) return;
+            try {
+                const res = await fetch(`${API_URL}/api/cartel/boss/hack-files`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dealerUsername }), credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    if (data.betrayalLogs && data.betrayalLogs.length > 0) {
+                        const snitch = data.betrayalLogs[0].details.snitcher;
+                        alert(`🚨 AKTE GEHACKT:\nDer Verräter war: ${snitch}\nRäche dich!`);
+                    } else { alert(data.message || "Akte leer."); }
+                } else { showAlert(data.error, true); }
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // === YAKUZA SECRET ACCESS ===
+        // ==========================================
+        const skullBtn = document.getElementById('secret-skull');
+        let skullClicks = 0;
+        let skullTimer = null;
+
+        skullBtn.addEventListener('click', () => {
+            skullClicks++;
+            skullBtn.classList.add('trigger-active');
+            setTimeout(() => skullBtn.classList.remove('trigger-active'), 200);
+
+            clearTimeout(skullTimer);
+            skullTimer = setTimeout(() => { skullClicks = 0; }, 1000); 
+
+            if (skullClicks >= 7) {
+                clearTimeout(skullTimer); skullClicks = 0;
+                document.getElementById('secret-flash').style.opacity = '1';
+                setTimeout(() => { window.location.href = 'blackmarket.html'; }, 300);
+            }
+        });
+    </script>
+
+</body></html>

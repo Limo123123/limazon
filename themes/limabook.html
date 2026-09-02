@@ -1,0 +1,669 @@
+<!DOCTYPE html><html lang="de"><head>
+    <script src="/themes/js/config.js?v=1788215655"></script>
+    <script src="/themes/js/security.js?v=1788215655"></script>
+    <script src="/themes/js/limo-global.js?v=1788215655" data-page="limabook"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limabook</title>
+    <style>
+        /* Facebook Dark Mode Farbpalette */
+        :root {
+            --fb-bg: #18191a;
+            --fb-card: #242526;
+            --fb-hover: #3a3b3c;
+            --fb-text: #e4e6eb;
+            --fb-muted: #b0b3b8;
+            --fb-primary: #2d88ff;
+            --fb-border: #3e4042;
+            --border-radius: 8px;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--fb-bg);
+            color: var(--fb-text);
+            overflow-y: scroll;
+        }
+
+        /* NAVBAR */
+        header {
+            background-color: var(--fb-card);
+            height: 56px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--fb-border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 10px; }
+        .nav-logo {
+            width: 40px; height: 40px; background-color: var(--fb-primary);
+            color: white; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 1.5rem;
+            font-weight: bold; text-decoration: none; cursor: pointer;
+        }
+        .nav-search {
+            background-color: var(--fb-hover); border: none; border-radius: 20px;
+            padding: 10px 15px; color: var(--fb-text); font-size: 0.95rem;
+            width: 240px; outline: none;
+        }
+
+        .nav-center { display: flex; gap: 5px; flex-grow: 1; justify-content: center; }
+        .nav-icon {
+            width: 110px; height: 48px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.5rem; border-radius: var(--border-radius);
+            cursor: pointer; color: var(--fb-muted); transition: background 0.2s;
+        }
+        .nav-icon.active { color: var(--fb-primary); border-bottom: 3px solid var(--fb-primary); border-radius: 0; }
+        .nav-icon:hover:not(.active) { background-color: var(--fb-hover); }
+        .mobile-only { display: none; }
+
+        .nav-right { display: flex; gap: 10px; }
+        .nav-btn {
+            width: 40px; height: 40px; border-radius: 50%; background-color: var(--fb-hover);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.2rem; text-decoration: none; color: var(--fb-text);
+        }
+
+        /* LAYOUT */
+        .main-layout {
+            display: grid; grid-template-columns: 1fr 600px 1fr;
+            max-width: 1600px; margin: 0 auto; padding-top: 20px; gap: 20px;
+        }
+
+        /* --- MOBILANSICHT --- */
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; padding-top: 10px; }
+            .sidebar-left, .sidebar-right { display: none; }
+            
+            header { padding: 0 10px; }
+            .nav-search { width: 120px; font-size: 0.85rem; padding: 8px 10px; }
+            .nav-center { gap: 0; justify-content: space-evenly; }
+            .nav-icon { width: auto; flex-grow: 1; }
+            .mobile-only { display: flex; }
+            
+            .feed-container { padding: 0 10px; box-sizing: border-box; width: 100%; }
+        }
+
+        .sidebar-left, .sidebar-right { padding: 0 16px; position: sticky; top: 76px; height: calc(100vh - 76px); }
+        .menu-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px;
+            border-radius: var(--border-radius); cursor: pointer; font-weight: 500;
+        }
+        .menu-item:hover { background-color: var(--fb-hover); }
+        .menu-item img { width: 36px; height: 36px; border-radius: 50%; }
+
+        .sidebar-title {
+            color: var(--fb-muted); font-size: 1.05rem; font-weight: bold;
+            padding: 10px; border-bottom: 1px solid var(--fb-border); margin-bottom: 10px;
+        }
+
+        /* FEED & CARDS */
+        .feed-container { width: 100%; max-width: 600px; margin: 0 auto; }
+        
+        .view-header {
+            background-color: var(--fb-card); border-radius: var(--border-radius);
+            padding: 20px; margin-bottom: 16px; display: none; align-items: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .create-post {
+            background-color: var(--fb-card); border-radius: var(--border-radius);
+            padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .create-post-top { display: flex; gap: 10px; align-items: center; border-bottom: 1px solid var(--fb-border); padding-bottom: 12px; margin-bottom: 12px; }
+        .create-post-top img { width: 40px; height: 40px; border-radius: 50%; }
+        .create-post-top input {
+            flex-grow: 1; background-color: var(--fb-hover); border: none; border-radius: 20px;
+            padding: 10px 15px; color: var(--fb-text); font-size: 1.05rem; outline: none; cursor: pointer;
+        }
+        .create-post-top input:hover { background-color: #4e4f50; }
+        .create-post-bottom { display: flex; justify-content: space-around; }
+        .action-btn {
+            flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 8px; border-radius: var(--border-radius); color: var(--fb-muted);
+            font-weight: 600; cursor: pointer; background: none; border: none; font-size: 0.95rem;
+        }
+        .action-btn:hover { background-color: var(--fb-hover); }
+
+        .post { background-color: var(--fb-card); border-radius: var(--border-radius); margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); scroll-margin-top: 70px; }
+        .post-header { display: flex; justify-content: space-between; padding: 12px 16px; }
+        .post-user-info { display: flex; gap: 10px; }
+        .post-avatar { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+        .post-name { font-weight: bold; color: var(--fb-text); display: flex; flex-direction: column; cursor: pointer; }
+        .post-name:hover { text-decoration: underline; }
+        .post-time { font-size: 0.8rem; color: var(--fb-muted); font-weight: normal; margin-top: 2px; cursor: pointer; }
+        .post-time:hover { text-decoration: underline; }
+        
+        .post-options {
+            color: var(--fb-muted); cursor: pointer; width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center; border-radius: 50%;
+            border: none; background: none; font-size: 1.2rem;
+        }
+        .post-options:hover { background-color: var(--fb-hover); }
+        .post-text { padding: 0 16px 12px 16px; font-size: 0.95rem; line-height: 1.4; white-space: pre-wrap; word-wrap: break-word; }
+        .post-image { width: 100%; max-height: 600px; object-fit: contain; background-color: black; }
+        
+        .post-stats { display: flex; justify-content: space-between; padding: 10px 16px; color: var(--fb-muted); font-size: 0.9rem; border-bottom: 1px solid var(--fb-border); }
+        .post-actions { display: flex; padding: 4px 16px; }
+        .post-action {
+            flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 6px 0; margin: 4px 0; border-radius: var(--border-radius); color: var(--fb-muted);
+            font-weight: 600; cursor: pointer; background: none; border: none; font-size: 0.95rem;
+        }
+        .post-action:hover { background-color: var(--fb-hover); }
+        .post-action.liked { color: var(--fb-primary); }
+
+        /* KOMMENTARE */
+        .comments-section { display: none; padding: 10px 16px 16px 16px; border-top: 1px solid var(--fb-border); }
+        .comment-list { margin-bottom: 15px; max-height: 400px; overflow-y: auto; }
+        .comment-item { display: flex; gap: 10px; margin-bottom: 12px; }
+        .comment-avatar { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
+        .comment-bubble { background-color: var(--fb-hover); padding: 8px 12px; border-radius: 18px; max-width: 100%; position: relative; }
+        .comment-author { font-weight: bold; font-size: 0.85rem; margin-bottom: 2px; color: var(--fb-text); cursor: pointer; }
+        .comment-author:hover { text-decoration: underline; }
+        .comment-text { font-size: 0.9rem; color: var(--fb-text); word-wrap: break-word; }
+        .comment-delete { background:none; border:none; color:#ff4444; font-size:0.75rem; cursor:pointer; padding:0; margin-top:4px; opacity: 0.8; }
+        .comment-delete:hover { text-decoration: underline; opacity: 1; }
+
+        .comment-input-wrapper { display: flex; gap: 10px; align-items: center; }
+        .comment-input-wrapper input {
+            flex-grow: 1; background-color: var(--fb-hover); border: none; border-radius: 20px;
+            padding: 10px 15px; color: var(--fb-text); outline: none;
+        }
+        .comment-input-wrapper button {
+            background-color: var(--fb-primary); color: white; border: none; border-radius: 20px;
+            padding: 8px 15px; cursor: pointer; font-weight: bold;
+        }
+
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background-color: var(--fb-card); width: 90%; max-width: 500px; border-radius: var(--border-radius); box-shadow: 0 12px 28px rgba(0,0,0,0.2); position: relative; }
+        .modal-header { text-align: center; padding: 15px; font-size: 1.25rem; font-weight: bold; border-bottom: 1px solid var(--fb-border); }
+        .modal-close { position: absolute; top: 10px; right: 15px; background-color: var(--fb-hover); border: none; color: var(--fb-muted); width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        .modal-body { padding: 16px; }
+        .modal-textarea { width: 100%; background: none; border: none; color: var(--fb-text); font-size: 1.2rem; resize: none; outline: none; min-height: 120px; }
+        .modal-upload-box { border: 1px solid var(--fb-border); border-radius: var(--border-radius); padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .modal-submit { width: 100%; background-color: var(--fb-primary); color: white; border: none; padding: 10px; font-size: 1rem; font-weight: bold; border-radius: var(--border-radius); cursor: pointer; }
+        .modal-submit:disabled { background-color: #505151; color: #8c8d8f; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header>
+        <div class="nav-left">
+            <a href="#" class="nav-logo" onclick="showFeed()">L</a>
+            <input type="text" id="navSearchInput" class="nav-search" placeholder="Limabook durchsuchen" onkeypress="if(event.key === 'Enter') searchPosts()">
+        </div>
+        <div class="nav-center">
+            <div class="nav-icon active" onclick="showFeed()" title="Home">🏠</div>
+            <div class="nav-icon" onclick="window.location.href='limtube.html'" title="LimTube">📺</div>
+            <!-- Mobil: Profil-Button in der Mitte (fehlt auf Desktop) -->
+            <div class="nav-icon mobile-only" onclick="showProfile()" title="Mein Profil">👤</div>
+        </div>
+        <div class="nav-right">
+            <a href="../index.html" class="nav-btn" title="Zurück zu Limazon">🔙</a>
+        </div>
+    </header>
+
+    <!-- HAUPT-LAYOUT -->
+    <div class="main-layout">
+        
+        <!-- LINKE SEITENLEISTE (Desktop) -->
+        <div class="sidebar-left">
+            <div class="menu-item" onclick="showProfile()">
+                <img src="" id="myAvatarLeft" alt="Avatar">
+                <span id="myNameLabel">Mein Profil</span>
+            </div>
+            <div class="menu-item" onclick="window.location.href='../index.html'">
+                <span style="font-size: 1.5rem; margin-right: 10px;">🏠</span> Limazon Startseite
+            </div>
+        </div>
+
+        <!-- CENTER FEED -->
+        <div class="feed-container">
+            
+            <div id="viewHeader" class="view-header"></div>
+
+            <div class="create-post" id="createPostBox">
+                <div class="create-post-top">
+                    <img src="" id="myAvatarCenter" alt="Avatar">
+                    <input type="text" placeholder="Was machst du gerade?" onclick="openPostModal()" readonly="">
+                </div>
+                <div class="create-post-bottom">
+                    <button class="action-btn" onclick="openPostModal()">
+                        <span style="color: #45bd62; font-size: 1.2rem;">📸</span> Foto hinzufügen
+                    </button>
+                </div>
+            </div>
+
+            <div id="feedWrapper">
+                <p style="text-align: center; color: var(--fb-muted); margin-top: 30px;">Lade Daten...</p>
+            </div>
+
+        </div>
+
+        <!-- RECHTE SEITENLEISTE -->
+        <div class="sidebar-right" id="adContainer">
+            <div class="sidebar-title">Gesponsert</div>
+            <p style="color: var(--fb-muted); font-size: 0.9rem;">Lade Werbung...</p>
+        </div>
+
+    </div>
+
+    <!-- CREATE POST MODAL -->
+    <div class="modal-overlay" id="postModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closePostModal()">✖</button>
+            <div class="modal-header">Beitrag erstellen</div>
+            <div class="modal-body">
+                <div class="post-user-info" style="margin-bottom: 15px;">
+                    <img src="" id="myAvatarModal" class="post-avatar">
+                    <div class="post-name">
+                        <span id="modalUsername">User</span>
+                        <span class="post-time">🌎 Öffentlich</span>
+                    </div>
+                </div>
+                <textarea class="modal-textarea" id="postContent" placeholder="Was machst du gerade?"></textarea>
+                <div class="modal-upload-box">
+                    <span>Bild hinzufügen</span>
+                    <input type="file" id="postImage" accept="image/png, image/jpeg, image/webp" style="max-width: 200px;">
+                </div>
+                <button class="modal-submit" id="btnSubmit" onclick="submitPost()">Posten</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.LIMO_API;
+        let currentContext = { type: 'feed', query: '' };
+        let CURRENT_USERNAME = ""; // Wird vom Backend geholt
+
+        // Holt den echten Usernamen direkt vom Backend (Kugelsicher!)
+        async function fetchMyIdentity() {
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+                if(res.ok) {
+                    const data = await res.json();
+                    CURRENT_USERNAME = data.username;
+                    localStorage.setItem('limo_username', data.username);
+                } else {
+                    CURRENT_USERNAME = localStorage.getItem('limo_username') || "Ich";
+                }
+            } catch(e) {
+                CURRENT_USERNAME = localStorage.getItem('limo_username') || "Ich";
+            }
+        }
+
+        function updateMyAvatars() {
+            const avatarUrl = `https://ui-avatars.com/api/?name=${CURRENT_USERNAME}&background=random`;
+            document.getElementById('myAvatarLeft').src = avatarUrl;
+            document.getElementById('myAvatarCenter').src = avatarUrl;
+            document.getElementById('myAvatarModal').src = avatarUrl;
+            document.getElementById('myNameLabel').innerText = CURRENT_USERNAME;
+            document.getElementById('modalUsername').innerText = CURRENT_USERNAME;
+        }
+
+        function openPostModal() { document.getElementById('postModal').style.display = 'flex'; }
+        function closePostModal() { document.getElementById('postModal').style.display = 'none'; }
+
+        function timeSince(dateString) {
+            const date = new Date(dateString);
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return "Gerade eben";
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes} Min.`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours} Std.`;
+            const days = Math.floor(hours / 24);
+            if (days < 7) return `${days} Tg.`;
+            return date.toLocaleDateString('de-DE');
+        }
+
+        // --- NAVIGATION & VIEWS ---
+
+        function showFeed() {
+            currentContext = { type: 'feed', query: '' };
+            document.getElementById('navSearchInput').value = '';
+            document.getElementById('viewHeader').style.display = 'none';
+            document.getElementById('createPostBox').style.display = 'block';
+            history.pushState(null, null, ' ');// Hash aus URL entfernen
+            loadPosts();
+        }
+
+        // FIX: Nimmt Parameter, fällt aber sicher auf den eigenen Namen zurück, wenn null.
+        function showProfile(username) {
+            const safeUsername = username || CURRENT_USERNAME;
+            currentContext = { type: 'profile', query: safeUsername };
+            
+            const viewHeader = document.getElementById('viewHeader');
+            viewHeader.style.display = 'flex';
+            viewHeader.innerHTML = `
+                <img src="https://ui-avatars.com/api/?name=${safeUsername}&background=random" style="width:60px; height:60px; border-radius:50%; margin-right:15px;">
+                <div style="flex-grow:1;">
+                    <h2 style="margin:0; color:var(--fb-text);">${safeUsername}</h2>
+                    <div style="color:var(--fb-muted); font-size:0.9rem;">Chronik</div>
+                </div>
+                <button onclick="showFeed()" class="nav-btn">🔙</button>
+            `;
+            
+            // Post-Box nur anzeigen, wenn es mein Profil ist (case-insensitive)
+            const isMyProfile = safeUsername.toLowerCase() === CURRENT_USERNAME.toLowerCase();
+            document.getElementById('createPostBox').style.display = isMyProfile ? 'block' : 'none';
+            loadPosts();
+        }
+
+        function searchPosts() {
+            const input = document.getElementById('navSearchInput');
+            if (!input.value.trim()) return showFeed();
+            
+            currentContext = { type: 'search', query: input.value.trim() };
+            const viewHeader = document.getElementById('viewHeader');
+            viewHeader.style.display = 'flex';
+            viewHeader.innerHTML = `
+                <div style="flex-grow:1;">
+                    <h2 style="margin:0; color:var(--fb-text);">🔍 Suche: "${currentContext.query}"</h2>
+                </div>
+                <button onclick="showFeed()" class="nav-btn">🔙</button>
+            `;
+            document.getElementById('createPostBox').style.display = 'none';
+            loadPosts();
+        }
+
+        async function showSinglePost(postId) {
+            currentContext = { type: 'single', query: postId };
+            const viewHeader = document.getElementById('viewHeader');
+            viewHeader.style.display = 'flex';
+            viewHeader.innerHTML = `
+                <div style="flex-grow:1;"><h2 style="margin:0; color:var(--fb-text);">📄 Beitrags-Ansicht</h2></div>
+                <button onclick="showFeed()" class="nav-btn">🔙</button>
+            `;
+            document.getElementById('createPostBox').style.display = 'none';
+            
+            try {
+                const baseCdnUrl = API_URL + '/cdn/';
+                const res = await fetch(`${API_URL}/api/limabook/post/${postId}`, { credentials: 'include' });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                
+                const feedContainer = document.getElementById('feedWrapper');
+                feedContainer.innerHTML = generatePostHtml(data.post, baseCdnUrl);
+                
+                toggleComments(postId);
+            } catch (err) {
+                document.getElementById('feedWrapper').innerHTML = '<p style="text-align:center; color:#ff4444;">Beitrag konnte nicht geladen werden oder wurde gelöscht.</p>';
+            }
+        }
+
+        // --- HTML GENERATOR ---
+        function generatePostHtml(post, baseCdnUrl) {
+            const timeAgo = timeSince(post.createdAt);
+            const avatarUrl = `https://ui-avatars.com/api/?name=${post.username}&background=random`;
+            let imageHtml = post.imageFilename ? `<img src="${baseCdnUrl}${post.imageFilename}" class="post-image" alt="Bild" loading="lazy">` : '';
+            const deleteHtml = post.isOwner ? `<button class="post-options" onclick="deletePost('${post._id}')" title="Löschen">🗑️</button>` : ``;
+
+            return `
+                <div class="post" id="post-${post._id}">
+                    <div class="post-header">
+                        <div class="post-user-info">
+                            <img src="${avatarUrl}" class="post-avatar" alt="Avatar" onclick="showProfile('${post.username}')">
+                            <div class="post-name" onclick="showProfile('${post.username}')">
+                                ${post.username}
+                                <span class="post-time" onclick="event.stopPropagation(); showSinglePost('${post._id}')" title="Diesen Beitrag isoliert öffnen">${timeAgo} • 🌎</span>
+                            </div>
+                        </div>
+                        ${deleteHtml}
+                    </div>
+                    <div class="post-text">${post.content}</div>
+                    ${imageHtml}
+                    <div class="post-stats">
+                        <div><span class="like-icon">👍</span> <span id="like-count-display-${post._id}">${post.likesCount}</span></div>
+                        <div><span id="comment-count-display-${post._id}">${post.commentsCount}</span> Kommentare</div>
+                    </div>
+                    <div class="post-actions">
+                        <button class="post-action ${post.isLiked ? 'liked' : ''}" onclick="toggleLike('${post._id}', this)">
+                            <span style="font-size: 1.2rem;">👍</span> Gefällt mir
+                        </button>
+                        <button class="post-action" onclick="toggleComments('${post._id}')">
+                            <span style="font-size: 1.2rem;">💬</span> Kommentieren
+                        </button>
+                        <button class="post-action" onclick="sharePost('${post._id}')">
+                            <span style="font-size: 1.2rem;">↗️</span> Teilen
+                        </button>
+                    </div>
+                    <div class="comments-section" id="comments-section-${post._id}">
+                        <div class="comment-list" id="comment-list-${post._id}"><p style="text-align:center;color:var(--fb-muted);font-size:0.8rem;">Lade...</p></div>
+                        <div class="comment-input-wrapper">
+                            <input type="text" id="comment-input-${post._id}" placeholder="Schreibe einen Kommentar..." onkeypress="if(event.key === 'Enter') submitComment('${post._id}')">
+                            <button onclick="submitComment('${post._id}')">➤</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- CORE LOGIK ---
+        async function loadPosts() {
+            try {
+                const baseCdnUrl = API_URL + '/cdn/';
+                
+                let url = `${API_URL}/api/limabook/feed?limit=50`;
+                if (currentContext.type === 'profile') url += `&username=${encodeURIComponent(currentContext.query)}`;
+                if (currentContext.type === 'search') url += `&q=${encodeURIComponent(currentContext.query)}`;
+
+                const res = await fetch(url, { credentials: 'include' });
+                if (!res.ok) throw new Error("API Fehler");
+                
+                const data = await res.json();
+                const feedContainer = document.getElementById('feedWrapper');
+                feedContainer.innerHTML = '';
+
+                if (data.posts.length === 0) {
+                    feedContainer.innerHTML = '<p style="text-align:center; color:var(--fb-muted);">Hier ist absolute Leere. Keine Beiträge gefunden.</p>';
+                    return;
+                }
+
+                data.posts.forEach(post => {
+                    feedContainer.innerHTML += generatePostHtml(post, baseCdnUrl);
+                });
+            } catch (err) {
+                document.getElementById('feedWrapper').innerHTML = '<p style="text-align:center; color:#ff4444;">Verbindungsfehler.</p>';
+            }
+        }
+
+        async function submitPost() {
+            const contentInput = document.getElementById('postContent');
+            const fileInput = document.getElementById('postImage');
+            const btnSubmit = document.getElementById('btnSubmit');
+
+            if (!contentInput.value.trim() && fileInput.files.length === 0) return;
+            btnSubmit.disabled = true; btnSubmit.innerText = "Posten...";
+
+            const formData = new FormData();
+            formData.append('content', contentInput.value.trim());
+            if (fileInput.files[0]) formData.append('image', fileInput.files[0]);
+
+            try {
+                const res = await fetch(`${API_URL}/api/limabook/post`, { method: 'POST', credentials: 'include', body: formData });
+                if (res.ok) {
+                    contentInput.value = ''; fileInput.value = '';
+                    closePostModal();
+                    if (currentContext.type === 'single') showFeed(); else loadPosts();
+                } else {
+                    alert("Fehler beim Posten");
+                }
+            } catch (err) { alert("Verbindungsfehler"); } 
+            finally { btnSubmit.disabled = false; btnSubmit.innerText = "Posten"; }
+        }
+
+        async function toggleLike(postId, btnElement) {
+            try {
+                const res = await fetch(`${API_URL}/api/limabook/post/${postId}/like`, { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById(`like-count-display-${postId}`).innerText = data.likesCount;
+                    data.isLiked ? btnElement.classList.add('liked') : btnElement.classList.remove('liked');
+                }
+            } catch (err) { console.error("Like Error", err); }
+        }
+
+        async function deletePost(postId) {
+            if (!confirm("Beitrag unwiderruflich löschen?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/limabook/post/${postId}`, { method: 'DELETE', credentials: 'include' });
+                if (res.ok) {
+                    if (currentContext.type === 'single') showFeed();
+                    else document.getElementById(`post-${postId}`).remove();
+                }
+            } catch (err) { console.error("Delete Error", err); }
+        }
+
+        function sharePost(postId) {
+            const postUrl = window.location.origin + window.location.pathname + '#post-' + postId;
+            navigator.clipboard.writeText(postUrl).then(() => alert('Link kopiert!'));
+        }
+
+        // --- KOMMENTARE ---
+        async function toggleComments(postId) {
+            const section = document.getElementById(`comments-section-${postId}`);
+            const isHidden = window.getComputedStyle(section).display === 'none';
+            if (!isHidden) { section.style.display = 'none'; return; }
+            
+            section.style.display = 'block';
+            const listHtml = document.getElementById(`comment-list-${postId}`);
+            
+            // Verwende den kugelsicheren CURRENT_USERNAME für den Abgleich
+            const mySafeUsername = CURRENT_USERNAME.toLowerCase();
+
+            try {
+                const res = await fetch(`${API_URL}/api/limabook/post/${postId}/comments`, { credentials: 'include' });
+                const data = await res.json();
+                listHtml.innerHTML = '';
+                
+                if (data.comments.length === 0) {
+                    listHtml.innerHTML = '<p style="color:var(--fb-muted); font-size: 0.8rem; text-align:center;">Noch keine Kommentare.</p>';
+                } else {
+                    data.comments.forEach(c => {
+                        const avatar = `https://ui-avatars.com/api/?name=${c.username}&background=random`;
+                        
+                        // FIX: Sicherstellen, dass die Groß/Kleinschreibung ignoriert wird
+                        const isMine = c.username && c.username.toLowerCase() === mySafeUsername;
+                        const delBtn = isMine ? `<button class="comment-delete" onclick="deleteComment('${postId}', '${c._id}')">Löschen</button>` : '';
+                        
+                        listHtml.innerHTML += `
+                            <div class="comment-item" id="comment-${c._id}">
+                                <img src="${avatar}" class="comment-avatar" onclick="showProfile('${c.username}')">
+                                <div class="comment-bubble" style="flex-grow:1;">
+                                    <div class="comment-author" onclick="showProfile('${c.username}')">${c.username}</div>
+                                    <div class="comment-text">${c.content}</div>
+                                    ${delBtn}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function submitComment(postId) {
+            const inputField = document.getElementById(`comment-input-${postId}`);
+            const content = inputField.value.trim();
+            if (!content) return;
+            inputField.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/api/limabook/post/${postId}/comment`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ content })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    inputField.value = '';
+                    
+                    const countSpan = document.getElementById(`comment-count-display-${postId}`);
+                    countSpan.innerText = parseInt(countSpan.innerText) + 1;
+
+                    const listHtml = document.getElementById(`comment-list-${postId}`);
+                    if (listHtml.innerHTML.includes("Noch keine Kommentare")) listHtml.innerHTML = '';
+                    
+                    const c = data.comment;
+                    const avatar = `https://ui-avatars.com/api/?name=${c.username}&background=random`;
+                    
+                    // FIX: Die neu generierte Kommentar-ID aus der DB nutzen
+                    const newCommentId = c._id || c.id; 
+
+                    listHtml.innerHTML += `
+                        <div class="comment-item" id="comment-${newCommentId}">
+                            <img src="${avatar}" class="comment-avatar" onclick="showProfile('${c.username}')">
+                            <div class="comment-bubble" style="flex-grow:1;">
+                                <div class="comment-author" onclick="showProfile('${c.username}')">${c.username}</div>
+                                <div class="comment-text">${c.content}</div>
+                                <button class="comment-delete" onclick="deleteComment('${postId}', '${newCommentId}')">Löschen</button>
+                            </div>
+                        </div>
+                    `;
+                    listHtml.scrollTop = listHtml.scrollHeight;
+                }
+            } catch (err) { console.error(err); } 
+            finally { inputField.disabled = false; inputField.focus(); }
+        }
+
+        async function deleteComment(postId, commentId) {
+            if (!confirm("Kommentar wirklich löschen?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/limabook/post/${postId}/comment/${commentId}`, { method: 'DELETE', credentials: 'include' });
+                if (res.ok) {
+                    document.getElementById(`comment-${commentId}`).remove();
+                    const countSpan = document.getElementById(`comment-count-display-${postId}`);
+                    countSpan.innerText = Math.max(0, parseInt(countSpan.innerText) - 1);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- WERBUNG ---
+        async function loadAds() {
+            try {
+                const res = await fetch(`${API_URL}/api/ads/random`, { credentials: 'include' });
+                const data = await res.json();
+                const adContainer = document.getElementById('adContainer');
+                if (data.isAdFree) {
+                    adContainer.innerHTML = '<div class="sidebar-title">Werbefrei (Prime)</div>';
+                } else if (data.ad) {
+                    const adLink = data.ad.link.startsWith('http') ? data.ad.link : `../${data.ad.link}`;
+                    adContainer.innerHTML = `
+                        <div class="sidebar-title">Gesponsert</div>
+                        <div class="menu-item" onclick="window.location.href='${adLink}'">
+                            <span style="font-size: 1.8rem; margin-right: 10px;">${data.ad.icon}</span>
+                            <div style="overflow: hidden;">
+                                <div style="font-weight: bold; margin-bottom: 4px;">${data.ad.title}</div>
+                                <div style="font-size: 0.8rem; color: var(--fb-muted); line-height: 1.3;">${data.ad.text}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (err) {}
+        }
+
+        // INIT
+        window.onload = async () => {
+            await fetchMyIdentity(); // Holt 100% verlässlich den Usernamen vom Backend
+            updateMyAvatars();
+            loadAds();
+            
+            if (window.location.hash && window.location.hash.startsWith('#post-')) {
+                const postId = window.location.hash.replace('#post-', '');
+                showSinglePost(postId);
+            } else {
+                showFeed();
+            }
+        };
+    </script>
+
+</body></html>

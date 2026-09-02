@@ -1,0 +1,186 @@
+// js/limo-global.js - V2 Update mit Bewegungen, Modul-Deaktivierung & proaktivem Check
+
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. STYLES EINBETTEN
+    if (!document.getElementById('limo-global-styles')) {
+        const style = document.createElement('style');
+        style.id = 'limo-global-styles';
+        style.innerHTML = `
+            @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes slideUpCard { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            
+            #strike-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background-color: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(12px);
+                z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center;
+                color: white; font-family: 'Space Grotesk', sans-serif;
+                animation: fadeInOverlay 0.3s ease-out forwards;
+            }
+            .strike-hidden { display: none !important; }
+            
+            .barricade-tape {
+                width: 100%; height: 24px; position: absolute;
+                background: repeating-linear-gradient(45deg, #f59e0b, #f59e0b 20px, #1e293b 20px, #1e293b 40px);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.8); z-index: 10;
+            }
+            .barricade-tape.top { top: 0; }
+            .barricade-tape.bottom { bottom: 0; }
+            
+            .strike-glass-card {
+                background: rgba(30, 41, 59, 0.85);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                padding: 30px; border-radius: 24px; max-width: 450px; width: 90%;
+                max-height: 85vh; overflow-y: auto; z-index: 50; 
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+                animation: slideUpCard 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                text-align: center; position: relative;
+            }
+            
+            .strike-title { color: #f8fafc; font-size: 1.8rem; font-weight: 700; margin: 0; }
+            .strike-subtitle { color: #ef4444; font-size: 1rem; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; }
+            
+            .strike-movement-badge {
+                display: inline-block; background: rgba(168, 85, 247, 0.15); color: #d8b4fe;
+                padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; margin-top: 8px;
+                border: 1px solid rgba(168, 85, 247, 0.3); letter-spacing: 0.05em;
+            }
+
+            .strike-reason-box {
+                background: #0f172a; border: 1px solid #334155; border-radius: 16px;
+                padding: 15px; margin-bottom: 20px; text-align: left;
+            }
+            
+            .strike-btn {
+                width: 100%; padding: 16px; background: #4f46e5;
+                color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem;
+                cursor: pointer; transition: all 0.2s; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+            }
+            .strike-btn:hover { background: #6366f1; transform: translateY(-2px); }
+            
+            .striker-tag {
+                display: inline-block; background: rgba(245, 158, 11, 0.1); color: #f59e0b;
+                padding: 4px 10px; border-radius: 6px; margin: 3px; font-size: 0.85rem; font-weight: bold;
+                border: 1px solid rgba(245, 158, 11, 0.2);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. OVERLAY DOM ELEMENT ERSTELLEN
+    if (!document.getElementById('strike-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.id = 'strike-overlay';
+        overlay.className = 'strike-hidden';
+        overlay.innerHTML = `
+            <div class="barricade-tape top"></div>
+            <div class="strike-glass-card">
+                <h1 class="strike-title">ZUGRIFF VERWEIGERT</h1>
+                <h2 class="strike-subtitle" id="st-title">Modul gesperrt</h2>
+                <div class="strike-reason-box">
+                    <p id="st-reason" style="color:#f8fafc; font-size:1rem; font-style:italic; margin:0;"></p>
+                </div>
+                <div id="st-leaders" style="margin-bottom: 20px;"></div>
+                <p style="color: #666; font-size: 0.8rem; margin-bottom: 15px;" id="st-end-container">Ende: <b id="st-end"></b></p>
+                <button class="strike-btn" onclick="window.exitStrikeArea()">Verstanden</button>
+            </div>
+            <div class="barricade-tape bottom"></div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    // 3. PAGE TYPE AUSLESEN
+    const pageType = document.currentScript ? document.currentScript.getAttribute('data-page') : 'unknown';
+    
+    window.exitStrikeArea = function() {
+        const gameModules = ['teachermon', 'casino', 'restaurant', 'jobs', 'crime', 'gangs', 'auctions', 'wheels', 'pets'];
+        const economyModules = ['shop', 'bank', 'realestate', 'delivery', 'kleinanzeigen', 'logistics', 'finance'];
+
+        if (gameModules.includes(pageType)) {
+            window.location.href = 'games.html'; // Schickt Gamer zurück zur Spieleliste
+        } else if (economyModules.includes(pageType)) {
+            window.location.href = '/index.html'; // Wirtschafts-Leute zurück zum Hub
+        } else {
+            window.location.href = '/index.html'; // Alles andere zurück zum Portal
+        }
+    };
+
+    // 4. PROAKTIVER CHECK BEIM LADEN
+    if (pageType && pageType !== 'unknown' && pageType !== 'admin') {
+        const baseUrl = window.LIMO_API || ''; 
+        
+        fetch(`${baseUrl}/api/system/check-access/${pageType}`, { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.locked) {
+                    showLockedOverlay(data);
+                }
+            })
+            .catch(e => console.error("Konnte Zugriffsrechte nicht proaktiv laden.", e));
+    }
+});
+
+// 5. ZENTRALE FUNKTION UM DAS OVERLAY ANZUZEIGEN
+function showLockedOverlay(data) {
+    const overlay = document.getElementById('strike-overlay');
+    const title = document.getElementById('st-title');
+    const reason = document.getElementById('st-reason');
+    const leaders = document.getElementById('st-leaders');
+    const endText = document.getElementById('st-end');
+    const endContainer = document.getElementById('st-end-container');
+    
+    if (!overlay) return; // Falls DOM noch nicht ready ist
+
+    if (data.type === 'DISABLED' || data.error === 'MODULE_DISABLED') {
+        title.innerHTML = `MODUL DEAKTIVIERT`;
+        title.style.color = "#94a3b8"; // Grau
+        reason.innerText = data.message || "Der Server-Administrator hat diese Funktion für diese Instanz ausgeschaltet.";
+        leaders.innerHTML = "";
+        endContainer.style.display = "none";
+        
+        document.querySelectorAll('.barricade-tape').forEach(t => {
+            t.style.background = 'repeating-linear-gradient(45deg, #475569, #475569 20px, #1e293b 20px, #1e293b 40px)';
+        });
+    } 
+    else if (data.type === 'STRIKE' || data.error === 'STRIKE_ACTIVE') {
+        const strikeData = data.strikeData;
+        let titleHtml = `MODUL: ${strikeData.module.toUpperCase()}`;
+        if (strikeData.movementName) {
+            titleHtml += `<br><span class="strike-movement-badge">🏴 Im Namen von: ${strikeData.movementName}</span>`;
+        }
+        title.innerHTML = titleHtml;
+        title.style.color = "#ef4444"; // Rot
+        reason.innerText = `"${strikeData.reason}"`;
+        leaders.innerHTML = (strikeData.strikers || []).map(s => `<span class="striker-tag">✊ ${s}</span>`).join('');
+        
+        if (strikeData.endsAt) {
+            endText.innerText = new Date(strikeData.endsAt).toLocaleString('de-DE');
+            endContainer.style.display = "block";
+        } else {
+            endContainer.style.display = "none";
+        }
+    }
+    overlay.classList.remove('strike-hidden');
+}
+
+// 6. GLOBALER FETCH INTERCEPTOR (Fängt nachträgliche Requests ab)
+const limoGlobalFetch = window.fetch;
+window.fetch = async function(...args) {
+    const response = await limoGlobalFetch(...args);
+    
+    // Fange 423 (Streik) oder 403 (Modul deaktiviert) ab
+    if (response.status === 423 || response.status === 403) {
+        response.clone().json().then(data => {
+            if (data.error === "STRIKE_ACTIVE" || data.error === "MODULE_DISABLED") {
+                // Warte kurz, falls DOM noch nicht ready (beim allerersten Fetch)
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => showLockedOverlay(data));
+                } else {
+                    showLockedOverlay(data);
+                }
+            }
+        }).catch(e => console.error("Overlay Error in Fetch Interceptor:", e));
+    }
+
+    return response;
+};
