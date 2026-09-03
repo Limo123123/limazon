@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script src="/themes/js/config.js?v=1788470811"></script>
+    <script src="/themes/js/security.js?v=1788470811"></script>
+    <script src="/themes/js/limo-global.js?v=1788470811" data-page="quiz-editor"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limohoot Editor</title>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #cbd5e1; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .question-card { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .ans-0 { border-left: 4px solid #ef4444; }
+        .ans-1 { border-left: 4px solid #3b82f6; }
+        .ans-2 { border-left: 4px solid #eab308; }
+        .ans-3 { border-left: 4px solid #22c55e; }
+
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto w-full">
+        
+        <!-- Header -->
+        <header class="glass-panel p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 sticky top-4 z-40">
+            <div class="w-full md:w-1/2">
+                <input type="text" id="quiz-title" placeholder="Titel deines Limohoots eingeben..." 
+                    class="w-full bg-slate-900 border border-slate-700 text-white text-2xl font-bold rounded-xl p-3 focus:outline-none focus:border-purple-500 shadow-inner">
+            </div>
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="window.location.href='/themes/kahoot.html'" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-xl transition-colors" title="Zurück">
+                    🔙
+                </button>
+                <button onclick="openLoadModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-5 rounded-xl transition-colors shadow-lg flex items-center gap-2">
+                    📂 Laden
+                </button>
+                <button onclick="saveQuiz()" class="flex-1 md:flex-none bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-all hover:scale-105">
+                    💾 Speichern
+                </button>
+            </div>
+        </header>
+
+        <!-- Container für die Fragen -->
+        <div id="questions-container" class="space-y-6 mb-8">
+            <!-- Wird per JS befüllt -->
+        </div>
+
+        <!-- Frage Hinzufügen Buttons -->
+        <div class="glass-panel p-6 rounded-2xl text-center border border-dashed border-slate-600 mb-12">
+            <h3 class="text-lg font-bold text-white mb-4">Neue Frage hinzufügen</h3>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="addQuestion('normal')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                    <span>📝</span> Multiple Choice
+                </button>
+                <button onclick="addQuestion('slider')" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                    <span>🎚️</span> Schieberegler (Zahlen)
+                </button>
+                <button onclick="addQuestion('info')" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-lg">
+                    <span>ℹ️</span> Info-Folie
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- === QUIZ LADEN MODAL === -->
+    <!-- ========================================== -->
+    <div id="loadModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-lg border-blue-500/30 flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-4">
+                <h2 class="text-2xl font-bold text-white">📂 Meine Quizzes</h2>
+                <button onclick="closeLoadModal()" class="text-slate-400 hover:text-white text-2xl font-bold transition-colors">&times;</button>
+            </div>
+            
+            <div id="quiz-list-container" class="overflow-y-auto custom-scroll flex-1 pr-2 space-y-3">
+                <p class="text-center text-slate-500 py-4">Lade Quizzes...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- === BILDER-GALERIE MODAL === -->
+    <!-- ========================================== -->
+    <div id="galleryModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <!-- Gleiches Modal wie vorher -->
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-4xl border-blue-500/30 flex flex-col" style="max-height: 90vh;">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-white">🖼️ Limo Galerie</h2>
+                <button onclick="closeGallery()" class="text-slate-400 hover:text-white text-2xl font-bold transition-colors">&times;</button>
+            </div>
+            
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="image-search-input" placeholder="Suchbegriff (z.B. auto, natur, space)..." onkeydown="if(event.key==='Enter') searchImage()"
+                    class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-white outline-none focus:border-blue-500">
+                <button onclick="searchImage()" class="bg-blue-600 hover:bg-blue-500 px-6 rounded-lg font-bold text-white transition-colors">Suchen</button>
+            </div>
+
+            <div class="flex gap-2 mb-6">
+                <button onclick="searchImage('nature')" class="flex-1 bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/50 text-emerald-400 hover:text-white py-2 rounded-lg font-bold transition-colors">🌲 Natur</button>
+                <button onclick="searchImage('city')" class="flex-1 bg-sky-600/20 hover:bg-sky-600 border border-sky-500/50 text-sky-400 hover:text-white py-2 rounded-lg font-bold transition-colors">🏙️ Stadt</button>
+                <button onclick="searchImage('animal')" class="flex-1 bg-amber-600/20 hover:bg-amber-600 border border-amber-500/50 text-amber-400 hover:text-white py-2 rounded-lg font-bold transition-colors">🐶 Tiere</button>
+            </div>
+
+            <div id="preview-container" class="hidden mb-6 bg-slate-900 border border-slate-700 rounded-xl p-4 flex flex-col items-center relative shadow-inner">
+                <span class="absolute top-2 left-4 text-xs font-bold text-slate-500">BILD VORSCHAU</span>
+                <p id="preview-loading" class="text-slate-400 italic absolute top-1/2 -translate-y-1/2">Lade Bild...</p>
+                <img id="preview-image" src="" alt="Vorschau" class="max-h-48 object-contain rounded-lg mb-4 relative z-10 transition-opacity duration-300 opacity-0">
+                <button onclick="confirmImage()" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-8 rounded-lg shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-transform hover:scale-105">
+                    ✅ Dieses Bild verwenden
+                </button>
+            </div>
+
+            <div class="overflow-y-auto custom-scroll pr-2 flex-1">
+                <h3 class="text-white font-bold mb-3 border-b border-slate-700 pb-2">Beliebte Memes</h3>
+                <div id="meme-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuizId = null; // Speichert die ID, falls wir ein Quiz bearbeiten
+        let questions = [];
+        let currentGalleryIndex = null;
+        let currentPreviewUrl = "";
+        let myUsername = "";
+
+        // Benutzername abfragen (um nur EIGENE Quizzes laden zu dürfen)
+        fetch(window.LIMO_API + '/api/auth/me', { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => myUsername = data.username);
+
+        const memeLibrary = [
+            { name: "Drake", url: "https://i.imgflip.com/30b1gx.jpg" },
+            { name: "Distracted Boyfriend", url: "https://i.imgflip.com/1ur9b0.jpg" },
+            { name: "Two Buttons", url: "https://i.imgflip.com/1g8my4.jpg" },
+            { name: "Change My Mind", url: "https://i.imgflip.com/24y43o.jpg" },
+            { name: "This is Fine", url: "https://i.imgflip.com/1iruch.jpg" },
+            { name: "UNO Draw 25", url: "https://i.imgflip.com/3lmzyx.jpg" },
+            { name: "Disaster Girl", url: "https://i.imgflip.com/23ls.jpg" },
+            { name: "Success Kid", url: "https://i.imgflip.com/1bhk.jpg" },
+            { name: "Monkey Puppet", url: "https://i.imgflip.com/2gnnjh.jpg" },
+            { name: "Roll Safe", url: "https://i.imgflip.com/1h7in3.jpg" },
+            { name: "Is This a Pigeon?", url: "https://i.imgflip.com/2bpwxs.jpg" },
+            { name: "Harold", url: "https://i.imgflip.com/1jwhww.jpg" },
+            { name: "Surprised Pikachu", url: "https://i.imgflip.com/2kbn1e.jpg" },
+            { name: "Gru's Plan", url: "https://i.imgflip.com/26jxvz.jpg" },
+            { name: "Spongebob Mocking", url: "https://i.imgflip.com/1otk96.jpg" }
+        ];
+
+        function addQuestion(type) {
+            const newQ = {
+                type: type,
+                questionText: '',
+                timeLimit: 20,
+                doublePoints: false,
+                imageUrl: ''
+            };
+
+            if (type === 'normal') {
+                newQ.answers = ['', '', '', ''];
+                newQ.correctAnswers = []; // NEU: Array für MEHRERE Antworten!
+            } else if (type === 'slider') {
+                newQ.sliderMin = 0;
+                newQ.sliderMax = 100;
+                newQ.correctAnswer = 50; 
+                newQ.sliderTolerance = 5; 
+            }
+
+            questions.push(newQ);
+            renderQuestions();
+            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+        }
+
+        function removeQuestion(index) {
+            if(confirm("Diese Frage wirklich löschen?")) {
+                questions.splice(index, 1);
+                renderQuestions();
+            }
+        }
+
+        function updateQ(index, field, value) {
+            questions[index][field] = value;
+        }
+
+        function updateAnswer(qIndex, aIndex, value) {
+            questions[qIndex].answers[aIndex] = value;
+        }
+
+        // --- DER FIX FÜR MEHRERE RICHTIGE ANTWORTEN ---
+        function toggleCorrectAnswer(qIndex, aIndex) {
+            const q = questions[qIndex];
+            if (!q.correctAnswers) q.correctAnswers = [];
+
+            // Prüfen, ob die Antwort schon markiert ist
+            const pos = q.correctAnswers.indexOf(aIndex);
+            
+            if (pos > -1) {
+                // War markiert -> Wieder entfernen (Haken weg)
+                q.correctAnswers.splice(pos, 1);
+            } else {
+                // War nicht markiert -> Hinzufügen (Haken setzen)
+                q.correctAnswers.push(aIndex);
+            }
+            
+            // Nur die Knöpfe aktualisieren, ohne alles neu zu rendern!
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`btn-correct-${qIndex}-${i}`);
+                if (!btn) continue;
+                
+                if (q.correctAnswers.includes(i)) {
+                    btn.className = `absolute right-3 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors bg-green-500 border-green-500 text-white`;
+                } else {
+                    btn.className = `absolute right-3 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors border-slate-500 text-transparent hover:border-green-500`;
+                }
+            }
+            
+            const errorMsg = document.getElementById(`error-msg-${qIndex}`);
+            if (errorMsg) errorMsg.style.display = q.correctAnswers.length > 0 ? 'none' : 'block';
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            if (questions.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-500 py-8">Dein Quiz hat noch keine Fragen. Füge unten eine hinzu!</p>';
+                return;
+            }
+
+            questions.forEach((q, index) => {
+                let innerContent = '';
+
+                if (q.type === 'normal') {
+                    // Fallback für alte Quizzes (die noch correctAnswer statt correctAnswers haben)
+                    if (q.correctAnswers === undefined) {
+                        q.correctAnswers = q.correctAnswer !== null && q.correctAnswer !== undefined ? [q.correctAnswer] : [];
+                    }
+
+                    innerContent = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            ${q.answers.map((ans, i) => `
+                                <div class="relative flex items-center group">
+                                    <input type="text" value="${ans}" oninput="updateAnswer(${index}, ${i}, this.value)" placeholder="Antwort ${i+1}" 
+                                        class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-3 pl-4 ans-${i} focus:outline-none focus:border-slate-500 transition-colors">
+                                    <button id="btn-correct-${index}-${i}" title="Als richtig markieren (Mehrfachauswahl möglich!)" onclick="toggleCorrectAnswer(${index}, ${i})" 
+                                        class="absolute right-3 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${q.correctAnswers.includes(i) ? 'bg-green-500 border-green-500 text-white' : 'border-slate-500 text-transparent hover:border-green-500'}">
+                                        ✔
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p id="error-msg-${index}" class="text-red-400 text-xs mt-2 font-bold ${q.correctAnswers.length === 0 ? 'block' : 'hidden'}">Bitte markiere mindestens eine korrekte Antwort!</p>
+                    `;
+                } 
+                else if (q.type === 'slider') {
+                    innerContent = `
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 bg-slate-800 p-4 rounded-xl border border-slate-700">
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">Min-Wert</label>
+                                <input type="number" value="${q.sliderMin}" oninput="updateQ(${index}, 'sliderMin', parseInt(this.value)||0)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">Max-Wert</label>
+                                <input type="number" value="${q.sliderMax}" oninput="updateQ(${index}, 'sliderMax', parseInt(this.value)||100)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-green-400 font-bold block mb-1">Ziel-Zahl (Korrekt)</label>
+                                <input type="number" value="${q.correctAnswer}" oninput="updateQ(${index}, 'correctAnswer', parseInt(this.value)||0)" class="w-full bg-slate-900 border border-green-500 rounded p-2 text-white shadow-[0_0_10px_rgba(34,197,94,0.2)] outline-none focus:bg-slate-800">
+                            </div>
+                            <div>
+                                <label class="text-xs text-yellow-400 block mb-1" title="Wie weit darf man daneben liegen?">Toleranz (+/-)</label>
+                                <input type="number" value="${q.sliderTolerance}" oninput="updateQ(${index}, 'sliderTolerance', parseInt(this.value)||0)" class="w-full bg-slate-900 border border-yellow-500/50 rounded p-2 text-white outline-none focus:border-yellow-500">
+                            </div>
+                        </div>
+                    `;
+                }
+                else if (q.type === 'info') {
+                    innerContent = `<div class="mt-4 p-4 bg-slate-800 border border-slate-700 rounded-xl text-slate-400 text-sm italic text-center">Info-Folie (Keine Punkte)</div>`;
+                }
+
+                const cardHtml = `
+                    <div class="question-card glass-panel p-6 rounded-2xl relative border-l-4 ${q.type === 'normal' ? 'border-blue-500' : q.type === 'slider' ? 'border-purple-500' : 'border-slate-500'}">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-slate-400 font-bold bg-slate-900 px-3 py-1 rounded-lg border border-slate-700 shadow-inner">Frage ${index + 1} <span class="text-xs font-normal opacity-50 ml-1">(${q.type.toUpperCase()})</span></span>
+                            <button onclick="removeQuestion(${index})" class="text-red-400 hover:text-red-300 font-bold px-3 py-1 rounded bg-red-900/20 hover:bg-red-900/40 transition border border-red-900/50">🗑️ Löschen</button>
+                        </div>
+                        <input type="text" value="${q.questionText}" oninput="updateQ(${index}, 'questionText', this.value)" placeholder="Schreibe hier deine Frage..." 
+                            class="w-full bg-slate-900 border border-slate-700 text-white text-xl rounded-xl p-4 mb-4 focus:outline-none focus:border-blue-500 shadow-inner">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                            <div class="md:col-span-2">
+                                <label class="text-xs text-slate-400 block mb-1">Bild URL (Optional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="img-input-${index}" value="${q.imageUrl}" oninput="updateQ(${index}, 'imageUrl', this.value)" placeholder="https://..." class="flex-1 bg-slate-900 border border-slate-700 text-slate-300 rounded p-2 focus:outline-none focus:border-blue-500 shadow-inner">
+                                    <button onclick="openGallery(${index})" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 rounded font-bold transition-colors shadow-lg whitespace-nowrap">🖼️ Galerie</button>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <label class="text-xs text-slate-400 block mb-1">Zeitlimit</label>
+                                    <select onchange="updateQ(${index}, 'timeLimit', parseInt(this.value))" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 focus:outline-none">
+                                        <option value="5" ${q.timeLimit===5?'selected':''}>5 Sek.</option>
+                                        <option value="10" ${q.timeLimit===10?'selected':''}>10 Sek.</option>
+                                        <option value="20" ${q.timeLimit===20?'selected':''}>20 Sek.</option>
+                                        <option value="30" ${q.timeLimit===30?'selected':''}>30 Sek.</option>
+                                        <option value="60" ${q.timeLimit===60?'selected':''}>60 Sek.</option>
+                                        <option value="90" ${q.timeLimit===90?'selected':''}>90 Sek.</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center justify-center pt-2">
+                                    <label class="text-xs text-yellow-400 font-bold block mb-1 whitespace-nowrap">2x Punkte</label>
+                                    <input type="checkbox" onchange="updateQ(${index}, 'doublePoints', this.checked)" ${q.doublePoints?'checked':''} class="w-5 h-5 rounded accent-yellow-500 cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+                        ${innerContent}
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // --- LADEN MODAL LOGIK ---
+        async function openLoadModal() {
+            document.getElementById('loadModal').classList.remove('hidden');
+            const container = document.getElementById('quiz-list-container');
+            container.innerHTML = '<p class="text-center text-slate-500 py-4">Lade deine Quizzes...</p>';
+
+            try {
+                const res = await fetch(window.LIMO_API + '/api/quiz/list', { credentials: 'include' });
+                const data = await res.json();
+                
+                // Wir filtern lokal, sodass der User nur seine eigenen Quizzes sieht
+                const myQuizzes = data.quizzes.filter(q => q.creatorName === myUsername);
+
+                if (myQuizzes.length === 0) {
+                    container.innerHTML = '<p class="text-center text-slate-500 py-4">Du hast noch keine Quizzes erstellt.</p>';
+                    return;
+                }
+
+                // NEU: Hier haben wir den Löschen-Button eingebaut!
+                container.innerHTML = myQuizzes.map(q => `
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center hover:bg-slate-700 transition">
+                        <div class="cursor-pointer flex-1" onclick="loadSpecificQuiz('${q._id}')">
+                            <h4 class="text-white font-bold text-lg hover:text-blue-400 transition-colors">${q.title}</h4>
+                            <p class="text-xs text-slate-400">Erstellt am: ${new Date(q.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="deleteQuiz('${q._id}', event)" class="bg-red-600/20 text-red-400 px-3 py-1 rounded-lg text-sm font-bold border border-red-500/30 hover:bg-red-600 hover:text-white transition-colors" title="Löschen">🗑️</button>
+                            <button onclick="loadSpecificQuiz('${q._id}')" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-lg text-sm font-bold border border-blue-500/30 hover:bg-blue-600 hover:text-white transition-colors">Bearbeiten ✏️</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                container.innerHTML = '<p class="text-center text-red-400 py-4">Fehler beim Laden.</p>';
+            }
+        }
+
+        function closeLoadModal() {
+            document.getElementById('loadModal').classList.add('hidden');
+        }
+
+        // Läd die vollen Details eines Quizzes aus dem Backend
+        async function loadSpecificQuiz(id) {
+            try {
+                const res = await fetch(window.LIMO_API + `/api/quiz/details/${id}`, { credentials: 'include' });
+                const data = await res.json();
+
+                if (data.error) return alert(data.error);
+
+                currentQuizId = data.quiz._id;
+                document.getElementById('quiz-title').value = data.quiz.title;
+                questions = data.quiz.questions;
+                
+                closeLoadModal();
+                renderQuestions();
+                
+            } catch (e) {
+                alert("Fehler beim Laden der Quiz-Details.");
+            }
+        }
+
+        // --- GALERIE LOGIK ---
+        function openGallery(qIndex) {
+            currentGalleryIndex = qIndex;
+            document.getElementById('galleryModal').classList.remove('hidden');
+            document.getElementById('preview-container').classList.add('hidden');
+            document.getElementById('preview-image').src = "";
+            currentPreviewUrl = "";
+            document.getElementById('image-search-input').value = "";
+
+            const grid = document.getElementById('meme-grid');
+            if (grid.children.length === 0) {
+                memeLibrary.forEach(meme => {
+                    grid.innerHTML += `
+                        <div onclick="previewImage('${meme.url}')" class="bg-slate-900 rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-blue-500 transition-all group">
+                            <div class="h-24 bg-cover bg-center group-hover:scale-105 transition-transform" style="background-image: url('${meme.url}')"></div>
+                            <div class="p-2 text-center text-[10px] text-slate-300 truncate">${meme.name}</div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function closeGallery() {
+            document.getElementById('galleryModal').classList.add('hidden');
+            currentGalleryIndex = null;
+        }
+
+        function previewImage(url) {
+            currentPreviewUrl = url;
+            const imgEl = document.getElementById('preview-image');
+            const loadingText = document.getElementById('preview-loading');
+            
+            document.getElementById('preview-container').classList.remove('hidden');
+            imgEl.classList.remove('opacity-100');
+            imgEl.classList.add('opacity-0');
+            loadingText.style.display = 'block';
+
+            imgEl.onload = () => {
+                loadingText.style.display = 'none';
+                imgEl.classList.remove('opacity-0');
+                imgEl.classList.add('opacity-100');
+            };
+
+            imgEl.src = url;
+        }
+
+        function searchImage(keyword) {
+            if (!keyword) keyword = document.getElementById('image-search-input').value.trim();
+            if (!keyword) return;
+
+            const randLock = Math.floor(Math.random() * 100000);
+            const safeKeyword = encodeURIComponent(keyword.toLowerCase());
+            const url = `https://loremflickr.com/800/500/${safeKeyword}?lock=${randLock}`;
+            previewImage(url);
+        }
+
+        function confirmImage() {
+            if (currentPreviewUrl && currentGalleryIndex !== null) {
+                updateQ(currentGalleryIndex, 'imageUrl', currentPreviewUrl);
+                document.getElementById(`img-input-${currentGalleryIndex}`).value = currentPreviewUrl;
+            }
+            closeGallery();
+        }
+
+        // --- SPEICHERN ---
+        async function saveQuiz() {
+            const title = document.getElementById('quiz-title').value.trim();
+
+            if (!title) return alert("Dein Quiz braucht einen Titel!");
+            if (questions.length === 0) return alert("Füge mindestens eine Frage hinzu.");
+
+            for (let i = 0; i < questions.length; i++) {
+                const q = questions[i];
+                if (!q.questionText.trim()) return alert(`Frage ${i+1} hat keinen Text.`);
+                
+                if (q.type === 'normal') {
+                    if (!q.correctAnswers || q.correctAnswers.length === 0) return alert(`Frage ${i+1}: Bitte markiere mindestens eine korrekte Antwort!`);
+                    const emptyAnswers = q.answers.filter(a => a.trim() === '');
+                    if (emptyAnswers.length > 2) return alert(`Frage ${i+1}: Bitte fülle mindestens 2 Antwortfelder aus.`);
+                }
+            }
+
+            const payload = {
+                quizId: currentQuizId, // Falls wir bearbeiten, senden wir die ID mit
+                title: title,
+                questions: questions
+            };
+
+            try {
+                const res = await fetch(window.LIMO_API + '/api/quiz/save', { // <--- Hier der neue Endpoint!
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+                if (data.error) {
+                    alert("Fehler: " + data.error);
+                } else {
+                    alert("✅ " + data.message);
+                    window.location.href = '/themes/kahoot.html';
+                }
+            } catch (e) {
+                alert("Verbindungsfehler beim Speichern.");
+            }
+        }
+
+        // Limohoot Löschen
+        async function deleteQuiz(id, event) {
+            // Verhindert, dass beim Klicken auf den Löschen-Knopf versehentlich das Quiz geladen wird
+            if (event) event.stopPropagation(); 
+            
+            if (!confirm("🚨 Willst du dieses Quiz wirklich FÜR IMMER löschen?")) return;
+
+            try {
+                const res = await fetch(window.LIMO_API + `/api/quiz/${id}`, { 
+                    method: 'DELETE',
+                    credentials: 'include' 
+                });
+                const data = await res.json();
+                
+                if (data.error) {
+                    alert("Fehler: " + data.error);
+                } else {
+                    // Wenn wir das Quiz löschen, das gerade im Editor offen ist, leeren wir den Editor!
+                    if (currentQuizId === id) {
+                        currentQuizId = null;
+                        document.getElementById('quiz-title').value = "";
+                        questions = [];
+                        addQuestion('normal');
+                    }
+                    
+                    // Liste im Modal neu laden
+                    openLoadModal();
+                }
+            } catch (e) {
+                alert("Verbindungsfehler beim Löschen.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(questions.length === 0) addQuestion('normal');
+        });
+
+    </script>
+</body>
+</html>

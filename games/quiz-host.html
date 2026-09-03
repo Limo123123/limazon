@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script src="/themes/js/config.js?v=1788470811"></script>
+    <script src="/themes/js/security.js?v=1788470811"></script>
+    <script src="/themes/js/limo-global.js?v=1788470811" data-page="quiz-host"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limohoot - Host</title>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #111827; overflow: hidden; height: 100vh; width: 100vw; margin: 0; }
+        .kahoot-bg { background: #46178f; }
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        
+        .ans-0 { background-color: #e21b3c; border-bottom: 8px solid #b0102b; } /* Red */
+        .ans-1 { background-color: #1368ce; border-bottom: 8px solid #0e4f9e; } /* Blue */
+        .ans-2 { background-color: #d89e00; border-bottom: 8px solid #a67900; } /* Yellow */
+        .ans-3 { background-color: #26890c; border-bottom: 8px solid #1a5e08; } /* Green */
+
+        .ans-btn { transition: transform 0.1s, opacity 0.3s; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .ans-btn.inactive { opacity: 0.25; filter: grayscale(80%); }
+
+        @keyframes pulse-fast { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        .animate-pulse-fast { animation: pulse-fast 1s infinite; }
+        
+        .timer-circle { transition: stroke-dashoffset 1s linear; }
+
+        /* WICHTIG FÜR DIE AUTO-SKALIERUNG */
+        .auto-text-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        .auto-text { text-align: center; word-wrap: break-word; font-weight: bold; color: white; line-height: 1.2; width: 100%; }
+    </style>
+</head>
+<body class="kahoot-bg flex flex-col">
+
+    <!-- 1. SETUP SCREEN -->
+    <div id="screen-setup" class="absolute inset-0 flex items-center justify-center p-4 md:p-8 z-50">
+        <div class="glass-panel p-6 md:p-8 rounded-2xl w-full max-w-2xl text-center flex flex-col max-h-[90vh]">
+            <h1 class="text-3xl md:text-4xl font-black mb-6 text-slate-800">Welches Limohoot möchtest du starten?</h1>
+            <div id="quiz-list" class="space-y-3 overflow-y-auto pr-2 custom-scroll flex-1 min-h-0">
+                <p class="text-slate-500">Lade Quizzes...</p>
+            </div>
+            <button onclick="window.location.href='/themes/kahoot.html'" class="mt-6 text-slate-500 hover:text-slate-800 font-bold underline shrink-0">Zurück</button>
+        </div>
+    </div>
+
+    <!-- 2. LOBBY SCREEN -->
+    <div id="screen-lobby" class="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-8 hidden z-40 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] overflow-y-auto">
+        <div class="glass-panel px-8 py-6 md:px-16 md:py-8 rounded-3xl text-center mb-8 transform hover:scale-105 transition-transform">
+            <p class="text-xl md:text-2xl font-bold text-slate-500 mb-2">Gehe auf <span class="text-black">limazon.v6.rocks/games/quiz-client.html</span> und gib den PIN ein:</p>
+            <h1 id="room-pin" class="text-6xl md:text-8xl font-black tracking-widest text-black drop-shadow-md">LADE...</h1>
+        </div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl mb-4 px-4 md:px-8 gap-4">
+            <div class="text-white text-xl md:text-2xl font-bold bg-black/30 px-6 py-2 rounded-full w-full md:w-auto text-center">
+                👤 Spieler: <span id="player-count">0</span>
+            </div>
+            <button onclick="startGame()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white text-2xl md:text-3xl font-black px-12 py-4 rounded-xl shadow-[0_6px_0_#1e3a8a] active:translate-y-2 active:shadow-none transition-all">
+                START
+            </button>
+        </div>
+
+        <div id="players-grid" class="flex flex-wrap justify-center gap-3 w-full max-w-6xl p-4"></div>
+    </div>
+
+    <!-- NEU: GET READY SCREEN (Sync Phase) -->
+    <div id="screen-get-ready" class="absolute inset-0 flex flex-col items-center justify-center hidden z-30 kahoot-bg p-4 text-center">
+        <h1 class="text-5xl md:text-7xl font-black text-white mb-6 animate-pulse">Bist du bereit?</h1>
+        <h2 id="get-ready-question" class="text-2xl md:text-4xl font-bold text-white/80 max-w-4xl leading-tight">Lade Frage...</h2>
+    </div>
+
+    <!-- 3. GAME SCREEN -->
+    <div id="screen-game" class="absolute inset-0 flex flex-col hidden z-30 bg-slate-100">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center p-3 md:p-4 bg-white shadow-md shrink-0 gap-2 md:gap-0">
+            <span id="question-counter" class="text-lg md:text-2xl font-bold text-slate-500 md:w-48 text-center md:text-left">Frage 1 von 10</span>
+            <h2 id="question-text" class="text-xl md:text-3xl lg:text-4xl font-black text-center flex-1 mx-2 md:mx-4 line-clamp-2">Lade Frage...</h2>
+            <div class="md:w-48 text-center md:text-right">
+                <button id="skip-btn" onclick="skipAction()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 md:px-6 md:py-3 rounded-lg shadow transition-colors text-sm md:text-base">
+                    Auflösen ⏩
+                </button>
+            </div>
+        </div>
+
+        <!-- Mitte -->
+        <div class="flex items-center justify-between md:justify-center p-2 md:p-4 gap-4 md:gap-8 h-[25vh] md:h-[35vh] shrink-0">
+            <!-- Timer -->
+            <div class="relative w-20 h-20 md:w-28 md:h-28 flex items-center justify-center shrink-0">
+                <svg class="transform -rotate-90 w-20 h-20 md:w-28 md:h-28">
+                    <circle cx="50%" cy="50%" r="40%" stroke="#e2e8f0" stroke-width="10%" fill="none" />
+                    <circle id="timer-circle" cx="50%" cy="50%" r="40%" stroke="#8b5cf6" stroke-width="10%" fill="none" stroke-dasharray="251.2" stroke-dashoffset="0" class="timer-circle" />
+                </svg>
+                <span id="timer-text" class="absolute text-2xl md:text-3xl font-black text-slate-700">20</span>
+            </div>
+
+            <!-- Bild -->
+            <div id="question-image-container" class="hidden h-full rounded-xl overflow-hidden shadow-xl border-2 md:border-4 border-white flex items-center justify-center bg-slate-200 flex-1 md:flex-none max-w-sm md:max-w-2xl">
+                <img id="question-image" src="" class="object-contain h-full w-full">
+            </div>
+
+            <!-- Antworten Count -->
+            <div class="w-20 h-20 md:w-28 md:h-28 flex flex-col items-center justify-center shrink-0 bg-slate-800 text-white rounded-xl shadow-lg">
+                <span class="text-[10px] md:text-xs font-bold opacity-80 uppercase tracking-widest mb-1">Antworten</span>
+                <span id="answers-count" class="text-2xl md:text-4xl font-black">0</span>
+            </div>
+        </div>
+
+        <!-- Antworten Grid -->
+        <div id="answers-grid-container" class="flex-1 min-h-0 p-2 md:p-4 pb-4 md:pb-6">
+            <div id="answers-grid" class="grid grid-cols-1 sm:grid-cols-2 grid-rows-4 sm:grid-rows-2 gap-2 md:gap-4 h-full w-full">
+                <!-- Wird per JS befüllt -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. LEADERBOARD SCREEN -->
+    <div id="screen-leaderboard" class="absolute inset-0 flex flex-col items-center justify-center hidden z-30 kahoot-bg p-4 overflow-y-auto">
+        <h1 class="text-4xl md:text-5xl font-black text-white mb-6 md:mb-8 text-center">Rangliste</h1>
+        <div id="leaderboard-list" class="w-full max-w-3xl space-y-2 md:space-y-3">
+        </div>
+        <button id="next-btn" onclick="nextQuestion()" class="mt-6 md:mt-8 bg-blue-600 hover:bg-blue-500 text-white text-xl md:text-2xl font-black px-8 py-3 md:px-12 md:py-4 rounded-xl shadow-[0_6px_0_#1e3a8a] transition-all">
+            Nächste Frage ➔
+        </button>
+    </div>
+
+    <script>
+        const API = window.LIMO_API + '/api';
+        let quizData = null; let roomCode = null; let hostId = null;
+        let players = []; let currentQuestionIndex = 0;
+        let timerInterval = null; let timeLeft = 0; let answersReceivedThisRound = 0;
+        let isRevealing = false; let revealTimeout = null;
+
+        const sounds = {
+            lobby: new Audio('https://cdn.pixabay.com/download/audio/2022/01/18/audio_82c617b0ed.mp3'),
+            timer: new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_c6ccf3232f.mp3'),
+            reveal: new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3')
+        };
+        sounds.lobby.loop = true;
+
+        // --- AUTO-TEXT RESIZER ---
+        // Passt die Schriftgröße an, damit sie nie abgeschnitten wird
+        function autoResizeText() {
+            const textElements = document.querySelectorAll('.auto-text');
+            textElements.forEach(el => {
+                let fontSize = 50; // Startgröße
+                el.style.fontSize = fontSize + 'px';
+                // Solange der Text größer als der Container ist, mach ihn kleiner
+                while((el.scrollHeight > el.parentElement.clientHeight || el.scrollWidth > el.parentElement.clientWidth) && fontSize > 12) {
+                    fontSize--;
+                    el.style.fontSize = fontSize + 'px';
+                }
+            });
+        }
+
+        // Lauscht auf Fenstergrößenänderungen
+        window.addEventListener('resize', autoResizeText);
+
+        function getTimerDashArray() {
+            const circle = document.getElementById('timer-circle');
+            if(circle) {
+                const r = circle.getAttribute('r');
+                if(r.includes('%')) return 251.2; 
+                return 2 * Math.PI * parseFloat(r);
+            }
+            return 301.5;
+        }
+
+        async function init() {
+            try {
+                const res = await fetch(`${API}/quiz/list`, { credentials: 'include' });
+                const data = await res.json();
+                const meRes = await fetch(`${API}/auth/me`, { credentials: 'include' });
+                const meData = await meRes.json();
+                const myQuizzes = data.quizzes.filter(q => q.creatorName === meData.username);
+                const list = document.getElementById('quiz-list');
+                
+                if (myQuizzes.length === 0) {
+                    list.innerHTML = '<p class="text-red-500 font-bold">Du hast noch keine Quizzes erstellt. Gehe in den Editor!</p>';
+                    return;
+                }
+
+                list.innerHTML = myQuizzes.map(q => `
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-300 flex justify-between items-center hover:bg-white hover:shadow-md transition cursor-pointer" onclick="hostQuiz('${q._id}')">
+                        <div class="text-left flex-1 min-w-0 pr-2">
+                            <h4 class="text-slate-800 font-black text-lg md:text-xl truncate">${q.title}</h4>
+                            <p class="text-xs text-slate-500">Erstellt am: ${new Date(q.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <span class="bg-green-500 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-bold shadow text-sm md:text-base shrink-0">Hosten ▶</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                document.getElementById('quiz-list').innerHTML = "Fehler beim Laden.";
+            }
+        }
+
+        async function hostQuiz(quizId) {
+            try {
+                const res = await fetch(`${API}/quiz/host`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quizId }), credentials: 'include'
+                });
+                const data = await res.json();
+                
+                if (data.error) return alert(data.error);
+
+                roomCode = data.roomCode;
+                hostId = data.playerId;
+
+                const qRes = await fetch(`${API}/quiz/details/${quizId}`, { credentials: 'include' });
+                const qData = await qRes.json();
+                quizData = qData.quiz;
+
+                document.getElementById('screen-setup').classList.add('hidden');
+                document.getElementById('screen-lobby').classList.remove('hidden');
+                document.getElementById('room-pin').innerText = roomCode;
+
+                sounds.lobby.volume = 0.3;
+                sounds.lobby.play().catch(e => console.log("Audio blockiert"));
+
+                setInterval(pollRoom, 1000);
+
+            } catch (e) { alert("Verbindungsfehler."); }
+        }
+
+        // --- 2. LOBBY POLLING & SIGNAL HANDLING ---
+        async function pollRoom() {
+            if (!roomCode) return;
+            try {
+                const res = await fetch(`${API}/quiz/sync/${roomCode}?_t=${Date.now()}`, { 
+                    credentials: 'include',
+                    cache: 'no-store'
+                });
+                
+                if (res.status === 429) {
+                    setTimeout(pollRoom, 5000);
+                    return;
+                }
+
+                const data = await res.json();
+                
+                data.guests.forEach(g => {
+                    if (!players.find(p => p.id === g.id)) {
+                        players.push({ id: g.id, name: g.name, score: 0, streak: 0, hasAnswered: false });
+                    }
+                });
+
+                if (!document.getElementById('screen-lobby').classList.contains('hidden')) {
+                    document.getElementById('player-count').innerText = players.length;
+                    document.getElementById('players-grid').innerHTML = players.map(p => `
+                        <div class="bg-white/90 text-black font-bold text-xl md:text-2xl px-4 py-2 md:px-6 md:py-3 rounded-xl shadow-lg">
+                            ${p.name}
+                        </div>
+                    `).join('');
+                }
+
+                if (data.signals && data.signals.length > 0) {
+                    data.signals.forEach(sig => handlePlayerSignal(sig));
+                }
+            } catch (e) { 
+                console.error("Polling error"); 
+            } finally {
+                setTimeout(pollRoom, 2000);
+            }
+        }
+
+        function handlePlayerSignal(signalData) {
+            const player = players.find(p => p.id === signalData.from);
+            if (!player || player.hasAnswered) return;
+
+            const q = quizData.questions[currentQuestionIndex];
+            const sig = signalData.signal; 
+
+            if (sig.type === 'answer') {
+                player.hasAnswered = true;
+                answersReceivedThisRound++;
+                document.getElementById('answers-count').innerText = answersReceivedThisRound;
+
+                let isCorrect = false;
+
+                if (q.type === 'normal') {
+                    if (q.correctAnswers && q.correctAnswers.includes(parseInt(sig.answer))) isCorrect = true;
+                } else if (q.type === 'slider') {
+                    const ansNum = parseInt(sig.answer);
+                    if (Math.abs(ansNum - q.correctAnswer) <= q.sliderTolerance) isCorrect = true;
+                } else if (q.type === 'info') {
+                    isCorrect = true; 
+                }
+
+                if (isCorrect && q.type !== 'info') {
+                    player.streak++;
+                    const timeRatio = Math.max(0, (q.timeLimit - sig.timeTaken) / q.timeLimit);
+                    let points = Math.round(500 + (500 * timeRatio));
+                    if (player.streak > 2) points += 100;
+                    if (q.doublePoints) points *= 2;
+                    player.score += points;
+                } else {
+                    player.streak = 0; 
+                }
+
+                if (answersReceivedThisRound >= players.length) skipAction();
+            }
+        }
+
+        async function updateRoomState(newState, pushLeaderboard = false) {
+            const payload = { roomCode, newState, questionIndex: currentQuestionIndex };
+            if (pushLeaderboard) payload.leaderboardData = [...players].sort((a,b) => b.score - a.score).slice(0, 5); 
+            await fetch(`${API}/quiz/host/control`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload), credentials: 'include'
+            });
+        }
+
+        async function startGame() {
+            if (players.length === 0 && !confirm("Niemand ist beigetreten. Trotzdem starten?")) return;
+            sounds.lobby.pause();
+            document.getElementById('screen-lobby').classList.add('hidden');
+            currentQuestionIndex = 0;
+            showQuestion();
+        }
+
+        function skipAction() {
+            if (document.getElementById('screen-game').classList.contains('hidden')) return;
+            if (!isRevealing) {
+                clearInterval(timerInterval);
+                revealAnswer();
+            } else {
+                clearTimeout(revealTimeout);
+                showLeaderboard();
+            }
+        }
+
+        async function showQuestion() {
+            const q = quizData.questions[currentQuestionIndex];
+            isRevealing = false; 
+            
+            const skipBtn = document.getElementById('skip-btn');
+            skipBtn.innerText = "Auflösen ⏩";
+            skipBtn.className = "bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 md:px-6 md:py-3 rounded-lg shadow transition-colors text-sm md:text-base";
+
+            // --- GET READY PHASE ---
+            await updateRoomState('get_ready');
+            document.getElementById('screen-leaderboard').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            
+            const readyScreen = document.getElementById('screen-get-ready');
+            document.getElementById('get-ready-question').innerText = q.questionText;
+            readyScreen.classList.remove('hidden');
+
+            // Nach 3 Sekunden gehts wirklich los!
+            setTimeout(async () => {
+                readyScreen.classList.add('hidden');
+                document.getElementById('screen-game').classList.remove('hidden');
+                await updateRoomState('question_active');
+
+                players.forEach(p => p.hasAnswered = false);
+                answersReceivedThisRound = 0;
+                document.getElementById('answers-count').innerText = "0";
+
+                document.getElementById('question-counter').innerText = `Frage ${currentQuestionIndex + 1} / ${quizData.questions.length}`;
+                document.getElementById('question-text').innerText = q.questionText;
+
+                const imgContainer = document.getElementById('question-image-container');
+                if (q.imageUrl) {
+                    document.getElementById('question-image').src = q.imageUrl;
+                    imgContainer.classList.remove('hidden');
+                } else {
+                    imgContainer.classList.add('hidden');
+                }
+
+                const grid = document.getElementById('answers-grid');
+                grid.innerHTML = '';
+                
+                if (q.type === 'normal') {
+                    const shapes = ['▲', '◆', '●', '■'];
+                    q.answers.forEach((ans, i) => {
+                        grid.innerHTML += `
+                            <div id="ans-box-${i}" class="ans-${i} rounded-2xl shadow-lg ans-btn h-full w-full relative">
+                                <span class="text-white opacity-10 absolute text-[10rem] md:text-[15rem] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">${shapes[i]}</span>
+                                <div class="auto-text-container relative z-10">
+                                    <span class="auto-text drop-shadow-md">${ans}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else if (q.type === 'slider') {
+                    grid.innerHTML = `
+                        <div class="col-span-1 sm:col-span-2 bg-purple-600 rounded-2xl flex flex-col items-center justify-center shadow-lg p-6 h-full w-full relative overflow-hidden">
+                            <span class="text-white opacity-10 absolute text-[15rem] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">🎚️</span>
+                            <span class="text-white text-3xl md:text-5xl font-bold mb-4 relative z-10 text-center">Zahlen-Schätzer</span>
+                            <span class="text-white text-lg md:text-3xl opacity-80 text-center relative z-10">Tippt jetzt eine Zahl zwischen <b class="text-yellow-300">${q.sliderMin}</b> und <b class="text-yellow-300">${q.sliderMax}</b> ein!</span>
+                        </div>
+                    `;
+                } else if (q.type === 'info') {
+                    grid.innerHTML = `
+                        <div class="col-span-1 sm:col-span-2 bg-slate-600 rounded-2xl flex flex-col items-center justify-center shadow-lg p-6 h-full w-full relative overflow-hidden">
+                            <span class="text-white opacity-10 absolute text-[15rem] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">ℹ️</span>
+                            <span class="text-white text-2xl md:text-4xl font-bold opacity-50 relative z-10 text-center">INFO-FOLIE</span>
+                            <span class="text-white text-lg md:text-2xl opacity-50 relative z-10 text-center mt-2">(Gibt keine Punkte)</span>
+                        </div>
+                    `;
+                }
+
+                // Sofort Textgröße anpassen
+                setTimeout(autoResizeText, 10);
+
+                timeLeft = q.timeLimit;
+                document.getElementById('timer-text').innerText = timeLeft;
+                
+                const dashArray = getTimerDashArray();
+                document.getElementById('timer-circle').style.transition = 'none';
+                document.getElementById('timer-circle').style.strokeDasharray = dashArray;
+                document.getElementById('timer-circle').style.strokeDashoffset = '0';
+                
+                setTimeout(() => {
+                    document.getElementById('timer-circle').style.transition = `stroke-dashoffset ${q.timeLimit}s linear`;
+                    document.getElementById('timer-circle').style.strokeDashoffset = dashArray;
+                }, 50);
+
+                clearInterval(timerInterval);
+                sounds.timer.play();
+
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('timer-text').innerText = timeLeft;
+                    if (timeLeft <= 0) { clearInterval(timerInterval); revealAnswer(); }
+                }, 1000);
+            }, 3000); // 3 Sekunden "Get Ready" Phase
+        }
+
+        async function revealAnswer() {
+            isRevealing = true; 
+            
+            const skipBtn = document.getElementById('skip-btn');
+            skipBtn.innerText = "Zur Rangliste ➔";
+            skipBtn.className = "bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 md:px-6 md:py-3 rounded-lg shadow transition-colors text-sm md:text-base";
+
+            sounds.timer.pause();
+            sounds.timer.currentTime = 0;
+            sounds.reveal.play();
+
+            const q = quizData.questions[currentQuestionIndex];
+            await updateRoomState('answer_reveal');
+
+            if (q.type === 'normal') {
+                for (let i = 0; i < 4; i++) {
+                    const box = document.getElementById(`ans-box-${i}`);
+                    if (!box) continue;
+                    
+                    if (q.correctAnswers && q.correctAnswers.includes(i)) {
+                        box.classList.add('animate-pulse-fast');
+                        box.innerHTML += `<div class="absolute inset-0 bg-white/20 flex items-center justify-center z-20"><span class="text-white text-7xl md:text-9xl drop-shadow-xl">✔</span></div>`;
+                    } else {
+                        box.classList.add('inactive');
+                    }
+                }
+            } else if (q.type === 'slider') {
+                const grid = document.getElementById('answers-grid');
+                grid.innerHTML = `
+                    <div class="col-span-1 sm:col-span-2 bg-green-600 rounded-2xl flex flex-col items-center justify-center shadow-lg p-6 h-full w-full animate-pulse-fast relative overflow-hidden">
+                        <span class="text-white text-2xl md:text-4xl font-bold mb-4 relative z-10 text-center">Die richtige Antwort lautet:</span>
+                        <span class="text-white text-7xl md:text-[10rem] leading-none font-black drop-shadow-xl relative z-10">${q.correctAnswer}</span>
+                        <span class="text-white text-lg md:text-2xl opacity-80 mt-4 relative z-10 bg-black/20 px-4 py-2 rounded-full">Toleranz: +/- ${q.sliderTolerance}</span>
+                    </div>
+                `;
+            }
+
+            revealTimeout = setTimeout(() => { showLeaderboard(); }, 5000);
+        }
+
+        async function showLeaderboard() {
+            isRevealing = false; 
+            await updateRoomState('leaderboard', true);
+
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-leaderboard').classList.remove('hidden');
+
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+
+            players.sort((a,b) => b.score - a.score);
+            const top5 = players.slice(0, 5);
+
+            if (top5.length === 0) {
+                list.innerHTML = '<p class="text-white text-center text-xl">Niemand spielt mit. Sad.</p>';
+            } else {
+                top5.forEach((p, index) => {
+                    const barWidth = Math.max(10, (p.score / top5[0].score) * 100);
+                    list.innerHTML += `
+                        <div class="bg-black/30 rounded-lg p-3 md:p-4 flex items-center gap-3 md:gap-4">
+                            <span class="text-white font-black text-xl md:text-2xl w-6 md:w-8">${index + 1}.</span>
+                            <div class="flex-1">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-white font-bold text-lg md:text-xl">${p.name} ${p.streak > 2 ? '🔥' : ''}</span>
+                                    <span class="text-white font-black text-lg md:text-xl">${p.score}</span>
+                                </div>
+                                <div class="w-full bg-black/50 h-2 md:h-3 rounded-full overflow-hidden">
+                                    <div class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: 0%;" data-target="${barWidth}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                setTimeout(() => {
+                    document.querySelectorAll('[data-target]').forEach(el => {
+                        el.style.width = el.getAttribute('data-target');
+                    });
+                }, 100);
+            }
+
+            const btn = document.getElementById('next-btn');
+            if (currentQuestionIndex >= quizData.questions.length - 1) {
+                btn.innerText = "🏆 Podium anzeigen";
+                btn.onclick = showPodium;
+                btn.className = "mt-6 md:mt-8 bg-green-600 hover:bg-green-500 text-white text-xl md:text-2xl font-black px-8 md:px-12 py-3 md:py-4 rounded-xl shadow-[0_6px_0_#166534] transition-all";
+            } else {
+                btn.innerText = "Nächste Frage ➔";
+                btn.onclick = nextQuestion;
+                btn.className = "mt-6 md:mt-8 bg-blue-600 hover:bg-blue-500 text-white text-xl md:text-2xl font-black px-8 md:px-12 py-3 md:py-4 rounded-xl shadow-[0_6px_0_#1e3a8a] transition-all";
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            showQuestion();
+        }
+
+        async function showPodium() {
+            await updateRoomState('podium', true);
+            document.querySelector('#screen-leaderboard h1').innerText = "🏆 PODIUM 🏆";
+            document.querySelector('#screen-leaderboard h1').classList.add('text-yellow-400', 'animate-pulse');
+            
+            const btn = document.getElementById('next-btn');
+            btn.innerText = "Beenden";
+            btn.onclick = () => window.location.href='/themes/kahoot.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

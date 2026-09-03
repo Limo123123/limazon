@@ -2,9 +2,9 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js?v=1788215655"></script>
-    <script src="/themes/js/security.js?v=1788215655"></script>
-    <script src="/themes/js/limo-global.js?v=1788215655" data-page="index"></script>
+    <script src="/themes/js/config.js?v=1788470811"></script>
+    <script src="/themes/js/security.js?v=1788470811"></script>
+    <script src="/themes/js/limo-global.js?v=1788470811" data-page="index"></script>
     <!-- SimpleWebAuthn Browser Script für Passkeys -->
     <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
 
@@ -223,8 +223,8 @@
                 <!-- Instanz-Wähler -->
                 <div class="mb-4 relative">
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
-                    <select id="instanceSelect" onchange="switchInstance(this.value)"
-                        class="w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
+                    <select onchange="switchInstance(this.value)"
+                        class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
                         <option value="https://api.limazon.v6.rocks"> Hauptserver (Limazon Universe)</option>
                         <option value="https://api.tfl.limazon.v6.rocks">TFL</option>
                         <!-- Hier kommen weitere Instanzen hinzu -->
@@ -271,8 +271,8 @@
                 <!-- Instanz-Wähler -->
                 <div class="mb-4 relative">
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
-                    <select id="instanceSelect" onchange="switchInstance(this.value)"
-                        class="w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
+                    <select onchange="switchInstance(this.value)"
+                        class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
                         <option value="https://api.limazon.v6.rocks"> Hauptserver (Limazon Universe)</option>
                         <option value="https://api.tfl.limazon.v6.rocks">TFL</option>
                         <!-- Hier kommen weitere Instanzen hinzu -->
@@ -327,24 +327,27 @@
         </div>
 
         <header class="text-center mb-12 relative">
-            
+
             <div class="sm:absolute sm:right-0 sm:top-0 flex flex-col items-center sm:items-end mb-6 sm:mb-0">
-                <div class="inline-flex items-center gap-3 bg-gray-900/60 sm:bg-transparent border border-gray-800 sm:border-none rounded-full px-4 py-1.5 text-xs sm:p-0 sm:rounded-none">
+                <div
+                    class="inline-flex items-center gap-3 bg-gray-900/60 sm:bg-transparent border border-gray-800 sm:border-none rounded-full px-4 py-1.5 text-xs sm:p-0 sm:rounded-none">
                     <div class="text-gray-400">
                         <span class="hidden sm:inline">Spieler:</span>
-                        <span class="sm:hidden">👤</span> 
+                        <span class="sm:hidden">👤</span>
                         <span id="navUsername" class="font-bold text-blue-400 ml-0.5">...</span>
                     </div>
-                    
+
                     <div class="w-px h-3 bg-gray-700"></div>
-                    
+
                     <div class="flex items-center gap-1.5" title="Aktueller Server">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="navServer" class="font-mono text-emerald-400 font-bold truncate max-w-[120px] sm:max-w-none">...</span>
+                        <span id="navServer"
+                            class="font-mono text-emerald-400 font-bold truncate max-w-[120px] sm:max-w-none">...</span>
                     </div>
                 </div>
-                
-                <button onclick="handleLogout()" class="text-[10px] sm:text-xs text-red-500/80 hover:text-red-400 mt-2 sm:mt-1 underline decoration-red-500/30">Abmelden</button>
+
+                <button onclick="handleLogout()"
+                    class="text-[10px] sm:text-xs text-red-500/80 hover:text-red-400 mt-2 sm:mt-1 underline decoration-red-500/30">Abmelden</button>
             </div>
 
             <!-- Haupttitel mit minimalem Abstand nach oben auf dem Handy -->
@@ -354,7 +357,9 @@
             <p class="text-xl text-gray-400 font-light">Willkommen im Hub.</p>
 
             <div class="mt-8 relative max-w-md mx-auto">
-                <input type="text" id="searchInput" class="w-full pl-12 pr-4 py-4 bg-gray-900/80 border border-gray-700 rounded-2xl text-white input-glow focus:outline-none transition-all" placeholder="Suche Module...">
+                <input type="text" id="searchInput"
+                    class="w-full pl-12 pr-4 py-4 bg-gray-900/80 border border-gray-700 rounded-2xl text-white input-glow focus:outline-none transition-all"
+                    placeholder="Suche Module...">
                 <span class="absolute left-4 top-4 opacity-50">🔍</span>
             </div>
         </header>
@@ -376,7 +381,7 @@
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
                 onclick="nav('themes/rathaus.html')" data-module="rathaus"
-                data-tags="rathaus bürgermeister wahl steuern gesetz politik">
+                data-tags="rathaus bürgermeister steuern politik">
                 <div
                     class="h-32 bg-gradient-to-br from-blue-800 via-indigo-900 to-black flex items-center justify-center relative">
                     <span class="text-6xl card-icon">🏛️</span>
@@ -387,7 +392,7 @@
                         <span
                             class="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-500/30">MACHT</span>
                     </div>
-                    <p class="text-gray-400 text-xs">Wahlen, Steuern & Gesetze.</p>
+                    <p class="text-gray-400 text-xs">Steuern & Regierungs-Tools.</p>
                 </div>
             </div>
 
@@ -734,25 +739,6 @@
                 </div>
             </div>
 
-            <a href="themes/event.html"
-                class="relative overflow-hidden group p-1 rounded-2xl bg-gradient-to-r from-red-500 via-yellow-500 to-purple-500 transform transition-transform hover:scale-105 shadow-[0_0_15px_rgba(236,72,153,0.4)]"
-                data-tags="event csd bonus tokens glücksrad pride">
-                <div
-                    class="bg-black/90 h-full w-full rounded-xl p-6 flex flex-col items-center justify-center relative z-10 transition-colors group-hover:bg-black/70">
-                    <div
-                        class="absolute inset-0 bg-gradient-to-tr from-pink-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
-                    </div>
-                    <span class="text-5xl mb-3 relative z-20 group-hover:animate-bounce">🏳️‍🌈</span>
-                    <h3 class="text-xl font-bold text-white relative z-20 tracking-wider">EVENT</h3>
-                    <p class="text-xs text-gray-400 mt-2 text-center relative z-20 font-mono">Tägliche Belohnung &
-                        Glücksrad</p>
-                    <div
-                        class="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse shadow-[0_0_10px_red]">
-                        LIVE
-                    </div>
-                </div>
-            </a>
-
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
                 onclick="nav('ot/tcg/index.html')" data-tags="bewertung schule lehrer social">
                 <div class="h-32 bg-gradient-to-br from-lime-800 to-green-900 flex items-center justify-center"><span
@@ -770,6 +756,18 @@
                 <div class="p-5">
                     <h3 class="text-xl font-bold group-hover:text-gray-300">Confessions</h3>
                     <p class="text-gray-400 text-xs">Deine Geheimnisse.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
+                onclick="nav('themes/bundestag.html')" data-tags="bundestag wahl kanzler partei gesetz politik">
+                <div
+                    class="h-32 bg-gradient-to-br from-blue-700 via-sky-800 to-black flex items-center justify-center relative">
+                    <span class="text-6xl card-icon">🗳️</span>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-xl font-bold group-hover:text-blue-400">Bundestag</h3>
+                    <p class="text-gray-400 text-xs">Parteien, Kanzler & Gesetze.</p>
                 </div>
             </div>
 
@@ -793,6 +791,20 @@
                 <div class="p-5">
                     <h3 class="text-xl font-bold group-hover:text-red-600">Untergrund</h3>
                     <p class="text-gray-400 text-xs">Überfälle & Dark Market.</p>
+                </div>
+            </div>
+
+            <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
+                onclick="nav('themes/directory.html')" data-tags="user liste id meldeamt telefonbuch einwohner directory">
+                <div
+                    class="h-32 bg-gradient-to-br from-slate-600 via-slate-800 to-black flex items-center justify-center relative overflow-hidden">
+                    <span class="text-6xl card-icon">📖</span>
+                </div>
+                <div class="p-5">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="text-xl font-bold group-hover:text-slate-300">Meldeamt</h3>
+                    </div>
+                    <p class="text-gray-400 text-xs">User IDs nachschlagen.</p>
                 </div>
             </div>
 
@@ -1124,6 +1136,17 @@
         document.addEventListener('DOMContentLoaded', async () => {
             searchInput.addEventListener('input', filterApps);
 
+            // Server Select Dropdowns synchronisieren
+            const savedTarget = localStorage.getItem('limazon_api_target');
+            const selectBoxes = document.querySelectorAll('.instance-select');
+            selectBoxes.forEach(box => {
+                if (savedTarget && savedTarget !== "undefined") {
+                    box.value = savedTarget;
+                } else {
+                    box.value = "https://api.limazon.v6.rocks";
+                }
+            });
+
             try {
                 const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
                 if (res.ok) {
@@ -1131,10 +1154,15 @@
                     showPortal(data.username, true);
                 } else {
                     authScreen.classList.remove('hidden');
+                    // Gucken, in welchem Tab wir vor dem Reload waren
+                    const activeTab = sessionStorage.getItem('active_auth_tab') || 'login';
+                    switchTab(activeTab);
                 }
             } catch (err) {
                 console.error("Auth-Check Error:", err);
                 authScreen.classList.remove('hidden');
+                const activeTab = sessionStorage.getItem('active_auth_tab') || 'login';
+                switchTab(activeTab);
             }
         });
 
@@ -1146,6 +1174,9 @@
             const tabRegister = document.getElementById('tabRegister');
 
             document.getElementById('authMessage').classList.add('hidden');
+
+            // Tab speichern, damit er nach Reload bleibt!
+            sessionStorage.setItem('active_auth_tab', tab);
 
             if (tab === 'login') {
                 loginForm.classList.remove('hidden');
@@ -1178,7 +1209,7 @@
 
             const currentApi = window.LIMO_API || "https://api.limazon.v6.rocks";
             let serverName = "Hauptserver";
-            
+
             if (currentApi.includes("api.tfl.limazon.v6.rocks")) {
                 serverName = "TFL Instanz";
             } else if (currentApi !== "https://api.limazon.v6.rocks") {
@@ -1186,7 +1217,7 @@
                 try {
                     const host = new URL(currentApi).hostname;
                     serverName = host.replace('.limazon.v6.rocks', '').toUpperCase();
-                } catch(e) {
+                } catch (e) {
                     serverName = "Custom Instanz";
                 }
             }
@@ -1415,18 +1446,8 @@
             } else {
                 localStorage.setItem('limazon_api_target', url);
             }
-            // Nach dem Auswählen laden wir die Seite neu, damit die config.js den neuen Link greift
             window.location.reload();
         }
-
-        // Wenn die Seite lädt, setzen wir das Dropdown auf den aktuell gewählten Server
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTarget = localStorage.getItem('limazon_api_target');
-            const selectBox = document.getElementById('instanceSelect');
-            if (selectBox && savedTarget && savedTarget !== "undefined") {
-                selectBox.value = savedTarget;
-            }
-        });
     </script>
 </body>
 

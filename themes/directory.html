@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script src="/themes/js/config.js?v=1788470811"></script>
+    <script src="/themes/js/security.js?v=1788470811"></script>
+    <script src="/themes/js/limo-global.js?v=1788470811" data-page="directory"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Einwohnermeldeamt</title>
+    <style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Custom Scrollbar für die Liste */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 10px; }
+    </style>
+</head>
+
+<body class="bg-slate-900 text-slate-300 min-h-screen p-4 md:p-8 font-sans">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8 glass-panel p-6 rounded-2xl shadow-lg border-t border-slate-700">
+            <div>
+                <h1 class="text-3xl font-black text-white tracking-tight">📖 Einwohnermeldeamt</h1>
+                <p class="text-slate-400 mt-1 text-sm">Finde IDs und Rollen aller aktiven Bürger in Limazon.</p>
+            </div>
+            <button onclick="window.location.href='../index.html'" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors border border-slate-600">
+                Zurück
+            </button>
+        </header>
+
+        <div class="glass-panel p-6 rounded-2xl">
+            <!-- Suche -->
+            <div class="relative mb-6">
+                <input type="text" id="searchInput" oninput="filterUsers()" placeholder="Bürger suchen..." 
+                    class="w-full pl-12 pr-4 py-4 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500 transition-colors shadow-inner">
+                <span class="absolute left-4 top-4 text-xl opacity-50">🔍</span>
+            </div>
+
+            <!-- Liste -->
+            <div class="bg-slate-900/50 rounded-xl border border-slate-700 overflow-hidden">
+                <!-- Tabellen-Kopf -->
+                <div class="grid grid-cols-12 gap-4 p-4 border-b border-slate-700 bg-slate-800/80 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <div class="col-span-5 md:col-span-4">Username</div>
+                    <div class="col-span-4 md:col-span-3">Rolle</div>
+                    <div class="col-span-3 md:col-span-5 text-right md:text-left">System ID</div>
+                </div>
+                
+                <!-- Content -->
+                <div id="user-list" class="max-h-[60vh] overflow-y-auto custom-scroll">
+                    <p class="text-center p-8 text-slate-500 animate-pulse">Lade Akten...</p>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-right">
+                <span id="user-count" class="text-xs font-mono text-slate-500">0 Bürger gefunden</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allUsers = [];
+
+        async function loadDirectory() {
+            try {
+                const res = await fetch(window.LIMO_API + '/api/users/directory', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!res.ok) throw new Error("Fehler beim Laden");
+                const data = await res.json();
+                
+                allUsers = data.users || [];
+                renderUsers(allUsers);
+                
+            } catch (e) {
+                document.getElementById('user-list').innerHTML = `<p class="text-center p-8 text-red-400">Verbindung zum Einwohnermeldeamt fehlgeschlagen.</p>`;
+            }
+        }
+
+        function getRoleBadge(user) {
+            if (user.isAdmin || user.role === 'owner') {
+                return `<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded text-xs font-bold shadow-[0_0_10px_rgba(239,68,68,0.2)]">Admin</span>`;
+            }
+            if (user.role === 'moderator') {
+                return `<span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-1 rounded text-xs font-bold">Moderator</span>`;
+            }
+            if (user.role === 'shop_manager') {
+                return `<span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-1 rounded text-xs font-bold">Manager</span>`;
+            }
+            if (user.role === 'custom') {
+                return `<span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-2 py-1 rounded text-xs font-bold">Spezial</span>`;
+            }
+            return `<span class="bg-slate-700/50 text-slate-300 border border-slate-600 px-2 py-1 rounded text-xs">Bürger</span>`;
+        }
+
+        function renderUsers(usersToRender) {
+            const container = document.getElementById('user-list');
+            document.getElementById('user-count').innerText = `${usersToRender.length} Bürger gefunden`;
+            
+            if (usersToRender.length === 0) {
+                container.innerHTML = `<p class="text-center p-8 text-slate-500">Keine Bürger gefunden.</p>`;
+                return;
+            }
+
+            let html = '';
+            usersToRender.forEach((user, index) => {
+                const bgClass = index % 2 === 0 ? 'bg-transparent' : 'bg-slate-800/30';
+                
+                html += `
+                    <div class="grid grid-cols-12 gap-4 p-4 border-b border-slate-800/50 items-center hover:bg-slate-800/80 transition-colors ${bgClass}">
+                        <div class="col-span-5 md:col-span-4 font-medium text-white truncate" title="${user.username}">
+                            ${user.username}
+                        </div>
+                        <div class="col-span-4 md:col-span-3">
+                            ${getRoleBadge(user)}
+                        </div>
+                        <div class="col-span-3 md:col-span-5 flex items-center justify-end md:justify-start gap-2">
+                            <code class="text-[10px] md:text-xs text-slate-500 font-mono hidden sm:block">${user._id}</code>
+                            <button onclick="copyToClipboard('${user._id}')" class="text-slate-400 hover:text-white p-1 bg-slate-800 rounded border border-slate-700 transition" title="ID kopieren">
+                                📋
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allUsers.filter(u => 
+                u.username.toLowerCase().includes(query) || 
+                u._id.toLowerCase().includes(query)
+            );
+            renderUsers(filtered);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Kleines visuelles Feedback
+                const searchInput = document.getElementById('searchInput');
+                const oldPlaceholder = searchInput.placeholder;
+                searchInput.placeholder = "ID kopiert! ✅";
+                setTimeout(() => searchInput.placeholder = oldPlaceholder, 1500);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDirectory);
+    </script>
+</body>
+</html>

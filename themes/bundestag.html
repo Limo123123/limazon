@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <script src="/themes/js/config.js?v=1788470811"></script>
+    <script src="/themes/js/security.js?v=1788470811"></script>
+    <script src="/themes/js/limo-global.js?v=1788470811" data-page="bundestag"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limazon Bundestag</title>
+    <style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .law-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 text-slate-300 min-h-screen p-4 md:p-6 font-sans">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <header
+            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 glass-panel p-6 rounded-2xl shadow-lg border-t border-slate-700">
+            <div>
+                <h1 class="text-4xl font-bold text-white tracking-tight">🏛️ Der Limazon Bundestag</h1>
+                <p class="text-slate-400 mt-2">Politik, Macht und Gesetze. Werde Kanzler und regiere das Limo-Verse.</p>
+            </div>
+
+            <div class="mt-4 md:mt-0 flex flex-col items-end gap-2">
+                <div id="chancellor-badge"
+                    class="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-full font-bold border border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                    Kanzler: Lade...
+                </div>
+                <div id="election-status-badge"
+                    class="bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full font-semibold border border-blue-500/50 text-sm">
+                    Lade Status...
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Linke Spalte: Gesetze & Parteien -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- GESETZGEBUNG (Nur sichtbar wenn Kanzler oder aktives Gesetz) -->
+                <div id="law-section" class="glass-panel p-6 rounded-2xl hidden border-blue-500/30">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">📜 Gesetzgebung</h2>
+                    </div>
+
+                    <!-- Aktives Gesetz -->
+                    <div id="active-law-container"
+                        class="law-card border border-blue-500/50 p-6 rounded-xl hidden shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span
+                                    class="text-xs font-bold bg-blue-600 text-white px-2 py-1 rounded uppercase tracking-wider mb-2 inline-block">Wird
+                                    debattiert</span>
+                                <h3 id="law-title" class="text-2xl font-bold text-white mb-2">Gesetz Titel</h3>
+                            </div>
+                            <span id="law-author" class="text-sm text-slate-400">Von: Kanzler</span>
+                        </div>
+                        <p id="law-desc"
+                            class="text-slate-300 mt-4 mb-6 p-4 bg-slate-900/50 rounded-lg border border-slate-700"></p>
+
+                        <!-- Abstimmungs-Buttons für Parteivorsitzende -->
+                        <div id="law-voting-controls" class="flex gap-4 border-t border-slate-700 pt-4 hidden">
+                            <button onclick="voteLaw('yes')"
+                                class="flex-1 bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-white border border-green-500/50 font-bold py-3 rounded-xl transition-all">
+                                👍 ZUSTIMMEN
+                            </button>
+                            <button onclick="voteLaw('no')"
+                                class="flex-1 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/50 font-bold py-3 rounded-xl transition-all">
+                                👎 ABLEHNEN
+                            </button>
+                        </div>
+                        <p id="law-voted-msg" class="text-center text-slate-400 italic mt-4 hidden">Deine Fraktion hat
+                            bereits abgestimmt.</p>
+
+                        <!-- Button für Kanzler/Admin zum Beenden -->
+                        <div id="law-resolve-controls" class="mt-4 hidden">
+                            <button onclick="resolveLaw()"
+                                class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition-colors border border-slate-500">
+                                ⚖️ Abstimmung beenden & Stimmen zählen
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Neues Gesetz vorschlagen (Nur Kanzler) -->
+                    <div id="propose-law-container"
+                        class="mt-6 p-6 border border-slate-700 bg-slate-800/50 rounded-xl hidden">
+                        <h3 class="text-lg font-bold text-white mb-4">Neuen Gesetzesentwurf einbringen</h3>
+                        <input type="text" id="new-law-title" placeholder="Titel des Gesetzes"
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-3 mb-3 focus:outline-none focus:border-blue-500">
+                        <textarea id="new-law-desc" placeholder="Erkläre das Gesetz..."
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-3 mb-4 h-24 focus:outline-none focus:border-blue-500"></textarea>
+                        <button onclick="proposeLaw()"
+                            class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition-colors shadow-lg">
+                            Gesetz im Bundestag einbringen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PARTEIEN -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-white">Zugelassene Parteien</h2>
+                        <button onclick="openCreatePartyModal()"
+                            class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-[0_0_15px_rgba(147,51,234,0.5)]">
+                            + Partei gründen
+                        </button>
+                    </div>
+
+                    <div id="parties-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p class="text-slate-500 italic">Lade Parteien...</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Rechte Spalte: Parlament & Wahlen -->
+            <div class="space-y-6">
+
+                <!-- SITZVERTEILUNG -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h2 class="text-xl font-bold text-white mb-4">Sitzverteilung</h2>
+                    <div id="parliament-chart"
+                        class="h-64 flex items-end justify-center gap-2 border-b border-slate-700 pb-2">
+                        <p class="text-slate-500 text-sm self-center">Noch keine Wahldaten verfügbar.</p>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-4 text-center">Es gilt die 5%-Hürde für den Einzug in den
+                        Bundestag.</p>
+                </div>
+
+                <!-- WAHLURNE BUNDESTAG -->
+                <div id="voting-booth"
+                    class="glass-panel p-6 rounded-2xl border-purple-500/50 hidden shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+                    <h2 class="text-xl font-bold text-white mb-2">🗳️ Bundestagswahl</h2>
+                    <p class="text-sm mb-4">Du hast eine Stimme. Wähle deine Partei!</p>
+                    <select id="vote-select"
+                        class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 mb-4 focus:outline-none focus:border-purple-500">
+                        <option value="">Partei auswählen...</option>
+                    </select>
+                    <button onclick="submitVote()"
+                        class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition-colors">
+                        Stimme abgeben
+                    </button>
+                </div>
+
+                <!-- WAHLURNE KANZLER (Nur für Siegerpartei) -->
+                <div id="chancellor-booth"
+                    class="glass-panel p-6 rounded-2xl border-yellow-500/50 hidden shadow-[0_0_15px_rgba(234,179,8,0.1)]">
+                    <h2 class="text-xl font-bold text-yellow-400 mb-2">👑 Kanzlerwahl</h2>
+                    <p id="chancellor-booth-text" class="text-sm mb-4">Deine Partei stellt die stärkste Fraktion! Wähle
+                        euren Kanzlerkandidaten.</p>
+                    <input type="text" id="chancellor-candidate-username" placeholder="Username des Kandidaten"
+                        class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 mb-4 focus:outline-none focus:border-yellow-500">
+                    <button onclick="submitChancellorVote()"
+                        class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors text-shadow">
+                        Kanzler wählen
+                    </button>
+                </div>
+
+                <!-- ADMIN CONTROLS -->
+                <div id="admin-controls"
+                    class="p-5 bg-slate-800 rounded-2xl border border-slate-600 mt-4 hidden shadow-xl">
+                    <h3 class="text-white font-bold mb-4 flex items-center gap-2"><span
+                            class="bg-red-500 text-white text-xs px-2 py-1 rounded">ADMIN</span> Bundestag Steuerung
+                    </h3>
+
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <button onclick="startElection()"
+                                class="flex-1 bg-green-700 hover:bg-green-600 text-white px-3 py-2 rounded-lg transition-colors text-sm font-medium">
+                                🗳️ B-Wahl Start
+                            </button>
+                            <button onclick="endElection()"
+                                class="flex-1 bg-red-700 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors text-sm font-medium">
+                                🛑 B-Wahl Ende
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="startChancellorElection()"
+                                class="flex-1 bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg transition-colors text-sm font-medium">
+                                👑 K-Wahl Start
+                            </button>
+                            <button onclick="endChancellorElection()"
+                                class="flex-1 bg-orange-700 hover:bg-orange-600 text-white px-3 py-2 rounded-lg transition-colors text-sm font-medium">
+                                🛑 K-Wahl Ende
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+        let myActiveLawId = null;
+
+        async function loadPoliticsData() {
+            try {
+                const response = await fetch(window.LIMO_API + '/api/politics/status', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error("Fehler beim Laden");
+
+                currentData = await response.json();
+
+                renderChancellorBadge(currentData);
+                renderParties(currentData);
+                renderElectionStatus(currentData);
+                renderChancellorElection(currentData);
+                renderLawSection(currentData);
+
+                if (currentData.isAdmin) {
+                    document.getElementById('admin-controls').classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error("Bundestag API Fehler:", error);
+            }
+        }
+
+        // --- RENDER LOGIK ---
+
+        function renderChancellorBadge(data) {
+            const badge = document.getElementById('chancellor-badge');
+            if (data.chancellor) {
+                badge.innerHTML = `👑 Kanzler: ${data.chancellor.username}`;
+            } else {
+                badge.innerHTML = `👑 Kanzler: Vakant`;
+                badge.className = "bg-slate-800 text-slate-400 px-4 py-2 rounded-full font-bold border border-slate-600";
+            }
+        }
+
+        function renderParties(data) {
+            const container = document.getElementById('parties-container');
+            container.innerHTML = '';
+
+            if (data.parties.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 italic col-span-2">Noch keine Parteien gegründet. Werde der Erste!</p>';
+                return;
+            }
+
+            data.parties.forEach(party => {
+                const isMyParty = data.myPartyId === party._id;
+                const memberCount = party.members ? party.members.length : 0;
+
+                let statusHtml = '';
+                if (party.status === 'pending_members') statusHtml = '<span class="text-xs text-orange-400 border border-orange-500/50 px-2 py-1 rounded bg-orange-900/20">Sucht Mitglieder (' + memberCount + '/3)</span>';
+                else if (party.status === 'pending_approval') statusHtml = '<span class="text-xs text-yellow-400 border border-yellow-500/50 px-2 py-1 rounded bg-yellow-900/20">Prüfung durch Admin</span>';
+                else if (party.status === 'approved') statusHtml = '<span class="text-xs text-green-400 border border-green-500/50 px-2 py-1 rounded bg-green-900/20">Zugelassen</span>';
+
+                let actionHtml = '';
+
+                if (isMyParty) {
+                    if (data.isLeader) {
+                        actionHtml = `<button onclick="leaveParty()" class="mt-4 w-full bg-red-900/50 hover:bg-red-800 text-red-300 px-3 py-2 rounded border border-red-700/50 transition-colors text-sm font-bold">Partei auflösen</button>`;
+                    } else {
+                        actionHtml = `<button onclick="leaveParty()" class="mt-4 w-full bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded transition-colors text-sm">Austreten</button>`;
+                    }
+                } else if (!data.myPartyId && party.status !== 'approved') {
+                    actionHtml = `<button onclick="joinParty('${party._id}')" class="mt-4 w-full bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-3 py-2 rounded border border-blue-500/30 transition-colors text-sm font-bold">Beitreten</button>`;
+                }
+
+                if (data.isAdmin && party.status === 'pending_approval') {
+                    actionHtml += `<button onclick="approveParty('${party._id}')" class="mt-2 w-full bg-green-600 hover:bg-green-500 text-white px-3 py-2 rounded transition-colors text-sm font-bold">Admin: Genehmigen</button>`;
+                }
+                if (data.isAdmin) {
+                    actionHtml += `<button onclick="deleteParty('${party._id}')" class="mt-2 w-full bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded transition-colors text-sm font-bold">Admin: Verbieten</button>`;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-slate-800/50 border ${isMyParty ? 'border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-slate-700'} p-5 rounded-xl flex flex-col justify-between hover:border-slate-500 transition-colors">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-2xl font-black text-white tracking-tight">${party.shortName}</h3>
+                                ${statusHtml}
+                            </div>
+                            <p class="text-sm text-slate-400 font-bold mb-3 border-b border-slate-700 pb-2">${party.name}</p>
+                            <p class="text-sm text-slate-300 mb-4 line-clamp-3">${party.description}</p>
+                        </div>
+                        <div>
+                            <div class="text-xs font-mono text-slate-400 mb-2 flex justify-between bg-slate-900/50 p-2 rounded">
+                                <span>👥 Mitglieder: ${memberCount}</span>
+                                <span class="text-purple-400">🪑 Sitze: ${party.seats || 0}</span>
+                            </div>
+                            ${actionHtml}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderElectionStatus(data) {
+            const badge = document.getElementById('election-status-badge');
+            const votingBooth = document.getElementById('voting-booth');
+            const select = document.getElementById('vote-select');
+            const chart = document.getElementById('parliament-chart');
+
+            // Wahlurne Logik
+            if (data.election && data.election.status === 'active') {
+                badge.className = "bg-green-500/20 text-green-400 px-4 py-2 rounded-full font-semibold border border-green-500/50 animate-pulse";
+                badge.innerText = "🔴 Bundestagswahl aktiv!";
+                votingBooth.classList.remove('hidden');
+
+                select.innerHTML = '<option value="">Partei auswählen...</option>';
+                data.parties.filter(p => p.status === 'approved').forEach(p => {
+                    select.innerHTML += `<option value="${p._id}">${p.shortName} - ${p.name}</option>`;
+                });
+
+                if (data.hasVoted) {
+                    votingBooth.innerHTML = '<p class="text-center text-green-400 font-bold p-4 bg-green-900/20 rounded-lg border border-green-500/30">Du hast deine Stimme bereits abgegeben! Warte auf die Auszählung.</p>';
+                }
+            } else {
+                badge.className = "bg-slate-700 text-slate-400 px-4 py-2 rounded-full font-semibold border border-slate-600 text-sm";
+                badge.innerText = "Wahlurne geschlossen";
+                votingBooth.classList.add('hidden');
+            }
+
+            // Parlament Chart zeichnen
+            chart.innerHTML = '';
+            const seatedParties = data.parties.filter(p => p.seats && p.seats > 0).sort((a, b) => b.seats - a.seats);
+
+            if (seatedParties.length === 0) {
+                chart.innerHTML = '<p class="text-slate-500 text-sm self-center font-mono">Bundestag ist aktuell leer.</p>';
+                return;
+            }
+
+            const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-orange-500'];
+
+            seatedParties.forEach((p, index) => {
+                const color = colors[index % colors.length];
+                const heightPercent = Math.max(15, p.seats);
+
+                chart.innerHTML += `
+                    <div class="flex flex-col items-center justify-end group relative transition-all duration-300 hover:scale-105" style="height: 100%; width: ${100 / seatedParties.length}%; max-width: 80px;">
+                        <span class="text-xs text-white font-bold mb-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 bg-slate-800 px-2 py-1 rounded">${p.seats}%</span>
+                        <div class="w-full ${color} rounded-t-md shadow-[0_0_15px_rgba(0,0,0,0.3)] transition-all duration-1000 ease-out border-t border-l border-r border-white/20" style="height: ${heightPercent}%;"></div>
+                        <span class="text-xs text-slate-300 mt-2 font-black tracking-wider">${p.shortName}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function renderChancellorElection(data) {
+            const booth = document.getElementById('chancellor-booth');
+
+            if (data.chancellorElection && data.chancellorElection.isActive) {
+                // Prüfen ob der User in der gewinnenden Partei ist
+                if (data.myPartyId === data.chancellorElection.partyId) {
+                    booth.classList.remove('hidden');
+                    const hasVotedKanzler = data.chancellorElection.votes && data.chancellorElection.votes.some(v => v.voterId === data.userId); // Erfordert userId in json, notfalls backend checken. 
+                    // Da wir userId nicht direkt ausgeben, lassen wir das Backend den Double-Vote abfangen.
+                } else {
+                    booth.classList.add('hidden');
+                }
+            } else {
+                booth.classList.add('hidden');
+            }
+        }
+
+        function renderLawSection(data) {
+            const section = document.getElementById('law-section');
+            const activeContainer = document.getElementById('active-law-container');
+            const proposeContainer = document.getElementById('propose-law-container');
+
+            let showSection = false;
+
+            // Aktives Gesetz
+            if (data.activeLaw) {
+                showSection = true;
+                myActiveLawId = data.activeLaw._id;
+                activeContainer.classList.remove('hidden');
+                proposeContainer.classList.add('hidden');
+
+                document.getElementById('law-title').innerText = data.activeLaw.title;
+                document.getElementById('law-author').innerText = `Von: ${data.activeLaw.proposedByName}`;
+                document.getElementById('law-desc').innerText = data.activeLaw.description;
+
+                // Buttons für Fraktionsvorsitzende
+                const controls = document.getElementById('law-voting-controls');
+                const votedMsg = document.getElementById('law-voted-msg');
+                const resolveControls = document.getElementById('law-resolve-controls');
+
+                controls.classList.add('hidden');
+                votedMsg.classList.add('hidden');
+                resolveControls.classList.add('hidden');
+
+                if (data.isLeader) {
+                    // Hat seine Partei schon gestimmt?
+                    const myPartyHasVoted = data.activeLaw.votes.some(v => v.partyId === data.myPartyId);
+                    if (myPartyHasVoted) {
+                        votedMsg.classList.remove('hidden');
+                    } else {
+                        controls.classList.remove('hidden');
+                    }
+                }
+
+                // Resolve Button für Kanzler oder Admin
+                if (data.isChancellor || data.isAdmin) {
+                    resolveControls.classList.remove('hidden');
+                }
+
+            } else {
+                activeContainer.classList.add('hidden');
+
+                // Formular zum Einbringen (Nur Kanzler)
+                if (data.isChancellor) {
+                    showSection = true;
+                    proposeContainer.classList.remove('hidden');
+                } else {
+                    proposeContainer.classList.add('hidden');
+                }
+            }
+
+            if (showSection) section.classList.remove('hidden');
+            else section.classList.add('hidden');
+        }
+
+        // --- API CALLS ---
+
+        async function submitVote() {
+            const partyId = document.getElementById('vote-select').value;
+            if (!partyId) return alert("Bitte wähle eine Partei aus.");
+            try {
+                const res = await fetch(window.LIMO_API + '/api/politics/election/vote', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                    body: JSON.stringify({ partyId })
+                });
+                const data = await res.json();
+                if (data.error) alert(data.error);
+                else loadPoliticsData();
+            } catch (e) { alert("Fehler bei der Stimmabgabe."); }
+        }
+
+        async function submitChancellorVote() {
+            const candidateUsername = document.getElementById('chancellor-candidate-username').value.trim();
+            if (!candidateUsername) return alert("Bitte gib den Usernamen deines Kandidaten ein.");
+
+            try {
+                const res = await fetch(window.LIMO_API + '/api/politics/chancellor/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ candidateUsername }) // Wir senden den Usernamen!
+                });
+                const data = await res.json();
+                if (data.error) alert(data.error);
+                else {
+                    alert("Stimme abgegeben!");
+                    document.getElementById('chancellor-booth').innerHTML = '<p class="text-green-400 font-bold">Stimme für Kanzlerwahl registriert.</p>';
+                }
+            } catch (e) {
+                alert("Fehler bei der Stimmabgabe.");
+            }
+        }
+
+        async function proposeLaw() {
+            const title = document.getElementById('new-law-title').value;
+            const description = document.getElementById('new-law-desc').value;
+            try {
+                const res = await fetch(window.LIMO_API + '/api/politics/laws/propose', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                    body: JSON.stringify({ title, description })
+                });
+                const data = await res.json();
+                if (data.error) alert(data.error);
+                else loadPoliticsData();
+            } catch (e) { alert("Fehler beim Einbringen."); }
+        }
+
+        async function voteLaw(vote) {
+            if (!myActiveLawId) return;
+            if (!confirm(`Soll deine Fraktion wirklich für '${vote.toUpperCase()}' stimmen?`)) return;
+            try {
+                const res = await fetch(window.LIMO_API + '/api/politics/laws/vote', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                    body: JSON.stringify({ lawId: myActiveLawId, vote })
+                });
+                const data = await res.json();
+                if (data.error) alert(data.error);
+                else loadPoliticsData();
+            } catch (e) { alert("Fehler bei der Abstimmung."); }
+        }
+
+        async function resolveLaw() {
+            if (!myActiveLawId) return;
+            if (!confirm("Gesetz schließen und Stimmen zählen?")) return;
+            try {
+                const res = await fetch(window.LIMO_API + `/api/politics/laws/${myActiveLawId}/resolve`, {
+                    method: 'POST', credentials: 'include'
+                });
+                const data = await res.json();
+                if (data.error) alert(data.error);
+                else {
+                    alert(data.message);
+                    loadPoliticsData();
+                }
+            } catch (e) { alert("Fehler beim Zählen."); }
+        }
+
+        // --- STANDARD PARTEI API CALLS ---
+        async function joinParty(id) {
+            try {
+                const res = await fetch(window.LIMO_API + `/api/politics/parties/join/${id}`, { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if (data.error) alert(data.error); else loadPoliticsData();
+            } catch (e) { alert("Fehler beim Beitritt."); }
+        }
+
+        async function leaveParty() {
+            if (!confirm("Wirklich aus der Partei austreten? Wenn du Vorsitzender bist, wird sie gelöscht!")) return;
+            try {
+                const res = await fetch(window.LIMO_API + `/api/politics/parties/leave`, { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if (data.error) alert(data.error); else loadPoliticsData();
+            } catch (e) { alert("Fehler beim Austritt."); }
+        }
+
+        // --- ADMIN API CALLS ---
+        async function approveParty(id) {
+            try {
+                const res = await fetch(window.LIMO_API + `/api/admin/politics/parties/${id}/approve`, { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if (data.error) alert(data.error); else loadPoliticsData();
+            } catch (e) { alert("Fehler bei Genehmigung."); }
+        }
+
+        async function deleteParty(id) {
+            if (!confirm("Partei wirklich zerschlagen?")) return;
+            try {
+                const res = await fetch(window.LIMO_API + `/api/admin/politics/parties/${id}`, { method: 'DELETE', credentials: 'include' });
+                const data = await res.json();
+                if (data.error) alert(data.error); else loadPoliticsData();
+            } catch (e) { alert("Fehler beim Löschen."); }
+        }
+
+        async function startElection() {
+            if (!confirm("Bundestagswahl wirklich JETZT starten?")) return;
+            try {
+                const res = await fetch(window.LIMO_API + '/api/admin/politics/election/start', { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if (data.error) alert(data.error); else { alert("Wahllokale geöffnet!"); loadPoliticsData(); }
+            } catch (e) { alert("Fehler beim Starten."); }
+        }
+
+        async function endElection() {
+            if (!confirm("Wahl beenden und Sitze verteilen?")) return;
+            try {
+                const res = await fetch(window.LIMO_API + '/api/admin/politics/election/end', { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if (data.error) alert(data.error); else { alert("Parlament besetzt!"); loadPoliticsData(); }
+            } catch (e) { alert("Fehler beim Beenden."); }
+        }
+
+        async function startChancellorElection() {
+            if (!confirm("Kanzlerwahl für stärkste Fraktion starten?")) return;
+            try {
+                const res = await fetch(window.LIMO_API + '/api/admin/politics/chancellor-election/start', { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if (data.error) alert(data.error); else { alert("Kanzlerwahl aktiv!"); loadPoliticsData(); }
+            } catch (e) { alert("Fehler beim Starten."); }
+        }
+
+        async function endChancellorElection() {
+            if (!confirm("Kanzlerwahl auswerten und Kanzler ernennen?")) return;
+            try {
+                const res = await fetch(window.LIMO_API + '/api/admin/politics/chancellor-election/end', { method: 'POST', credentials: 'include' });
+                const data = await res.json();
+                if (data.error) alert(data.error); else { alert(data.message); loadPoliticsData(); }
+            } catch (e) { alert("Fehler beim Auswerten."); }
+        }
+
+        // --- MODAL LOGIK ---
+        function openCreatePartyModal() {
+            const modalHtml = `
+                <div id="partyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div class="glass-panel p-8 rounded-2xl w-full max-w-md border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+                        <h2 class="text-3xl font-black text-white mb-6">Partei gründen</h2>
+                        <input type="text" id="pName" placeholder="Vollständiger Parteiname" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-3 mb-4 focus:outline-none focus:border-purple-500">
+                        <input type="text" id="pShort" placeholder="Kürzel (z.B. LPD)" maxlength="6" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-3 mb-4 focus:outline-none focus:border-purple-500 uppercase">
+                        <textarea id="pDesc" placeholder="Wofür steht ihr? Was sind eure Ziele?" class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-3 mb-6 h-28 focus:outline-none focus:border-purple-500"></textarea>
+                        
+                        <div class="flex justify-end gap-3">
+                            <button onclick="document.getElementById('partyModal').remove()" class="text-slate-400 hover:text-white px-4 py-2 font-medium transition-colors">Abbrechen</button>
+                            <button onclick="submitNewParty()" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg transition-colors">Gründen</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        async function submitNewParty() {
+            const name = document.getElementById('pName').value;
+            const shortName = document.getElementById('pShort').value;
+            const description = document.getElementById('pDesc').value;
+
+            try {
+                const res = await fetch(window.LIMO_API + '/api/politics/parties/create', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                    body: JSON.stringify({ name, shortName, description })
+                });
+                const data = await res.json();
+                if (data.error) alert(data.error);
+                else {
+                    document.getElementById('partyModal').remove();
+                    loadPoliticsData();
+                }
+            } catch (e) { alert("Verbindungsfehler."); }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPoliticsData);
+    </script>
+</body>
+
+</html>
