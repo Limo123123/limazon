@@ -2,9 +2,9 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js?v=1788470811"></script>
-    <script src="/themes/js/security.js?v=1788470811"></script>
-    <script src="/themes/js/limo-global.js?v=1788470811" data-page="index"></script>
+    <script src="/themes/js/config.js?v=1788644378"></script>
+    <script src="/themes/js/security.js?v=1788644378"></script>
+    <script src="/themes/js/limo-global.js?v=1788644378" data-page="index"></script>
     <!-- SimpleWebAuthn Browser Script für Passkeys -->
     <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
 
@@ -225,9 +225,10 @@
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
                     <select onchange="switchInstance(this.value)"
                         class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
-                        <option value="https://api.limazon.v6.rocks"> Hauptserver (Limazon Universe)</option>
+                        <option value="https://api.limazon.v6.rocks">Hauptserver (Limazon Universe)</option>
+                        <option value="https://api.slimo.v6.rocks">Slimo (v6.rocks)</option>
+                        <option value="https://lizse2.duckdns.org">Backup Server (DuckDNS)</option>
                         <option value="https://api.tfl.limazon.v6.rocks">TFL</option>
-                        <!-- Hier kommen weitere Instanzen hinzu -->
                     </select>
                     <!-- Kleiner Pfeil fürs Design -->
                     <span class="absolute right-4 top-[38px] pointer-events-none text-gray-500">▼</span>
@@ -273,9 +274,10 @@
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
                     <select onchange="switchInstance(this.value)"
                         class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
-                        <option value="https://api.limazon.v6.rocks"> Hauptserver (Limazon Universe)</option>
+                        <option value="https://api.limazon.v6.rocks">Hauptserver (Limazon Universe)</option>
+                        <option value="https://api.slimo.v6.rocks">Slimo (v6.rocks)</option>
+                        <option value="https://lizse2.duckdns.org">Backup Server (DuckDNS)</option>
                         <option value="https://api.tfl.limazon.v6.rocks">TFL</option>
-                        <!-- Hier kommen weitere Instanzen hinzu -->
                     </select>
                     <!-- Kleiner Pfeil fürs Design -->
                     <span class="absolute right-4 top-[38px] pointer-events-none text-gray-500">▼</span>
@@ -795,7 +797,8 @@
             </div>
 
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
-                onclick="nav('themes/directory.html')" data-tags="user liste id meldeamt telefonbuch einwohner directory">
+                onclick="nav('themes/directory.html')"
+                data-tags="user liste id meldeamt telefonbuch einwohner directory">
                 <div
                     class="h-32 bg-gradient-to-br from-slate-600 via-slate-800 to-black flex items-center justify-center relative overflow-hidden">
                     <span class="text-6xl card-icon">📖</span>
@@ -1139,11 +1142,18 @@
             // Server Select Dropdowns synchronisieren
             const savedTarget = localStorage.getItem('limazon_api_target');
             const selectBoxes = document.querySelectorAll('.instance-select');
+            
+            // Herausfinden, was der Standard in diesem Browserfenster ist
+            let defaultSelectValue = "https://api.limazon.v6.rocks";
+            if (window.location.hostname === "lizapp2.duckdns.org") {
+                defaultSelectValue = "https://lizse2.duckdns.org";
+            }
+
             selectBoxes.forEach(box => {
                 if (savedTarget && savedTarget !== "undefined") {
                     box.value = savedTarget;
                 } else {
-                    box.value = "https://api.limazon.v6.rocks";
+                    box.value = defaultSelectValue;
                 }
             });
 
@@ -1441,11 +1451,8 @@
 
         // --- INSTANZ-WECHSLER ---
         function switchInstance(url) {
-            if (url === "https://api.limazon.v6.rocks") {
-                localStorage.removeItem('limazon_api_target');
-            } else {
-                localStorage.setItem('limazon_api_target', url);
-            }
+            // Speichert die manuell getroffene Wahl immer fix ab
+            localStorage.setItem('limazon_api_target', url);
             window.location.reload();
         }
     </script>

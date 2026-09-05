@@ -5,12 +5,17 @@
     // Schutz vor falschen Text-Strings im LocalStorage!
     if (savedInstance === "undefined" || savedInstance === "null" || savedInstance === "") {
         savedInstance = null;
-        localStorage.removeItem('limazon_api_target'); // Räumt den Müll direkt auf
+        localStorage.removeItem('limazon_api_target');
     }
     
-    // Die Basis-Domain OHNE das /api am Ende!
-    const defaultApi = "https://api.limazon.v6.rocks"; 
+    // Standard-API ermitteln
+    let defaultApi = "https://api.limazon.v6.rocks"; 
     
-    // Global verfügbar machen
+    // Wenn das Frontend über die Backup-Domain aufgerufen wird, nimm automatisch das Backup-Backend!
+    if (window.location.hostname === "lizapp2.duckdns.org") {
+        defaultApi = "https://lizse2.duckdns.org";
+    }
+    
+    // Global verfügbar machen (User-Auswahl überschreibt den Standard)
     window.LIMO_API = savedInstance ? savedInstance : defaultApi;
 })();
