@@ -8,14 +8,8 @@
         localStorage.removeItem('limazon_api_target');
     }
     
-    // Standard-API ermitteln
-    let defaultApi = "https://api.limazon.v6.rocks"; 
+    const defaultApi = "https://api.liz.slimo.dev"; 
     
-    // Wenn das Frontend über die Backup-Domain aufgerufen wird, nimm automatisch das Backup-Backend!
-    if (window.location.hostname === "lizapp2.duckdns.org") {
-        defaultApi = "https://lizse2.duckdns.org";
-    }
-    
-    // Global verfügbar machen (User-Auswahl überschreibt den Standard)
+    // Global verfügbar machen
     window.LIMO_API = savedInstance ? savedInstance : defaultApi;
 })();
