@@ -8,7 +8,7 @@
         localStorage.removeItem('limazon_api_target');
     }
     
-    const defaultApi = "https://api.liz.slimo.dev"; 
+    const defaultApi = "https://api-liz.slimo.dev"; 
     
     // Global verfügbar machen
     window.LIMO_API = savedInstance ? savedInstance : defaultApi;

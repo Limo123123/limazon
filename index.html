@@ -2,9 +2,9 @@
 <html lang="de">
 
 <head>
-    <script src="/themes/js/config.js?v=1788644378"></script>
-    <script src="/themes/js/security.js?v=1788644378"></script>
-    <script src="/themes/js/limo-global.js?v=1788644378" data-page="index"></script>
+    <script src="/themes/js/config.js?v=1788807434"></script>
+    <script src="/themes/js/security.js?v=1788807434"></script>
+    <script src="/themes/js/limo-global.js?v=1788807434" data-page="index"></script>
     <!-- SimpleWebAuthn Browser Script für Passkeys -->
     <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
 
@@ -225,7 +225,7 @@
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
                     <select onchange="switchInstance(this.value)"
                         class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
-                        <option value="https://api.liz.slimo.dev">Hauptserver</option>
+                        <option value="https://api-liz.slimo.dev">Hauptserver</option>
                         <!--  <option value="https://api.tfl.limazon.v6.rocks">TFL Instanz</option> -->
                     </select>
                     <span class="absolute right-4 top-[38px] pointer-events-none text-gray-500">▼</span>
@@ -271,7 +271,7 @@
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
                     <select onchange="switchInstance(this.value)"
                         class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
-                        <option value="https://api.liz.slimo.dev">Hauptserver</option>
+                        <option value="https://api-liz.slimo.dev">Hauptserver</option>
                         <!--  <option value="https://api.tfl.limazon.v6.rocks">TFL Instanz</option> -->
                     </select>
                     <span class="absolute right-4 top-[38px] pointer-events-none text-gray-500">▼</span>
@@ -1106,10 +1106,10 @@
                     <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/onedev-light.svg" alt="OneDev"
                         class="w-3.5 h-3.5 opacity-80">
                     <span>OneDev:</span>
-                    <a href="https://git.slimo.v6.rocks/limazon" target="_blank"
+                    <a href="https://git.slimo.dev/limazon" target="_blank"
                         class="hover:text-purple-400 transition">Frontend</a>
                     <span>•</span>
-                    <a href="https://git.slimo.v6.rocks/limazon/nodejs" target="_blank"
+                    <a href="https://git.slimo.dev/limazon/nodejs" target="_blank"
                         class="hover:text-purple-400 transition">Backend</a>
                 </div>
             </div>
@@ -1138,10 +1138,7 @@
             const selectBoxes = document.querySelectorAll('.instance-select');
 
             // Herausfinden, was der Standard in diesem Browserfenster ist
-            let defaultSelectValue = "https://api.limazon.v6.rocks";
-            if (window.location.hostname === "lizapp2.duckdns.org") {
-                defaultSelectValue = "https://lizse2.duckdns.org";
-            }
+            let defaultSelectValue = "https://api-liz.slimo.dev";
 
             selectBoxes.forEach(box => {
                 if (savedTarget && savedTarget !== "undefined") {
@@ -1211,12 +1208,12 @@
             // Username setzen
             document.getElementById('navUsername').textContent = username;
 
-            const currentApi = window.LIMO_API || "https://api.limazon.v6.rocks";
+            const currentApi = window.LIMO_API || "https://api-liz.slimo.dev";
             let serverName = "Hauptserver";
 
             if (currentApi.includes("api.tfl.limazon.v6.rocks")) {
                 serverName = "TFL Instanz";
-            } else if (currentApi !== "https://api.limazon.v6.rocks") {
+            } else if (currentApi !== "https://api-liz.slimo.dev") {
                 // Falls es eine custom Instanz ist, extrahieren wir die Subdomain aus der URL
                 try {
                     const host = new URL(currentApi).hostname;
@@ -1445,7 +1442,7 @@
 
         // --- INSTANZ-WECHSLER ---
         function switchInstance(url) {
-            const expectedDefault = "https://api.liz.slimo.dev";
+            const expectedDefault = "https://api-liz.slimo.dev";
 
             if (url === expectedDefault) {
                 localStorage.removeItem('limazon_api_target');
