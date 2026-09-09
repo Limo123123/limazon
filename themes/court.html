@@ -33,22 +33,11 @@
             background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23333' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
         }
 
-        .text-gold {
-            color: #d4af37;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .border-gold {
-            border-color: #d4af37;
-        }
-
-        .font-law {
-            font-family: 'Cinzel', serif;
-        }
-
-        .font-data {
-            font-family: 'Roboto Mono', monospace;
-        }
+        .text-gold { color: #d4af37; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); }
+        .bg-gold { background-color: #d4af37; }
+        .border-gold { border-color: #d4af37; }
+        .font-law { font-family: 'Cinzel', serif; }
+        .font-data { font-family: 'Roboto Mono', monospace; }
 
         /* --- CASE FILE --- */
         .case-file {
@@ -81,21 +70,9 @@
             overflow: hidden;
         }
 
-        .btn-verdict:active {
-            transform: scale(0.98);
-        }
-
-        .btn-guilty:hover {
-            background: #450a0a;
-            border-color: #ef4444;
-            box-shadow: 0 0 30px rgba(220, 38, 38, 0.2);
-        }
-
-        .btn-innocent:hover {
-            background: #052e16;
-            border-color: #22c55e;
-            box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
-        }
+        .btn-verdict:active { transform: scale(0.98); }
+        .btn-guilty:hover { background: #450a0a; border-color: #ef4444; box-shadow: 0 0 30px rgba(220, 38, 38, 0.2); }
+        .btn-innocent:hover { background: #052e16; border-color: #22c55e; box-shadow: 0 0 30px rgba(34, 197, 94, 0.2); }
 
         /* --- MODAL (Anklage Formular) --- */
         #file-case-modal {
@@ -123,16 +100,9 @@
             transition: all 0.3s;
         }
 
-        #file-case-modal.open .modal-paper {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
+        #file-case-modal.open .modal-paper { transform: translateY(0); opacity: 1; }
         .modal-paper::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
+            content: ""; position: absolute; inset: 0; pointer-events: none;
             background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
             opacity: 0.5;
         }
@@ -150,35 +120,27 @@
             transition: border-color 0.3s;
         }
 
-        .input-official:focus {
-            border-bottom-color: #d4af37;
+        .input-official:focus { border-bottom-color: #d4af37; }
+        
+        /* Dark Mode Input für das AI Textfeld */
+        .input-dark {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #444;
+            color: white;
         }
+        .input-dark:focus { border-color: #d4af37; }
 
         /* --- STAMP ANIMATION --- */
         @keyframes stamp {
-            0% {
-                opacity: 0;
-                transform: scale(3) rotate(-15deg);
-            }
-
-            50% {
-                opacity: 1;
-                transform: scale(1) rotate(-15deg);
-            }
-
-            60% {
-                transform: scale(1.1) rotate(-15deg);
-            }
-
-            100% {
-                transform: scale(1) rotate(-15deg);
-            }
+            0% { opacity: 0; transform: scale(3) rotate(-15deg); }
+            50% { opacity: 1; transform: scale(1) rotate(-15deg); }
+            60% { transform: scale(1.1) rotate(-15deg); }
+            100% { transform: scale(1) rotate(-15deg); }
         }
 
         .stamp-mark {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%) rotate(-15deg);
             font-family: 'Cinzel', serif;
             font-weight: 900;
@@ -193,57 +155,29 @@
             mix-blend-mode: hard-light;
         }
 
-        .stamp-guilty {
-            color: #ef4444;
-            border-color: #ef4444;
-        }
-
-        .stamp-innocent {
-            color: #22c55e;
-            border-color: #22c55e;
-        }
-
-        .stamped {
-            animation: stamp 0.3s forwards;
-        }
+        .stamp-guilty { color: #ef4444; border-color: #ef4444; }
+        .stamp-innocent { color: #22c55e; border-color: #22c55e; }
+        .stamped { animation: stamp 0.3s forwards; }
 
         /* Vote Bar */
         .vote-bar-bg {
-            background: #292524;
-            height: 12px;
-            width: 100%;
-            border-radius: 6px;
-            overflow: hidden;
-            display: flex;
+            background: #292524; height: 12px; width: 100%;
+            border-radius: 6px; overflow: hidden; display: flex;
         }
+        .vote-fill-guilty { background: #dc2626; transition: width 1s ease; }
+        .vote-fill-innocent { background: #16a34a; transition: width 1s ease; }
 
-        .vote-fill-guilty {
-            background: #dc2626;
-            transition: width 1s ease;
-        }
-
-        .vote-fill-innocent {
-            background: #16a34a;
-            transition: width 1s ease;
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* Chat Scrollbar */
+        #court-transcript::-webkit-scrollbar { width: 6px; }
+        #court-transcript::-webkit-scrollbar-track { background: #111; }
+        #court-transcript::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 3px; }
     </style>
-    
 </head>
 
 <body class="p-4 md:p-8">
@@ -252,13 +186,11 @@
 
     <header class="text-center mb-8 mt-4 relative">
         <div class="absolute top-0 left-0">
-            <a href="/"
-                class="text-xs text-gold hover:text-white tracking-widest uppercase font-bold transition-colors">←
-                Zurück</a>
+            <a href="/" class="text-xs text-gold hover:text-white tracking-widest uppercase font-bold transition-colors">← Zurück</a>
         </div>
         <div class="inline-block border-b-2 border-gold pb-4 px-10">
             <h1 class="text-5xl md:text-7xl font-law font-bold text-white tracking-widest uppercase">Limo Court</h1>
-            <p class="text-xs text-gold uppercase tracking-[0.4em] mt-2">Im Namen des Volkes</p>
+            <p class="text-xs text-gold uppercase tracking-[0.4em] mt-2">Im Namen des Volkes & der KI</p>
         </div>
     </header>
 
@@ -271,16 +203,12 @@
 
     <main class="max-w-5xl mx-auto w-full">
 
-        <div id="active-case"
-            class="case-file rounded-sm p-8 md:p-12 mb-12 relative min-h-[400px] flex flex-col justify-center">
-
+        <div id="active-case" class="case-file rounded-sm p-8 md:p-12 mb-12 relative min-h-[400px] flex flex-col justify-center">
             <div id="loader" class="text-center">
                 <div class="inline-block animate-spin text-4xl mb-4 text-gold">⚖️</div>
-                <h2 class="text-xl font-law text-gray-400 uppercase tracking-widest animate-pulse">Lade Gerichtsakten...
-                </h2>
+                <h2 class="text-xl font-law text-gray-400 uppercase tracking-widest animate-pulse">Lade Gerichtsakten...</h2>
                 <p class="text-xs font-data text-gray-600 mt-2">Verbindung zum Justiz-Server wird hergestellt.</p>
             </div>
-
         </div>
 
         <div class="border-t border-gray-800 pt-10">
@@ -292,39 +220,50 @@
 
     </main>
 
+    <!-- ANKLAGE MODAL -->
     <div id="file-case-modal">
         <div class="modal-paper relative">
-            <button onclick="closeFileCaseModal()"
-                class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-black">&times;</button>
+            <button onclick="closeFileCaseModal()" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-black">&times;</button>
             <div class="text-center mb-8 border-b-2 border-gray-300 pb-4">
                 <h2 class="font-law text-3xl font-bold uppercase tracking-widest text-black">Anklageschrift</h2>
                 <p class="text-xs uppercase tracking-wider text-gray-600 mt-1">Formular 12-B / Limo Justizbehörde</p>
             </div>
-            <form id="prosecute-form" class="space-y-8">
+            <form id="prosecute-form" class="space-y-6">
                 <div>
                     <label class="block text-xs uppercase font-bold text-gray-500 mb-1">Angeklagter (Username)</label>
-                    <input type="text" id="accused-name" placeholder="Wen willst du verklagen?" class="input-official"
-                        required>
+                    <input type="text" id="accused-name" placeholder="Wen willst du verklagen?" class="input-official" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-500 mb-1">Straftatbestand</label>
+                        <select id="crime-type" class="input-official bg-transparent">
+                            <option value="Diebstahl">Diebstahl ($)</option>
+                            <option value="Betrug">Betrug / Scam</option>
+                            <option value="Beleidigung">Beleidigung</option>
+                            <option value="Griefing">Zerstörung (Griefing)</option>
+                            <option value="Sorgerechtsstreit">Sorgerechtsstreit</option>
+                            <option value="Sonstiges">Sonstiges</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-500 mb-1">Verfahrensart</label>
+                        <select id="trial-type" class="input-official bg-transparent">
+                            <option value="ai">KI-Richter Limo (Urteilt sofort)</option>
+                            <option value="jury">Volks-Jury (Community-Vote)</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-gray-500 mb-1">Straftatbestand</label>
-                    <select id="crime-type" class="input-official bg-transparent">
-                        <option value="Diebstahl">Diebstahl ($)</option>
-                        <option value="Betrug">Betrug / Scam</option>
-                        <option value="Beleidigung">Beleidigung</option>
-                        <option value="Griefing">Zerstörung (Griefing)</option>
-                        <option value="Sonstiges">Sonstiges</option>
-                    </select>
+                    <label class="block text-xs uppercase font-bold text-gray-500 mb-1">Dein Anwalt (Optional)</label>
+                    <input type="text" id="lawyer-name-start" placeholder="Username deines Anwalts" class="input-official">
                 </div>
                 <div>
                     <label class="block text-xs uppercase font-bold text-gray-500 mb-1">Beweisführung</label>
-                    <textarea id="evidence-text" rows="3" placeholder="Was ist passiert? Beschreibe den Vorfall..."
-                        class="input-official resize-none" required></textarea>
+                    <textarea id="evidence-text" rows="3" placeholder="Was ist passiert? Beschreibe den Vorfall..." class="input-official resize-none" required></textarea>
                 </div>
                 <div class="flex justify-between items-center pt-4">
-                    <div class="text-xs text-gray-500">*Falschaussagen werden mit<br>sofortigem Bann bestraft.</div>
-                    <button type="submit"
-                        class="bg-black text-white font-law font-bold uppercase py-3 px-8 hover:bg-gray-800 transition shadow-lg tracking-widest border border-gold">Einreichen</button>
+                    <div class="text-xs text-gray-500">*Kosten: $5.000<br>Falschaussagen = Bann.</div>
+                    <button type="submit" class="bg-black text-white font-law font-bold uppercase py-3 px-8 hover:bg-gray-800 transition shadow-lg tracking-widest border border-gold">Einreichen</button>
                 </div>
             </form>
         </div>
@@ -334,89 +273,213 @@
         const API_URL = window.LIMO_API;
         let currentCaseId = null;
         let timerInterval = null;
+        let userIsAdmin = false;
 
-        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             loadCourtData();
+            
+            // Smart Polling Event vom globalen Skript abfangen
+            window.addEventListener('limo-sync-court', () => {
+                // Wenn wir in einem KI-Chat sind, leise updaten ohne die Scrollposition zu zerstören
+                if(currentCaseId) loadCourtData(true);
+            });
         });
 
-        // --- LOAD DATA ---
-        async function loadCourtData() {
+        async function loadCourtData(silent = false) {
             try {
                 const res = await fetch(`${API_URL}/api/court/status`, { credentials: 'include' });
                 const data = await res.json();
-                renderActiveCase(data.activeCase);
+                
+                // Admin Flag aus dem Backend speichern
+                userIsAdmin = data.isAdmin === true;
+
+                renderActiveCase(data.activeCase, silent);
                 renderArchive(data.archive);
             } catch (e) {
                 console.error("Court Error:", e);
-                document.getElementById('active-case').innerHTML = '<div class="text-center text-red-500 mt-10">Verbindungsfehler zum Gerichtshof.</div>';
+                if(!silent) document.getElementById('active-case').innerHTML = '<div class="text-center text-red-500 mt-10">Verbindungsfehler zum Gerichtshof.</div>';
             }
         }
 
         // --- RENDER ACTIVE CASE ---
-        function renderActiveCase(c) {
+        function renderActiveCase(c, silent = false) {
             const container = document.getElementById('active-case');
             
-            // 1. SZENARIO: KEIN FALL VORHANDEN
             if (!c) {
                 container.innerHTML = `
                     <div class="text-center py-10 opacity-50 animate-fade-in">
                         <span class="text-6xl grayscale">🏛️</span>
                         <h2 class="text-3xl font-law text-white mt-6 uppercase tracking-widest">Gerichtshof geschlossen</h2>
                         <p class="font-data text-sm mt-3 text-gray-400">Aktuell sind keine offenen Verfahren anhängig.</p>
-                        <p class="font-data text-xs mt-1 text-gray-600">Komm später wieder oder reiche selbst Klage ein.</p>
+                        <p class="font-data text-xs mt-1 text-gray-600">Reiche eine Klage ein, um den Gerichtssaal zu öffnen.</p>
                     </div>`;
                 return;
             }
 
-            // Global ID setzen
             currentCaseId = c.id;
             const shortId = c.id.substring(c.id.length - 6).toUpperCase();
+            const isAI = c.trialType === 'ai';
+            const isClosed = c.status === 'closed';
 
-            // 2. ZEIT STATUS (Timer oder Overtime Warnung)
-            // FIX: Wir nutzen Flexbox statt absolute, damit nichts abgeschnitten wird.
-            // Mit -mt-6 ziehen wir es optisch nach oben.
+            // --- ZEIT STATUS ---
             let timeStatusHTML = '';
-            
-            if (c.isOvertime) {
+            if (isClosed) {
                 timeStatusHTML = `
                     <div class="flex justify-center -mt-6 mb-6 relative z-20">
-                        <div class="bg-red-600 text-white px-6 py-2 text-xs font-bold uppercase tracking-widest shadow-xl rounded-full border border-red-400 animate-pulse">
-                            ⚠️ Verlängerung: ${c.votesNeeded} Stimmen fehlen
+                        <div class="bg-yellow-800 text-white px-6 py-2 text-xs font-bold uppercase tracking-widest shadow-xl rounded-full border border-yellow-500">
+                            🏛️ Verhandlung beendet (Archivierung in Kürze)
                         </div>
                     </div>`;
+            } else if (!isAI) {
+                if (c.isOvertime) {
+                    timeStatusHTML = `
+                        <div class="flex justify-center -mt-6 mb-6 relative z-20">
+                            <div class="bg-red-600 text-white px-6 py-2 text-xs font-bold uppercase tracking-widest shadow-xl rounded-full border border-red-400 animate-pulse">
+                                ⚠️ Verlängerung: ${c.votesNeeded} Stimmen fehlen
+                            </div>
+                        </div>`;
+                } else {
+                    timeStatusHTML = `
+                        <div class="flex justify-center -mt-6 mb-6 relative z-20">
+                            <div class="bg-gray-900 text-gold px-6 py-2 text-xs font-bold uppercase tracking-widest shadow-xl rounded-full border border-gold">
+                                Urteil in: <span id="verdict-timer" class="text-white ml-2">--:--:--</span>
+                            </div>
+                        </div>`;
+                }
             } else {
                 timeStatusHTML = `
                     <div class="flex justify-center -mt-6 mb-6 relative z-20">
-                        <div class="bg-gray-900 text-gold px-6 py-2 text-xs font-bold uppercase tracking-widest shadow-xl rounded-full border border-gold">
-                            Urteil in: <span id="verdict-timer" class="text-white ml-2">--:--:--</span>
+                        <div class="bg-blue-900 text-blue-200 px-6 py-2 text-xs font-bold uppercase tracking-widest shadow-xl rounded-full border border-blue-400">
+                            🤖 KI-Richter Limo leitet die Verhandlung
                         </div>
                     </div>`;
             }
 
-            // 3. HTML ZUSAMMENBAUEN
-            container.innerHTML = `
+            // --- CHAT INHALT GENERIEREN ---
+            let innerTranscriptHTML = '';
+            if (isAI || isClosed) {
+                if (c.arguments && c.arguments.length > 0) {
+                    c.arguments.forEach(arg => {
+                        const isJudge = arg.isJudge;
+                        const roleColor = isJudge ? 'text-gold font-bold text-base' : 'text-gray-400';
+                        const textColor = isJudge ? 'text-gray-100' : 'text-gray-300';
+                        const prefix = isJudge ? '⚖️' : '🗣️';
+                        
+                        innerTranscriptHTML += `
+                            <div class="border-l-2 ${isJudge ? 'border-gold pl-3' : 'border-gray-600 pl-2'} mb-3">
+                                <div class="${roleColor} text-xs uppercase tracking-wider mb-1">${prefix} [${arg.role}] ${arg.speaker}</div>
+                                <div class="${textColor}">${arg.text}</div>
+                            </div>`;
+                    });
+                } else {
+                    innerTranscriptHTML = `<div class="text-gray-500 italic text-center mt-20">Der Richter studiert die Akten...</div>`;
+                }
+            }
+
+            let transcriptHTML = `<div id="court-transcript" class="h-64 overflow-y-auto space-y-4 p-4 bg-black/60 border border-gray-700 rounded font-data text-sm mb-6 shadow-inner">${innerTranscriptHTML}</div>`;
+
+            // --- GERICHTS-MODUS (GESCHLOSSEN VS AI VS JURY) ---
+            let actionAreaHTML = '';
+
+            if (isClosed) {
+                const isGuilty = c.verdict === 'guilty';
+                const verdictClass = isGuilty ? 'text-red-500 border-red-900 bg-red-950/30' : 'text-green-500 border-green-900 bg-green-950/30';
+                const verdictText = isGuilty ? 'schuldig gesprochen' : 'freigesprochen';
+                
+                let fineBox = '';
+                if (c.fineAmount > 0) {
+                    let recipientText = "an die Staatskasse";
+                    if (c.fineRecipient === 'plaintiff') recipientText = "an den Kläger";
+                    if (c.fineRecipient === 'accused') recipientText = "an den Angeklagten";
+                    fineBox = `<div class="mt-3 text-red-400 font-bold">Strafzahlung: $${c.fineAmount.toLocaleString()} (${recipientText})</div>`;
+                }
+
+                let chatSection = isAI ? `<h4 class="text-gold font-law uppercase text-sm mb-3 tracking-widest text-left">Verhandlungsprotokoll</h4>${transcriptHTML}` : '';
+
+                actionAreaHTML = `
+                    <div class="animate-fade-in z-10 relative w-full">
+                        ${chatSection}
+                        <div class="border-2 ${verdictClass} p-6 rounded-xl text-center mt-4">
+                            <h3 class="font-law text-2xl uppercase tracking-widest mb-2">Verfahren beendet</h3>
+                            <p class="font-data text-lg">Der Angeklagte wurde <span class="font-bold uppercase">${verdictText}</span>.</p>
+                            ${fineBox}
+                            <p class="text-xs text-gray-500 mt-4">Dieser Fall verbleibt noch für kurze Zeit im Gerichtssaal, bevor er ins Archiv wandert.</p>
+                        </div>
+                    </div>`;
+            } else if (isAI) {
+                actionAreaHTML = `
+                    <div id="ai-trial-area" class="animate-fade-in z-10 relative w-full border-t border-gray-800 pt-6">
+                        <h4 class="text-gold font-law uppercase text-sm mb-3 tracking-widest">Verhandlungsprotokoll</h4>
+                        ${transcriptHTML}
+                        
+                        <div class="flex flex-col gap-3">
+                            <div class="flex gap-2">
+                                <input type="text" id="argument-input" placeholder="Einspruch, Euer Ehren..." class="flex-1 input-official input-dark px-4 py-2 rounded">
+                                <button onclick="submitArgument()" class="bg-gold text-black font-law font-bold px-6 py-2 rounded hover:bg-yellow-500 transition shadow-lg">Sprechen</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="hire-lawyer-input" placeholder="Anwalt (Username des Spielers)" class="flex-1 input-official input-dark px-4 py-2 rounded text-xs">
+                                <button onclick="hireLawyer()" class="bg-gray-800 text-white font-law font-bold px-6 py-2 border border-gray-600 rounded hover:bg-gray-700 transition text-xs">Anwalt mandatieren</button>
+                            </div>
+                            <p class="text-[10px] text-gray-500 text-center uppercase tracking-widest mt-1">Hinweis: Nur beteiligte Parteien dürfen sprechen. Der Angeklagte kann jederzeit einen Anwalt berufen.</p>
+                        </div>
+                    </div>`;
+            } else {
+                actionAreaHTML = `
+                    <div id="voting-area" class="animate-fade-in z-10 relative">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <button onclick="castVote('guilty')" class="btn-verdict btn-guilty py-8 px-6 bg-red-950/20 border-2 border-red-900/50 rounded-xl flex flex-col items-center justify-center gap-4 group cursor-pointer">
+                                <span class="text-5xl group-hover:scale-110 transition duration-300 drop-shadow-lg">🔨</span>
+                                <div>
+                                    <span class="block font-law font-black text-red-500 text-3xl tracking-[0.2em] uppercase mb-1 drop-shadow-md">Schuldig</span>
+                                    <span class="block text-xs text-red-400/60 font-data uppercase tracking-wider">Bestrafen</span>
+                                </div>
+                            </button>
+                            <button onclick="castVote('innocent')" class="btn-verdict btn-innocent py-8 px-6 bg-green-950/20 border-2 border-green-900/50 rounded-xl flex flex-col items-center justify-center gap-4 group cursor-pointer">
+                                <span class="text-5xl group-hover:scale-110 transition duration-300 drop-shadow-lg">⚖️</span>
+                                <div>
+                                    <span class="block font-law font-black text-green-500 text-3xl tracking-[0.2em] uppercase mb-1 drop-shadow-md">Unschuldig</span>
+                                    <span class="block text-xs text-green-400/60 font-data uppercase tracking-wider">Freisprechen</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="flex justify-between text-xs font-data text-gray-400 mb-2 px-1">
+                            <span id="guilty-perc" class="text-red-400 font-bold">${c.stats.guiltyPerc}%</span>
+                            <span class="uppercase tracking-widest opacity-50">Öffentliche Meinung</span>
+                            <span id="innocent-perc" class="text-green-400 font-bold">${c.stats.innocentPerc}%</span>
+                        </div>
+                        <div class="vote-bar-bg border border-white/10">
+                            <div id="bar-guilty" class="vote-fill-guilty" style="width: ${c.stats.guiltyPerc}%"></div>
+                            <div id="bar-innocent" class="vote-fill-innocent" style="width: ${c.stats.innocentPerc}%"></div>
+                        </div>
+                        <div class="text-center mt-3 text-xs text-gray-600 font-data">
+                            <span id="total-votes" class="text-white font-bold">${c.stats.total}</span> Stimmen abgegeben
+                        </div>
+                    </div>`;
+            }
+
+            const newHTML = `
                 ${timeStatusHTML}
 
                 <div class="flex flex-col md:flex-row justify-between items-start mb-8 border-b border-gray-800 pb-6 animate-fade-in relative z-10">
                     <div>
-                        <span class="text-xs font-data text-red-500 bg-red-950/30 px-3 py-1 border border-red-900 rounded">AKTE #${shortId}</span>
+                        <span class="text-xs font-data ${isAI ? 'text-blue-500 bg-blue-950/30 border-blue-900' : 'text-red-500 bg-red-950/30 border-red-900'} px-3 py-1 border rounded">AKTE #${shortId}</span>
                         <h2 class="text-3xl font-law text-white mt-3 uppercase">${c.crime}</h2>
                     </div>
                     <div class="text-right mt-4 md:mt-0">
-                        <div class="text-xs text-gray-500 font-data uppercase tracking-widest">Vorsitzender Richter</div>
-                        <div class="text-gold font-law text-xl">The Community</div>
+                        <div class="text-xs text-gray-500 font-data uppercase tracking-widest">Vorsitz</div>
+                        <div class="text-gold font-law text-xl">${isAI ? 'Richter Limo (KI)' : 'The Community'}</div>
                     </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row items-center justify-between gap-10 mb-12 relative bg-black/20 p-6 rounded-lg border border-white/5 animate-fade-in z-10">
-                    
+                <div class="flex flex-col md:flex-row items-center justify-between gap-10 mb-8 relative bg-black/20 p-6 rounded-lg border border-white/5 animate-fade-in z-10">
                     <div class="flex-1 text-center group w-full">
                         <div class="relative inline-block">
                             <img src="${c.accusedAvatar}" class="w-32 h-32 rounded-full border-4 border-red-900/60 shadow-2xl grayscale group-hover:grayscale-0 transition duration-500">
                             <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-red-900 text-white text-[10px] px-3 py-1 font-bold uppercase tracking-wider rounded border border-red-500">Angeklagter</div>
                         </div>
                         <h3 class="text-3xl font-law text-white mt-5">${c.accused}</h3>
+                        ${c.accusedLawyer ? `<div class="text-[10px] text-gray-400 font-data mt-1 uppercase">Anwalt: ${c.accusedLawyer}</div>` : ''}
                     </div>
 
                     <div class="w-16 h-16 bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-full flex items-center justify-center font-law font-black text-xl text-black shadow-lg z-10 border-2 border-yellow-400">VS</div>
@@ -427,63 +490,37 @@
                             <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-green-900 text-white text-[10px] px-3 py-1 font-bold uppercase tracking-wider rounded border border-green-500">Kläger</div>
                         </div>
                         <h3 class="text-3xl font-law text-white mt-5">${c.plaintiff}</h3>
+                        ${c.plaintiffLawyer ? `<div class="text-[10px] text-gray-400 font-data mt-1 uppercase">Anwalt: ${c.plaintiffLawyer}</div>` : ''}
                     </div>
                 </div>
 
-                <div class="bg-black/40 p-8 border-l-4 border-gold mb-10 relative animate-fade-in z-10">
+                <div class="bg-black/40 p-6 border-l-4 border-gold mb-8 relative animate-fade-in z-10">
                     <span class="absolute top-0 right-0 bg-gold text-black text-[10px] px-2 py-0.5 font-bold uppercase">Beweismittel A</span>
-                    <h4 class="text-gold font-law uppercase text-sm mb-3 tracking-widest">Tatvorwurf</h4>
-                    <p class="font-serif italic text-xl leading-relaxed text-gray-300">"${c.description}"</p>
+                    <p class="font-serif italic text-lg leading-relaxed text-gray-300">"${c.description}"</p>
                 </div>
 
-                <div id="voting-area" class="animate-fade-in z-10 relative">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        
-                        <button onclick="castVote('guilty')" class="btn-verdict btn-guilty py-8 px-6 bg-red-950/20 border-2 border-red-900/50 rounded-xl flex flex-col items-center justify-center gap-4 group cursor-pointer">
-                            <span class="text-5xl group-hover:scale-110 transition duration-300 drop-shadow-lg">🔨</span>
-                            <div>
-                                <span class="block font-law font-black text-red-500 text-3xl tracking-[0.2em] uppercase mb-1 drop-shadow-md">Schuldig</span>
-                                <span class="block text-xs text-red-400/60 font-data uppercase tracking-wider">Bestrafen</span>
-                            </div>
-                        </button>
-
-                        <button onclick="castVote('innocent')" class="btn-verdict btn-innocent py-8 px-6 bg-green-950/20 border-2 border-green-900/50 rounded-xl flex flex-col items-center justify-center gap-4 group cursor-pointer">
-                            <span class="text-5xl group-hover:scale-110 transition duration-300 drop-shadow-lg">⚖️</span>
-                            <div>
-                                <span class="block font-law font-black text-green-500 text-3xl tracking-[0.2em] uppercase mb-1 drop-shadow-md">Unschuldig</span>
-                                <span class="block text-xs text-green-400/60 font-data uppercase tracking-wider">Freisprechen</span>
-                            </div>
-                        </button>
-                    </div>
-                    
-                    <div class="flex justify-between text-xs font-data text-gray-400 mb-2 px-1">
-                        <span id="guilty-perc" class="text-red-400 font-bold">${c.stats.guiltyPerc}%</span>
-                        <span class="uppercase tracking-widest opacity-50">Öffentliche Meinung</span>
-                        <span id="innocent-perc" class="text-green-400 font-bold">${c.stats.innocentPerc}%</span>
-                    </div>
-                    <div class="vote-bar-bg border border-white/10">
-                        <div id="bar-guilty" class="vote-fill-guilty" style="width: ${c.stats.guiltyPerc}%"></div>
-                        <div id="bar-innocent" class="vote-fill-innocent" style="width: ${c.stats.innocentPerc}%"></div>
-                    </div>
-                    <div class="text-center mt-3 text-xs text-gray-600 font-data">
-                        <span id="total-votes" class="text-white font-bold">${c.stats.total}</span> Stimmen abgegeben
-                    </div>
-                </div>
+                ${actionAreaHTML}
 
                 <div id="stamp-guilty" class="stamp-mark stamp-guilty border-red-600 text-red-600">SCHULDIG</div>
                 <div id="stamp-innocent" class="stamp-mark stamp-innocent border-green-600 text-green-600">FREISPRUCH</div>
             `;
 
-            // 4. NACHBEARBEITUNG
-            
-            // Wenn User schon gevotet hat: Stempel zeigen & Buttons sperren
-            if (c.myVote) {
-                setTimeout(() => { showStamp(c.myVote); lockVoting(); }, 50);
+            if (!silent || document.getElementById('active-case').innerHTML.indexOf('AKTE #') === -1) {
+                container.innerHTML = newHTML;
+            } else if ((isAI || isClosed) && silent) {
+                const oldTranscript = document.getElementById('court-transcript');
+                if (oldTranscript) {
+                    oldTranscript.innerHTML = innerTranscriptHTML;
+                    oldTranscript.scrollTop = oldTranscript.scrollHeight;
+                }
             }
-            
-            // Timer starten (wenn nicht in Overtime und Enddatum vorhanden)
-            if (!c.isOvertime && c.endsAt) {
-                startTimer(c.endsAt);
+
+            if (isAI || isClosed) {
+                const box = document.getElementById('court-transcript');
+                if (box) box.scrollTop = box.scrollHeight;
+                if (isClosed) {
+                    setTimeout(() => showStamp(c.verdict), 100);
+                }
             }
         }
 
@@ -503,6 +540,20 @@
                 const verdictText = isGuilty ? 'VERURTEILT' : 'FREISPRUCH';
                 const shortId = item.id.substring(item.id.length - 6).toUpperCase();
 
+                let fineText = '';
+                if (item.fineAmount && item.fineAmount > 0) {
+                    let recipientText = "an die Staatskasse";
+                    if (item.fineRecipient === 'plaintiff') recipientText = "an den Kläger";
+                    if (item.fineRecipient === 'accused') recipientText = "an den Angeklagten";
+                    fineText = `<div class="mt-1 text-red-400 text-[10px] uppercase font-bold">Strafzahlung: $${item.fineAmount.toLocaleString()} ${recipientText}</div>`;
+                }
+
+                const adminBtn = userIsAdmin ? `
+                    <button onclick="deleteCase('${item.id}')" class="ml-4 text-gray-600 hover:text-red-500 transition" title="Fall restlos löschen">
+                        🛡️🗑️
+                    </button>
+                ` : '';
+
                 const html = `
                 <div class="flex items-center justify-between p-5 bg-white/5 border border-white/10 rounded hover:bg-white/10 transition cursor-default">
                     <div class="flex items-center gap-6">
@@ -510,10 +561,14 @@
                         <div class="flex flex-col">
                             <span class="text-gray-200 font-bold text-lg">${item.title}</span>
                             <span class="text-gray-500 text-xs uppercase tracking-wide">${item.crime}</span>
+                            ${fineText}
                         </div>
                     </div>
-                    <div class="px-4 py-2 bg-${badgeColor}-900/30 text-${badgeColor}-400 border border-${badgeColor}-900/50 rounded text-xs font-bold uppercase tracking-wider">
-                        ${verdictText}
+                    <div class="flex items-center">
+                        <div class="px-4 py-2 bg-${badgeColor}-900/30 text-${badgeColor}-400 border border-${badgeColor}-900/50 rounded text-xs font-bold uppercase tracking-wider">
+                            ${verdictText}
+                        </div>
+                        ${adminBtn}
                     </div>
                 </div>`;
                 container.innerHTML += html;
@@ -537,6 +592,67 @@
             } catch (e) { alert("Fehler"); }
         }
 
+        async function submitArgument() {
+            if (!currentCaseId) return;
+            const input = document.getElementById('argument-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = "";
+            try {
+                const res = await fetch(`${API_URL}/api/court/argue`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ caseId: currentCaseId, text: text }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    loadCourtData(true);
+                } else { 
+                    alert(data.error); 
+                }
+            } catch (e) { alert("Fehler beim Senden des Arguments."); }
+        }
+
+        async function hireLawyer() {
+            if (!currentCaseId) return;
+            const input = document.getElementById('hire-lawyer-input');
+            const lawyer = input.value.trim();
+            if (!lawyer) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/court/lawyer/hire`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ caseId: currentCaseId, lawyer: lawyer }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    input.value = "";
+                    loadCourtData();
+                } else { 
+                    alert(data.error); 
+                }
+            } catch (e) { alert("Fehler bei der Anwaltsmandatierung."); }
+        }
+
+        async function deleteCase(id) {
+            if (!confirm("Admin: Willst du diesen Gerichtsfall wirklich RESTLOS aus der Datenbank löschen?")) return;
+            try {
+                const res = await fetch(`${API_URL}/api/admin/court/cases/${id}`, {
+                    method: 'DELETE', credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    loadCourtData();
+                } else {
+                    alert(data.error);
+                }
+            } catch (e) { alert("Fehler beim Löschen."); }
+        }
+
         document.getElementById('prosecute-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -545,12 +661,14 @@
 
             const accused = document.getElementById('accused-name').value;
             const crime = document.getElementById('crime-type').value;
+            const trialType = document.getElementById('trial-type').value;
+            const lawyer = document.getElementById('lawyer-name-start').value;
             const desc = document.getElementById('evidence-text').value;
 
             try {
                 const res = await fetch(`${API_URL}/api/court/file`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ accused, crime, description: desc }),
+                    body: JSON.stringify({ accused, crime, description: desc, trialType, lawyer }),
                     credentials: 'include'
                 });
                 const data = await res.json();
@@ -559,12 +677,12 @@
                     closeFileCaseModal(); loadCourtData();
                     document.getElementById('accused-name').value = "";
                     document.getElementById('evidence-text').value = "";
+                    document.getElementById('lawyer-name-start').value = "";
                 } else { alert(data.error); }
             } catch (e) { alert("Fehler"); }
             btn.innerText = originalText; btn.disabled = false;
         });
 
-        // --- TIMER & UI HELPER ---
         function startTimer(isoDate) {
             const target = new Date(isoDate).getTime();
             if (timerInterval) clearInterval(timerInterval);
@@ -577,7 +695,7 @@
                 if (diff < 0) {
                     el.innerText = "BEENDET...";
                     clearInterval(timerInterval);
-                    setTimeout(loadCourtData, 2000); // Reload für neuen Status
+                    setTimeout(loadCourtData, 2000); 
                     return;
                 }
                 const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -610,5 +728,4 @@
         }
     </script>
 </body>
-
 </html>
