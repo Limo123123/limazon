@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    /* Standard-Design (Dark Mode) */
+    .bg { fill: #111827; }
+    .letter { fill: #ffffff; }
+    .dot { fill: #3b82f6; }
+
+    /* Automatische Anpassung, wenn der Nutzer den Light-Mode nutzt */
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #ffffff; }
+      .letter { fill: #111827; }
+    }
+  </style>
+  
+  <rect class="bg" width="512" height="512" rx="112" />
+  
+  <path class="letter" d="M100 120 h84 v188 h126 v84 H100 z" />
+  
+  <circle class="dot" cx="376" cy="350" r="42" />
+</svg>

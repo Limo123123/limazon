@@ -15,14 +15,20 @@ def patch_html_files(directory="."):
         r'\s*<script[^>]*src=["\'][^"\']*security\.js(?:\?v=\d+)?["\'][^>]*>\s*</script>\s*',
         re.IGNORECASE | re.DOTALL
     )
-    # Regex für limo-global.js (alt & neu, egal wo es stand)
+    # Regex für limo-global.js
     global_pattern = re.compile(
         r'\s*<script[^>]*src=["\'][^"\']*limo-global\.js(?:\?v=\d+)?["\'][^>]*>\s*</script>\s*',
         re.IGNORECASE | re.DOTALL
     )
+    # Regex für eventuell bereits vorhandene Favicon-Links
+    favicon_pattern = re.compile(
+        r'\s*<link[^>]*rel=["\'](?:shortcut )?icon["\'][^>]*>\s*',
+        re.IGNORECASE | re.DOTALL
+    )
 
+    # FIX: Das \s* am Ende fängt alle alten Leerzeichen/Zeilenumbrüche direkt NACH dem <head> ab
     head_pattern = re.compile(
-        r"<head([^>]*)>",
+        r"<head([^>]*)>\s*",
         re.IGNORECASE
     )
 
@@ -34,15 +40,14 @@ def patch_html_files(directory="."):
                 continue
 
             path = os.path.join(root, file)
-            
-            # 1. Den reinen Dateinamen ohne ".html" extrahieren (z.B. "jobs" aus "jobs.html")
             page_name = os.path.splitext(file)[0]
 
-            # 2. Die 3 Skripte für DIESE spezifische Datei generieren
-            script_tags = (
+            # Die Skripte (ohne einen unsauberen Umbruch am ganz am Ende)
+            head_injections = (
+                f'<link rel="icon" type="image/svg+xml" href="/favicon.svg">\n    '
                 f'<script src="/themes/js/config.js?v={current_time}"></script>\n    '
                 f'<script src="/themes/js/security.js?v={current_time}"></script>\n    '
-                f'<script src="/themes/js/limo-global.js?v={current_time}" data-page="{page_name}"></script>\n    '
+                f'<script src="/themes/js/limo-global.js?v={current_time}" data-page="{page_name}"></script>'
             )
 
             with open(path, "r", encoding="utf-8") as f:
@@ -50,14 +55,16 @@ def patch_html_files(directory="."):
 
             original = content
 
-            # 3. Alle alten Versionen der drei Skripte löschen (inkl. Leerzeichen/Umbrüche)
+            # Alte Versionen löschen
             content = config_pattern.sub("", content)
             content = security_pattern.sub("", content)
             content = global_pattern.sub("", content)
+            content = favicon_pattern.sub("", content)
 
-            # 4. Die 3 Skripte sauber oben in den <head> einfügen
+            # FIX: Hier wird nach den eingefügten Skripten \n und 4 Leerzeichen gesetzt, 
+            # damit das darauffolgende <meta>-Tag perfekt eingerückt auf der neuen Zeile startet.
             def insert(match):
-                return f"<head{match.group(1)}>\n    {script_tags}"
+                return f"<head{match.group(1)}>\n    {head_injections}\n    "
 
             content = head_pattern.sub(insert, content, count=1)
 
@@ -68,12 +75,11 @@ def patch_html_files(directory="."):
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(content)
 
-                # Zeigt im Terminal direkt an, welches data-page Tag gesetzt wurde
                 print(f"[PATCHED] {path} (data-page=\"{page_name}\")")
                 updated += 1
 
     print("-" * 50)
-    print(f"Fertig! {updated} HTML-Dateien mit allen 3 Skripten aktualisiert.")
+    print(f"Fertig! {updated} HTML-Dateien mit perfekt eingerücktem Head aktualisiert.")
 
 if __name__ == "__main__":
     patch_html_files()
