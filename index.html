@@ -225,7 +225,7 @@
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
                     <select onchange="switchInstance(this.value)"
                         class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
-                        <option value="https://api-liz.slimo.dev">Hauptserver</option>
+                        <option value="https://limazon.slimo.dev">Hauptserver</option>
                         <!--  <option value="https://api.tfl.limazon.v6.rocks">TFL Instanz</option> -->
                         <option value="https://api-liz-test.slimo.dev">Testserver</option>
                     </select>
@@ -272,7 +272,7 @@
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
                     <select onchange="switchInstance(this.value)"
                         class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
-                        <option value="https://api-liz.slimo.dev">Hauptserver</option>
+                        <option value="https://limazon.slimo.dev">Hauptserver</option>
                         <!--  <option value="https://api.tfl.limazon.v6.rocks">TFL Instanz</option> -->
                         <option value="https://api-liz-test.slimo.dev">Testserver</option>
                     </select>
@@ -1444,7 +1444,7 @@
 
         // --- INSTANZ-WECHSLER ---
         function switchInstance(url) {
-            const expectedDefault = "https://api-liz.slimo.dev";
+            const expectedDefault = "https://limazon.slimo.dev";
 
             if (url === expectedDefault) {
                 localStorage.removeItem('limazon_api_target');
