@@ -1140,7 +1140,7 @@
             const selectBoxes = document.querySelectorAll('.instance-select');
 
             // Herausfinden, was der Standard in diesem Browserfenster ist
-            let defaultSelectValue = "https://api-liz.slimo.dev";
+            let defaultSelectValue = "https://limazon.slimo.dev";
 
             selectBoxes.forEach(box => {
                 if (savedTarget && savedTarget !== "undefined") {
@@ -1210,12 +1210,12 @@
             // Username setzen
             document.getElementById('navUsername').textContent = username;
 
-            const currentApi = window.LIMO_API || "https://api-liz.slimo.dev";
+            const currentApi = window.LIMO_API || "https://limazon.slimo.dev";
             let serverName = "Hauptserver";
 
             if (currentApi.includes("api.tfl.limazon.v6.rocks")) {
                 serverName = "TFL Instanz";
-            } else if (currentApi !== "https://api-liz.slimo.dev") {
+            } else if (currentApi !== "https://limazon.slimo.dev") {
                 // Falls es eine custom Instanz ist, extrahieren wir die Subdomain aus der URL
                 try {
                     const host = new URL(currentApi).hostname;
