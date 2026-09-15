@@ -171,6 +171,93 @@
             display: grid;
         }
 
+        /* --- NEU: Snap Store Style Featured Banner --- */
+        .featured-banner {
+            background: linear-gradient(135deg, #2b1a4a 0%, #30b06b 100%);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .featured-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .featured-info h3 {
+            font-size: 26px;
+            font-weight: 500;
+            margin: 0 0 15px 0;
+            color: white;
+        }
+
+        .featured-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .featured-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .featured-scroll {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            max-width: 600px;
+            padding-bottom: 5px;
+        }
+
+        .featured-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .featured-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .featured-item {
+            width: 90px;
+            height: 90px;
+            border-radius: 18px;
+            background: #fff;
+            flex-shrink: 0;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .featured-item:hover {
+            transform: scale(1.05);
+        }
+
+        .featured-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Video Grid */
         .video-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -328,7 +415,6 @@
             height: 100% !important;
         }
 
-        /* Zwingt das Plyr-Einstellungsmenü, sich nach UNTEN zu öffnen */
         .plyr .plyr__menu__container {
             bottom: auto !important;
             top: 100% !important;
@@ -624,14 +710,12 @@
             accent-color: var(--accent);
         }
 
-        /* NEU: LRC Lyrics Styling */
         .lyrics-container {
             max-height: 400px;
             overflow-y: auto;
             scroll-behavior: smooth;
         }
 
-        /* Versteckt die Scrollbar für einen sauberen Look */
         .lyrics-container::-webkit-scrollbar {
             width: 0px;
         }
@@ -639,7 +723,6 @@
         .lyric-line {
             transition: color 0.3s, font-size 0.3s, transform 0.3s;
             color: #666;
-            /* Standardmäßig grau/abgedunkelt */
             padding: 8px 0;
             cursor: pointer;
         }
@@ -650,7 +733,6 @@
 
         .active-lyric {
             color: var(--accent);
-            /* Limazon Grün */
             font-size: 1.15em;
             font-weight: bold;
             transform: scale(1.05);
@@ -687,7 +769,7 @@
 
         <div class="user-controls">
             <a onclick="navigate('?p=playlists')" class="icon-btn" title="Meine Bibliothek">📂</a>
-            <a onclick="navigate('?p=upload')" class="icon-btn" title="Upload">
+            <a onclick="navigate('?p=upload')" class="icon-btn" title="Hochladen">
                 <svg viewBox="0 0 24 24">
                     <path
                         d="M14 13V17H10V13H7L12 8L17 13H14M23 12L19 8V4H15L12 1L9 4H5V8L1 12H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V12H23Z" />
@@ -699,6 +781,10 @@
 
     <!-- 1. FEED VIEW -->
     <div id="view-feed" class="view-section active container">
+        
+        <!-- NEU: Ausgewählte Snaps / Highlights Banner -->
+        <div id="featuredBannerContainer"></div>
+
         <h2 id="feedTitle" style="margin-top:0;">Startseite</h2>
         <div class="video-grid" id="videoFeed"></div>
     </div>
@@ -822,7 +908,8 @@
             </div>
 
             <div id="tab-file" class="tab-content active">
-                <input type="text" id="upTitle" class="form-input" placeholder="Video Titel (min 5 Z.)">
+                <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Egal ob dein liebster K-Pop Banger, ein Podcast oder ein Gameplay-Video. Lade deine Musik und Videos hier hoch.</p>
+                <input type="text" id="upTitle" class="form-input" placeholder="Video- oder Songtitel (min 5 Z.)">
                 <textarea id="upDesc" class="form-input" rows="4" placeholder="Beschreibung"></textarea>
 
                 <div style="text-align: left; margin-bottom: 15px;">
@@ -842,7 +929,7 @@
             </div>
 
             <div id="tab-yt" class="tab-content">
-                <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Füge die YouTube Video-ID ein, um das Video
+                <p style="color:#aaa; font-size:14px; margin-bottom:20px;">Füge die YouTube Video-ID ein, um Medien
                     ins CDN zu ziehen. Wird standardmäßig als Öffentlich gespeichert.</p>
                 <input type="text" id="ytIdInput" class="form-input" placeholder="YouTube Video ID (z.B. dQw4w9WgXcQ)">
 
@@ -1186,10 +1273,17 @@
             if (videoId) {
                 document.getElementById('view-watch').classList.add('active');
                 loadWatchView(videoId);
-                loadSuggestions();
+                
+                // NEU: Wenn ein Playlist-Kontext da ist, lade die Playlist-Videos in die Seitenleiste
+                if (playlistQuery) {
+                    loadPlaylistSuggestions(playlistQuery, videoId);
+                } else {
+                    loadSuggestions();
+                }
             } else if (playlistQuery) {
                 document.getElementById('view-feed').classList.add('active');
                 document.getElementById('feedTitle').innerText = `Lade Playlist...`;
+                document.getElementById('featuredBannerContainer').innerHTML = ''; // Banner verstecken in Playlists
                 loadPlaylistFeed(playlistQuery);
             } else if (page === 'upload') {
                 document.getElementById('view-upload').classList.add('active');
@@ -1206,11 +1300,13 @@
                 document.getElementById('view-feed').classList.add('active');
                 document.getElementById('feedTitle').innerText = `Suche: "${searchQuery}"`;
                 document.getElementById('searchInput').value = searchQuery;
+                document.getElementById('featuredBannerContainer').innerHTML = ''; // Banner verstecken bei Suche
                 loadFeed(searchQuery, null);
             } else {
                 document.getElementById('view-feed').classList.add('active');
                 document.getElementById('feedTitle').innerText = "Startseite";
                 document.getElementById('searchInput').value = "";
+                renderFeaturedBanner(); // Banner anzeigen!
                 loadFeed();
             }
         }
@@ -1225,6 +1321,57 @@
             e.preventDefault();
             const q = document.getElementById('searchInput').value;
             if (q) navigate(`?q=${encodeURIComponent(q)}`);
+        }
+
+        // --- NEU: Das Ausgewählte Snaps Banner ---
+        async function renderFeaturedBanner() {
+            const container = document.getElementById('featuredBannerContainer');
+            
+            // Grundgerüst zeichnen
+            container.innerHTML = `
+                <div class="featured-banner">
+                    <div class="featured-info">
+                        <h3>Ausgewählte Highlights</h3>
+                        <button class="featured-btn" onclick="navigate('?u=limazon_universe')">Offizieller Kanal</button>
+                    </div>
+                    <div class="featured-scroll" id="featured-scroll-items">
+                        <span style="color:white; font-size: 14px;">Lade Highlights...</span>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                // Wir holen gezielt die Videos vom offiziellen Kanal (Die Werbespots!)
+                const res = await fetch(`${API_DOMAIN}/api/limtube/channel/limazon_universe`, fetchOptions);
+                if (res.ok) {
+                    const data = await res.json();
+                    const scrollItems = document.getElementById('featured-scroll-items');
+                    scrollItems.innerHTML = '';
+                    
+                    if (data.videos && data.videos.length > 0) {
+                        data.videos.slice(0, 10).forEach(v => {
+                            let src = '';
+                            if (v.origin === 'youtube' && v.ytId) {
+                                src = `https://i.ytimg.com/vi/${v.ytId}/hqdefault.jpg`;
+                            } else if (v.thumbnail && v.thumbnail !== 'default_audio_cover.jpg') {
+                                src = `${API_DOMAIN}/cdn/${v.thumbnail}`;
+                            }
+                            
+                            // App-Icon Style (Quadratisch, Object-Fit Cover)
+                            scrollItems.innerHTML += `
+                                <div class="featured-item" onclick="navigate('?v=${v._id}')" title="${v.title}">
+                                    ${src ? `<img src="${src}">` : '<span style="color:black;font-size:30px;">▶</span>'}
+                                </div>
+                            `;
+                        });
+                    } else {
+                        scrollItems.innerHTML = '<span style="color:rgba(255,255,255,0.7); font-size:14px;">Keine offiziellen Videos gefunden.</span>';
+                    }
+                }
+            } catch (e) {
+                // Bei Fehler einfach das Banner wieder entfernen, damit es nicht kaputt aussieht
+                container.innerHTML = ''; 
+            }
         }
 
         async function loadFeed(query = null, uploader = null) {
@@ -1278,8 +1425,9 @@
                 feed.innerHTML = "";
                 data.videos.forEach(v => {
                     const ytBadge = v.origin === 'youtube' ? `<span class="badge">YT</span>` : '';
+                    // WICHTIG: pl= ID mit übergeben, damit man im Binge-Modus bleibt
                     feed.innerHTML += `
-                        <a onclick="navigate('?v=${v._id}')" class="video-card">
+                        <a onclick="navigate('?pl=${id}&v=${v._id}')" class="video-card">
                             <div class="thumb">${getThumbHTML(v)}</div>
                             <div class="details">
                                 <div class="avatar" onclick="event.stopPropagation(); navigate('?u=${v.uploaderName}')">${v.uploaderName[0].toUpperCase()}</div>
@@ -1293,6 +1441,44 @@
                     `;
                 });
             } catch (e) { feed.innerHTML = `<p style="color:var(--danger);">${e.message}</p>`; }
+        }
+
+        // --- NEU: Lade Videos einer Playlist für die rechte Seitenleiste ---
+        async function loadPlaylistSuggestions(playlistId, currentVidId) {
+            const list = document.getElementById('suggestedList');
+            list.innerHTML = "<p style='color:#777;'>Lade Playlist...</p>";
+            
+            try {
+                const res = await fetch(`${API_DOMAIN}/api/limtube/playlists/${playlistId}`, fetchOptions);
+                const data = await res.json();
+                if (!res.ok) throw new Error();
+
+                list.innerHTML = `
+                    <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #333;">
+                        <span style="font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;">Läuft gerade aus Playlist:</span>
+                        <h4 style="margin: 5px 0 0 0; color: var(--accent); font-size: 18px;">${data.playlist.title}</h4>
+                    </div>
+                `;
+                
+                data.videos.forEach((v, index) => {
+                    const isPlaying = v._id === currentVidId;
+                    const activeStyle = isPlaying ? "background: rgba(76, 175, 80, 0.1); border-left: 3px solid var(--accent); padding-left: 7px;" : "padding-left: 10px;";
+                    
+                    list.innerHTML += `
+                        <div style="display:flex; gap:10px; margin-bottom:15px; cursor:pointer; align-items: center; border-radius: 6px; ${activeStyle}" onclick="navigate('?pl=${playlistId}&v=${v._id}')">
+                            <div style="color:#777; font-weight:bold; font-size: 12px; width:15px; text-align:right;">${index + 1}</div>
+                            <div style="width:100px; aspect-ratio:16/9; background:#222; border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
+                                ${getThumbHTML(v)}
+                            </div>
+                            <div style="flex:1; overflow:hidden;">
+                                <div style="font-weight:bold; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${isPlaying ? 'color:var(--accent);' : ''}">${v.title}</div>
+                                <div style="color:#aaa; font-size:12px;">${v.uploaderName}</div>
+                            </div>
+                        </div>`;
+                });
+            } catch (e) {
+                list.innerHTML = "<p style='color:var(--danger);'>Fehler beim Laden der Playlist.</p>";
+            }
         }
 
         async function loadSuggestions() {
