@@ -11,7 +11,6 @@ function setFpCookie(value) {
     const days = 365; // 1 Jahr Gültigkeit
     const date = new Date();
     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-    // SameSite=Lax schützt vor einigen CSRF-Angriffen
     document.cookie = `${FP_STORAGE_KEY}=${value}; expires=${date.toUTCString()}; path=/; SameSite=Lax`;
 }
 
@@ -31,12 +30,9 @@ function getFpCookie() {
 
 let localFp = localStorage.getItem(FP_STORAGE_KEY);
 let cookieFp = getFpCookie();
-
-// Nimm den, der existiert
 let visitorId = localFp || cookieFp;
 
 if (visitorId) {
-    // Selbstheilung: Falls einer von beiden fehlt, stelle ihn aus dem anderen wieder her
     if (!localFp) {
         localStorage.setItem(FP_STORAGE_KEY, visitorId);
         console.log("🔒 [Security] Fingerprint aus Cookie im LocalStorage wiederhergestellt.");
@@ -52,17 +48,13 @@ if (visitorId) {
 }
 
 // ------------------------------------------------------------
-// Globales Fetch patchen
+// Globales Fetch patchen (Inkl. Auto-Redirect bei 401)
 // ------------------------------------------------------------
 
 const originalFetch = window.fetch.bind(window);
 
 window.fetch = async function(resource, init = {}) {
-    let config = {
-        credentials: "include",
-        ...init
-    };
-
+    let config = { credentials: "include", ...init };
     let url;
     try {
         url = new URL(resource instanceof Request ? resource.url : resource, location.href);
@@ -74,19 +66,9 @@ window.fetch = async function(resource, init = {}) {
         config.credentials = "include";
         const headers = new Headers(config.headers || {});
 
-        // Aktuellsten Fingerprint immer direkt aus der Variable nehmen
-        if (visitorId) {
-            headers.set("x-device-fingerprint", visitorId);
-        }
+        if (visitorId) headers.set("x-device-fingerprint", visitorId);
 
-        if (
-            config.body &&
-            typeof config.body === "object" &&
-            !(config.body instanceof FormData) &&
-            !(config.body instanceof Blob) &&
-            !(config.body instanceof URLSearchParams) &&
-            !(config.body instanceof ArrayBuffer)
-        ) {
+        if (config.body && typeof config.body === "object" && !(config.body instanceof FormData) && !(config.body instanceof Blob) && !(config.body instanceof URLSearchParams) && !(config.body instanceof ArrayBuffer)) {
             config.body = JSON.stringify(config.body);
         }
 
@@ -99,7 +81,16 @@ window.fetch = async function(resource, init = {}) {
 
     const response = await originalFetch(resource, config);
 
-    if (!response.ok) {
+    // 🚨 Wenn der Request einen Auth-Fehler wirft, sofort rauswerfen!
+    if (response.status === 401 || response.status === 403) {
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/' && currentPath !== '/index.html') {
+            console.warn("🔒 [Security] Session abgelaufen oder Zugriff verweigert. Leite um...");
+            window.location.href = '/index.html';
+        }
+    }
+
+    if (!response.ok && response.status !== 401 && response.status !== 403) {
         console.warn(`⚠️ ${config.method || "GET"} ${url.pathname} -> ${response.status}`);
     }
 
@@ -144,25 +135,49 @@ function generateAndSaveFingerprint() {
             .then(fp => fp.get())
             .then(result => {
                 visitorId = result.visitorId;
-                
-                // An beiden Orten speichern
                 localStorage.setItem(FP_STORAGE_KEY, visitorId);
                 setFpCookie(visitorId);
-
                 console.log("🔒 [Security] Neuer Fingerprint gespeichert:", visitorId);
 
                 if (typeof axios !== "undefined") {
                     axios.defaults.headers.common["x-device-fingerprint"] = visitorId;
                 }
             })
-            .catch(err => {
-                console.error("Fingerprint Fehler:", err);
-            });
+            .catch(err => console.error("Fingerprint Fehler:", err));
     };
 
-    script.onerror = err => {
-        console.error("FingerprintJS konnte nicht geladen werden:", err);
-    };
-
+    script.onerror = err => console.error("FingerprintJS konnte nicht geladen werden:", err);
     document.head.appendChild(script);
 }
+
+// ------------------------------------------------------------
+// Globaler Auth-Check & Auto-Redirect beim Seitenaufruf
+// ------------------------------------------------------------
+
+async function enforceLogin() {
+    const currentPath = window.location.pathname;
+    
+    // Verhindert eine Endlosschleife auf der Login-Seite
+    if (currentPath === '/' || currentPath === '/index.html') {
+        return; 
+    }
+
+    try {
+        // originalFetch verwenden, um Endlosschleifen im Wrapper zu umgehen
+        const response = await originalFetch(`${window.LIMO_API}/api/auth/me`, {
+            credentials: "include",
+            headers: visitorId ? { "x-device-fingerprint": visitorId } : {}
+        });
+
+        if (!response.ok) {
+            console.warn("🔒 [Security] Nicht eingeloggt. Leite zur Login-Seite um...");
+            window.location.href = '/index.html';
+        }
+    } catch (err) {
+        console.error("🔒 [Security] Fehler beim Auth-Check. Leite sicherheitshalber um...", err);
+        window.location.href = '/index.html';
+    }
+}
+
+// Check direkt beim Laden des Skripts ausführen
+enforceLogin();
