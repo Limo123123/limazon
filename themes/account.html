@@ -177,7 +177,7 @@
         .form-group { margin-bottom: 20px; text-align: left; }
         .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
         
-        input[type="text"], input[type="password"], textarea {
+        input[type="text"], input[type="password"], input[type="email"], textarea {
             width: 100%; padding: 12px; background-color: var(--bg-dark);
             border: 1px solid var(--border); border-radius: 8px;
             color: var(--text-main); outline: none; transition: border-color 0.2s;
@@ -357,6 +357,19 @@
                             </button>
                         </div>
 
+                        <!-- NEU: Wiederherstellungs-E-Mail Sektion -->
+                        <div class="settings-section">
+                            <h3>📧 Wiederherstellungs-E-Mail</h3>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
+                                Hinterlege eine E-Mail-Adresse, um dein Passwort zurückzusetzen, falls du es mal vergisst.
+                            </p>
+                            <div class="form-group">
+                                <label>E-Mail-Adresse</label>
+                                <input type="email" id="recovery-email-input" placeholder="deine.e-mail@beispiel.de" style="margin-bottom: 10px;">
+                                <button class="action-btn" onclick="saveRecoveryEmail()">E-Mail speichern</button>
+                            </div>
+                        </div>
+
                         <div class="settings-section">
                             <h3>🔑 Zugangsdaten</h3>
                             <div class="form-group">
@@ -468,6 +481,7 @@
                     currentUser.bio = profData.profile.bio;
                     currentUser.isInventoryPublic = profData.profile.isInventoryPublic;
                     currentUser.achievements = profData.profile.achievements || [];
+                    currentUser.recoveryEmail = profData.profile.recoveryEmail || '';
                 }
             } catch(e) { console.warn("Profil-Meta-Daten Fehler", e); }
 
@@ -698,6 +712,7 @@
 
             document.getElementById('settings-bio').value = currentUser.bio || '';
             document.getElementById('settings-public-inv').checked = !!currentUser.isInventoryPublic;
+            document.getElementById('recovery-email-input').value = currentUser.recoveryEmail || '';
 
             if(currentUser.isAdmin || currentUser.unlockedInfinityMoney) {
                 document.getElementById('admin-settings-card').style.display = 'block';
@@ -736,6 +751,23 @@
                 });
                 if(res.ok) showNotify("Gespeichert!", "success");
             } catch(e) { showNotify("Fehler", "error"); }
+        }
+
+        async function saveRecoveryEmail() {
+            const email = document.getElementById('recovery-email-input').value;
+            try {
+                const res = await fetch(`${API_BASE}/api/account/recovery-email`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }), credentials: 'include'
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showNotify(data.message || "E-Mail gespeichert!", "success");
+                    currentUser.recoveryEmail = email;
+                } else {
+                    showNotify(data.error || "Fehler beim Speichern", "error");
+                }
+            } catch(e) { showNotify("Serverfehler", "error"); }
         }
 
         async function toggleInfinity(enabled) {

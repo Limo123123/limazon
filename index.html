@@ -241,6 +241,10 @@
                     <input type="password" id="loginPassword" placeholder="Passwort"
                         class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
                 </div>
+                <div class="text-right">
+                    <button type="button" onclick="openForgotPasswordModal()"
+                        class="text-xs text-blue-400 hover:underline">Passwort vergessen?</button>
+                </div>
                 <div class="flex items-center gap-2 pt-2">
                     <input type="checkbox" id="rememberMe"
                         class="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900">
@@ -298,6 +302,32 @@
                     Identität registrieren
                 </button>
             </form>
+        </div>
+
+        <!-- PASSWORT VERGESSEN MODAL -->
+        <div id="forgotPasswordModal"
+            class="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity duration-200">
+            <div
+                class="glass-panel p-6 rounded-3xl max-w-sm w-full border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] relative">
+                <button onclick="closeForgotPasswordModal()"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-white bg-black/50 rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
+
+                <h3 class="text-xl font-bold mb-2">Passwort zurücksetzen</h3>
+                <p class="text-gray-400 text-xs mb-4">Gib deinen Benutzernamen ein. Wenn eine E-Mail-Adresse hinterlegt
+                    ist, senden wir dir einen Reset-Link.</p>
+
+                <div id="forgotMessage" class="hidden mb-4 p-3 rounded-xl text-xs font-medium text-center border"></div>
+
+                <div class="space-y-4">
+                    <input type="text" id="forgotUsername" placeholder="Benutzername"
+                        class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none text-sm">
+
+                    <button type="button" onclick="sendForgotPasswordRequest()"
+                        class="w-full py-3 bg-blue-600 hover:bg-blue-500 font-bold rounded-xl transition-all active:scale-95 text-sm shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                        Link anfordern
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1453,6 +1483,49 @@
                 localStorage.setItem('limazon_api_target', url);
             }
             window.location.reload();
+        }
+
+        // --- PASSWORT VERGESSEN MODAL LOGIK ---
+        function openForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.remove('hidden');
+            document.getElementById('forgotMessage').classList.add('hidden');
+            document.getElementById('forgotUsername').value = '';
+        }
+
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.add('hidden');
+        }
+
+        async function sendForgotPasswordRequest() {
+            const username = document.getElementById('forgotUsername').value.trim();
+            const msgBox = document.getElementById('forgotMessage');
+
+            if (!username) {
+                msgBox.textContent = "Bitte gib deinen Benutzernamen ein.";
+                msgBox.className = "mb-4 p-3 rounded-xl text-xs font-medium text-center border bg-red-500/20 border-red-500/50 text-red-400";
+                msgBox.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                const data = await res.json();
+
+                // Anti-Enumeration: Das Backend gibt immer success zurück
+                msgBox.textContent = data.message || "Anfrage verarbeitet.";
+                msgBox.className = "mb-4 p-3 rounded-xl text-xs font-medium text-center border bg-green-500/20 border-green-500/50 text-green-400";
+                msgBox.classList.remove('hidden');
+
+            } catch (err) {
+                msgBox.textContent = "Netzwerkfehler beim Senden.";
+                msgBox.className = "mb-4 p-3 rounded-xl text-xs font-medium text-center border bg-red-500/20 border-red-500/50 text-red-400";
+                msgBox.classList.remove('hidden');
+            }
         }
     </script>
 </body>
