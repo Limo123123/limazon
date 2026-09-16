@@ -81,10 +81,12 @@ window.fetch = async function(resource, init = {}) {
 
     const response = await originalFetch(resource, config);
 
-    // 🚨 Wenn der Request einen Auth-Fehler wirft, sofort rauswerfen!
+    // 🚨 Wenn der Request einen Auth-Fehler wirft, sofort rauswerfen (außer auf öffentlichen Seiten)
     if (response.status === 401 || response.status === 403) {
         const currentPath = window.location.pathname;
-        if (currentPath !== '/' && currentPath !== '/index.html') {
+        const isPublicPage = currentPath === '/' || currentPath === '/index.html' || currentPath.includes('reset-password.html');
+        
+        if (!isPublicPage) {
             console.warn("🔒 [Security] Session abgelaufen oder Zugriff verweigert. Leite um...");
             window.location.href = '/index.html';
         }
@@ -157,8 +159,8 @@ function generateAndSaveFingerprint() {
 async function enforceLogin() {
     const currentPath = window.location.pathname;
     
-    // Verhindert eine Endlosschleife auf der Login-Seite
-    if (currentPath === '/' || currentPath === '/index.html') {
+    // Verhindert eine Endlosschleife / Redirect auf öffentlichen Seiten (Login & Passwort-Reset)
+    if (currentPath === '/' || currentPath === '/index.html' || currentPath.includes('reset-password.html')) {
         return; 
     }
 
