@@ -10,6 +10,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Limterest 2.0 ✨</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -101,6 +105,15 @@
             font-weight: 600;
             cursor: pointer;
         }
+        
+        .btn-danger {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 99px;
+            cursor: pointer;
+        }
 
         /* --- MASONRY GRID --- */
         .container {
@@ -114,17 +127,8 @@
             column-gap: 16px;
         }
 
-        @media (min-width: 768px) {
-            .masonry {
-                column-count: 3;
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .masonry {
-                column-count: 5;
-            }
-        }
+        @media (min-width: 768px) { .masonry { column-count: 3; } }
+        @media (min-width: 1200px) { .masonry { column-count: 5; } }
 
         .pin {
             break-inside: avoid;
@@ -137,18 +141,9 @@
             cursor: zoom-in;
         }
 
-        .pin:hover {
-            filter: brightness(1.1);
-        }
-
-        .pin img {
-            width: 100%;
-            display: block;
-        }
-
-        .pin-overlay {
-            padding: 12px;
-        }
+        .pin:hover { filter: brightness(1.1); }
+        .pin img { width: 100%; display: block; }
+        .pin-overlay { padding: 12px; }
 
         .pin-title {
             font-weight: 600;
@@ -191,10 +186,7 @@
             transition: opacity 0.3s;
         }
 
-        .modal.show {
-            display: flex;
-            opacity: 1;
-        }
+        .modal.show { display: flex; opacity: 1; }
 
         .close-btn {
             position: absolute;
@@ -332,9 +324,7 @@
             border: 1px solid #444;
         }
 
-        .dropdown-menu.show {
-            display: flex;
-        }
+        .dropdown-menu.show { display: flex; }
 
         .menu-item {
             background: none;
@@ -347,35 +337,13 @@
             font-size: 0.95rem;
         }
 
-        .menu-item:hover {
-            background: #3a3a3a;
-        }
-
-        .menu-item.danger {
-            color: #ff6b6b;
-        }
+        .menu-item:hover { background: #3a3a3a; }
+        .menu-item.danger { color: #ff6b6b; }
 
         /* --- PROFILE --- */
-        .profile-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: #333;
-            object-fit: cover;
-        }
-
-        .profile-name {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin: 0;
-        }
+        .profile-header { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: #333; object-fit: cover; }
+        .profile-name { font-size: 1.5rem; font-weight: 800; margin: 0; }
 
         .stats-row {
             display: flex;
@@ -387,21 +355,9 @@
             border-radius: 12px;
         }
 
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-val {
-            font-weight: 800;
-            font-size: 1.1rem;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-sec);
-            text-transform: uppercase;
-        }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-val { font-weight: 800; font-size: 1.1rem; }
+        .stat-label { font-size: 0.75rem; color: var(--text-sec); text-transform: uppercase; }
 
         .btn-follow {
             background: white;
@@ -419,7 +375,6 @@
             border: 1px solid #555;
         }
 
-        /* PROFILE TABS */
         .profile-tabs {
             display: flex;
             gap: 10px;
@@ -450,6 +405,19 @@
             border: 1px solid #444;
             background: #111;
             color: white;
+            box-sizing: border-box;
+        }
+
+        /* --- ADMIN REPORTS --- */
+        .report-card {
+            background: #2a0a0a;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
         @media (max-width: 800px) {
@@ -459,25 +427,16 @@
                 height: 90vh;
                 overflow-y: auto;
             }
-
             .pin-detail-img-wrapper {
                 width: 100%;
                 min-height: auto;
                 border-radius: 0;
                 background: transparent;
             }
-
-            .pin-detail-img {
-                max-height: 50vh;
-            }
-
-            .pin-detail-info {
-                width: 100%;
-                box-sizing: border-box;
-            }
+            .pin-detail-img { max-height: 50vh; }
+            .pin-detail-info { width: 100%; box-sizing: border-box; }
         }
     </style>
-    
 </head>
 
 <body>
@@ -488,6 +447,8 @@
             <input type="text" id="searchInput" class="search-input" placeholder="Suchen...">
         </div>
         <div class="nav-actions">
+            <!-- Admin Button (wird per JS eingeblendet, wenn Rechte da sind) -->
+            <button class="btn-icon" id="btnAdminNav" style="display:none; background: #ff4444;" onclick="openAdminPanel()" title="Admin Panel">🛡️</button>
             <button class="btn-icon" onclick="openAddModal()">+</button>
             <button class="btn-primary" onclick="openMyProfile()">Profil</button>
         </div>
@@ -498,17 +459,25 @@
         <div id="grid" class="masonry"></div>
     </div>
 
+    <!-- MODAL: PIN ERSTELLEN (Mit Cropper) -->
     <div id="modalAdd" class="modal">
         <div class="modal-box">
             <button class="close-btn" onclick="closeModals()">×</button>
             <h2>Pin erstellen</h2>
             <input type="text" id="inpTitle" class="add-input" placeholder="Titel">
-            <input type="text" id="inpUrl" class="add-input" placeholder="Bild-URL (https://...)">
+            
+            <input type="file" id="inpFile" class="add-input" accept="image/*" style="padding: 10px;" onchange="loadFile(event)">
+            
+            <div id="cropperContainer" style="display:none; width: 100%; max-height: 40vh; margin-bottom: 15px; overflow: hidden; border-radius: 12px;">
+                <img id="imageToCrop" style="max-width: 100%; display: block;">
+            </div>
+            
             <input type="text" id="inpTags" class="add-input" placeholder="Tags (Komma getrennt)">
-            <button class="btn-primary" style="width:100%" onclick="submitPin()">Veröffentlichen</button>
+            <button class="btn-primary" id="btnPublish" style="width:100%" onclick="submitPin()">Zuschneiden & Veröffentlichen</button>
         </div>
     </div>
 
+    <!-- MODAL: PROFIL -->
     <div id="modalProfile" class="modal">
         <div class="modal-box" style="max-width: 600px;">
             <button class="close-btn" onclick="closeModals()">×</button>
@@ -517,10 +486,8 @@
                 <h2 id="profName" class="profile-name">Username</h2>
                 <p id="profBio" style="color:#888;">Bio...</p>
                 <div class="stats-row">
-                    <div class="stat-item"><span id="statPins" class="stat-val">0</span><span
-                            class="stat-label">Pins</span></div>
-                    <div class="stat-item"><span id="statFollowers" class="stat-val">0</span><span
-                            class="stat-label">Follower</span></div>
+                    <div class="stat-item"><span id="statPins" class="stat-val">0</span><span class="stat-label">Pins</span></div>
+                    <div class="stat-item"><span id="statFollowers" class="stat-val">0</span><span class="stat-label">Follower</span></div>
                 </div>
                 <button id="btnFollow" class="btn-follow" onclick="toggleFollow()">Folgen</button>
             </div>
@@ -537,10 +504,10 @@
         </div>
     </div>
 
+    <!-- MODAL: PIN DETAILS -->
     <div id="modalPinDetail" class="modal">
         <div class="modal-box pin-detail-box">
-            <button class="close-btn" onclick="closeModals()"
-                style="z-index: 20; background: rgba(0,0,0,0.5); border-radius: 50%; width: 40px; height: 40px; top: 10px; right: 10px;">×</button>
+            <button class="close-btn" onclick="closeModals()" style="z-index: 20; background: rgba(0,0,0,0.5); border-radius: 50%; width: 40px; height: 40px; top: 10px; right: 10px;">×</button>
 
             <div class="pin-detail-img-wrapper">
                 <img id="detailImg" class="pin-detail-img" src="">
@@ -551,9 +518,7 @@
                     <div style="display: flex; align-items: center; gap: 10px; position: relative;">
                         <button class="btn-icon" onclick="togglePinMenu()">•••</button>
                         <div id="pinMenu" class="dropdown-menu">
-                            <button class="menu-item" onclick="shareCurrentPin()">🔗 Link kopieren</button>
-                            <button class="menu-item" onclick="downloadCurrentPin()">💾 Bild speichern</button>
-                            <button class="menu-item danger" onclick="reportPin()">🚩 Melden</button>
+                            <!-- Wird via JavaScript befüllt -->
                         </div>
                     </div>
                     <button class="btn-primary" id="btnSave" onclick="saveCurrentPin()">Merken</button>
@@ -573,16 +538,44 @@
         </div>
     </div>
 
+    <!-- MODAL: ADMIN PANEL -->
+    <div id="modalAdmin" class="modal">
+        <div class="modal-box" style="max-width: 800px; max-height: 80vh; overflow-y: auto; text-align: left;">
+            <button class="close-btn" onclick="closeModals()">×</button>
+            <h2 style="margin-top: 0; color: var(--danger);">🛡️ Admin Zentrale: Meldungen</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">Hier landen alle von Usern gemeldeten Pins. Du kannst sie überprüfen, löschen oder die Meldung verwerfen.</p>
+            
+            <div id="adminReportsList" style="display:flex; flex-direction:column;">
+                <!-- Wird per JS befüllt -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = window.LIMO_API + '/api';
 
         let currentTargetUser = null;
         let currentOpenPin = null;
-        let isOwnProfile = false; // Merken, ob wir unser eigenes Profil sehen
+        let isOwnProfile = false; 
+        let currentUser = null; 
 
         async function fetchAuth(url, options = {}) {
             const defaults = { credentials: 'include', headers: { 'Content-Type': 'application/json' } };
             return fetch(url, { ...defaults, ...options });
+        }
+
+        // --- INIT & AUTH ---
+        async function initApp() {
+            try {
+                const res = await fetchAuth(`${API_BASE}/auth/me`);
+                if (res.ok) {
+                    currentUser = await res.json();
+                    if (currentUser.isAdmin) {
+                        document.getElementById('btnAdminNav').style.display = 'flex';
+                    }
+                }
+            } catch (e) {}
+            loadFeed();
         }
 
         // --- FEED ---
@@ -631,9 +624,9 @@
         }
 
         // --- PIN DETAIL ---
-        async function openPinDetail(pinDataString) {
+        async function openPinDetail(pinDataString, isRawObject = false) {
             try {
-                const pin = JSON.parse(decodeURIComponent(pinDataString));
+                const pin = isRawObject ? pinDataString : JSON.parse(decodeURIComponent(pinDataString));
                 currentOpenPin = pin;
 
                 document.getElementById('pinMenu').classList.remove('show');
@@ -663,6 +656,24 @@
                     tagsContainer.appendChild(chip);
                 });
 
+                // Menü dynamisch aufbauen
+                const isOwner = currentUser && currentUser.username === pin.username;
+                const isAdmin = currentUser && currentUser.isAdmin;
+                const menu = document.getElementById('pinMenu');
+                
+                menu.innerHTML = `
+                    <button class="menu-item" onclick="shareCurrentPin()">🔗 Link kopieren</button>
+                    <button class="menu-item" onclick="downloadCurrentPin()">💾 Bild speichern</button>
+                    <button class="menu-item danger" onclick="reportPin()">🚩 Melden</button>
+                `;
+                
+                if (isOwner || isAdmin) {
+                    menu.innerHTML += `<button class="menu-item danger" onclick="deleteCurrentPin()">🗑️ Löschen</button>`;
+                }
+
+                // Zeige Modal
+                // Verhindern, dass andere Modals offen bleiben (falls aus dem Admin Panel aufgerufen)
+                document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
                 document.getElementById('modalPinDetail').classList.add('show');
 
                 // Check Status (Is Saved?)
@@ -674,7 +685,7 @@
                         btnSave.style.background = "black";
                     } else {
                         btnSave.innerText = "Merken";
-                        btnSave.style.background = ""; // Reset to Primary Color
+                        btnSave.style.background = "";
                     }
                 } catch (e) { btnSave.innerText = "Merken"; }
 
@@ -706,12 +717,135 @@
                 alert("Link kopiert!"); document.getElementById('pinMenu').classList.remove('show');
             });
         }
+
         function togglePinMenu() { document.getElementById('pinMenu').classList.toggle('show'); }
+        
         function downloadCurrentPin() {
             if (currentOpenPin) window.open(currentOpenPin.imageUrl, '_blank');
         }
-        function reportPin() {
-            if (currentOpenPin && confirm("Melden?")) alert("Gemeldet.");
+
+        // --- MELDEN & LÖSCHEN ---
+        async function reportPin() {
+            if (!currentOpenPin) return;
+            const reason = prompt("Warum möchtest du diesen Pin melden? (Beleidigung, Spam, etc.)");
+            if (!reason) return;
+
+            try {
+                const res = await fetchAuth(`${API_BASE}/limterest/pin/${currentOpenPin._id}/report`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason })
+                });
+                const data = await res.json();
+                alert(data.message || data.error);
+                document.getElementById('pinMenu').classList.remove('show');
+            } catch (e) {
+                alert("Netzwerkfehler.");
+            }
+        }
+
+        async function deleteCurrentPin() {
+            if (!currentOpenPin) return;
+            if (!confirm("Diesen Pin wirklich unwiderruflich löschen?")) return;
+
+            try {
+                const res = await fetchAuth(`${API_BASE}/limterest/pin/${currentOpenPin._id}`, { method: 'DELETE' });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    closeModals();
+                    // Wenn wir uns auf dem eigenen Profil befinden, lade den Profil-Tab neu
+                    if (document.getElementById('modalProfile').classList.contains('show')) {
+                        switchProfileTab('created'); 
+                    } else {
+                        loadFeed();
+                    }
+                } else {
+                    alert(data.error || "Fehler beim Löschen.");
+                }
+            } catch (e) {
+                alert("Netzwerkfehler beim Löschen.");
+            }
+        }
+
+        // --- ADMIN BEREICH ---
+        async function openAdminPanel() {
+            closeModals();
+            const modal = document.getElementById('modalAdmin');
+            const list = document.getElementById('adminReportsList');
+            list.innerHTML = "<p>Lade Meldungen...</p>";
+            modal.classList.add('show');
+
+            try {
+                const res = await fetchAuth(`${API_BASE}/limterest/admin/reports`);
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error("Fehler");
+                
+                list.innerHTML = "";
+                if (data.reports.length === 0) {
+                    list.innerHTML = "<p style='color:#777;'>Keine anstehenden Meldungen.</p>";
+                    return;
+                }
+
+                data.reports.forEach(r => {
+                    list.innerHTML += `
+                        <div class="report-card" id="rep-${r._id}">
+                            <div>
+                                <div style="color: #ff4444; font-weight: bold; margin-bottom: 5px;">Meldung von: ${r.reportedBy}</div>
+                                <div style="font-size: 14px; margin-bottom: 10px;">Grund: ${r.reason}</div>
+                                <div style="color: #aaa; font-size: 12px;">Pin ID: ${r.pinId}</div>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-direction: column;">
+                                <button class="btn-primary" style="background:#555;" onclick="loadAndPreviewPin('${r.pinId}')">Pin ansehen</button>
+                                <button class="btn-primary" style="background:#222; color:#aaa; border: 1px solid #555;" onclick="dismissReport('${r._id}')">Verwerfen</button>
+                                <button class="btn-danger" onclick="deletePinFromReport('${r.pinId}', '${r._id}')">Pin Löschen</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                list.innerHTML = "<p style='color:var(--danger)'>Fehler beim Laden des Admin Panels.</p>";
+            }
+        }
+
+        // Hilfsfunktion: Lädt den Pin aus dem Feed (damit der Admin ihn im Detail-Modal sieht)
+        async function loadAndPreviewPin(pinId) {
+            try {
+                const res = await fetchAuth(`${API_BASE}/limterest/feed`);
+                const data = await res.json();
+                const pin = data.pins.find(p => p._id === pinId);
+                
+                if (pin) {
+                    openPinDetail(pin, true); // Übergibt das rohe Objekt, keinen String
+                } else {
+                    alert("Pin nicht in den ersten 50 Ergebnissen gefunden. (Die API bräuchte eine direkte Fetch-Route).");
+                }
+            } catch (e) { alert("Fehler beim Prüfen."); }
+        }
+
+        async function dismissReport(reportId) {
+            if (!confirm("Meldung verwerfen? Der Pin bleibt online.")) return;
+            try {
+                const res = await fetchAuth(`${API_BASE}/limterest/admin/reports/${reportId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    document.getElementById(`rep-${reportId}`).remove();
+                } else {
+                    alert("Fehler beim Verwerfen.");
+                }
+            } catch (e) { alert("Netzwerkfehler."); }
+        }
+
+        async function deletePinFromReport(pinId, reportId) {
+            if (!confirm("Den Pin wirklich komplett aus der Datenbank löschen?")) return;
+            try {
+                const res = await fetchAuth(`${API_BASE}/limterest/pin/${pinId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    document.getElementById(`rep-${reportId}`).remove();
+                    alert("Pin und alle dazugehörigen Reports wurden gelöscht.");
+                } else {
+                    alert("Fehler beim Löschen des Pins.");
+                }
+            } catch (e) { alert("Netzwerkfehler."); }
         }
 
         // --- PROFILE & TABS ---
@@ -725,21 +859,17 @@
 
             grid.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">Lade...</div>';
             modal.classList.add('show');
-            tabs.style.display = 'none'; // Default hidden
+            tabs.style.display = 'none';
 
             try {
-                // 1. Check if it's ME
-                const meRes = await fetchAuth(`${API_BASE}/auth/me`);
-                const me = await meRes.json();
-                if (me.username === username) {
+                if (currentUser && currentUser.username === username) {
                     isOwnProfile = true;
-                    tabs.style.display = 'flex'; // Show tabs
-                    document.getElementById('btnFollow').style.display = 'none'; // Hide follow on self
+                    tabs.style.display = 'flex';
+                    document.getElementById('btnFollow').style.display = 'none'; 
                 } else {
                     document.getElementById('btnFollow').style.display = 'inline-block';
                 }
 
-                // 2. Load User Data
                 const res = await fetchAuth(`${API_BASE}/limterest/user/${username}`);
                 const data = await res.json();
 
@@ -756,16 +886,13 @@
                     btn.innerText = "Abonnieren"; btn.classList.remove('following');
                 }
 
-                // 3. Load Created Pins (Default)
                 switchProfileTab('created');
-
             } catch (e) { grid.innerHTML = 'Fehler beim Laden.'; }
         }
 
         async function switchProfileTab(tab) {
-            const btns = document.querySelectorAll('.tab-btn');
+            const btns = document.querySelectorAll('.profile-tabs .tab-btn');
             btns.forEach(b => b.classList.remove('active'));
-            // Button active state logic (simple based on index/order assumption or text)
             if (tab === 'created') btns[0].classList.add('active');
             else btns[1].classList.add('active');
 
@@ -803,38 +930,127 @@
         }
 
         async function openMyProfile() {
-            try {
-                const res = await fetchAuth(`${API_BASE}/auth/me`);
-                const me = await res.json();
-                openProfile(me.username);
-            } catch (e) { }
-        }
-
-        // --- HELPERS ---
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadFeed(searchInput.value); });
-        function resetFeed() { searchInput.value = ''; loadFeed(); }
-        function openAddModal() { document.getElementById('modalAdd').classList.add('show'); }
-        async function submitPin() {
-            const title = document.getElementById('inpTitle').value;
-            const url = document.getElementById('inpUrl').value;
-            const tags = document.getElementById('inpTags').value;
-            if (!url) return alert("URL fehlt!");
-            try {
-                const res = await fetchAuth(`${API_BASE}/limterest/pin`, {
-                    method: 'POST', body: JSON.stringify({ title, imageUrl: url, tags })
-                });
-                if (res.ok) { closeModals(); loadFeed(); } else alert("Fehler");
-            } catch (e) { alert("Netzwerkfehler"); }
-        }
-        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('show')); }
-        window.onclick = function (event) {
-            if (!event.target.closest('.btn-icon') && !event.target.closest('.dropdown-menu')) {
-                document.getElementById('pinMenu').classList.remove('show');
+            if (currentUser) {
+                openProfile(currentUser.username);
+            } else {
+                alert("Du bist nicht eingeloggt.");
             }
         }
 
-        loadFeed();
-    </script></body>
+        // --- CROPPER UPLOAD HELPERS ---
+        let cropper = null;
 
+        function openAddModal() { 
+            document.getElementById('modalAdd').classList.add('show'); 
+        }
+
+        function loadFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('imageToCrop');
+                img.src = e.target.result;
+                document.getElementById('cropperContainer').style.display = 'block';
+
+                if (cropper) cropper.destroy();
+                
+                cropper = new Cropper(img, {
+                    viewMode: 2,
+                    background: false,
+                    autoCropArea: 1,
+                });
+            }
+            reader.readAsDataURL(file);
+        }
+
+        async function submitPin() {
+            const title = document.getElementById('inpTitle').value;
+            const tags = document.getElementById('inpTags').value;
+            const btn = document.getElementById('btnPublish');
+
+            if (!cropper) return alert("Bitte wähle ein Bild aus!");
+            if (!title) return alert("Ein Titel ist erforderlich!");
+
+            btn.innerText = "Lädt hoch...";
+            btn.disabled = true;
+
+            try {
+                cropper.getCroppedCanvas().toBlob(async (blob) => {
+                    if (!blob) {
+                        btn.innerText = "Zuschneiden & Veröffentlichen";
+                        btn.disabled = false;
+                        return alert("Fehler beim Zuschneiden des Bildes.");
+                    }
+
+                    const formData = new FormData();
+                    formData.append('image', blob, 'limterest.jpg');
+
+                    const uploadRes = await fetch(`${window.LIMO_API}/api/cdn/upload`, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+
+                    const uploadData = await uploadRes.json();
+                    if (!uploadRes.ok) {
+                        btn.innerText = "Zuschneiden & Veröffentlichen";
+                        btn.disabled = false;
+                        return alert(uploadData.error || "Fehler beim Upload auf das CDN.");
+                    }
+
+                    const finalImageUrl = uploadData.url;
+
+                    const res = await fetchAuth(`${API_BASE}/limterest/pin`, {
+                        method: 'POST', 
+                        body: JSON.stringify({ title, imageUrl: finalImageUrl, tags })
+                    });
+                    
+                    if (res.ok) { 
+                        closeModals(); 
+                        loadFeed(); 
+                    } else { 
+                        alert("Fehler beim Speichern des Pins."); 
+                    }
+                    
+                    btn.innerText = "Zuschneiden & Veröffentlichen";
+                    btn.disabled = false;
+
+                }, 'image/jpeg', 0.9);
+                
+            } catch (e) { 
+                alert("Netzwerkfehler"); 
+                btn.innerText = "Zuschneiden & Veröffentlichen";
+                btn.disabled = false;
+            }
+        }
+
+        function closeModals() { 
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('show')); 
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+                document.getElementById('cropperContainer').style.display = 'none';
+                document.getElementById('inpFile').value = "";
+                document.getElementById('inpTitle').value = "";
+                document.getElementById('inpTags').value = "";
+            }
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadFeed(searchInput.value); });
+        function resetFeed() { searchInput.value = ''; loadFeed(); }
+
+        window.onclick = function (event) {
+            if (!event.target.closest('.btn-icon') && !event.target.closest('.dropdown-menu')) {
+                const pinMenu = document.getElementById('pinMenu');
+                if (pinMenu) pinMenu.classList.remove('show');
+            }
+        }
+
+        // App starten!
+        initApp();
+    </script>
+</body>
 </html>
