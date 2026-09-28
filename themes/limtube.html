@@ -782,7 +782,7 @@
     <!-- 1. FEED VIEW -->
     <div id="view-feed" class="view-section active container">
         
-        <!-- NEU: Ausgewählte Snaps / Highlights Banner -->
+        <!-- Ausgewählte Snaps / Highlights Banner -->
         <div id="featuredBannerContainer"></div>
 
         <h2 id="feedTitle" style="margin-top:0;">Startseite</h2>
@@ -1805,6 +1805,7 @@
 
         async function startUpload() {
             const title = document.getElementById('upTitle').value;
+            const description = document.getElementById('upDesc').value;
             const file = document.getElementById('upFile').files[0];
             const visibility = document.getElementById('upVisibility').value;
             const status = document.getElementById('upStatus');
@@ -1813,31 +1814,61 @@
             if (!title || title.length < 5) return status.innerHTML = "<span style='color:var(--danger)'>Titel zu kurz!</span>";
             if (!file) return status.innerHTML = "<span style='color:var(--danger)'>Keine Datei ausgewählt!</span>";
 
-            const fd = new FormData();
-            fd.append('title', title);
-            fd.append('description', document.getElementById('upDesc').value);
-            fd.append('visibility', visibility);
-            fd.append('video', file);
-
-            status.innerHTML = "Lade hoch... (Bitte warten)";
             btn.disabled = true;
+            
+            // Chunk-Größe auf 50MB setzen, um Provider-Limits (Render/Cloudflare) sicher zu umgehen
+            const CHUNK_SIZE = 50 * 1024 * 1024; 
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            const uploadId = Date.now().toString() + Math.random().toString(36).substring(2);
 
             try {
-                const res = await fetch(`${API_DOMAIN}/api/limtube/upload`, { ...fetchOptions, method: 'POST', body: fd });
-                const data = await res.json();
-                if (res.ok) {
-                    status.innerHTML = "<span style='color:var(--accent)'>Erfolgreich!</span>";
-                    setTimeout(() => {
-                        document.getElementById('upTitle').value = ""; document.getElementById('upFile').value = "";
-                        status.innerHTML = ""; btn.disabled = false;
-                        navigate('?p=channel');
-                    }, 1000);
-                } else {
-                    status.innerHTML = `<span style='color:var(--danger)'>${data.error}</span>`;
-                    btn.disabled = false;
+                for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                    status.innerHTML = `Lade hoch... Teil ${chunkIndex + 1} von ${totalChunks} (Bitte warten)`;
+                    
+                    const start = chunkIndex * CHUNK_SIZE;
+                    const end = Math.min(start + CHUNK_SIZE, file.size);
+                    const chunk = file.slice(start, end);
+
+                    const fd = new FormData();
+                    fd.append('chunk', chunk);
+                    fd.append('uploadId', uploadId);
+                    fd.append('chunkIndex', chunkIndex);
+                    fd.append('totalChunks', totalChunks);
+                    fd.append('fileName', file.name);
+                    
+                    // Metadaten an jeden Chunk hängen
+                    fd.append('title', title);
+                    fd.append('description', description);
+                    fd.append('visibility', visibility);
+
+                    const res = await fetch(`${API_DOMAIN}/api/limtube/upload/chunk`, { 
+                        ...fetchOptions, 
+                        method: 'POST', 
+                        body: fd 
+                    });
+                    
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(data.error || "Fehler beim Upload");
+                    }
+
+                    // HTTP 201 bedeutet, der Backend-Server hat alle Chunks zusammengefügt
+                    if (res.status === 201) {
+                        status.innerHTML = "<span style='color:var(--accent)'>Erfolgreich! Datei wird verarbeitet...</span>";
+                        setTimeout(() => {
+                            document.getElementById('upTitle').value = ""; 
+                            document.getElementById('upDesc').value = "";
+                            document.getElementById('upFile').value = "";
+                            status.innerHTML = ""; 
+                            btn.disabled = false;
+                            navigate('?p=channel');
+                        }, 1500);
+                        return; // Schleife beenden, da fertig
+                    }
                 }
             } catch (e) {
-                status.innerHTML = "Netzwerkfehler.";
+                status.innerHTML = `<span style='color:var(--danger)'>${e.message || 'Netzwerkfehler.'}</span>`;
                 btn.disabled = false;
             }
         }
