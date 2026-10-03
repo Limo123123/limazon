@@ -12,4 +12,7 @@
     
     // Global verfügbar machen
     window.LIMO_API = savedInstance ? savedInstance : defaultApi;
+    
+    // NEU: Die E-Mail Adresse, bei der man einen Invite-Code anfragen kann
+    window.LIMO_INVITE_EMAIL = "tfl@toens.net"; 
 })();

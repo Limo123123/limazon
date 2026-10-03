@@ -3,9 +3,9 @@
 
 <head>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <script src="/themes/js/config.js?v=1789588305"></script>
-    <script src="/themes/js/security.js?v=1789588305"></script>
-    <script src="/themes/js/limo-global.js?v=1789588305" data-page="index"></script>
+    <script src="/themes/js/config.js?v=1791054368"></script>
+    <script src="/themes/js/security.js?v=1791054368"></script>
+    <script src="/themes/js/limo-global.js?v=1791054368" data-page="index"></script>
     <!-- SimpleWebAuthn Browser Script für Passkeys -->
     <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
 
@@ -13,7 +13,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Limazon Portal</title>
-    <!--  -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -81,7 +80,6 @@
             background: #555;
         }
 
-        /* --- STREIK-ANZEIGE --- */
         .strike-active-card {
             border: 3px solid #ff0000 !important;
             box-shadow: 0 0 40px rgba(255, 0, 0, 0.7) !important;
@@ -89,18 +87,9 @@
         }
 
         @keyframes strike-pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.03);
-                box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important;
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important; }
+            100% { transform: scale(1); }
         }
 
         .strike-label {
@@ -120,23 +109,15 @@
             pointer-events: none;
         }
 
-        /* --- AD BANNER --- */
         .ad-pulse {
             animation: ad-glow 3s infinite alternate;
         }
 
         @keyframes ad-glow {
-            0% {
-                box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
-            }
-
-            100% {
-                box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4);
-                border-color: rgba(59, 130, 246, 0.6);
-            }
+            0% { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1); }
+            100% { box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4); border-color: rgba(59, 130, 246, 0.6); }
         }
 
-        /* --- TAB SWITCHER LOGIC --- */
         .tab-btn.active {
             border-bottom: 2px solid #3b82f6;
             color: #3b82f6;
@@ -221,20 +202,18 @@
 
             <!-- Login Form -->
             <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-                <!-- Instanz-Wähler -->
                 <div class="mb-4 relative">
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
                     <select onchange="switchInstance(this.value)"
                         class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
                         <option value="https://limazon.slimo.dev">Hauptserver</option>
-                        <!--  <option value="https://api.tfl.limazon.v6.rocks">TFL Instanz</option> -->
                         <option value="https://api-liz-test.slimo.dev">Testserver</option>
                     </select>
                     <span class="absolute right-4 top-[38px] pointer-events-none text-gray-500">▼</span>
                 </div>
 
                 <div>
-                    <input type="text" id="loginUsername" placeholder="Benutzername"
+                    <input type="text" id="loginUsername" placeholder="Benutzername oder E-Mail"
                         class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
                 </div>
                 <div>
@@ -272,19 +251,21 @@
 
             <!-- Register Form -->
             <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-4">
-                <!-- Instanz-Wähler -->
                 <div class="mb-4 relative">
                     <label class="text-xs text-gray-400 mb-1 block">Server-Instanz</label>
                     <select onchange="switchInstance(this.value)"
                         class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer">
                         <option value="https://limazon.slimo.dev">Hauptserver</option>
-                        <!--  <option value="https://api.tfl.limazon.v6.rocks">TFL Instanz</option> -->
                         <option value="https://api-liz-test.slimo.dev">Testserver</option>
                     </select>
                     <span class="absolute right-4 top-[38px] pointer-events-none text-gray-500">▼</span>
                 </div>
                 <div>
                     <input type="text" id="regUsername" required placeholder="Benutzername (Min. 3 Zeichen)"
+                        class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
+                </div>
+                <div>
+                    <input type="email" id="regEmail" placeholder="E-Mail-Adresse (Optional)"
                         class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none">
                 </div>
                 <div>
@@ -297,6 +278,13 @@
                         style="box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1);">
                     <p class="text-[10px] text-gray-500 mt-1 ml-1">Exklusiver Zugangscode erforderlich.</p>
                 </div>
+
+                <div id="inviteHelpBox" class="hidden p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-blue-200 space-y-2">
+                    <p class="font-bold flex items-center gap-1.5 text-blue-400"><span>💡</span> Wie bekomme ich einen Invite Code?</p>
+                    <p class="text-gray-300 leading-relaxed">Schreibe uns eine E-Mail und nenne uns einen guten Grund, warum du in Limazon einziehen möchtest. Bis du einen Invite Code erhältst, kann es aber etwas dauern.</p>
+                    <a id="inviteEmailLink" href="#" class="inline-block font-mono bg-blue-600/30 text-blue-300 px-3 py-1.5 rounded-lg border border-blue-500/40 hover:bg-blue-600/50 transition font-bold"></a>
+                </div>
+
                 <button type="submit" id="regBtn"
                     class="w-full mt-2 py-4 bg-purple-600 hover:bg-purple-500 font-bold rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
                     Identität registrieren
@@ -334,7 +322,6 @@
     <!-- ========================================== -->
     <!-- === PORTAL (MAIN CONTENT) ================ -->
     <!-- ========================================== -->
-    <!-- Initial versteckt, wird nach Login sichtbar gemacht -->
     <div id="mainContent"
         class="container mx-auto px-6 py-12 max-w-7xl flex flex-col min-h-screen hidden opacity-0 transition-opacity duration-300">
 
@@ -394,7 +381,6 @@
         </header>
 
         <div id="appsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-
             <!-- KACHELN -->
             <div class="theme-card glass-panel rounded-2xl overflow-hidden cursor-pointer group"
                 onclick="nav('themes/limazon.html')" data-module="shop" data-tags="shop kaufen klassik economy">
@@ -1366,11 +1352,15 @@
         async function handleRegister(e) {
             e.preventDefault();
             const btn = document.getElementById('regBtn');
+            const inviteHelpBox = document.getElementById('inviteHelpBox');
+            inviteHelpBox.classList.add('hidden');
+
             btn.disabled = true;
             btn.textContent = "Registriere...";
 
             const payload = {
                 username: document.getElementById('regUsername').value,
+                email: document.getElementById('regEmail').value, 
                 password: document.getElementById('regPassword').value,
                 inviteCode: document.getElementById('regInviteCode').value
             };
@@ -1385,11 +1375,22 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    showMessage("Erfolgreich registriert! Bitte logge dich nun ein.", false);
+                    showMessage(data.message || "Erfolgreich registriert!", false);
                     document.getElementById('registerForm').reset();
-                    setTimeout(() => switchTab('login'), 2000);
+                    setTimeout(() => switchTab('login'), 3000); 
                 } else {
-                    showMessage(data.error || "Registrierung fehlgeschlagen.");
+                    // Wenn der Code fehlt oder ungültig ist -> Zeige die saubere Info-Box anstelle von alert()
+                    if (data.error === 'MISSING_INVITE' || data.error === 'INVALID_INVITE') {
+                        const supportEmail = window.LIMO_INVITE_EMAIL || 'support@limazon.de';
+                        const emailLink = document.getElementById('inviteEmailLink');
+                        emailLink.textContent = supportEmail;
+                        emailLink.href = `mailto:${supportEmail}?subject=Invite%20Code%20Anfrage%20f%C3%BCr%20Limazon&body=Hallo,%0A%0Aich%20möchte%20gerne%20Teil%20von%20Limazon%20werden.%0A%0AGrund:%20`;
+                        
+                        inviteHelpBox.classList.remove('hidden');
+                        showMessage(data.message || "Ungültiger oder fehlender Invite-Code.", true);
+                    } else {
+                        showMessage(data.error || "Registrierung fehlgeschlagen.");
+                    }
                 }
             } catch (err) {
                 showMessage("Netzwerkfehler bei Registrierung.");
@@ -1398,7 +1399,7 @@
                 btn.textContent = "Identität registrieren";
             }
         }
-
+        
         async function handleLogout() {
             try {
                 await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
@@ -1516,7 +1517,6 @@
 
                 const data = await res.json();
 
-                // Anti-Enumeration: Das Backend gibt immer success zurück
                 msgBox.textContent = data.message || "Anfrage verarbeitet.";
                 msgBox.className = "mb-4 p-3 rounded-xl text-xs font-medium text-center border bg-green-500/20 border-green-500/50 text-green-400";
                 msgBox.classList.remove('hidden');
