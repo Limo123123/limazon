@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="/themes/js/config.js?v=1791228325"></script>
+    <script src="/themes/js/security.js?v=1791228325"></script>
+    <script src="/themes/js/limo-global.js?v=1791228325" data-page="limazondb"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LimazonDB | Database of Everything</title>
+    
+    <!-- 1. ZWINGEND: Config & Security zuerst laden --><!-- 2. Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        limodb: { nav: '#1b2838', card: '#202d39', hover: '#2a475e', border: '#2a3f5a', blue: '#66c0f4', green: '#a3cc26' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 3. Chart.js & Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1b2838; }
+        ::-webkit-scrollbar-thumb { background: #2a475e; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #66c0f4; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans antialiased min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-limodb-nav/95 backdrop-blur border-b border-limodb-border px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-database text-limodb-blue text-2xl"></i>
+            <h1 class="text-white text-xl font-bold tracking-tight">LimazonDB</h1>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative w-full md:w-96">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-search text-slate-500"></i>
+            </div>
+            <input type="text" id="searchInput" autocomplete="off" placeholder="Search Citizens, Products, Pets, Marriages..." 
+                class="w-full bg-slate-800 border border-limodb-border text-white text-sm rounded-md pl-10 pr-4 py-2 focus:outline-none focus:border-limodb-blue focus:ring-1 focus:ring-limodb-blue transition-colors">
+            
+            <!-- Search Results Dropdown -->
+            <div id="searchResults" class="absolute w-full mt-1 bg-limodb-card border border-limodb-border rounded-md shadow-2xl hidden max-h-[70vh] overflow-y-auto z-50 divide-y divide-limodb-border">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <a href="../index.html" class="text-sm font-medium text-slate-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Exit DB
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-6 space-y-6">
+        
+        <!-- Hero -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-extrabold text-white mb-2">Database of everything on Limazon.</h2>
+            <p class="text-slate-400 max-w-3xl">LimazonDB is an independent database covering the entire Limazon ecosystem. Player statistics, market charts, deep dives into Tinda marriages, and pet records — kept current through automated, high-performance polling.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Left Column: Ecosystem Metrics -->
+            <div class="space-y-6">
+                <!-- Globals -->
+                <div class="bg-limodb-card rounded-lg border border-limodb-border shadow-lg p-5">
+                    <h3 class="text-white font-semibold mb-4 border-b border-limodb-border pb-2">Global Ecosystem Metrics</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-slate-800/50 p-4 rounded border border-slate-700/50 text-center">
+                            <div class="text-2xl font-bold text-limodb-green" id="stat-active-users">--</div>
+                            <div class="text-xs uppercase text-slate-500 font-semibold mt-1">Active Users (24h)</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded border border-slate-700/50 text-center">
+                            <div class="text-2xl font-bold text-white" id="stat-total-users">--</div>
+                            <div class="text-xs uppercase text-slate-500 font-semibold mt-1">Total Citizens</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded border border-slate-700/50 text-center">
+                            <div class="text-2xl font-bold text-limodb-green" id="stat-total-money">$--</div>
+                            <div class="text-xs uppercase text-slate-500 font-semibold mt-1">Economy Circulation</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded border border-slate-700/50 text-center">
+                            <div class="text-2xl font-bold text-limodb-blue" id="stat-tinda">--</div>
+                            <div class="text-xs uppercase text-slate-500 font-semibold mt-1">Tinda Marriages</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart -->
+                    <div class="relative h-48 w-full">
+                        <canvas id="userChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Social Stats -->
+                <div class="bg-limodb-card rounded-lg border border-limodb-border shadow-lg p-5">
+                    <h3 class="text-white font-semibold mb-4 border-b border-limodb-border pb-2">Social & Lifestyle Records</h3>
+                    <table class="w-full text-sm">
+                        <tbody>
+                            <tr class="border-b border-slate-700/50 hover:bg-white/5"><td class="py-3 px-2">🐾 Registered Pets</td><td class="text-right font-medium text-white" id="stat-pets">--</td></tr>
+                            <tr class="border-b border-slate-700/50 hover:bg-white/5"><td class="py-3 px-2">🪦 Deceased Pets</td><td class="text-right font-medium text-red-400" id="stat-dead-pets">--</td></tr>
+                            <tr class="border-b border-slate-700/50 hover:bg-white/5"><td class="py-3 px-2">🏰 Properties Owned</td><td class="text-right font-medium text-white" id="stat-houses">--</td></tr>
+                            <tr class="hover:bg-white/5"><td class="py-3 px-2">🏴‍☠️ Gangs Formed</td><td class="text-right font-medium text-white" id="stat-gangs">--</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Column: Markets -->
+            <div class="space-y-6">
+                <!-- Trending -->
+                <div class="bg-limodb-card rounded-lg border border-limodb-border shadow-lg p-5">
+                    <div class="flex justify-between items-end border-b border-limodb-border pb-2 mb-4">
+                        <h3 class="text-white font-semibold">Trending Markets 🚀</h3>
+                        <span class="text-xs text-slate-500">Last 24h</span>
+                    </div>
+                    <table class="w-full text-sm">
+                        <thead class="text-xs uppercase text-slate-500 text-left">
+                            <tr><th class="pb-2 font-normal">Product</th><th class="pb-2 text-right font-normal">Price</th><th class="pb-2 text-right font-normal">24h</th></tr>
+                        </thead>
+                        <tbody id="trending-table" class="divide-y divide-slate-700/50">
+                            <tr><td colspan="3" class="py-4 text-center text-slate-500">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Crashing -->
+                <div class="bg-limodb-card rounded-lg border border-limodb-border shadow-lg p-5">
+                    <div class="flex justify-between items-end border-b border-limodb-border pb-2 mb-4">
+                        <h3 class="text-white font-semibold">Crashing Markets 📉</h3>
+                        <span class="text-xs text-slate-500">Last 24h</span>
+                    </div>
+                    <table class="w-full text-sm">
+                        <thead class="text-xs uppercase text-slate-500 text-left">
+                            <tr><th class="pb-2 font-normal">Product</th><th class="pb-2 text-right font-normal">Price</th><th class="pb-2 text-right font-normal">24h</th></tr>
+                        </thead>
+                        <tbody id="crashing-table" class="divide-y divide-slate-700/50">
+                            <tr><td colspan="3" class="py-4 text-center text-slate-500">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Deep Dive Modal -->
+    <div id="deepDiveModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[100] items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-limodb-card w-full max-w-2xl rounded-xl border border-limodb-border shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="modalScaleBox">
+            
+            <!-- Header -->
+            <div class="bg-limodb-nav px-6 py-4 flex justify-between items-center border-b border-limodb-border">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2" id="modalTitle">
+                    <i class="fa-solid fa-spinner fa-spin text-limodb-blue"></i> Loading Data...
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 max-h-[70vh] overflow-y-auto" id="modalBody">
+                <!-- Injected via JS -->
+            </div>
+            
+            <!-- Footer -->
+            <div class="bg-slate-900/50 px-6 py-3 border-t border-limodb-border text-xs text-slate-500 flex justify-between">
+                <span>LimazonDB Secure Access Protocol</span>
+                <span>Classified Data Removed</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. OVERVIEW DATA LOADING ---
+        async function loadDatabase() {
+            try {
+                // WICHTIG: Nutzung der globalen window.LIMO_API und credentials!
+                const response = await fetch(window.LIMO_API + '/api/limazondb/overview', { credentials: 'include' });
+                const data = await response.json();
+
+                if(data.current.status === "Wird berechnet...") {
+                    setTimeout(loadDatabase, 2000); 
+                    return;
+                }
+
+                const current = data.current;
+                const history = data.history;
+
+                // Fill Stats
+                document.getElementById('stat-active-users').innerText = current.population.active24h.toLocaleString();
+                document.getElementById('stat-total-users').innerText = current.population.total.toLocaleString();
+                
+                const money = (current.economy.totalCirculation / 1000000).toFixed(2);
+                document.getElementById('stat-total-money').innerText = `$${money}M`;
+                
+                document.getElementById('stat-tinda').innerText = current.social.tindaMatches.toLocaleString();
+                document.getElementById('stat-pets').innerText = current.social.petsAdopted.toLocaleString();
+                document.getElementById('stat-dead-pets').innerText = current.social.deadPets.toLocaleString();
+                document.getElementById('stat-houses').innerText = current.social.housesOwned.toLocaleString();
+                document.getElementById('stat-gangs').innerText = current.social.gangsFormed.toLocaleString();
+
+                // Fill Tables
+                const renderTable = (tbodyId, items, isGreen) => {
+                    const tbody = document.getElementById(tbodyId);
+                    tbody.innerHTML = items.length === 0 ? `<tr><td colspan="3" class="py-4 text-center text-slate-500">No data available.</td></tr>` : '';
+                    
+                    items.forEach(item => {
+                        const colorClass = isGreen ? 'text-limodb-green' : 'text-red-400';
+                        const sign = isGreen ? '+' : '';
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-white/5 cursor-pointer" onclick="openProductDetail('${item.id}', '${item.name}', '${item.price}')">
+                                <td class="py-2 flex items-center gap-3">
+                                    <img src="${item.img}" class="w-8 h-8 rounded bg-black object-cover" onerror="this.src='https://placehold.co/32/111/fff?text=?'">
+                                    <span class="text-slate-300 font-medium">${item.name}</span>
+                                </td>
+                                <td class="py-2 text-right text-slate-300">$${item.price.toFixed(2)}</td>
+                                <td class="py-2 text-right font-bold ${colorClass}">${sign}${item.change.toFixed(2)}%</td>
+                            </tr>
+                        `;
+                    });
+                };
+
+                renderTable('trending-table', current.markets.trending, true);
+                renderTable('crashing-table', current.markets.crashing, false);
+
+                renderChart(history);
+
+            } catch (err) {
+                console.error("LDB Overview Error:", err);
+            }
+        }
+
+        // --- 2. CHART.JS ---
+        function renderChart(historyData) {
+            const ctx = document.getElementById('userChart').getContext('2d');
+            const labels = historyData.map(d => d.dateStr.split('-').slice(1).join('.'));
+            const dataPoints = historyData.map(d => d.activeUsers);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Active Users',
+                        data: dataPoints,
+                        borderColor: '#a3cc26',
+                        backgroundColor: 'rgba(163, 204, 38, 0.1)',
+                        borderWidth: 2, fill: true, tension: 0.4, pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8f98a0' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8f98a0' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // --- 3. SEARCH LOGIC ---
+        const searchInput = document.getElementById('searchInput');
+        const resultsBox = document.getElementById('searchResults');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            const q = e.target.value;
+            if (q.length < 2) { resultsBox.classList.add('hidden'); return; }
+
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`${window.LIMO_API}/api/limazondb/search?q=${encodeURIComponent(q)}`, { credentials: 'include' });
+                    const data = await res.json();
+                    renderSearchResults(data);
+                } catch (err) { console.error("Search Error", err); }
+            }, 300);
+        });
+
+        // Schließt das Dropdown, wenn man woanders hin klickt
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                resultsBox.classList.add('hidden');
+            }
+        });
+
+        function renderSearchResults(data) {
+            resultsBox.innerHTML = '';
+            let hasResults = false;
+
+            const addCategory = (title) => {
+                resultsBox.innerHTML += `<div class="px-4 py-1.5 bg-limodb-nav text-[10px] font-bold uppercase tracking-wider text-slate-500">${title}</div>`;
+            };
+
+            // Users
+            if (data.users.length > 0) {
+                hasResults = true; addCategory(`Citizens (${data.users.length})`);
+                data.users.forEach(u => {
+                    let icon = u.isMayor ? '👑' : (u.role === 'Admin' ? '🛡️' : '👤');
+                    resultsBox.innerHTML += `
+                        <div class="px-4 py-2 hover:bg-limodb-hover cursor-pointer flex items-center gap-3 transition-colors" onclick="fetchDeepDive('user', '${u._id}')">
+                            <span class="text-xl w-6 text-center">${icon}</span>
+                            <div><div class="text-slate-200 font-medium leading-tight">${u.username}</div><div class="text-xs text-slate-500">${u.role || 'Bürger'}</div></div>
+                        </div>`;
+                });
+            }
+
+            // Products
+            if (data.products.length > 0) {
+                hasResults = true; addCategory(`Products (${data.products.length})`);
+                data.products.forEach(p => {
+                    resultsBox.innerHTML += `
+                        <div class="px-4 py-2 hover:bg-limodb-hover cursor-pointer flex items-center gap-3 transition-colors" onclick="openProductDetail('${p.id}', '${p.name}', '${p.price}')">
+                            <img src="${p.image_url}" class="w-8 h-8 rounded bg-black object-cover" onerror="this.src='https://placehold.co/32/111/fff?text=?'">
+                            <div><div class="text-slate-200 font-medium leading-tight">${p.name}</div><div class="text-xs text-slate-500">ID: ${p.id}</div></div>
+                        </div>`;
+                });
+            }
+
+            // Tinda
+            if (data.tinda.length > 0) {
+                hasResults = true; addCategory(`Tinda Marriages (${data.tinda.length})`);
+                data.tinda.forEach(t => {
+                    resultsBox.innerHTML += `
+                        <div class="px-4 py-2 hover:bg-limodb-hover cursor-pointer flex items-center gap-3 transition-colors" onclick="fetchDeepDive('tinda', '${t._id}')">
+                            <span class="text-xl w-6 text-center">💍</span>
+                            <div><div class="text-slate-200 font-medium leading-tight">Match: ${t.tindaPartnerName}</div><div class="text-xs text-slate-500">Family Record</div></div>
+                        </div>`;
+                });
+            }
+
+            // Pets
+            if (data.pets.length > 0) {
+                hasResults = true; addCategory(`Pets (${data.pets.length})`);
+                data.pets.forEach(p => {
+                    resultsBox.innerHTML += `
+                        <div class="px-4 py-2 hover:bg-limodb-hover cursor-pointer flex items-center gap-3 transition-colors" onclick="fetchDeepDive('pet', '${p._id}')">
+                            <span class="text-xl w-6 text-center">${p.icon}</span>
+                            <div><div class="text-slate-200 font-medium leading-tight">${p.name}</div><div class="text-xs text-slate-500">Owner: ${p.ownerName}</div></div>
+                        </div>`;
+                });
+            }
+
+            if(!hasResults) resultsBox.innerHTML = '<div class="p-4 text-slate-500 text-sm">Keine Datenbankeinträge gefunden.</div>';
+            resultsBox.classList.remove('hidden');
+        }
+
+        // --- 4. MODAL & DEEP DIVES ---
+        const modal = document.getElementById('deepDiveModal');
+        const modalBox = document.getElementById('modalScaleBox');
+        const mTitle = document.getElementById('modalTitle');
+        const mBody = document.getElementById('modalBody');
+
+        function openModal(titleHTML) {
+            mTitle.innerHTML = titleHTML;
+            mBody.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-limodb-blue"></i><p class="mt-4 text-slate-400">Querying Limazon Databanks...</p></div>';
+            modal.classList.remove('hidden');
+            // Timeout für smoothe Transition
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalBox.classList.remove('scale-95');
+                modalBox.classList.add('scale-100');
+            }, 10);
+            resultsBox.classList.add('hidden'); // Suche schließen
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalBox.classList.remove('scale-100');
+            modalBox.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        async function fetchDeepDive(type, id) {
+            openModal(`<i class="fa-solid fa-database text-limodb-blue"></i> Accessing Record...`);
+            try {
+                const res = await fetch(`${window.LIMO_API}/api/limazondb/details/${type}/${id}`, { credentials: 'include' });
+                const data = await res.json();
+
+                if(data.error) { 
+                    mBody.innerHTML = `<div class="text-red-400 p-4 bg-red-900/20 rounded border border-red-500/50"><i class="fa-solid fa-triangle-exclamation mr-2"></i> ${data.error}</div>`; 
+                    return; 
+                }
+
+                // RENDER USER
+                if (type === 'user') {
+                    const u = data.user;
+                    mTitle.innerHTML = `<i class="fa-solid fa-id-card text-limodb-blue"></i> Citizen Record: ${u.username}`;
+                    
+                    let tags = '';
+                    if(data.assets.gang) tags += `<span class="bg-red-900/40 text-red-300 border border-red-500/30 px-3 py-1 rounded-full text-xs">🏴‍☠️ [${data.assets.gang.tag}] ${data.assets.gang.name}</span>`;
+                    data.assets.houses.forEach(h => tags += `<span class="bg-blue-900/40 text-blue-300 border border-blue-500/30 px-3 py-1 rounded-full text-xs">🏠 ${h.name}</span>`);
+                    data.assets.pets.forEach(p => {
+                        const pensionTag = p.inPension ? ' (In Pension)' : '';
+                        tags += `<span class="bg-green-900/40 text-green-300 border border-green-500/30 px-3 py-1 rounded-full text-xs">${p.icon} ${p.name}${pensionTag}</span>`;
+                    });
+
+                    // Sichere Fallbacks (Optional Chaining), falls Objekte fehlen
+                    const crimeHits = u.crimeStats?.successfulRobberies || 0;
+                    const crimeFails = u.crimeStats?.failedRobberies || 0;
+                    const roleName = u.isMayor ? 'Bürgermeister 👑' : (u.isAdmin ? 'Admin 🛡️' : (u.role || 'Bürger'));
+
+                    mBody.innerHTML = `
+                        <div class="grid grid-cols-2 gap-4 text-sm mb-6">
+                            <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Net Worth</span><span class="text-limodb-green font-bold text-lg">$${parseFloat(u.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+                            <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Tokens</span><span class="text-yellow-400 font-bold text-lg">${u.tokens || 0}</span></div>
+                            <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Schufa Score</span><span class="text-white">${u.schufaScore || 500}</span></div>
+                            <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Occupation</span><span class="text-white">Lvl ${u.jobLevel || 1} ${u.job || 'Arbeitslos'}</span></div>
+                            <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">System Role</span><span class="text-white">${roleName}</span></div>
+                            <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Criminal Record</span><span class="text-red-400">${crimeHits} Hits / ${crimeFails} Arrests</span></div>
+                        </div>
+                        <h4 class="text-sm font-bold text-white mb-3 border-b border-limodb-border pb-2">Registered Assets</h4>
+                        <div class="flex flex-wrap gap-2">${tags || '<span class="text-slate-500 text-sm">No registered assets.</span>'}</div>
+                    `;
+                }
+                
+                // RENDER TINDA
+                else if (type === 'tinda') {
+                    const m = data;
+                    mTitle.innerHTML = `<i class="fa-solid fa-ring text-limodb-blue"></i> Official Marriage Record`;
+                    
+                    let childrenHtml = '<div class="text-slate-500 text-sm mt-2">Keine verzeichneten Kinder.</div>';
+                    if (m.children && m.children.length > 0) {
+                        childrenHtml = `<table class="w-full text-sm mt-3"><thead class="text-xs text-slate-500 uppercase border-b border-slate-700"><tr><th class="pb-2 text-left">Child Name</th><th class="pb-2 text-right">Hunger</th><th class="pb-2 text-right">Fun</th></tr></thead><tbody class="divide-y divide-slate-700/50">`;
+                        m.children.forEach(c => {
+                            const hColor = c.hunger < 30 ? 'text-red-400 font-bold' : 'text-limodb-green';
+                            childrenHtml += `<tr><td class="py-2 text-white">👶 ${c.childName}</td><td class="py-2 text-right ${hColor}">${c.hunger}%</td><td class="py-2 text-right text-limodb-blue">${c.fun}%</td></tr>`;
+                        });
+                        childrenHtml += `</tbody></table>`;
+                    }
+
+                    mBody.innerHTML = `
+                        <div class="flex items-center justify-center gap-4 mb-6 bg-slate-800/50 p-4 rounded border border-slate-700/50">
+                            <div class="text-lg font-bold text-white">${m.partner1}</div>
+                            <i class="fa-solid fa-heart text-red-500"></i>
+                            <div class="text-lg font-bold text-white">${m.partner2}</div>
+                        </div>
+                        <div class="text-sm text-slate-400 mb-6 flex justify-between"><span>Status: <strong class="text-white">${m.isMarried ? 'Married 💍' : 'Divorced 💔'}</strong></span> <span>Matched: ${new Date(m.matchedAt).toLocaleDateString()}</span></div>
+                        <h4 class="text-sm font-bold text-white mb-2 border-b border-limodb-border pb-2">Family Members (Children)</h4>
+                        ${childrenHtml}
+                    `;
+                }
+
+                // RENDER PET
+                else if (type === 'pet') {
+                    const p = data.pet;
+                    mTitle.innerHTML = `<i class="fa-solid fa-paw text-limodb-blue"></i> Pet Registration`;
+                    
+                    let pensionBadge = p.inPension 
+                        ? `<span class="bg-blue-900/50 text-blue-300 px-2 py-1 rounded text-xs ml-2 border border-blue-500/50">In Pension (Wird versorgt)</span>` 
+                        : '';
+
+                    mBody.innerHTML = `
+                        <div class="flex items-center gap-6 mb-6">
+                            <div class="text-6xl bg-slate-800 p-4 rounded-xl border border-slate-700">${p.icon}</div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">${p.name} ${pensionBadge}</h2>
+                                <p class="text-slate-400">${p.typeName} • Owner: <span class="text-white font-medium">${p.ownerName}</span></p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Vital Status (Hunger)</span><span class="${p.currentHunger > 30 ? 'text-limodb-green' : 'text-red-400'} font-bold">${p.currentHunger}%</span></div>
+                            <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Enclosure</span><span class="text-white">${p.enclosure}</span></div>
+                        </div>
+                    `;
+                }
+
+            } catch (err) {
+                console.error("Deep Dive Error:", err);
+                mBody.innerHTML = `<div class="text-red-400 p-4 bg-red-900/20 rounded border border-red-500/50">Verbindung zur Datenbank fehlgeschlagen. Der Server antwortet nicht korrekt.</div>`;
+            }
+        }
+
+        // Produkt Fake-Detail
+        function openProductDetail(id, name, rawPrice) {
+            // Entfernt alle Buchstaben und das $ Zeichen, behält nur Zahlen und den Punkt
+            const cleanPriceStr = String(rawPrice).replace(/[^0-9.]/g, '');
+            const cleanPrice = parseFloat(cleanPriceStr) || 0;
+
+            openModal(`<i class="fa-solid fa-box text-limodb-blue"></i> Market Asset: ${name}`);
+            mBody.innerHTML = `
+                <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                    <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Item ID</span><span class="text-white font-mono">${id}</span></div>
+                    <div class="bg-slate-800/50 p-3 rounded border border-slate-700/50"><span class="text-slate-500 block text-xs">Current Market Value</span><span class="text-limodb-green font-bold text-lg">$${cleanPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                </div>
+                <div class="p-4 bg-blue-900/20 border border-blue-500/30 rounded text-sm text-blue-200">
+                    <i class="fa-solid fa-circle-info mr-2"></i> This asset is actively traded on LimoStonks. Deep market charts are available in the trading terminal.
+                </div>
+            `;
+        }
+
+        // Start
+        window.onload = loadDatabase;
+    </script>
+</body>
+</html>
