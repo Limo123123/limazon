@@ -224,7 +224,7 @@
                     <button type="button" onclick="openForgotPasswordModal()"
                         class="text-xs text-blue-400 hover:underline">Passwort vergessen?</button>
                 </div>
-                <div class="flex items-center gap-2 pt-2">
+                <div class="flex items-center gap-2 pt-2 mb-2">
                     <input type="checkbox" id="rememberMe"
                         class="w-4 h-4 rounded border-gray-700 bg-gray-900 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900">
                     <label for="rememberMe" class="text-xs text-gray-400 cursor-pointer">Eingeloggt bleiben</label>
@@ -235,8 +235,33 @@
                     System betreten
                 </button>
 
-                <!-- Trenner -->
-                <div class="relative flex items-center py-2">
+                <!-- Neu: OAuth Trenner -->
+                <div class="relative flex items-center py-4">
+                    <div class="flex-grow border-t border-gray-800"></div>
+                    <span class="flex-shrink-0 mx-4 text-gray-500 text-xs tracking-wider">ODER LOGIN MIT</span>
+                    <div class="flex-grow border-t border-gray-800"></div>
+                </div>
+
+                <!-- Neu: OAuth Buttons -->
+                <div class="flex gap-3 mb-2">
+                    <button type="button" onclick="loginWithOAuth('google')" class="flex-1 flex items-center justify-center gap-2 py-3 bg-white hover:bg-gray-100 text-gray-900 font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 text-sm">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google
+                    </button>
+                    <button type="button" onclick="loginWithOAuth('github')" class="flex-1 flex items-center justify-center gap-2 py-3 bg-[#24292e] hover:bg-[#1b1f23] text-white font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)] border border-gray-700 active:scale-95 text-sm">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                        </svg>
+                        GitHub
+                    </button>
+                </div>
+
+                <div class="relative flex items-center py-2 pb-4">
                     <div class="flex-grow border-t border-gray-800"></div>
                     <span class="flex-shrink-0 mx-4 text-gray-500 text-xs">ODER</span>
                     <div class="flex-grow border-t border-gray-800"></div>
@@ -244,7 +269,7 @@
 
                 <!-- WebAuthn Passkey Button -->
                 <button type="button" id="passkeyBtn" onclick="handlePasskeyLogin()"
-                    class="w-full py-4 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-xl transition-all active:scale-95 border border-gray-700 flex items-center justify-center gap-2">
+                    class="w-full py-4 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-xl transition-all active:scale-95 border border-gray-700 flex items-center justify-center gap-2 shadow-sm">
                     <span class="text-xl">🛡️</span> Passkey Login
                 </button>
             </form>
@@ -366,7 +391,6 @@
                     class="text-[10px] sm:text-xs text-red-500/80 hover:text-red-400 mt-2 sm:mt-1 underline decoration-red-500/30">Abmelden</button>
             </div>
 
-            <!-- Haupttitel mit minimalem Abstand nach oben auf dem Handy -->
             <h1 class="text-4xl sm:text-5xl md:text-7xl font-black mb-4 tracking-tighter pt-2 sm:pt-0">
                 Limazon<span class="text-blue-500">.</span><wbr>Universe
             </h1>
@@ -1150,7 +1174,7 @@
 
     <!-- SCRIPT-BEREICH: AUTH LOGIC & PORTAL INITIALISIERUNG -->
     <script>
-        // API Base URL - Passe dies an, falls dein Frontend nicht auf demselben Host wie das Backend läuft
+        // API Base URL
         const API_URL = window.LIMO_API;
 
         const authScreen = document.getElementById('authScreen');
@@ -1165,11 +1189,28 @@
         document.addEventListener('DOMContentLoaded', async () => {
             searchInput.addEventListener('input', filterApps);
 
+            // OAuth Error Check aus der URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const oauthError = urlParams.get('error');
+
+            if (oauthError) {
+                // Wenn wir einen OAuth Error in der URL haben, zwingen wir das Login Fenster auf
+                authScreen.classList.remove('hidden');
+                switchTab('login');
+                let errorMsg = "Login fehlgeschlagen. Bitte versuche es erneut.";
+                if (oauthError === 'google_failed') errorMsg = "Google Login abgebrochen oder fehlgeschlagen.";
+                if (oauthError === 'github_failed') errorMsg = "GitHub Login abgebrochen oder fehlgeschlagen.";
+                showMessage(errorMsg);
+                
+                // Bereinige die URL, damit der Fehler beim Reload verschwindet
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return; // Brechen hier ab, User muss sich neu einloggen
+            }
+
             // Server Select Dropdowns synchronisieren
             const savedTarget = localStorage.getItem('limazon_api_target');
             const selectBoxes = document.querySelectorAll('.instance-select');
 
-            // Herausfinden, was der Standard in diesem Browserfenster ist
             let defaultSelectValue = "https://limazon.slimo.dev";
 
             selectBoxes.forEach(box => {
@@ -1187,7 +1228,6 @@
                     showPortal(data.username, true);
                 } else {
                     authScreen.classList.remove('hidden');
-                    // Gucken, in welchem Tab wir vor dem Reload waren
                     const activeTab = sessionStorage.getItem('active_auth_tab') || 'login';
                     switchTab(activeTab);
                 }
@@ -1199,6 +1239,12 @@
             }
         });
 
+        // --- OAUTH REDIRECT LOGIC ---
+        function loginWithOAuth(provider) {
+            const currentApi = window.LIMO_API || "https://limazon.slimo.dev";
+            window.location.href = `${currentApi}/api/auth/${provider}`;
+        }
+
         // --- UI FUNKTIONEN ---
         function switchTab(tab) {
             const loginForm = document.getElementById('loginForm');
@@ -1208,7 +1254,6 @@
 
             document.getElementById('authMessage').classList.add('hidden');
 
-            // Tab speichern, damit er nach Reload bleibt!
             sessionStorage.setItem('active_auth_tab', tab);
 
             if (tab === 'login') {
@@ -1237,7 +1282,6 @@
         }
 
         function showPortal(username, instant = false) {
-            // Username setzen
             document.getElementById('navUsername').textContent = username;
 
             const currentApi = window.LIMO_API || "https://limazon.slimo.dev";
@@ -1246,7 +1290,6 @@
             if (currentApi.includes("api.tfl.limazon.v6.rocks")) {
                 serverName = "TFL Instanz";
             } else if (currentApi !== "https://limazon.slimo.dev") {
-                // Falls es eine custom Instanz ist, extrahieren wir die Subdomain aus der URL
                 try {
                     const host = new URL(currentApi).hostname;
                     serverName = host.replace('.limazon.v6.rocks', '').toUpperCase();
@@ -1322,15 +1365,11 @@
             btn.innerHTML = "Warte auf Fingerabdruck...";
 
             try {
-                // 1. Optionen vom Server abfragen
                 const resp = await fetch(`${API_URL}/api/webauthn/login-options`, { credentials: 'include' });
                 const options = await resp.json();
 
-                if (options.error) {
-                    throw new Error(options.error);
-                }
+                if (options.error) throw new Error(options.error);
 
-                // 2. Browser fragt nach dem Passkey
                 let asseResp;
                 try {
                     asseResp = await startAuthentication(options);
@@ -1338,7 +1377,6 @@
                     throw new Error("Authentifizierung abgebrochen.");
                 }
 
-                // 3. Antwort an den Server senden
                 const verificationResp = await fetch(`${API_URL}/api/webauthn/login-verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1349,7 +1387,6 @@
                 const verificationJSON = await verificationResp.json();
 
                 if (verificationJSON.verified) {
-                    // Erfolgreich eingeloggt!
                     showPortal(verificationJSON.username);
                 } else {
                     throw new Error(verificationJSON.error || "Verifizierung fehlgeschlagen.");
@@ -1392,7 +1429,6 @@
                     document.getElementById('registerForm').reset();
                     setTimeout(() => switchTab('login'), 3000); 
                 } else {
-                    // Wenn der Code fehlt oder ungültig ist -> Zeige die saubere Info-Box anstelle von alert()
                     if (data.error === 'MISSING_INVITE' || data.error === 'INVALID_INVITE') {
                         const supportEmail = window.LIMO_INVITE_EMAIL || 'support@limazon.de';
                         const emailLink = document.getElementById('inviteEmailLink');
