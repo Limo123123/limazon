@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Limazon.Universe</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow-x: hidden; }
+        .glass-panel { background: rgba(20, 20, 25, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .pattern-grid { background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.05) 1px, transparent 1px); background-size: 60px 60px; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-blue-500 selection:text-white relative">
+
+    <!-- Background Effects -->
+    <div class="fixed inset-0 z-[-1]">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute inset-0 pattern-grid opacity-20"></div>
+    </div>
+
+    <div class="container mx-auto px-6 py-16 max-w-5xl">
+        
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-4">
+                Limazon<span class="text-blue-500">.</span>Universe
+            </h1>
+            <p class="text-xl text-gray-400 font-light max-w-2xl mx-auto">
+                A closed, invite-only socio-economic sandbox multiplayer experience.
+            </p>
+        </div>
+
+        <!-- Main Introduction -->
+        <div class="glass-panel p-8 md:p-12 rounded-3xl mb-8 shadow-2xl border border-blue-500/20 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+            
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-3">
+                <span class="text-3xl">🌍</span> The Digital Ecosystem
+            </h2>
+            <p class="text-gray-300 leading-relaxed mb-6">
+                Limazon is not just a game; it's a fully simulated digital society. Players start from nothing and navigate a complex, player-driven economy. Whether you choose to climb the corporate ladder, manipulate the virtual stock market, or orchestrate heists in the digital underground, your actions permanently shape the universe.
+            </p>
+
+            <!-- Features Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                <div class="bg-gray-900/50 p-6 rounded-2xl border border-gray-800 hover:border-gray-700 transition-colors">
+                    <div class="text-3xl mb-3">📈</div>
+                    <h3 class="font-bold text-lg mb-2 text-white">Dynamic Economy</h3>
+                    <p class="text-sm text-gray-400">Trade virtual crypto, buy and sell properties, and watch the central bank react to inflation and taxes.</p>
+                </div>
+                <div class="bg-gray-900/50 p-6 rounded-2xl border border-gray-800 hover:border-gray-700 transition-colors">
+                    <div class="text-3xl mb-3">💍</div>
+                    <h3 class="font-bold text-lg mb-2 text-white">Social & Dating</h3>
+                    <p class="text-sm text-gray-400">Find your match on 'Tinda', get married for tax benefits, and manage your digital family (or deal with the orphanage).</p>
+                </div>
+                <div class="bg-gray-900/50 p-6 rounded-2xl border border-gray-800 hover:border-gray-700 transition-colors">
+                    <div class="text-3xl mb-3">🏛️</div>
+                    <h3 class="font-bold text-lg mb-2 text-white">Politics & Law</h3>
+                    <p class="text-sm text-gray-400">Form political parties, get elected as Mayor, pass new laws, or drag other players into the Limo Court.</p>
+                </div>
+                <div class="bg-gray-900/50 p-6 rounded-2xl border border-gray-800 hover:border-gray-700 transition-colors">
+                    <div class="text-3xl mb-3">🦹</div>
+                    <h3 class="font-bold text-lg mb-2 text-white">The Underground</h3>
+                    <p class="text-sm text-gray-400">Join syndicates, fight for territory, hack the central bank firewall, or place bounties on your enemies.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical & OAuth Info for Google/GitHub -->
+        <div class="glass-panel p-8 rounded-3xl mb-12 border border-gray-800">
+            <h2 class="text-xl font-bold mb-3 text-gray-200">System Access & Authentication</h2>
+            <p class="text-sm text-gray-400 leading-relaxed mb-4">
+                Access to Limazon is strictly invite-only. To ensure seamless and secure access for our invited citizens, we utilize modern authentication standards including WebAuthn (Passkeys) and OAuth 2.0 via Google and GitHub.
+            </p>
+            <div class="bg-blue-900/20 border border-blue-500/20 p-4 rounded-xl text-xs text-blue-200">
+                <strong>Why do we ask for Google/GitHub login?</strong><br>
+                We use OAuth strictly as a secure key to your account. We only request basic profile access (your email address) to prevent duplicate accounts and securely verify your identity. No data is shared with third parties.
+            </div>
+        </div>
+
+        <!-- Footer / Call to Action -->
+        <div class="text-center">
+            <a href="/index.html" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-95">
+                Go to Login / Enter System
+            </a>
+            <div class="mt-6 flex justify-center gap-6 text-sm text-gray-500">
+                <a href="/privacy.html" class="hover:text-gray-300 transition-colors">Privacy Policy</a>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

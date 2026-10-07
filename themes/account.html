@@ -5,13 +5,14 @@
     <script src="/themes/js/config.js?v=1791228325"></script>
     <script src="/themes/js/security.js?v=1791228325"></script>
     <script src="/themes/js/limo-global.js?v=1791228325" data-page="account"></script>
-    <!-- Das SimpleWebAuthn Paket für das Frontend -->
     <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
 
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Limazon Account Hub</title>
+    <!-- Um es einheitlich zu halten, fügen wir Tailwind auch hier via CDN ein für die neuen OAuth-Boxen -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --bg-dark: #0a0a0a;
@@ -39,116 +40,34 @@
         }
 
         /* --- SIDEBAR (Account Switcher) --- */
-        .sidebar {
-            width: 80px;
-            background-color: var(--bg-panel);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-            gap: 15px;
-            z-index: 100;
-            overflow-y: auto;
-        }
-
+        .sidebar { width: 80px; background-color: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 20px 0; gap: 15px; z-index: 100; overflow-y: auto; }
         .avatar-wrapper { position: relative; width: 50px; height: 50px; flex-shrink: 0; }
-
-        .account-avatar {
-            width: 100%; height: 100%; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 20px; cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 2px solid transparent;
-        }
-
+        .account-avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 2px solid transparent; }
         .account-avatar:hover { transform: scale(1.1); }
         .account-avatar.active { border-color: var(--text-main); box-shadow: 0 0 10px var(--primary); }
-        
-        .remove-account-btn {
-            position: absolute; top: -5px; right: -5px;
-            width: 20px; height: 20px;
-            background-color: var(--danger); color: white;
-            border-radius: 50%; font-size: 14px;
-            display: none; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 10; font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
+        .remove-account-btn { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; background-color: var(--danger); color: white; border-radius: 50%; font-size: 14px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .avatar-wrapper:hover .remove-account-btn { display: flex; }
-
-        .add-account-btn {
-            width: 50px; height: 50px; min-height: 50px;
-            border-radius: 50%; background-color: var(--bg-card);
-            border: 1px dashed var(--text-muted); color: var(--text-muted);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; cursor: pointer; margin-top: 10px; flex-shrink: 0;
-        }
+        .add-account-btn { width: 50px; height: 50px; min-height: 50px; border-radius: 50%; background-color: var(--bg-card); border: 1px dashed var(--text-muted); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; margin-top: 10px; flex-shrink: 0; }
         .add-account-btn:hover { border-color: var(--primary); color: var(--primary); }
 
         /* --- MAIN CONTENT --- */
-        .main-content {
-            flex: 1; display: flex; flex-direction: column;
-            overflow-y: auto; position: relative;
-        }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
 
         /* --- LOGIN SCREEN --- */
-        #login-view {
-            display: none;
-            flex: 1;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .login-card {
-            background-color: var(--bg-card);
-            padding: 40px; border-radius: 16px;
-            width: 90%; max-width: 400px;
-            border: 1px solid var(--border);
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
+        #login-view { display: none; flex: 1; justify-content: center; align-items: center; flex-direction: column; }
+        .login-card { background-color: var(--bg-card); padding: 40px; border-radius: 16px; width: 90%; max-width: 400px; border: 1px solid var(--border); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .login-card h2 { margin-bottom: 20px; background: linear-gradient(to right, var(--primary), var(--accent)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         /* --- DASHBOARD SCREEN --- */
         #dashboard-view { display: none; flex-direction: column; flex: 1; }
-
-        header {
-            padding: 20px 40px; background-color: var(--glass);
-            backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 50;
-        }
-
+        header { padding: 20px 40px; background-color: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
         h1 { font-size: 1.5rem; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        .container {
-            padding: 40px; max-width: 1200px; margin: 0 auto; width: 100%;
-            display: grid; grid-template-columns: 300px 1fr; gap: 30px;
-        }
+        .container { padding: 40px; max-width: 1200px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
 
         /* Profile Card */
-        .profile-card {
-            background-color: var(--bg-card); border-radius: 16px;
-            padding: 30px; text-align: center; border: 1px solid var(--border);
-            height: fit-content;
-        }
-
-        .big-avatar {
-            width: 100px; height: 100px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
-            font-size: 40px; font-weight: bold;
-        }
-
-        .user-stats {
-            display: flex; justify-content: space-around; margin-top: 20px;
-            padding-top: 20px; border-top: 1px solid var(--border); gap: 10px;
-        }
-
+        .profile-card { background-color: var(--bg-card); border-radius: 16px; padding: 30px; text-align: center; border: 1px solid var(--border); height: fit-content; }
+        .big-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; }
+        .user-stats { display: flex; justify-content: space-around; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); gap: 10px; }
         .stat-box { display: flex; flex-direction: column; width: 100%; overflow: hidden; }
         .stat-val { font-size: 1.1rem; font-weight: bold; color: var(--text-main); word-break: break-word; overflow-wrap: break-word; line-height: 1.2; }
         .stat-lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
@@ -156,39 +75,21 @@
         /* Tabs */
         .tabs-wrapper { display: flex; flex-direction: column; gap: 20px; }
         .tabs-nav { display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; }
-        .tab-btn {
-            background: none; border: none; color: var(--text-muted);
-            padding: 10px 20px; cursor: pointer; font-size: 1rem;
-            transition: color 0.2s; border-radius: 8px;
-        }
+        .tab-btn { background: none; border: none; color: var(--text-muted); padding: 10px 20px; cursor: pointer; font-size: 1rem; transition: color 0.2s; border-radius: 8px; }
         .tab-btn.active { background-color: var(--bg-card); color: var(--primary); font-weight: bold; }
         .tab-btn:hover:not(.active) { color: var(--text-main); }
-        
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Settings */
-        .settings-section {
-            background-color: var(--bg-card); border-radius: 12px;
-            padding: 25px; margin-bottom: 20px; border: 1px solid var(--border);
-        }
+        .settings-section { background-color: var(--bg-card); border-radius: 12px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--border); }
         .settings-section h3 { margin-bottom: 15px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
         .form-group { margin-bottom: 20px; text-align: left; }
         .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
-        
-        input[type="text"], input[type="password"], input[type="email"], textarea {
-            width: 100%; padding: 12px; background-color: var(--bg-dark);
-            border: 1px solid var(--border); border-radius: 8px;
-            color: var(--text-main); outline: none; transition: border-color 0.2s;
-        }
+        input[type="text"], input[type="password"], input[type="email"], textarea { width: 100%; padding: 12px; background-color: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); outline: none; transition: border-color 0.2s; }
         input:focus, textarea:focus { border-color: var(--primary); }
-
-        button.action-btn {
-            background-color: var(--primary); color: white; border: none;
-            padding: 12px 24px; border-radius: 8px; cursor: pointer;
-            font-weight: 600; transition: background 0.2s; width: 100%;
-        }
+        button.action-btn { background-color: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s; width: 100%; }
         button.action-btn:hover:not(:disabled) { background-color: var(--primary-hover); }
         button.action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         button.btn-danger { background-color: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
@@ -207,27 +108,11 @@
         #loading-view { display: flex; justify-content: center; align-items: center; height: 100%; flex: 1; }
 
         /* Modal */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 2000;
-            display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(5px);
-        }
-        .modal {
-            background: var(--bg-panel); padding: 30px; border-radius: 16px;
-            width: 90%; max-width: 400px; border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal { background: var(--bg-panel); padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
 
         /* Notification */
-        .notification {
-            position: fixed; bottom: 20px; right: 20px;
-            background: var(--bg-card); padding: 15px 25px;
-            border-left: 4px solid var(--primary);
-            border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transform: translateX(120%); transition: transform 0.3s ease;
-            z-index: 3000;
-        }
+        .notification { position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); padding: 15px 25px; border-left: 4px solid var(--primary); border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transform: translateX(120%); transition: transform 0.3s ease; z-index: 3000; }
         .notification.show { transform: translateX(0); }
         .notification.error { border-color: var(--danger); }
         .notification.success { border-color: var(--success); }
@@ -236,17 +121,11 @@
         .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-top: 15px; }
         .badge-item { background: var(--bg-dark); padding: 10px; border-radius: 8px; text-align: center; font-size: 24px; border: 1px solid var(--border); }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; padding: 20px; }
             .sidebar { width: 60px; }
         }
     </style>
-    
 </head>
 <body>
 
@@ -276,7 +155,12 @@
 
         <div id="dashboard-view">
             <header>
-                <h1>Mein Konto</h1>
+                <div class="flex items-center gap-4">
+                    <a href="../index.html" class="text-slate-400 hover:text-white transition-colors" title="Zurück">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    </a>
+                    <h1>Mein Konto</h1>
+                </div>
                 <button class="action-btn btn-danger" style="width: auto; padding: 8px 16px; font-size: 0.9rem;" onclick="handleLogout()">Ausloggen</button>
             </header>
 
@@ -310,6 +194,7 @@
                         <button class="tab-btn" onclick="switchTab('danger')">Gefahrenzone</button>
                     </nav>
 
+                    <!-- TAB 1: ÜBERSICHT -->
                     <div id="tab-overview" class="tab-content active">
                         <div class="settings-section">
                             <h3>👤 Profil anpassen</h3>
@@ -344,9 +229,44 @@
                         </div>
                     </div>
 
+                    <!-- TAB 2: SICHERHEIT -->
                     <div id="tab-security" class="tab-content">
                         
-                        <!-- NEU: Passkey Sektion -->
+                        <!-- OAuth Sektion (Google & GitHub) -->
+                        <div class="settings-section bg-slate-900 border-slate-700">
+                            <h3>🔗 Verknüpfte Konten</h3>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                                Verbinde dein Limazon-Konto mit Drittanbietern für einen sicheren 1-Klick-Login.
+                            </p>
+                            
+                            <div class="flex flex-col gap-3">
+                                <!-- Google -->
+                                <div class="flex items-center justify-between bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                                        <div>
+                                            <div class="text-sm font-bold text-white">Google</div>
+                                            <div class="text-xs text-slate-500" id="status-google">Lade...</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-google" class="px-4 py-2 text-xs font-bold rounded-lg transition-colors"></button>
+                                </div>
+
+                                <!-- GitHub -->
+                                <div class="flex items-center justify-between bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+                                        <div>
+                                            <div class="text-sm font-bold text-white">GitHub</div>
+                                            <div class="text-xs text-slate-500" id="status-github">Lade...</div>
+                                        </div>
+                                    </div>
+                                    <button id="btn-github" class="px-4 py-2 text-xs font-bold rounded-lg transition-colors"></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Passkey Sektion -->
                         <div class="settings-section" style="border-left: 4px solid var(--success);">
                             <h3>🛡️ Passkeys (WebAuthn)</h3>
                             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
@@ -357,7 +277,7 @@
                             </button>
                         </div>
 
-                        <!-- NEU: Wiederherstellungs-E-Mail Sektion -->
+                        <!-- Wiederherstellungs-E-Mail -->
                         <div class="settings-section">
                             <h3>📧 Wiederherstellungs-E-Mail</h3>
                             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
@@ -370,8 +290,9 @@
                             </div>
                         </div>
 
+                        <!-- Klassische Zugangsdaten -->
                         <div class="settings-section">
-                            <h3>🔑 Zugangsdaten</h3>
+                            <h3>🔑 Klassische Zugangsdaten</h3>
                             <div class="form-group">
                                 <label>Benutzernamen ändern</label>
                                 <input type="text" id="new-username" placeholder="Neuer Username" style="margin-bottom: 10px;">
@@ -414,6 +335,7 @@
                         </div>
                     </div>
 
+                    <!-- TAB 3: GEFAHRENZONE -->
                     <div id="tab-danger" class="tab-content">
                         <div class="settings-section" style="border-color: var(--danger);">
                             <h3 style="color: var(--danger);">⚠️ Account löschen</h3>
@@ -452,6 +374,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderSidebar();
             checkAuth();
+            
+            // Checken ob wir nach einem OAuth Redirect hier gelandet sind
+            const urlParams = new URLSearchParams(window.location.search);
+            const err = urlParams.get('error');
+            const suc = urlParams.get('success');
+            if(err === 'already_linked') showNotify("Dieses Konto ist bereits mit einem anderen Limazon Account verknüpft!", "error");
+            if(suc === 'linked') showNotify("Konto erfolgreich verknüpft!", "success");
+            
+            // URL aufräumen
+            if(err || suc) window.history.replaceState({}, document.title, window.location.pathname);
         });
 
         // --- AUTH LOGIC ---
@@ -546,6 +478,54 @@
                 });
         }
 
+        // --- OAUTH LOGIK FÜR ACCOUNT TAB ---
+        function renderOAuthButtons() {
+            setupOAuthBtn('google', currentUser.hasGoogle);
+            setupOAuthBtn('github', currentUser.hasGithub);
+        }
+
+        function setupOAuthBtn(provider, isLinked) {
+            const statusEl = document.getElementById(`status-${provider}`);
+            const btnEl = document.getElementById(`btn-${provider}`);
+            
+            if (isLinked) {
+                statusEl.textContent = "Verbunden";
+                statusEl.className = "text-xs font-bold text-green-400";
+                btnEl.textContent = "Trennen";
+                btnEl.className = "px-4 py-2 text-xs font-bold rounded-lg border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors";
+                btnEl.onclick = () => unlinkOAuth(provider);
+            } else {
+                statusEl.textContent = "Nicht verbunden";
+                statusEl.className = "text-xs text-slate-500";
+                btnEl.textContent = "Verknüpfen";
+                btnEl.className = "px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors shadow-lg";
+                btnEl.onclick = () => window.location.href = `${API_BASE}/api/auth/${provider}`;
+            }
+        }
+
+        async function unlinkOAuth(provider) {
+            if(!confirm(`Möchtest du die Verbindung zu ${provider} wirklich aufheben?`)) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/oauth-unlink`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showNotify(data.message, "success");
+                    // Update lokales Objekt und UI
+                    if (provider === 'google') currentUser.hasGoogle = false;
+                    if (provider === 'github') currentUser.hasGithub = false;
+                    renderOAuthButtons();
+                } else {
+                    showNotify(data.error, "error");
+                }
+            } catch(e) { showNotify("Fehler beim Trennen.", "error"); }
+        }
+
         // --- PASSKEYS (WebAuthn) LOGIC ---
         const { startRegistration } = SimpleWebAuthnBrowser;
 
@@ -555,31 +535,22 @@
             btn.innerText = "Warte auf Gerät...";
 
             try {
-                // 1. Optionen vom Server holen
                 const resp = await fetch(`${API_BASE}/api/webauthn/register-options`, { credentials: 'include', method: 'POST' });
                 const options = await resp.json();
 
-                if (options.error) {
-                    throw new Error(options.error);
-                }
+                if (options.error) throw new Error(options.error);
 
-                // 2. Browser Fingerabdruck / FaceID aufrufen
                 let attResp;
                 try {
                     attResp = await startRegistration(options);
                 } catch (error) {
-                    if (error.name === 'InvalidStateError') {
-                        throw new Error('Fehler: Dieses Gerät ist bereits registriert.');
-                    }
+                    if (error.name === 'InvalidStateError') throw new Error('Fehler: Dieses Gerät ist bereits registriert.');
                     throw error;
                 }
 
-                // 3. Verifizierung an den Server senden
                 const verificationResp = await fetch(`${API_BASE}/api/webauthn/register-verify`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(attResp),
-                    credentials: 'include'
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(attResp), credentials: 'include'
                 });
 
                 const verificationJSON = await verificationResp.json();
@@ -598,7 +569,6 @@
         }
 
         // --- SIDEBAR & SWITCHING ---
-
         function renderSidebar() {
             const sidebar = document.getElementById('account-sidebar');
             sidebar.innerHTML = '';
@@ -679,7 +649,6 @@
         }
 
         // --- DASHBOARD UI ---
-
         function formatNumber(num, isMoney = false) {
             if (num > 1000000000000) return (isMoney ? '$' : '') + (num / 1000000000000).toFixed(2) + ' Bio.';
             if (num > 1000000000) return (isMoney ? '$' : '') + (num / 1000000000).toFixed(2) + ' Mrd.';
@@ -737,10 +706,12 @@
             } else {
                 badgeContainer.innerHTML = '<p style="color:var(--text-muted)">Keine Abzeichen.</p>';
             }
+
+            // Neu: OAuth Render
+            renderOAuthButtons();
         }
 
         // --- ACTIONS ---
-
         async function saveProfileSettings() {
             const bio = document.getElementById('settings-bio').value;
             const isPublic = document.getElementById('settings-public-inv').checked;
@@ -810,9 +781,7 @@
                     const errData = await res.json();
                     showNotify(errData.error || "Fehler beim Ändern", "error");
                 }
-            } catch(e) { 
-                showNotify("Serverfehler", "error"); 
-            }
+            } catch(e) { showNotify("Serverfehler", "error"); }
         }
 
         async function changePassword() {
@@ -851,10 +820,8 @@
 
             try {
                 const res = await fetch(`${API_BASE}/api/account/me`, {
-                    method: 'DELETE', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: pw }), 
-                    credentials: 'include'
+                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pw }), credentials: 'include'
                 });
                 
                 if(res.ok) {
@@ -866,9 +833,7 @@
                     const data = await res.json();
                     showNotify(data.error || "Fehler beim Löschen", "error");
                 }
-            } catch(e) { 
-                showNotify("Netzwerkfehler", "error"); 
-            }
+            } catch(e) { showNotify("Netzwerkfehler", "error"); }
         }
 
         // --- DSGVO EXPORT & VISUALIZER ---
@@ -876,24 +841,16 @@
             try {
                 showNotify("Export wird generiert... Bitte warten.", "info");
                 const res = await fetch(`${API_BASE}/api/account/export`, { credentials: 'include' });
-                
                 if (res.ok) {
                     const blob = await res.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `limazon_export_${currentUser.username}_${Date.now()}.json`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
+                    a.href = url; a.download = `limazon_export_${currentUser.username}_${Date.now()}.json`;
+                    document.body.appendChild(a); a.click(); a.remove();
                     window.URL.revokeObjectURL(url);
                     showNotify("Download erfolgreich gestartet!", "success");
-                } else {
-                    showNotify("Fehler beim Erstellen des Exports.", "error");
-                }
-            } catch(e) {
-                showNotify("Netzwerkfehler beim Export.", "error");
-            }
+                } else { showNotify("Fehler beim Erstellen des Exports.", "error"); }
+            } catch(e) { showNotify("Netzwerkfehler beim Export.", "error"); }
         }
 
         document.getElementById('import-file').addEventListener('change', function(e) {
@@ -916,7 +873,6 @@
                             <h3 style="color: var(--accent); margin: 0;">Akte: ${prof.username || 'Unbekannt'}</h3>
                             <span style="font-size: 0.8rem; color: var(--text-muted);">Export vom: ${new Date(meta.exportedAt).toLocaleDateString('de-DE')}</span>
                         </div>
-                        
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px;">FINANZEN</p>
@@ -932,7 +888,6 @@
                                 <p><strong>Admin-Status:</strong> ${prof.isAdmin ? 'Ja 🛡️' : 'Nein'}</p>
                             </div>
                         </div>
-
                         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px;">
                             <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px;">BESITZTÜMER</p>
                             <span style="margin-right: 15px;">📦 Items: <strong>${(assets.inventory || []).length}</strong></span>

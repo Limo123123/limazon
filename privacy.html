@@ -3,60 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Limazon - Privacy Policy & Terms</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Limazon - Privacy Policy</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow-x: hidden; }
+        .glass-panel { background: rgba(20, 20, 25, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .pattern-grid { background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.05) 1px, transparent 1px); background-size: 60px 60px; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans antialiased min-h-screen p-6 md:p-12">
-    
-    <div class="max-w-3xl mx-auto bg-slate-800/50 border border-slate-700 p-8 rounded-2xl shadow-xl">
-        <div class="flex items-center gap-3 mb-8 border-b border-slate-700 pb-4">
-            <span class="text-3xl">🛡️</span>
-            <h1 class="text-2xl font-bold text-white tracking-tight">Limazon Privacy Policy & Terms of Service</h1>
+<body class="min-h-screen selection:bg-blue-500 selection:text-white relative py-12">
+
+    <!-- Background Effects -->
+    <div class="fixed inset-0 z-[-1]">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute inset-0 pattern-grid opacity-20"></div>
+    </div>
+
+    <div class="max-w-3xl mx-auto glass-panel p-8 md:p-12 rounded-3xl shadow-2xl border border-gray-800">
+        
+        <div class="flex items-center gap-4 mb-10 border-b border-gray-800 pb-6">
+            <div class="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-2xl">
+                🛡️
+            </div>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">Privacy Policy & Terms</h1>
+                <p class="text-sm text-gray-500 mt-1">Limazon.Universe</p>
+            </div>
         </div>
 
-        <div class="space-y-6 text-sm leading-relaxed">
+        <div class="space-y-8 text-sm leading-relaxed text-gray-300">
+            
             <section>
-                <h2 class="text-lg font-semibold text-blue-400 mb-2">1. About this Project</h2>
-                <p>Limazon.Universe is a closed, invite-only, non-commercial multiplayer web game. This service is strictly private. All in-game currencies, clans, properties, and services have zero real-world value.</p>
+                <h2 class="text-lg font-bold text-blue-400 mb-2 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 1. About this Project
+                </h2>
+                <p class="pl-3.5 border-l border-gray-800">
+                    Limazon.Universe is a closed, invite-only, non-commercial multiplayer web game. This service is strictly private. All in-game currencies, properties, businesses, and services are fictional and possess zero real-world value.
+                </p>
             </section>
 
             <section>
-                <h2 class="text-lg font-semibold text-blue-400 mb-2">2. Data Collection (OAuth)</h2>
-                <p>If you choose to log in using a third-party provider (like Google or GitHub), we request only the most basic information required for authentication:</p>
-                <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-400">
-                    <li>Your email address (to uniquely identify your account and prevent duplicates).</li>
-                    <li>Your public profile name (used as your default in-game username).</li>
+                <h2 class="text-lg font-bold text-blue-400 mb-2 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 2. Data Collection (OAuth)
+                </h2>
+                <p class="pl-3.5 border-l border-gray-800">
+                    If you choose to authenticate using a third-party provider (such as Google or GitHub), our application securely requests only the most basic information required for account creation and login:
+                </p>
+                <ul class="list-disc pl-8 mt-3 space-y-2 text-gray-400">
+                    <li><strong>Email Address:</strong> Used to uniquely identify your account, prevent duplicates, and serve as a fallback for account recovery.</li>
+                    <li><strong>Public Profile Name:</strong> Used solely to generate your initial in-game character alias.</li>
                 </ul>
             </section>
 
             <section>
-                <h2 class="text-lg font-semibold text-blue-400 mb-2">3. Data Usage & Protection</h2>
-                <p>Your email address is securely stored in our private database and is used <strong>exclusively</strong> for authentication purposes and critical account recovery. We do not sell, rent, or share your personal data with any third parties, advertising networks, or analytics companies.</p>
-            </section>
-
-            <section>
-                <h2 class="text-lg font-semibold text-blue-400 mb-2">4. User Content</h2>
-                <p>Any content uploaded or created within the game (text, images, videos, in-game chats) is stored on our servers to provide the multiplayer experience. Since this is a private project, server administrators reserve the right to delete any content or ban accounts that violate our community guidelines.</p>
-            </section>
-
-            <section>
-                <h2 class="text-lg font-semibold text-blue-400 mb-2">5. Right to Deletion</h2>
-                <p>You have the right to delete your account at any time. A self-service deletion option is available in the account settings. Upon deletion, your account data, including your linked email address, will be permanently erased from our active databases.</p>
-            </section>
-
-            <div class="mt-8 pt-6 border-t border-slate-700 text-xs text-slate-500">
-                <p>Last updated: October 2026</p>
-                <p class="mt-2">Contact: If you have any questions, please contact the server administrator at 
-                    <a href="mailto:tfl@toens.net" class="text-blue-400 hover:text-blue-300 underline transition-colors font-medium">tfl@toens.net</a>.
+                <h2 class="text-lg font-bold text-blue-400 mb-2 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 3. Data Usage & Protection
+                </h2>
+                <p class="pl-3.5 border-l border-gray-800">
+                    Your email address is securely stored in our private database and is used <strong>exclusively</strong> for authentication purposes. We absolutely <strong>do not</strong> sell, rent, trade, or share your personal data with any third parties, advertising networks, or analytics companies. Your data stays within the Limazon ecosystem.
                 </p>
-            </div>
-            
-            <div class="mt-6">
-                <a href="/index.html" class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors font-medium">
-                    &larr; Zurück zum Spiel
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-blue-400 mb-2 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 4. User Content & Rules
+                </h2>
+                <p class="pl-3.5 border-l border-gray-800">
+                    Any content uploaded or created within the game (text, images, in-game chats, social media posts) is stored on our servers to provide the multiplayer experience. Since this is a private environment, server administrators reserve the right to delete any content or terminate accounts that violate our community guidelines or abuse the system.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-blue-400 mb-2 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 5. Right to Deletion (GDPR)
+                </h2>
+                <p class="pl-3.5 border-l border-gray-800">
+                    You have full control over your data. A self-service "Delete Account" option is available directly within the game's account settings (Danger Zone). Executing this action will permanently and irreversibly erase your account, email address, linked OAuth IDs, and all associated game assets from our active databases.
+                </p>
+            </section>
+
+            <!-- Footer / Contact -->
+            <div class="mt-12 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Contact Administrator</p>
+                    <a href="mailto:tfl@toens.net" class="text-blue-400 hover:text-blue-300 transition-colors font-mono text-sm bg-blue-500/10 px-3 py-1.5 rounded-md border border-blue-500/20">
+                        tfl@toens.net
+                    </a>
+                </div>
+                
+                <a href="/index.html" class="inline-flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 px-5 rounded-lg transition-colors border border-gray-700">
+                    Zurück zum Portal
                 </a>
             </div>
+
         </div>
     </div>
 
