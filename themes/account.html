@@ -494,6 +494,7 @@
         function renderOAuthButtons() {
             setupOAuthBtn('google', currentUser.hasGoogle);
             setupOAuthBtn('github', currentUser.hasGithub);
+            setupOAuthBtn('discord', currentUser.hasDiscord);
         }
 
         function setupOAuthBtn(provider, isLinked) {
