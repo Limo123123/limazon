@@ -531,6 +531,7 @@
                     // Update lokales Objekt und UI
                     if (provider === 'google') currentUser.hasGoogle = false;
                     if (provider === 'github') currentUser.hasGithub = false;
+                    if (provider === 'discord') currentUser.hasDiscord = false;
                     renderOAuthButtons();
                 } else {
                     showNotify(data.error, "error");
