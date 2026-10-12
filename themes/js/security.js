@@ -160,7 +160,7 @@ async function enforceLogin() {
     const currentPath = window.location.pathname;
     
     // Verhindert eine Endlosschleife / Redirect auf öffentlichen Seiten (Login & Passwort-Reset)
-    if (currentPath === '/' || currentPath === '/index.html' || currentPath.includes('reset-password.html')) {
+    if (currentPath === '/' || currentPath === '/index.html' || currentPath === '/themes/oauth-register.html' || currentPath.includes('reset-password.html')) {
         return; 
     }
 

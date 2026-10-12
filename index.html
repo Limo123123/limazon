@@ -348,6 +348,13 @@
                     Identität registrieren
                 </button>
             </form>
+
+            <!-- NEU: DYNAMISCHER SUPPORT LINK -->
+            <div class="mt-6 text-center border-t border-gray-800 pt-4">
+                <a id="globalSupportLink" href="#" class="text-[11px] text-gray-500 hover:text-white transition-colors flex items-center justify-center gap-1.5">
+                    <span>✉️</span> Probleme? Support kontaktieren
+                </a>
+            </div>
         </div>
     </div>
 
@@ -1272,6 +1279,10 @@
                 const activeTab = sessionStorage.getItem('active_auth_tab') || 'login';
                 switchTab(activeTab);
             }
+
+            // Setze den globalen Support-Link aus der config.js
+            const supportEmails = window.LIMO_INVITE_EMAILS || ["support@limazon.de"];
+            document.getElementById('globalSupportLink').href = `mailto:${supportEmails[1]}?subject=Support Anfrage (Limazon)&body=Hallo Support-Team,%0A%0Amein Anliegen / mein Sperr-Code lautet: `;
         });
 
         // --- OAUTH REDIRECT LOGIC ---

@@ -172,6 +172,7 @@
             <a onclick="switchTab('products')" id="nav-products" class="sidebar-link whitespace-nowrap">🛒 Produkte</a>
             <a onclick="switchTab('invites')" id="nav-invites" class="sidebar-link whitespace-nowrap">🔑
                 Invite-Codes</a>
+            <a onclick="switchTab('banned')" id="nav-banned" class="sidebar-link text-orange-400 hover:text-orange-300 whitespace-nowrap">🚫 Sperr-Akte</a>
             <a onclick="switchTab('system')" id="nav-system"
                 class="sidebar-link text-red-400 hover:text-red-300 whitespace-nowrap">⚙️ System & Notfall</a>
             <a onclick="switchTab('instances')" id="nav-instances"
@@ -274,6 +275,37 @@
                         id="invite-list">
                         <!-- Codes werden hier per JS eingefügt -->
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: SPERR-AKTE (BANNED USERS) -->
+        <div id="tab-banned" class="hidden space-y-6 fade-in">
+            <h2 class="text-3xl font-bold text-orange-500">Sperr-Akte & Support</h2>
+            <p class="text-slate-400">Hier landen alle User, die global oder von der Tinda-KI gebannt wurden.</p>
+
+            <div class="content-card border-orange-900/50">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-orange-400">🚨 Gesperrte Nutzer</h3>
+                    <button onclick="loadBannedUsers()" class="btn bg-slate-800 text-white hover:bg-slate-700 text-sm">
+                        🔄 Aktualisieren
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="text-xs uppercase bg-slate-900/50 text-slate-400 border-b border-slate-700">
+                            <tr>
+                                <th class="px-4 py-3">User</th>
+                                <th class="px-4 py-3">Typ</th>
+                                <th class="px-4 py-3">Referenz-Code</th>
+                                <th class="px-4 py-3">Beweis (Chat)</th>
+                                <th class="px-4 py-3 text-right">Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bannedUsersTableBody">
+                            <tr><td colspan="5" class="p-4 text-center">Lade Daten...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -658,6 +690,7 @@
             document.getElementById('tab-invites').classList.add('hidden');
             document.getElementById('tab-system').classList.add('hidden');
             document.getElementById('tab-instances').classList.add('hidden');
+            document.getElementById('tab-banned').classList.add('hidden'); // <-- NEU
 
             // Ausgewählten Tab anzeigen
             document.getElementById('tab-' + id).classList.remove('hidden');
@@ -669,6 +702,9 @@
             if (id === 'system') {
                 refreshHealth();
                 loadModules();
+            }
+            if (id === 'banned') {
+                loadBannedUsers();
             }
             loadInstanceRequests();
         }
@@ -1294,6 +1330,67 @@
                 const data = await res.json();
                 alert(data.message);
             } catch (e) { alert("Fehler beim Speichern der Module."); }
+        }
+
+        // ========================
+        // === SPERR-AKTE (BANNED) ===
+        // ========================
+        async function loadBannedUsers() {
+            const tbody = document.getElementById('bannedUsersTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center">Lade Daten...</td></tr>';
+
+            try {
+                const res = await fetch(API + '/api/admin/banned-users', { credentials: 'include' });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500 font-bold">${data.error || 'Zugriff verweigert'}</td></tr>`;
+                    return;
+                }
+
+                if (!data.bannedUsers || data.bannedUsers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Aktuell keine gesperrten Nutzer. Sehr brav!</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.bannedUsers.map(user => {
+                    const isGlobal = user.isDeactivated;
+                    const typeHtml = isGlobal 
+                        ? '<span class="px-2 py-1 bg-red-900/50 text-red-400 rounded text-[10px] font-bold uppercase border border-red-700/50">Global Bann</span>' 
+                        : '<span class="px-2 py-1 bg-orange-900/50 text-orange-400 rounded text-[10px] font-bold uppercase border border-orange-700/50">Tinda Sperre</span>';
+                    
+                    const context = user.tindaBanContext ? `"${user.tindaBanContext}"` : '-';
+                    const code = user.banReference || 'Kein Code';
+
+                    return `
+                        <tr class="border-b border-slate-800 hover:bg-slate-800/50">
+                            <td class="px-4 py-3 font-bold">${user.username}</td>
+                            <td class="px-4 py-3">${typeHtml}</td>
+                            <td class="px-4 py-3 font-mono text-cyan-400 text-xs">${code}</td>
+                            <td class="px-4 py-3 italic text-slate-400 text-xs max-w-xs truncate" title='${context.replace(/'/g, "&apos;")}'>${context}</td>
+                            <td class="px-4 py-3 text-right">
+                                ${!isGlobal ? `<button onclick="unbanTinda('${user._id}')" class="btn bg-green-600/20 text-green-400 hover:bg-green-600/40 text-xs border border-green-500/30">Entsperren</button>` : '<span class="text-xs text-slate-600">Nutze User-Edit</span>'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500">Netzwerkfehler!</td></tr>';
+            }
+        }
+
+        async function unbanTinda(userId) {
+            if (!confirm("Sicher, dass du diesen User für Tinda entsperren willst? Er fängt dann bei 0 Strikes an.")) return;
+            try {
+                const res = await fetch(`${API}/api/admin/users/${userId}/unban-tinda`, {
+                    method: 'POST', credentials: 'include'
+                });
+                const data = await res.json();
+                alert(data.message || data.error);
+                loadBannedUsers(); // Aktualisiert die Tabelle
+            } catch (e) {
+                alert("Fehler beim Entsperren.");
+            }
         }
     </script>
 </body>
