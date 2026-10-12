@@ -3,9 +3,9 @@
 
 <head>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <script src="/themes/js/config.js?v=1791228325"></script>
-    <script src="/themes/js/security.js?v=1791228325"></script>
-    <script src="/themes/js/limo-global.js?v=1791228325" data-page="index"></script>
+    <script src="/themes/js/config.js?v=1791832815"></script>
+    <script src="/themes/js/security.js?v=1791832815"></script>
+    <script src="/themes/js/limo-global.js?v=1791832815" data-page="index"></script>
     <!-- SimpleWebAuthn Browser Script für Passkeys -->
     <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
 
@@ -302,54 +302,53 @@
                     class="w-full mt-2 py-3 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-xl transition-all active:scale-95 border border-gray-700 flex items-center justify-center gap-2 shadow-sm text-sm">
                     <span class="text-xl">🛡️</span> Passkey
                 </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-3.5">
+                <div class="relative">
+                    <label
+                        class="text-[10px] uppercase font-bold text-gray-500 mb-1 block tracking-wider">Server-Instanz</label>
+                    <select onchange="switchInstance(this.value)"
+                        class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer text-sm">
+                        <option value="https://limazon.slimo.dev">Hauptserver</option>
+                        <option value="https://api-liz-test.slimo.dev">Testserver</option>
+                    </select>
+                    <span class="absolute right-4 top-[32px] pointer-events-none text-gray-500 text-xs">▼</span>
+                </div>
+                <div>
+                    <input type="text" id="regUsername" required placeholder="Benutzername (Min. 3 Zeichen)"
+                        class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none text-sm">
+                </div>
+                <div>
+                    <input type="email" id="regEmail" placeholder="E-Mail-Adresse (Optional)"
+                        class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none text-sm">
+                </div>
+                <div>
+                    <input type="password" id="regPassword" required placeholder="Passwort (Min. 6 Zeichen)"
+                        class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none text-sm">
+                </div>
+                <div>
+                    <input type="text" id="regInviteCode" required placeholder="Invite Code (z.B. INV-...)"
+                        class="w-full px-4 py-3 bg-gray-900/50 border border-blue-500/50 rounded-xl text-white input-glow focus:outline-none text-sm"
+                        style="box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1);">
+                    <p class="text-[10px] text-gray-500 mt-1 ml-1">Exklusiver Zugangscode erforderlich.</p>
+                </div>
+
+                <!-- DYNAMISCHE E-MAIL BOX -->
+                <div id="inviteHelpBox" class="hidden p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-blue-200 space-y-2">
+                    <p class="font-bold flex items-center gap-1.5 text-blue-400"><span>💡</span> Invite Code benötigt</p>
+                    <p class="text-gray-300">Schreibe uns eine E-Mail mit einem guten Grund, warum du mitspielen möchtest:</p>
+                    <!-- Hier werden die E-Mails per JS reingeladen -->
+                    <div id="inviteEmailList" class="flex flex-col gap-1.5 mt-1"></div>
+                </div>
+
+                <button type="submit" id="regBtn"
+                    class="w-full mt-2 py-3.5 bg-purple-600 hover:bg-purple-500 font-bold rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(168,85,247,0.4)] text-sm">
+                    Identität registrieren
+                </button>
+            </form>
         </div>
-        </form>
-
-        <!-- Register Form -->
-        <form id="registerForm" onsubmit="handleRegister(event)" class="hidden space-y-3.5">
-            <div class="relative">
-                <label
-                    class="text-[10px] uppercase font-bold text-gray-500 mb-1 block tracking-wider">Server-Instanz</label>
-                <select onchange="switchInstance(this.value)"
-                    class="instance-select w-full px-4 py-3 bg-gray-900/50 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.1)] rounded-xl text-white input-glow focus:outline-none appearance-none cursor-pointer text-sm">
-                    <option value="https://limazon.slimo.dev">Hauptserver</option>
-                    <option value="https://api-liz-test.slimo.dev">Testserver</option>
-                </select>
-                <span class="absolute right-4 top-[32px] pointer-events-none text-gray-500 text-xs">▼</span>
-            </div>
-            <div>
-                <input type="text" id="regUsername" required placeholder="Benutzername (Min. 3 Zeichen)"
-                    class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none text-sm">
-            </div>
-            <div>
-                <input type="email" id="regEmail" placeholder="E-Mail-Adresse (Optional)"
-                    class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none text-sm">
-            </div>
-            <div>
-                <input type="password" id="regPassword" required placeholder="Passwort (Min. 6 Zeichen)"
-                    class="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white input-glow focus:outline-none text-sm">
-            </div>
-            <div>
-                <input type="text" id="regInviteCode" required placeholder="Invite Code (z.B. INV-...)"
-                    class="w-full px-4 py-3 bg-gray-900/50 border border-blue-500/50 rounded-xl text-white input-glow focus:outline-none text-sm"
-                    style="box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1);">
-                <p class="text-[10px] text-gray-500 mt-1 ml-1">Exklusiver Zugangscode erforderlich.</p>
-            </div>
-
-            <div id="inviteHelpBox"
-                class="hidden p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-blue-200 space-y-1.5">
-                <p class="font-bold flex items-center gap-1.5 text-blue-400"><span>💡</span> Invite Code benötigt</p>
-                <p class="text-gray-300">Schreibe uns eine E-Mail mit einem guten Grund, warum du mitspielen möchtest.
-                </p>
-                <a id="inviteEmailLink" href="#"
-                    class="inline-block font-mono bg-blue-600/30 text-blue-300 px-2.5 py-1 rounded border border-blue-500/40 hover:bg-blue-600/50 mt-1"></a>
-            </div>
-
-            <button type="submit" id="regBtn"
-                class="w-full mt-2 py-3.5 bg-purple-600 hover:bg-purple-500 font-bold rounded-xl transition-all active:scale-95 shadow-[0_0_20px_rgba(168,85,247,0.4)] text-sm">
-                Identität registrieren
-            </button>
-        </form>
     </div>
 
     <!-- PASSWORT VERGESSEN MODAL -->
@@ -1466,10 +1465,21 @@
                     setTimeout(() => switchTab('login'), 3000);
                 } else {
                     if (data.error === 'MISSING_INVITE' || data.error === 'INVALID_INVITE') {
-                        const supportEmail = window.LIMO_INVITE_EMAIL || 'support@limazon.de';
-                        const emailLink = document.getElementById('inviteEmailLink');
-                        emailLink.textContent = supportEmail;
-                        emailLink.href = `mailto:${supportEmail}?subject=Invite%20Code%20Anfrage%20f%C3%BCr%20Limazon&body=Hallo,%0A%0Aich%20möchte%20gerne%20Teil%20von%20Limazon%20werden.%0A%0AGrund:%20`;
+                        // Greife auf das Array aus der config.js zu (Fallback falls nicht definiert)
+                        const emails = window.LIMO_INVITE_EMAILS || ['support@limazon.de'];
+                        const emailListContainer = document.getElementById('inviteEmailList');
+                        
+                        // Container leeren, falls der Button mehrmals geklickt wird
+                        emailListContainer.innerHTML = '';
+                        
+                        // Für jede E-Mail einen Button/Link generieren
+                        emails.forEach(email => {
+                            const a = document.createElement('a');
+                            a.href = `mailto:${email}?subject=Invite%20Code%20Anfrage%20f%C3%BCr%20Limazon&body=Hallo,%0A%0Aich%20möchte%20gerne%20Teil%20von%20Limazon%20werden.%0A%0AGrund:%20`;
+                            a.className = "inline-block font-mono bg-blue-600/30 text-blue-300 px-3 py-2 rounded-lg border border-blue-500/40 hover:bg-blue-600/50 hover:text-white transition-all text-center flex-1";
+                            a.textContent = email;
+                            emailListContainer.appendChild(a);
+                        });
 
                         inviteHelpBox.classList.remove('hidden');
                         showMessage(data.message || "Ungültiger oder fehlender Invite-Code.", true);

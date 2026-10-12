@@ -46,7 +46,7 @@ def patch_html_files(directory="."):
             head_injections = (
                 f'<link rel="icon" type="image/svg+xml" href="/favicon.svg">\n    '
                 f'<script src="/themes/js/config.js?v={current_time}"></script>\n    '
-                #f'<script src="/themes/js/security.js?v={current_time}"></script>\n    '
+                f'<script src="/themes/js/security.js?v={current_time}"></script>\n    '
                 f'<script src="/themes/js/limo-global.js?v={current_time}" data-page="{page_name}"></script>'
             )
 
