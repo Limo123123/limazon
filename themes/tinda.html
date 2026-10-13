@@ -2,9 +2,9 @@
 <html lang="de">
 <head>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <script src="/themes/js/config.js?v=1791832815"></script>
-    <script src="/themes/js/security.js?v=1791832815"></script>
-    <script src="/themes/js/limo-global.js?v=1791832815" data-page="tinda"></script>
+    <script src="/themes/js/config.js?v=1791921890"></script>
+    <script src="/themes/js/security.js?v=1791921890"></script>
+    <script src="/themes/js/limo-global.js?v=1791921890" data-page="tinda"></script>
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -146,10 +146,20 @@
 <body>
 
     <header>
-        <button class="nav-btn" style="font-size: 1.2rem;" onclick="window.location.href='/themes/family-dashboard.html'" title="Familie">👨‍👩‍👧‍👦</button>
-        <button class="nav-btn" onclick="showMatches()" title="Chats">💬</button>
+        <div style="display:flex; gap:15px; width:80px;">
+            <button class="nav-btn" style="font-size: 1.2rem;" onclick="window.location.href='/themes/family-dashboard.html'" title="Familie">👨‍👩‍👧‍👦</button>
+            <button class="nav-btn" onclick="showMatches()" title="Chats">💬</button>
+        </div>
+        
         <div class="logo">🔥 Tinda</div>
-        <button class="nav-btn active" onclick="showSwipe()" title="Swipen">🔥</button>
+        
+        <div style="display:flex; gap:15px; width:80px; justify-content:flex-end;">
+            <button class="nav-btn active" onclick="showSwipe()" title="Swipen">🔥</button>
+            <button class="nav-btn" onclick="showTindaStatus()" title="Profil & Status" style="position:relative; font-size: 1.2rem;">
+                👤
+                <span id="strike-badge" style="display:none; position:absolute; top:-5px; right:-8px; background:#ff4458; color:white; font-size:0.6rem; font-weight:bold; border-radius:50%; width:16px; height:16px; line-height:16px; text-align:center;"></span>
+            </button>
+        </div>
     </header>
 
     <main>
@@ -203,9 +213,38 @@
         </div>
     </div>
 
+    <!-- Tinda Status & Strikes Menü -->
+    <div id="tinda-status-overlay" class="overlay">
+        <div class="match-popup" style="background: var(--card-bg); border: 1px solid #333; transform: none; text-align: left; padding: 30px; width: 90%; max-width: 400px; border-radius: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: white; font-size: 1.5rem;">Mein Profil</h2>
+                <button onclick="closeTindaStatus()" style="background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer;">✖</button>
+            </div>
+            
+            <p style="color: #aaa; margin-bottom: 20px;">Angemeldet als: <b id="tinda-username" style="color: white;">...</b></p>
+            
+            <div style="background: #111; padding: 20px; border-radius: 12px; border: 1px solid #333;">
+                <h3 style="margin: 0 0 10px 0; color: #ff4458; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+                    <span>🚨</span> Verwarnungen
+                </h3>
+                <p style="margin: 0 0 10px 0; color: #ddd; font-size: 0.95rem;">
+                    Strikes: <strong id="tinda-strike-count">0</strong> / 3
+                </p>
+                
+                <div style="width: 100%; background: #222; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 15px;">
+                    <div id="tinda-strike-bar" style="width: 0%; background: #ff4458; height: 100%; transition: width 0.5s ease;"></div>
+                </div>
+                
+                <p style="font-size: 0.8rem; color: #888; line-height: 1.4; margin: 0;">
+                    Bei 3 Strikes wird dein Tinda-Konto dauerhaft gesperrt. Wir tolerieren hier keine toxischen Beleidigungen oder sexuelle Belästigungen!
+                </p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- CONFIG ---
-        const BACKEND_URL = window.LIMO_API + ``; // URL ANPASSEN falls nötig
+        const BACKEND_URL = window.LIMO_API + ``;
 
         let stack = [];
         let currentCard = null;
@@ -228,8 +267,24 @@
         // --- SWIPE ---
         async function loadStack() {
             const container = document.getElementById('stack-container');
+            const controls = document.querySelector('.controls');
             container.innerHTML = '<div class="loading">Lade Profile...</div>';
+            
             const data = await api('/api/tinda/stack');
+            
+            // NEU: Wenn ein Fehler (Sperre) zurückkommt, zeigen wir ihn riesig an!
+            if (data && data.error) {
+                container.innerHTML = `
+                    <div class="empty-stack" style="color: #ff4458; background: rgba(255,68,88,0.1); padding: 30px; border-radius: 20px; border: 2px solid #ff4458;">
+                        <h2 style="font-size: 3rem; margin: 0 0 10px 0;">🚨</h2>
+                        <h3 style="margin: 0 0 15px 0; color: white;">ACCOUNT GESPERRT</h3>
+                        <p style="color: #ddd;">${data.error}</p>
+                    </div>`;
+                controls.style.display = 'none'; // Buttons verstecken
+                return;
+            }
+            
+            controls.style.display = 'flex';
             if (data && data.stack) {
                 stack = data.stack;
                 renderNextCard();
@@ -285,9 +340,20 @@
         async function loadMatches() {
             const container = document.getElementById('match-list-container');
             container.innerHTML = '<div class="loading">Lade Chats...</div>';
+            
             const data = await api('/api/chat/chats');
+            
+            // NEU: Sperr-Ansicht auch hier
+            if (data && data.error) {
+                container.innerHTML = `
+                    <div style="padding: 30px; text-align: center; color: #ff4458; background: rgba(255,68,88,0.1); margin: 20px; border-radius: 15px; border: 1px solid #ff4458;">
+                        <h2 style="margin-top: 0;">🚨 Tinda Gesperrt</h2>
+                        <p>${data.error}</p>
+                    </div>`;
+                return;
+            }
+            
             if (data && data.chats) {
-                // Erlaubt nun auch Kinder- und Familienchats
                 const tindaChats = data.chats.filter(c => ['tinda', 'tinda_child', 'tinda_family'].includes(c.type));
                 
                 if (tindaChats.length === 0) {
@@ -300,24 +366,23 @@
                     let typeIcon = '';
                     let marriedIcon = chat.isMarried && chat.type === 'tinda' ? '💍' : '';
 
-                    if(chat.type === 'tinda_child') {
-                        displayName = chat.childName;
-                        typeIcon = '👶';
-                    }
-                    if(chat.type === 'tinda_family') {
-                        displayName = "Familie " + chat.tindaPartnerName;
-                        typeIcon = '👨‍👩‍👧‍👦';
-                    }
+                    if(chat.type === 'tinda_child') { displayName = chat.childName; typeIcon = '👶'; }
+                    if(chat.type === 'tinda_family') { displayName = "Familie " + chat.tindaPartnerName; typeIcon = '👨‍👩‍👧‍👦'; }
                     
                     const img = 'https://placehold.co/50x50/333/fff?text=' + displayName.charAt(0);
                     const safeName = displayName.replace(/'/g, "\\'");
+                    
+                    // NEU: Wenn der Chat blockiert ist, roter Hinweis
+                    const isBlocked = chat.lastMessagePreview.includes('Blockiert');
+                    const previewColor = isBlocked ? 'color: #ff4458; font-weight: bold;' : '';
+                    const blockIcon = isBlocked ? '🚫 ' : '';
                     
                     return `
                         <div class="match-item" onclick="openChat('${chat._id}', '${safeName}', ${!!chat.isMarried}, '${chat.type}')">
                             <img class="match-avatar" src="${img}">
                             <div class="match-info">
                                 <div class="match-name">${displayName} ${marriedIcon} ${typeIcon}</div>
-                                <div class="match-preview">${chat.lastMessagePreview || '...'}</div>
+                                <div class="match-preview" style="${previewColor}">${blockIcon}${chat.lastMessagePreview || '...'}</div>
                             </div>
                         </div>`;
                 }).join('');
@@ -474,10 +539,14 @@
                 
                 container.innerHTML = data.messages.map(msg => {
                     if (msg.isSystem) {
-                        return `<div class="message msg-system">${msg.content}</div>`;
+                        // NEU: Rote Warnbox für Banns und Blockierungen
+                        let extraStyle = '';
+                        if (msg.content.includes('🚫') || msg.content.includes('🚨')) {
+                            extraStyle = 'color: #ff4458; font-weight: bold; border: 1px solid #ff4458; background: rgba(255,68,88,0.1); border-radius: 8px; padding: 10px; text-align: left;';
+                        }
+                        return `<div class="message msg-system" style="${extraStyle}">${msg.content}</div>`;
                     }
                     const style = msg.isAi ? 'msg-other' : 'msg-me';
-                    // Bei Familienchats wird von der KI teils der Name davor geschrieben, das lassen wir einfach als Content stehen
                     return `<div class="message ${style}">${msg.content}</div>`;
                 }).join('');
                 
@@ -492,11 +561,26 @@
             
             input.value = '';
             const container = document.getElementById('messages-container');
-            container.innerHTML += `<div class="message msg-me" style="opacity:0.5">${text}</div>`;
+            
+            // Temporäre ID für das Entfernen bei Fehler
+            const tempId = 'temp-' + Date.now();
+            container.innerHTML += `<div id="${tempId}" class="message msg-me" style="opacity:0.5">${text}</div>`;
             container.scrollTop = container.scrollHeight;
             
-            await api(`/api/tinda/chat/${activeChatId}/message`, 'POST', { content: text });
-            loadMessages();
+            const res = await api(`/api/tinda/chat/${activeChatId}/message`, 'POST', { content: text });
+            
+            if (res && res.error) {
+                // Bei Fehler (z.B. Blockiert): Fake-Nachricht entfernen und warnen!
+                document.getElementById(tempId).remove();
+                alert("Fehler: " + res.error);
+                
+                // Wenn gebannt, werfen wir ihn aus dem Chat
+                if (res.error.includes("gesperrt") || res.error.includes("blockiert")) {
+                    closeChat();
+                }
+            } else {
+                loadMessages();
+            }
         }
 
         async function sendMoneyPrompt() {
@@ -555,17 +639,48 @@
             loadMatches();
         }
 
+        // --- Tinda Status Logik ---
+        async function fetchMyStrikes() {
+            const data = await api('/api/auth/me');
+            if (data) {
+                document.getElementById('tinda-username').innerText = data.username;
+                const strikes = data.tindaStrikes || 0;
+                
+                const displayStrikes = Math.min(strikes, 3);
+                document.getElementById('tinda-strike-count').innerText = displayStrikes;
+                document.getElementById('tinda-strike-bar').style.width = (displayStrikes / 3 * 100) + '%';
+                
+                const badge = document.getElementById('strike-badge');
+                if (strikes > 0 && !data.isBannedFromTinda) {
+                    badge.style.display = 'block';
+                    badge.innerText = strikes;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        function showTindaStatus() {
+            fetchMyStrikes(); // Frischt die Daten auf, wenn man klickt
+            document.getElementById('tinda-status-overlay').style.display = 'flex';
+        }
+
+        function closeTindaStatus() {
+            document.getElementById('tinda-status-overlay').style.display = 'none';
+        }
+
+        // --- ONLOAD LOGIK ---
         window.onload = async () => {
-            // URL checken: Kommen wir vom Family-Dashboard?
+            // Erstmal Strikes laden für das Badge
+            await fetchMyStrikes();
+
             const urlParams = new URLSearchParams(window.location.search);
             const autoOpenChatId = urlParams.get('chatId');
 
             if (autoOpenChatId) {
-                // Wechsel direkt in die Chat-Ansicht
                 document.getElementById('swipe-view').style.display = 'none';
                 document.getElementById('matches-view').style.display = 'flex';
                 
-                // Wir müssen kurz die Chats vom Server holen, um Namen & Typ zu kennen
                 const data = await api('/api/chat/chats');
                 if (data && data.chats) {
                     const targetChat = data.chats.find(c => c._id === autoOpenChatId);
@@ -575,15 +690,12 @@
                         if(targetChat.type === 'tinda_child') displayName = targetChat.childName;
                         if(targetChat.type === 'tinda_family') displayName = "Familie " + targetChat.tindaPartnerName;
                         
-                        // Öffne den Chat sofort
                         openChat(targetChat._id, displayName, !!targetChat.isMarried, targetChat.type);
                     } else {
-                        // Chat nicht gefunden (vielleicht Jugendamt war da?) -> Normal laden
                         loadStack();
                     }
                 }
             } else {
-                // Ganz normaler Tinda-Start (Swipen)
                 loadStack();
             }
         };

@@ -48,7 +48,7 @@ if (visitorId) {
 }
 
 // ------------------------------------------------------------
-// Globales Fetch patchen (Inkl. Auto-Redirect bei 401)
+// Globales Fetch patchen (Inkl. Auto-Redirect bei 401/403)
 // ------------------------------------------------------------
 
 const originalFetch = window.fetch.bind(window);
@@ -87,8 +87,34 @@ window.fetch = async function(resource, init = {}) {
         const isPublicPage = currentPath === '/' || currentPath === '/index.html' || currentPath.includes('reset-password.html');
         
         if (!isPublicPage) {
-            console.warn("🔒 [Security] Session abgelaufen oder Zugriff verweigert. Leite um...");
-            window.location.href = '/index.html';
+            
+            // 401 = Nicht eingeloggt -> Sofort raus!
+            if (response.status === 401) {
+                console.warn("🔒 [Security] Session abgelaufen. Leite um...");
+                window.location.href = '/index.html';
+                return response;
+            }
+
+            // 403 = Zugriff verweigert -> Wir prüfen, WARUM der Zugriff verweigert wurde!
+            if (response.status === 403) {
+                try {
+                    // Wir klonen die Antwort, damit das Frontend sie später noch lesen kann!
+                    const clone = response.clone();
+                    const data = await clone.json();
+                    
+                    // Nur bei einem GLOBALEN ACCOUNT BANN werfen wir ihn raus
+                    if (data.error === 'ACCOUNT_DEACTIVATED') {
+                        console.warn("🔒 [Security] Account global gesperrt. Leite um...");
+                        window.location.href = '/index.html';
+                        return response;
+                    }
+                } catch(e) {
+                    // Fehler beim JSON-Parsen ignorieren
+                }
+                
+                // Für alle anderen 403 (Tinda Bann, Admin-Rechte fehlen, Streik aktiv) 
+                // blocken wir NICHT den Bildschirm, sondern lassen das UI den Fehler selbst rendern!
+            }
         }
     }
 
@@ -156,30 +182,30 @@ function generateAndSaveFingerprint() {
 // Globaler Auth-Check & Auto-Redirect beim Seitenaufruf
 // ------------------------------------------------------------
 
-async function enforceLogin() {
-    const currentPath = window.location.pathname;
-    
-    // Verhindert eine Endlosschleife / Redirect auf öffentlichen Seiten (Login & Passwort-Reset)
-    if (currentPath === '/' || currentPath === '/index.html' || currentPath === '/themes/oauth-register.html' || currentPath.includes('reset-password.html')) {
-        return; 
-    }
+//async function enforceLogin() {
+//    const currentPath = window.location.pathname;
+//   
+//    // Verhindert eine Endlosschleife / Redirect auf öffentlichen Seiten (Login & Passwort-Reset)
+//    if (currentPath === '/' || currentPath === '/index.html' || currentPath === '/themes/oauth-register.html' || currentPath.includes('reset-password.html')) {
+//        return; 
+//    }
 
-    try {
-        // originalFetch verwenden, um Endlosschleifen im Wrapper zu umgehen
-        const response = await originalFetch(`${window.LIMO_API}/api/auth/me`, {
-            credentials: "include",
-            headers: visitorId ? { "x-device-fingerprint": visitorId } : {}
-        });
+//    try {
+//        // originalFetch verwenden, um Endlosschleifen im Wrapper zu umgehen
+//        const response = await originalFetch(`${window.LIMO_API}/api/auth/me`, {
+//            credentials: "include",
+//            headers: visitorId ? { "x-device-fingerprint": visitorId } : {}
+//        });
 
-        if (!response.ok) {
-            console.warn("🔒 [Security] Nicht eingeloggt. Leite zur Login-Seite um...");
-            window.location.href = '/index.html';
-        }
-    } catch (err) {
-        console.error("🔒 [Security] Fehler beim Auth-Check. Leite sicherheitshalber um...", err);
-        window.location.href = '/index.html';
-    }
-}
+//        if (!response.ok) {
+//            console.warn("🔒 [Security] Nicht eingeloggt. Leite zur Login-Seite um...");
+//            window.location.href = '/index.html';
+//        }
+//    } catch (err) {
+//        console.error("🔒 [Security] Fehler beim Auth-Check. Leite sicherheitshalber um...", err);
+//        window.location.href = '/index.html';
+//    }
+//}
 
 // Check direkt beim Laden des Skripts ausführen
-enforceLogin();
+//enforceLogin();
