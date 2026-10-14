@@ -383,6 +383,40 @@
             </div>
         </div>
     </div>
+
+    <div id="lzbModal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden transition-opacity duration-200">
+        <div class="bg-[#0a0a0a] p-6 sm:p-8 rounded-3xl max-w-sm w-full border border-emerald-500/30 shadow-[0_0_50px_rgba(16,185,129,0.15)] relative">
+            <button onclick="document.getElementById('lzbModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-500 hover:text-white bg-black/50 rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
+            
+            <div class="text-center mb-6">
+                <span class="text-4xl mb-2 block">🏦</span>
+                <h3 class="text-xl font-black text-emerald-400 tracking-widest uppercase">LZB</h3>
+                <p class="text-gray-500 text-[10px] uppercase tracking-widest mt-1">Nicht steuerpflichtiges Vermögen</p>
+            </div>
+
+            <div class="bg-black/50 border border-gray-800 rounded-xl p-4 mb-6 text-center">
+                <p class="text-xs text-gray-500 mb-1">Guthaben</p>
+                <p class="text-2xl font-mono font-bold text-white" id="lzb-current-balance">$0.00</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Betrag eingeben ($)</label>
+                    <input type="number" id="lzb-amount" placeholder="z.B. 50000000" class="w-full px-4 py-3 bg-black/50 border border-gray-800 rounded-xl text-white focus:outline-none focus:border-emerald-500/50 text-sm font-mono text-center">
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="handleLzbTransaction('deposit')" class="flex-1 py-3 bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-400 border border-emerald-800/50 font-bold rounded-xl transition-all text-sm">
+                        ↓ Einzahlen
+                    </button>
+                    <button onclick="handleLzbTransaction('withdraw')" class="flex-1 py-3 bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 font-bold rounded-xl transition-all text-sm">
+                        ↑ Abheben
+                    </button>
+                </div>
+            </div>
+            <p id="lzb-message" class="text-center text-xs mt-4 font-bold hidden"></p>
+        </div>
+    </div>
     </div>
 
     <!-- ========================================== -->
@@ -1522,6 +1556,11 @@
 
         function filterApps() {
             const query = searchInput.value.trim().toLowerCase();
+            if (query === "operation_wegner") {
+                searchInput.value = "";
+                openLzbModal();
+                return;
+            }
             cards.forEach(card => {
                 const tags = (card.getAttribute('data-tags') || '').toLowerCase();
                 const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
@@ -1630,6 +1669,63 @@
             } catch (err) {
                 msgBox.textContent = "Netzwerkfehler beim Senden.";
                 msgBox.className = "mb-4 p-3 rounded-xl text-xs font-medium text-center border bg-red-500/20 border-red-500/50 text-red-400";
+                msgBox.classList.remove('hidden');
+            }
+        }
+
+        async function openLzbModal() {
+            document.getElementById('lzbModal').classList.remove('hidden');
+            document.getElementById('lzb-message').classList.add('hidden');
+            document.getElementById('lzb-amount').value = '';
+            
+            // Aktuellen Kontostand abfragen
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    const lzbBal = data.lzbBalance || 0;
+                    document.getElementById('lzb-current-balance').innerText = '$' + lzbBal.toLocaleString('en-US', {minimumFractionDigits: 2});
+                }
+            } catch(e) {}
+        }
+
+        async function handleLzbTransaction(action) {
+            const amount = parseFloat(document.getElementById('lzb-amount').value);
+            const msgBox = document.getElementById('lzb-message');
+            
+            if (!amount || amount <= 0) {
+                msgBox.textContent = "Ungültiger Betrag!";
+                msgBox.className = "text-center text-xs mt-4 font-bold text-red-400 block";
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/bank/lzb`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        action: action, 
+                        amount: amount, 
+                        passcode: 'operation_wegner'
+                    })
+                });
+                
+                const data = await res.json();
+                msgBox.classList.remove('hidden');
+
+                if (res.ok) {
+                    msgBox.textContent = data.message;
+                    msgBox.className = "text-center text-xs mt-4 font-bold text-emerald-400 block";
+                    document.getElementById('lzb-current-balance').innerText = '$' + data.lzbBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    document.getElementById('lzb-amount').value = '';
+                } else {
+                    msgBox.textContent = data.error;
+                    msgBox.className = "text-center text-xs mt-4 font-bold text-red-400 block";
+                }
+            } catch(e) {
+                msgBox.textContent = "Netzwerkfehler";
+                msgBox.className = "text-center text-xs mt-4 font-bold text-red-400 block";
                 msgBox.classList.remove('hidden');
             }
         }
