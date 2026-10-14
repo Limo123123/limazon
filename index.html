@@ -9,7 +9,7 @@
     <!-- SimpleWebAuthn Browser Script für Passkeys -->
     <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
 
-    <meta name="robots" content="noindex, nofollow">
+    <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Limazon Portal</title>
@@ -395,8 +395,12 @@
             </div>
 
             <div class="bg-black/50 border border-gray-800 rounded-xl p-4 mb-6 text-center">
-                <p class="text-xs text-gray-500 mb-1">Guthaben</p>
-                <p class="text-2xl font-mono font-bold text-white" id="lzb-current-balance">$0.00</p>
+                <p class="text-xs text-gray-500 mb-1">Verstecktes Guthaben (LZB)</p>
+                <p class="text-2xl font-mono font-bold text-emerald-400" id="lzb-current-balance">$0.00</p>
+                <div class="mt-2 pt-2 border-t border-gray-800 flex justify-between px-2">
+                    <span class="text-[10px] text-gray-500 uppercase">Normales Konto:</span>
+                    <span id="lzb-normal-balance" class="text-[10px] font-mono text-white">$0.00</span>
+                </div>
             </div>
 
             <div class="space-y-4">
@@ -1678,13 +1682,15 @@
             document.getElementById('lzb-message').classList.add('hidden');
             document.getElementById('lzb-amount').value = '';
             
-            // Aktuellen Kontostand abfragen
             try {
                 const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
                     const lzbBal = data.lzbBalance || 0;
+                    const normalBal = data.balance || 0;
+                    
                     document.getElementById('lzb-current-balance').innerText = '$' + lzbBal.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    document.getElementById('lzb-normal-balance').innerText = '$' + normalBal.toLocaleString('en-US', {minimumFractionDigits: 2});
                 }
             } catch(e) {}
         }
@@ -1718,6 +1724,7 @@
                     msgBox.textContent = data.message;
                     msgBox.className = "text-center text-xs mt-4 font-bold text-emerald-400 block";
                     document.getElementById('lzb-current-balance').innerText = '$' + data.lzbBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    document.getElementById('lzb-normal-balance').innerText = '$' + data.normalBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
                     document.getElementById('lzb-amount').value = '';
                 } else {
                     msgBox.textContent = data.error;
