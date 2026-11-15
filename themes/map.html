@@ -9,15 +9,15 @@
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Limazon World Map | Interaktive Stadtkarte</title>
+    <title>Limazon World Map | Die Lebendige Großstadt</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background: #060810;
+            background: #050811;
             color: #f1f5f9;
             font-family: 'Inter', sans-serif;
             user-select: none;
@@ -29,7 +29,7 @@
 
         #mapCanvas {
             display: block;
-            background: #060810;
+            background: #070b16;
             cursor: grab;
         }
 
@@ -38,14 +38,10 @@
         }
 
         .hud-glass {
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(13, 19, 36, 0.82);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
-        }
-
-        .hud-glow {
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
         }
 
         .custom-scrollbar::-webkit-scrollbar {
@@ -59,13 +55,12 @@
             border-radius: 4px;
         }
 
-        @keyframes pulseLocation {
-            0%, 100% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.15); opacity: 1; }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
         }
-
         .pulse-poi {
-            animation: pulseLocation 2s infinite ease-in-out;
+            animation: pulseGlow 2s infinite ease-in-out;
         }
     </style>
 </head>
@@ -83,9 +78,9 @@
                 <span class="text-2xl group-hover:scale-110 transition-transform">🏙️</span>
                 <div>
                     <h1 class="font-cyber font-bold text-lg leading-tight tracking-wider bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-                        LIMAZON CITY
+                        LIMAZON METROPOLIS
                     </h1>
-                    <p class="text-[10px] text-gray-400 font-mono">LIVE BEZIRKSKARTE</p>
+                    <p class="text-[10px] text-gray-400 font-mono tracking-widest uppercase">Offizielle Stadtkarte • v2.0</p>
                 </div>
             </a>
             <div class="h-6 w-[1px] bg-white/10 hidden sm:block"></div>
@@ -97,7 +92,7 @@
 
         <!-- Right Quick Controls -->
         <div class="flex items-center gap-2 pointer-events-auto">
-            <button onclick="centerOnMe()" class="hud-glass hover:bg-slate-800 text-white p-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition active:scale-95 border border-white/10" title="Auf meine Position zentrieren">
+            <button onclick="centerOnMe()" class="hud-glass hover:bg-slate-800 text-white p-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition active:scale-95 border border-white/10" title="Auf mich zentrieren">
                 <span>📍</span> <span class="hidden md:inline">Wo bin ich?</span>
             </button>
             <button onclick="togglePoiList()" class="hud-glass hover:bg-slate-800 text-white p-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition active:scale-95 border border-white/10" title="Orts-Verzeichnis">
@@ -111,10 +106,10 @@
 
     <!-- MINI COMPASS / CONTROLS HINT -->
     <div class="fixed bottom-6 left-6 z-40 hud-glass rounded-2xl p-3 text-xs text-gray-300 hidden md:flex items-center gap-3 border border-white/10">
-        <span class="text-lg">🎮</span>
+        <span class="text-xl">🚦</span>
         <div class="font-mono text-[11px] leading-tight">
-            <span><b>Pfeiltasten / WASD:</b> Laufen</span><br>
-            <span class="text-gray-400"><b>Klick auf Straße:</b> Hinlaufen • <b>Klick auf Ort:</b> Betreten</span>
+            <span><b>Steuerung:</b> WASD / Pfeiltasten zum Laufen • <b>Klick</b> navigiert</span><br>
+            <span class="text-gray-400">⛔ Gebäude blockieren Laufwege • 🕳️ Gulli führt in den Untergrund</span>
         </div>
     </div>
 
@@ -134,13 +129,13 @@
             <button onclick="togglePoiList()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white">✕</button>
         </div>
 
-        <input type="text" id="poiSearch" oninput="filterPoiDrawer()" placeholder="Ort suchen (z.B. Tierpark)..." class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-blue-500">
+        <input type="text" id="poiSearch" oninput="filterPoiDrawer()" placeholder="Ort suchen (z.B. Tierpark, Gulli, Casino)..." class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-blue-500">
 
         <div id="poiListContent" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
     </div>
 
     <!-- BUILDING INTERACTION MODAL -->
-    <div id="poiModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div id="poiModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden opacity-0 transition-opacity duration-200">
         <div class="hud-glass border border-blue-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full relative transform scale-95 transition-transform duration-200" id="poiModalCard">
             <button onclick="closePoiModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center text-sm font-bold">✕</button>
 
@@ -183,79 +178,172 @@
     <script>
         const API_URL = window.LIMO_API || '';
 
-        // --- MAP DEFINITION ---
-        const WORLD_WIDTH = 2800;
-        const WORLD_HEIGHT = 2000;
+        // --- RIESIGE WELT (4800 x 3600 Pixel) ---
+        const WORLD_WIDTH = 4800;
+        const WORLD_HEIGHT = 3600;
+        const ROAD_WIDTH_MAIN = 70;
+        const ROAD_WIDTH_SUB = 45;
 
+        // --- BEZIRKE / STADTTEILE ---
         const DISTRICTS = [
-            { name: "Einkaufsviertel", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.05)", x: 200, y: 150, w: 750, h: 700 },
-            { name: "Regierungsviertel", color: "#8b5cf6", bg: "rgba(139, 92, 246, 0.05)", x: 1050, y: 150, w: 750, h: 700 },
-            { name: "Untergrund (Schattenbezirk)", color: "#ef4444", bg: "rgba(239, 68, 68, 0.05)", x: 1900, y: 150, w: 750, h: 700 },
-            { name: "Entertainment & Media", color: "#ec4899", bg: "rgba(236, 72, 153, 0.05)", x: 200, y: 1050, w: 750, h: 750 },
-            { name: "Grüngürtel & Erholung", color: "#10b981", bg: "rgba(16, 185, 129, 0.05)", x: 1050, y: 1050, w: 750, h: 750 },
-            { name: "Wohnen & Bildung", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.05)", x: 1900, y: 1050, w: 750, h: 750 }
+            { name: "Nord-Park & Tiergarten", color: "#10b981", bg: "rgba(16, 185, 129, 0.04)", x: 200, y: 150, w: 1250, h: 1000 },
+            { name: "Regierungsviertel & Finanzen", color: "#8b5cf6", bg: "rgba(139, 92, 246, 0.04)", x: 1750, y: 150, w: 1300, h: 1000 },
+            { name: "Bildung, Kultur & Kirche", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.04)", x: 3350, y: 150, w: 1250, h: 1000 },
+
+            { name: "Handelsmeile (Commercial)", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.04)", x: 200, y: 1450, w: 1250, h: 900 },
+            { name: "Metropol-Zentrum (Central Plaza)", color: "#06b6d4", bg: "rgba(6, 182, 212, 0.04)", x: 1750, y: 1450, w: 1300, h: 900 },
+            { name: "Industrie & Logistik Hafen", color: "#ea580c", bg: "rgba(234, 88, 12, 0.04)", x: 3350, y: 1450, w: 1250, h: 900 },
+
+            { name: "Entertainment District & Neon Mile", color: "#ec4899", bg: "rgba(236, 72, 153, 0.04)", x: 200, y: 2600, w: 1250, h: 850 },
+            { name: "Südviertel & Wohnsiedlung", color: "#14b8a6", bg: "rgba(20, 184, 166, 0.04)", x: 1750, y: 2600, w: 1300, h: 850 },
+            { name: "Dunkle Gasse & Kanalisation", color: "#ef4444", bg: "rgba(239, 68, 68, 0.05)", x: 3350, y: 2600, w: 1250, h: 850 }
         ];
 
+        // --- GRÜNFLÄCHEN, SEEN & PÄRKE ---
+        const GREEN_AREAS = [
+            // Großer Tiergarten im Nord-Westen
+            { x: 240, y: 200, w: 1170, h: 900, type: "park", name: "Limazon Tiergarten & Volkspark" },
+            // Zentraler Bürgerpark am Metropol-Zentrum
+            { x: 1850, y: 1500, w: 420, h: 360, type: "park", name: "Central Green" },
+            // Schlosspark am Rathaus
+            { x: 1850, y: 220, w: 340, h: 260, type: "park", name: "Rathauspark" },
+            // Campus-Grünanlage
+            { x: 3400, y: 200, w: 320, h: 350, type: "park", name: "Campuswiese" },
+            // Stadtsee mit Ufer
+            { x: 600, y: 400, w: 440, h: 280, type: "water", name: "Schwanensee" },
+            { x: 2500, y: 1950, w: 380, h: 220, type: "water", name: "Stadtbrunnen-Bassin" }
+        ];
+
+        // --- GEBÄUDE & ORTE (OHNE DUPLIKATE!) ---
+        // Untergrund ist als Gulli (Kanalisationszugang) auf der Karte platziert!
         const POIS = [
-            // EINKAUFSVIERTEL
-            { id: "shop", name: "Limazon Hauptshop", icon: "🛒", district: "Einkaufsviertel", url: "/themes/limazon.html", x: 380, y: 350, w: 160, h: 120, color: "#3b82f6", desc: "Der gigantische Hauptmarktplatz von Limazon mit Technik, Ausrüstung und Verbrauchsgütern." },
-            { id: "lshop", name: "L-Shop Premium", icon: "💎", district: "Einkaufsviertel", url: "/themes/l-shop.html", x: 640, y: 350, w: 160, h: 120, color: "#06b6d4", desc: "Exklusive Luxusgüter, Collector-Items und limitierte Editionen." },
-            { id: "kleinanzeigen", name: "Kleinanzeigen Bazar", icon: "📦", district: "Einkaufsviertel", url: "/themes/kleinanzeigen.html", x: 380, y: 580, w: 160, h: 120, color: "#f97316", desc: "Von Spielern für Spieler: Kaufe und verkaufe gebrauchte Gegenstände." },
-            { id: "printstudio", name: "3D Druckstudio", icon: "🖨️", district: "Einkaufsviertel", url: "/themes/printstudio.html", x: 640, y: 580, w: 160, h: 120, color: "#6366f1", desc: "Drucke 3D-Modelle, Kunstwerke und Bauteile mit deinen Rohstoffen." },
+            // --- NORD-PARK & TIERGARTEN ---
+            { id: "tierpark", name: "Limazon Tierpark", icon: "🦁", district: "Nord-Park & Tiergarten", url: "/themes/tierpark.html", x: 350, y: 320, w: 180, h: 140, color: "#10b981", desc: "Besuche exotische Tiere, Löwen, Pandas und Gehege mitten im Tiergarten." },
+            { id: "pets", name: "Tierheim & Tierpension", icon: "🐶", district: "Nord-Park & Tiergarten", url: "/themes/pets.html", x: 350, y: 720, w: 180, h: 130, color: "#059669", desc: "Adoptiere ein Haustier, pflege deinen treuen Begleiter oder gib ihn in Pension." },
+            { id: "restaurant", name: "Gourmet Bistro am See", icon: "🍔", district: "Nord-Park & Tiergarten", url: "/themes/restaurant.html", x: 1100, y: 480, w: 170, h: 130, color: "#f59e0b", desc: "Genieße feines Essen am Schwanensee und hol dir starke Arbeits-Buffs." },
 
-            // REGIERUNGSVIERTEL
-            { id: "rathaus", name: "Rathaus & Bürgeramt", icon: "🏛️", district: "Regierungsviertel", url: "/themes/rathaus.html", x: 1230, y: 350, w: 180, h: 140, color: "#8b5cf6", desc: "Zentrale der Stadtverwaltung, Bürgermeisterwahlen, Meldewesen und Bürgeranfragen." },
-            { id: "bank", name: "Zentralbank & Börse", icon: "🏦", district: "Regierungsviertel", url: "/themes/bank.html", x: 1510, y: 350, w: 170, h: 120, color: "#10b981", desc: "Finanzzentrum: Kontoverwaltung, Kredite, SCHUFA-Auskunft und Aktienhandel." },
-            { id: "court", name: "Oberstes Gericht", icon: "⚖️", district: "Regierungsviertel", url: "/themes/court.html", x: 1230, y: 580, w: 160, h: 120, color: "#a855f7", desc: "Verhandle Streitigkeiten, klage gegen Gauner oder verteidige dich vor der Jury." },
-            { id: "standesamt", name: "Standesamt", icon: "💍", district: "Regierungsviertel", url: "/themes/standesamt.html", x: 1510, y: 580, w: 160, h: 120, color: "#f43f5e", desc: "Hochzeiten, Lebenspartnerschaften und Scheidungsanträge in Limazon." },
+            // --- REGIERUNGSVIERTEL & FINANZEN ---
+            { id: "rathaus", name: "Rathaus & Bürgeramt", icon: "🏛️", district: "Regierungsviertel & Finanzen", url: "/themes/rathaus.html", x: 2280, y: 240, w: 220, h: 160, color: "#8b5cf6", desc: "Sitz des Bürgermeisters, Bürgeranfragen, Stadtpolitik und Wahlen." },
+            { id: "bundestag", name: "Stadtparlament", icon: "🏛️", district: "Regierungsviertel & Finanzen", url: "/themes/bundestag.html", x: 2600, y: 240, w: 200, h: 150, color: "#7c3aed", desc: "Gesetzesabstimmungen, Fraktionen und Beschlüsse für Limazon." },
+            { id: "bank", name: "Zentralbank & Börse", icon: "🏦", district: "Regierungsviertel & Finanzen", url: "/themes/bank.html", x: 1850, y: 640, w: 200, h: 140, color: "#10b981", desc: "Kontoverwaltung, Kredite, SCHUFA-Score und der Börsenmarkt." },
+            { id: "court", name: "Oberstes Gericht", icon: "⚖️", district: "Regierungsviertel & Finanzen", url: "/themes/court.html", x: 2280, y: 640, w: 190, h: 140, color: "#a855f7", desc: "Gerichtssäle, Strafprozesse, Schiedssprüche und Anwälte." },
+            { id: "standesamt", name: "Standesamt", icon: "💍", district: "Regierungsviertel & Finanzen", url: "/themes/standesamt.html", x: 2600, y: 640, w: 180, h: 130, color: "#f43f5e", desc: "Eheschließungen, Scheidungen und Partnerschaften." },
 
-            // UNTERGRUND
-            { id: "blackmarket", name: "Der Schwarzmarkt", icon: "🕶️", district: "Untergrund (Schattenbezirk)", url: "/themes/blackmarket.html", x: 2080, y: 350, w: 160, h: 120, color: "#ef4444", desc: "Hier gibt es alles, was das Gesetz verbietet: Hehlerware, Hacking-Tools und Gefälligkeiten." },
-            { id: "gangs", name: "Clan-Hauptquartier", icon: "🏴‍☠️", district: "Untergrund (Schattenbezirk)", url: "/themes/gangs.html", x: 2360, y: 350, w: 160, h: 120, color: "#dc2626", desc: "Gründe Clans, plane Revierkriege und manage das Bandenkonto." },
-            { id: "crime", name: "Verbrechergasse", icon: "🎭", district: "Untergrund (Schattenbezirk)", url: "/themes/crime.html", x: 2080, y: 580, w: 160, h: 120, color: "#b91c1c", desc: "Raubüberfälle, Heists und kriminelle Gelegenheitsjobs mit hohem Risiko." },
-            { id: "wanted", name: "Kopfgeldstelle", icon: "🎯", district: "Untergrund (Schattenbezirk)", url: "/themes/wanted.html", x: 2360, y: 580, w: 160, h: 120, color: "#ea580c", desc: "Kopfgeldjäger-Zentrale: Setze Kopfgelder auf Feinde aus oder jage gesuchte Diebe." },
+            // --- BILDUNG, KULTUR & KIRCHE ---
+            { id: "schule", name: "Stadtakademie & Schule", icon: "🎓", district: "Bildung, Kultur & Kirche", url: "/themes/schule.html", x: 3450, y: 620, w: 190, h: 140, color: "#3b82f6", desc: "Limazon Bildungszentrum: Weiterbildungen, Klausuren und Vorlesungen." },
+            { id: "teachermon", name: "Lehrer-Akademie (Teachermon)", icon: "🎒", district: "Bildung, Kultur & Kirche", url: "/themes/teachermon.html", x: 3750, y: 620, w: 190, h: 140, color: "#f59e0b", desc: "Sammle seltene Lehrer-Sammelkarten und duelliere dich in der Arena." },
+            { id: "kirche", name: "St. Limazon Kathedrale", icon: "⛪", district: "Bildung, Kultur & Kirche", url: "/themes/kirche.html", x: 4200, y: 400, w: 210, h: 180, color: "#14b8a6", desc: "Erhabene gotische Kathedrale für Andachten, Beichten und Ruhe." },
 
-            // ENTERTAINMENT & MEDIA
-            { id: "limtube", name: "LimTube Studios", icon: "📺", district: "Entertainment & Media", url: "/themes/limtube.html", x: 380, y: 1240, w: 170, h: 130, color: "#ef4444", desc: "Die Medienzentrale für Videos, Werbespots und Community-Livestreams." },
-            { id: "games", name: "Limo Arcade", icon: "🎮", district: "Entertainment & Media", url: "/themes/games.html", x: 640, y: 1240, w: 160, h: 130, color: "#38bdf8", desc: "Arcade-Spielehalle: Among Us, Limway Surfers, Retro-Memory und Highscores." },
-            { id: "casino", name: "Neon Palace Casino", icon: "🎰", district: "Entertainment & Media", url: "/themes/casino.html", x: 380, y: 1490, w: 160, h: 120, color: "#fbbf24", desc: "Blackjack, Roulette, Slots und High-Roller-Tische für wagemutige Zocker." },
-            { id: "limterest", name: "Limterest Kunstgalerie", icon: "📌", district: "Entertainment & Media", url: "/themes/limterest.html", x: 640, y: 1490, w: 160, h: 120, color: "#e11d48", desc: "Inspiration, Foto-Pins und kreative Trends der Limazon-Bürger." },
+            // --- HANDELSMEILE (COMMERCIAL) ---
+            { id: "shop", name: "Limazon Hauptshop", icon: "🛒", district: "Handelsmeile (Commercial)", url: "/themes/limazon.html", x: 320, y: 1560, w: 220, h: 160, color: "#3b82f6", desc: "Der gigantische Hauptmarkt mit Produkten aller Art, Technik und Ausrüstung." },
+            { id: "lshop", name: "L-Shop Luxus-Boutique", icon: "💎", district: "Handelsmeile (Commercial)", url: "/themes/l-shop.html", x: 640, y: 1560, w: 180, h: 140, color: "#06b6d4", desc: "Exklusive Luxusgüter, seltene Sammlerobjekte und High-End Statussymbole." },
+            { id: "limea", name: "Limea Möbelhaus", icon: "🪑", district: "Handelsmeile (Commercial)", url: "/themes/limea.html", x: 920, y: 1560, w: 190, h: 140, color: "#eab308", desc: "Shoppe Möbel und Dekorationen, um dein Traumhaus einzurichten." },
+            { id: "kleinanzeigen", name: "Kleinanzeigen Bazar", icon: "📦", district: "Handelsmeile (Commercial)", url: "/themes/kleinanzeigen.html", x: 320, y: 1900, w: 190, h: 130, color: "#f97316", desc: "Direkthandel von Spieler zu Spieler: Gebrauchtwaren und Schnäppchen." },
+            { id: "printstudio", name: "3D-Druck Manufaktur", icon: "🖨️", district: "Handelsmeile (Commercial)", url: "/themes/printstudio.html", x: 640, y: 1900, w: 180, h: 130, color: "#6366f1", desc: "Produziere 3D-Modelle, Kunstwerke und Bauteile mit deinen Filamenten." },
+            { id: "wheel", name: "Glücksrad Pavillon", icon: "🎡", district: "Handelsmeile (Commercial)", url: "/themes/wheel.html", x: 920, y: 1900, w: 170, h: 130, color: "#ec4899", desc: "Tägliches Drehen am Glücksrad: Gewinne seltene Münzen und Items." },
 
-            // GRÜNGÜRTEL & ERHOLUNG
-            { id: "tierpark", name: "Limazon Tierpark", icon: "🦁", district: "Grüngürtel & Erholung", url: "/themes/tierpark.html", x: 1230, y: 1240, w: 170, h: 130, color: "#10b981", desc: "Erkunde wilde Tiere, besuche Gehege und spende für den Erhalt seltener Arten." },
-            { id: "pets", name: "Tierheim & Pension", icon: "🐶", district: "Grüngürtel & Erholung", url: "/themes/pets.html", x: 1510, y: 1240, w: 160, h: 130, color: "#059669", desc: "Adoptiere ein Haustier, füttere es oder bringe es während deines Urlaubs in Pension." },
-            { id: "restaurant", name: "Gourmet Bistro", icon: "🍔", district: "Grüngürtel & Erholung", url: "/themes/restaurant.html", x: 1230, y: 1490, w: 160, h: 120, color: "#f59e0b", desc: "Fülle deine Energie auf mit leckerem Essen und erhalte Arbeits-Buffs." },
-            { id: "kirche", name: "Stadtkirche", icon: "⛪", district: "Grüngürtel & Erholung", url: "/themes/kirche.html", x: 1510, y: 1490, w: 160, h: 120, color: "#14b8a6", desc: "Ein Ort der Ruhe, der Besinnung und Beichte für reuige Sünder." },
+            // --- METROPOL-ZENTRUM (CENTRAL PLAZA) ---
+            { id: "news", name: "Limazon Daily News", icon: "📰", district: "Metropol-Zentrum (Central Plaza)", url: "/themes/news.html", x: 2360, y: 1540, w: 190, h: 140, color: "#0284c7", desc: "Redaktionsgebäude: Tägliche Schlagzeilen, Reportagen und Wetter." },
+            { id: "ideabox", name: "Stadtentwicklungs-Büro", icon: "💡", district: "Metropol-Zentrum (Central Plaza)", url: "/themes/ideabox.html", x: 2640, y: 1540, w: 180, h: 130, color: "#eab308", desc: "Reiche deine Feature-Vorschläge ein und vote über die Zukunft der Stadt." },
+            { id: "jobs", name: "Jobcenter Limazon", icon: "💼", district: "Metropol-Zentrum (Central Plaza)", url: "/themes/jobs.html", x: 2360, y: 1840, w: 190, h: 130, color: "#64748b", desc: "Finde Festanstellungen, Minijobs und Nebenverdienste in der Metropole." },
+            { id: "halloffame", name: "Hall of Fame Ruhmeshalle", icon: "🏆", district: "Metropol-Zentrum (Central Plaza)", url: "/themes/hall-of-fame.html", x: 2640, y: 1840, w: 180, h: 130, color: "#fbbf24", desc: "Ewige Bestenlisten der reichsten, mächtigsten und aktivsten Bürger." },
 
-            // WOHNEN & BILDUNG
-            { id: "neighborhood", name: "Wohnviertel & Immobilien", icon: "🏡", district: "Wohnen & Bildung", url: "/themes/neighborhood.html", x: 2080, y: 1240, w: 170, h: 130, color: "#d97706", desc: "Miete oder kaufe dein Traumhaus, richte Möbel von Limea ein und lade Mitbewohner ein." },
-            { id: "teachermon", name: "Lehrer-Akademie (Teachermon)", icon: "🎒", district: "Wohnen & Bildung", url: "/themes/teachermon.html", x: 2360, y: 1240, w: 160, h: 130, color: "#f59e0b", desc: "Sammle Lehrer-Karten, ziehe Packs und fordere andere Schüler im Duell heraus." },
-            { id: "tinda", name: "Tinda Dating Center", icon: "🔥", district: "Wohnen & Bildung", url: "/themes/tinda.html", x: 2080, y: 1490, w: 160, h: 120, color: "#ff4458", desc: "Finde die Liebe deines Lebens, chatte und baue eine Familie auf." },
-            { id: "logistics", name: "Limo Logistics Hub", icon: "🚚", district: "Wohnen & Bildung", url: "/themes/logistics.html", x: 2360, y: 1490, w: 160, h: 120, color: "#ea580c", desc: "Paketversand und Lieferungen von Gütern kreuz und quer durch Limazon." }
+            // --- INDUSTRIE & LOGISTIK HAFEN ---
+            { id: "logistics", name: "Limo Logistics Hub", icon: "🚚", district: "Industrie & Logistik Hafen", url: "/themes/logistics.html", x: 3480, y: 1560, w: 220, h: 150, color: "#ea580c", desc: "Logistikzentrum mit LKW-Laderampen für weltweiten Paketversand." },
+            { id: "developer", name: "Tech Lab & Dev-Büros", icon: "💻", district: "Industrie & Logistik Hafen", url: "/themes/developer.html", x: 3820, y: 1560, w: 200, h: 140, color: "#38bdf8", desc: "Entwickler-Werkstatt für API-Keys, Webhooks und Bot-Systeme." },
+            { id: "sharktank", name: "Höhle der Löwen (Shark Tank)", icon: "🦈", district: "Industrie & Logistik Hafen", url: "/themes/sharktank.html", x: 3480, y: 1900, w: 200, h: 130, color: "#0284c7", desc: "Pitch-Area für Startups, Investoren und Unternehmensanteile." },
+
+            // --- ENTERTAINMENT DISTRICT & NEON MILE ---
+            { id: "casino", name: "Neon Palace Casino", icon: "🎰", district: "Entertainment District & Neon Mile", url: "/themes/casino.html", x: 340, y: 2720, w: 210, h: 160, color: "#fbbf24", desc: "Luxuriöses Casino mit Roulette, Blackjack, Slots und Pokertischen." },
+            { id: "games", name: "Limo Arcade Spielhalle", icon: "🎮", district: "Entertainment District & Neon Mile", url: "/themes/games.html", x: 650, y: 2720, w: 190, h: 150, color: "#38bdf8", desc: "Arcade-Palast mit Among Us, Limway Surfers und Retro-Games." },
+            { id: "limtube", name: "LimTube Broadcast Studios", icon: "📺", district: "Entertainment District & Neon Mile", url: "/themes/limtube.html", x: 940, y: 2720, w: 190, h: 150, color: "#ef4444", desc: "Videoproduktion, Werbespots und Community-Streamingstudios." },
+            { id: "limterest", name: "Limterest Fotogalerie", icon: "📌", district: "Entertainment District & Neon Mile", url: "/themes/limterest.html", x: 340, y: 3040, w: 190, h: 130, color: "#e11d48", desc: "Kreative Kunstausstellung, Moodboards und Foto-Inspirationen." },
+            { id: "lottery", name: "Staatliche Lotterie", icon: "🎫", district: "Entertainment District & Neon Mile", url: "/themes/lottery.html", x: 650, y: 3040, w: 180, h: 130, color: "#10b981", desc: "Kaufe Lose für den Riesen-Jackpot und teste dein Glück." },
+
+            // --- SÜDVIERTEL & WOHNSIEDLUNG ---
+            { id: "neighborhood", name: "Limazon Wohnsiedlung", icon: "🏡", district: "Südviertel & Wohnsiedlung", url: "/themes/neighborhood.html", x: 1880, y: 2750, w: 220, h: 160, color: "#d97706", desc: "Häuser, Grundstücke und Apartments der Bürger mit Nachbarschaftsbesuchen." },
+            { id: "tinda", name: "Tinda Dating Lounge", icon: "🔥", district: "Südviertel & Wohnsiedlung", url: "/themes/tinda.html", x: 2220, y: 2750, w: 180, h: 140, color: "#ff4458", desc: "Treffpunkt für Singles, Dating, Partnersuche und Romantik." },
+            { id: "therapy", name: "Gemeinschaftspraxis & Therapie", icon: "🩺", district: "Südviertel & Wohnsiedlung", url: "/themes/therapy.html", x: 2540, y: 2750, w: 180, h: 140, color: "#06b6d4", desc: "Erholungszentrum für geistige Gesundheit und Stressabbau." },
+
+            // --- DER UNTERGRUND (DURCH KANALISATIONS-GULLI BETRETBAR!) ---
+            // Dieser Gulli ist das Portal in den Untergrund!
+            { id: "sewer_underground", name: "Kanalisations-Gulli (Untergrund)", icon: "🕳️", district: "Dunkle Gasse & Kanalisation", url: "/themes/blackmarket.html", x: 3500, y: 2750, w: 130, h: 130, color: "#ef4444", isManhole: true, desc: "Ein verdächtig dampfender Kanalisationsschacht. Klettere hinab in den berüchtigten Untergrund von Limazon!" },
+            { id: "gangs", name: "Clan-Hauptquartier", icon: "🏴‍☠️", district: "Dunkle Gasse & Kanalisation", url: "/themes/gangs.html", x: 3760, y: 2720, w: 190, h: 150, color: "#dc2626", desc: "Versteckter Stützpunkt der Banden, Clan-Tresore und Bandenkriege." },
+            { id: "crime", name: "Hinterhof-Schlupfwinkel", icon: "🎭", district: "Dunkle Gasse & Kanalisation", url: "/themes/crime.html", x: 4050, y: 2720, w: 180, h: 140, color: "#991b1b", desc: "Kriminelle Machenschaften, Heists und zwielichtige Gelegenheitsjobs." },
+            { id: "wanted", name: "Kopfgeldjäger-Zentrale", icon: "🎯", district: "Dunkle Gasse & Kanalisation", url: "/themes/wanted.html", x: 3760, y: 3040, w: 190, h: 130, color: "#ea580c", desc: "Schwarzes Brett für gesuchte Personen und ausgesetzte Kopfgelder." }
         ];
 
-        // --- ROADS NETZWERK ---
+        // --- STRASSEN-NETZWERK MIT MEHREREN SPUREN ---
         const ROADS = [
-            // Haupt-Highways (horizontal)
-            { x: 100, y: 480, w: 2600, h: 40 },
-            { x: 100, y: 920, w: 2600, h: 60 },
-            { x: 100, y: 1400, w: 2600, h: 40 },
+            // Große Ring- & Hauptstraßen (horizontal)
+            { x: 100, y: 120, w: 4600, h: ROAD_WIDTH_MAIN, type: "main" },
+            { x: 100, y: 1250, w: 4600, h: ROAD_WIDTH_MAIN, type: "main" },
+            { x: 100, y: 2400, w: 4600, h: ROAD_WIDTH_MAIN, type: "main" },
+            { x: 100, y: 3480, w: 4600, h: ROAD_WIDTH_MAIN, type: "main" },
 
-            // Haupt-Boulevards (vertikal)
-            { x: 550, y: 100, w: 40, h: 1800 },
-            { x: 970, y: 100, w: 60, h: 1800 },
-            { x: 1420, y: 100, w: 40, h: 1800 },
-            { x: 1820, y: 100, w: 60, h: 1800 },
-            { x: 2260, y: 100, w: 40, h: 1800 }
+            // Nebenstraßen (horizontal)
+            { x: 100, y: 550, w: 4600, h: ROAD_WIDTH_SUB, type: "sub" },
+            { x: 100, y: 1780, w: 4600, h: ROAD_WIDTH_SUB, type: "sub" },
+            { x: 100, y: 2950, w: 4600, h: ROAD_WIDTH_SUB, type: "sub" },
+
+            // Große Boulevards (vertikal)
+            { x: 120, y: 100, w: ROAD_WIDTH_MAIN, h: 3450, type: "main" },
+            { x: 1550, y: 100, w: ROAD_WIDTH_MAIN, h: 3450, type: "main" },
+            { x: 3150, y: 100, w: ROAD_WIDTH_MAIN, h: 3450, type: "main" },
+            { x: 4620, y: 100, w: ROAD_WIDTH_MAIN, h: 3450, type: "main" },
+
+            // Neben-Avenuen (vertikal)
+            { x: 750, y: 100, w: ROAD_WIDTH_SUB, h: 3450, type: "sub" },
+            { x: 2180, y: 100, w: ROAD_WIDTH_SUB, h: 3450, type: "sub" },
+            { x: 3680, y: 100, w: ROAD_WIDTH_SUB, h: 3450, type: "sub" }
+        ];
+
+        // --- STRASSENBAHN-LINIEN (TRAM / METRO) ---
+        const TRAM_LINES = [
+            // Tram-Gleis Nord-Süd Achse
+            { x: 1600, y: 100, w: 14, h: 3450, orientation: "vertical" },
+            // Tram-Gleis Ost-West Achse
+            { x: 100, y: 2450, w: 4600, h: 14, orientation: "horizontal" }
+        ];
+
+        // --- KREUZUNGS-AMPELN ---
+        const TRAFFIC_LIGHTS = [
+            { x: 1550, y: 1250, state: "green", timer: 0 },
+            { x: 3150, y: 1250, state: "red", timer: 120 },
+            { x: 1550, y: 2400, state: "red", timer: 160 },
+            { x: 3150, y: 2400, state: "green", timer: 40 },
+            { x: 2180, y: 1780, state: "green", timer: 80 }
+        ];
+
+        // --- SIMULIERTE AUTOS, BUSSE & STRASSENBAHNEN ---
+        const VEHICLES = [
+            // Autos & Taxis
+            { type: "car", x: 200, y: 1260, vx: 5, vy: 0, color: "#facc15", label: "TAXI" },
+            { type: "car", x: 1800, y: 1260, vx: 6.5, vy: 0, color: "#ef4444", label: "PKW" },
+            { type: "car", x: 3200, y: 1290, vx: -5.5, vy: 0, color: "#38bdf8", label: "PKW" },
+            { type: "car", x: 4400, y: 1290, vx: -6, vy: 0, color: "#e2e8f0", label: "PKW" },
+
+            { type: "car", x: 1565, y: 300, vx: 0, vy: 5, color: "#22c55e", label: "PKW" },
+            { type: "car", x: 1595, y: 2000, vx: 0, vy: -5, color: "#a855f7", label: "PKW" },
+            { type: "car", x: 3165, y: 400, vx: 0, vy: 6, color: "#f97316", label: "PKW" },
+            { type: "car", x: 3195, y: 2800, vx: 0, vy: -6, color: "#06b6d4", label: "TAXI" },
+
+            // Große Limazon Stadtbusse
+            { type: "bus", x: 800, y: 2410, vx: 4, vy: 0, color: "#3b82f6", label: "METRO-BUS 42", len: 80, wid: 32 },
+            { type: "bus", x: 2900, y: 2445, vx: -4, vy: 0, color: "#3b82f6", label: "AIRPORT-SHUTTLE", len: 80, wid: 32 },
+
+            // Moderne Straßenbahnen
+            { type: "tram", x: 1598, y: 800, vx: 0, vy: 4.5, color: "#0ea5e9", label: "TRAM 1", len: 140, wid: 22 },
+            { type: "tram", x: 2200, y: 2446, vx: 4.5, vy: 0, color: "#0ea5e9", label: "TRAM 2", len: 140, wid: 22 }
         ];
 
         // --- ENGINE STATE ---
         const canvas = document.getElementById('mapCanvas');
         const ctx = canvas.getContext('2d');
 
-        let viewX = 1400 - window.innerWidth / 2;
-        let viewY = 1000 - window.innerHeight / 2;
-        let scale = 0.85;
+        let viewX = 2400 - window.innerWidth / 2;
+        let viewY = 1800 - window.innerHeight / 2;
+        let scale = 0.75;
 
         let isDragging = false;
         let dragStartX = 0;
@@ -264,22 +352,23 @@
         let myPlayer = {
             id: null,
             name: "Gast",
-            x: 1400,
-            y: 950,
-            targetX: 1400,
-            targetY: 950,
-            speed: 7,
+            x: 2360,
+            y: 1720,
+            targetX: 2360,
+            targetY: 1720,
+            radius: 12,
+            speed: 6.5,
             color: "#3b82f6"
         };
 
         let remotePlayers = [];
         let hoveredPoi = null;
         let activePoiModal = null;
+        let frameCount = 0;
 
-        // Keys state
         const keys = {};
 
-        // --- INIT ---
+        // --- INITIALISIERUNG ---
         window.addEventListener('resize', resizeCanvas);
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -292,17 +381,12 @@
             await fetchMe();
             renderPoiDrawerList();
 
-            // Load remote players and start position loops
+            // Live-Player-Position Sync mit Rust-Server
             await syncPosition();
             setInterval(syncPosition, 2500);
 
-            // Center initial view on player
             centerOnMe();
-
-            // Setup inputs
             setupInputs();
-
-            // Animation loop
             requestAnimationFrame(gameLoop);
         }
 
@@ -319,7 +403,6 @@
 
         async function syncPosition() {
             try {
-                // Post my pos
                 if (myPlayer.id) {
                     fetch(`${API_URL}/api/map/positions`, {
                         method: 'POST',
@@ -333,7 +416,6 @@
                     }).catch(() => {});
                 }
 
-                // Get all active players
                 const res = await fetch(`${API_URL}/api/map/positions`, { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
@@ -350,11 +432,42 @@
             for (const p of POIS) {
                 const dx = x - (p.x + p.w / 2);
                 const dy = y - (p.y + p.h / 2);
-                if (Math.hypot(dx, dy) < 160) {
+                if (Math.hypot(dx, dy) < 180) {
                     return p.name;
                 }
             }
             return "Auf der Straße";
+        }
+
+        // --- KOLLISIONSABFRAGE (SPIELER KANN NICHT DURCH GEBÄUDE ODER SEEN LAUFEN!) ---
+        function checkCollision(nx, ny, radius = 10) {
+            // Weltgrenzen
+            if (nx - radius < 40 || nx + radius > WORLD_WIDTH - 40 ||
+                ny - radius < 40 || ny + radius > WORLD_HEIGHT - 40) {
+                return true;
+            }
+
+            // Gebäude-Kollision (Ausnahme: Gullideckel zum Untergrund darf betreten werden)
+            for (const p of POIS) {
+                if (p.isManhole) continue; // Man darf auf den Gulli treten!
+                const pad = 6;
+                if (nx + radius > p.x - pad && nx - radius < p.x + p.w + pad &&
+                    ny + radius > p.y - pad && ny - radius < p.y + p.h + pad) {
+                    return true;
+                }
+            }
+
+            // Seen / Wasserflächen-Kollision (man kann nicht im See schwimmen)
+            for (const g of GREEN_AREAS) {
+                if (g.type === "water") {
+                    if (nx + radius > g.x && nx - radius < g.x + g.w &&
+                        ny + radius > g.y && ny - radius < g.y + g.h) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         // --- INPUT HANDLING ---
@@ -371,7 +484,7 @@
             });
 
             canvas.addEventListener('mousedown', e => {
-                if (e.button === 0) { // left click
+                if (e.button === 0) {
                     isDragging = true;
                     dragStartX = e.clientX;
                     dragStartY = e.clientY;
@@ -390,7 +503,6 @@
                     }
                 }
 
-                // Check POI hover
                 const worldPos = screenToWorld(e.clientX, e.clientY);
                 hoveredPoi = POIS.find(p =>
                     worldPos.x >= p.x && worldPos.x <= p.x + p.w &&
@@ -402,8 +514,6 @@
                 if (isDragging) {
                     const dist = Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY);
                     isDragging = false;
-
-                    // If clicked without dragging, interact
                     if (dist < 6) {
                         handleWorldClick(e.clientX, e.clientY);
                     }
@@ -420,7 +530,7 @@
         function handleWorldClick(screenX, screenY) {
             const worldPos = screenToWorld(screenX, screenY);
 
-            // Check if building clicked
+            // Klick auf Gebäude oder Gulli
             const clickedPoi = POIS.find(p =>
                 worldPos.x >= p.x && worldPos.x <= p.x + p.w &&
                 worldPos.y >= p.y && worldPos.y <= p.y + p.h
@@ -429,13 +539,18 @@
             if (clickedPoi) {
                 openPoiModal(clickedPoi);
             } else {
-                // Walk to location
-                myPlayer.targetX = Math.max(50, Math.min(WORLD_WIDTH - 50, worldPos.x));
-                myPlayer.targetY = Math.max(50, Math.min(WORLD_HEIGHT - 50, worldPos.y));
+                // Laufe zur Position, wenn nicht in Wand
+                if (!checkCollision(worldPos.x, worldPos.y, 10)) {
+                    myPlayer.targetX = worldPos.x;
+                    myPlayer.targetY = worldPos.y;
+                } else {
+                    // Falls Wand angeklickt, gehe so nah wie möglich heran
+                    myPlayer.targetX = worldPos.x;
+                    myPlayer.targetY = worldPos.y;
+                }
             }
         }
 
-        // --- COORDINATE HELPERS ---
         function screenToWorld(sx, sy) {
             return {
                 x: sx / scale + viewX,
@@ -451,7 +566,7 @@
         }
 
         function zoomAtScreen(factor, sx, sy) {
-            const newScale = Math.max(0.4, Math.min(1.8, scale * factor));
+            const newScale = Math.max(0.3, Math.min(1.8, scale * factor));
             if (newScale === scale) return;
 
             const before = screenToWorld(sx, sy);
@@ -472,15 +587,40 @@
         }
 
         function resetCamera() {
-            scale = 0.85;
+            scale = 0.75;
             centerOnMe();
         }
 
-        // --- GAME LOOP & UPDATES ---
+        // --- GAME LOOP & BEWEGUNGEN ---
         function gameLoop() {
+            frameCount++;
+            updateTrafficLights();
+            updateVehicles();
             updatePlayerMovement();
             render();
             requestAnimationFrame(gameLoop);
+        }
+
+        function updateTrafficLights() {
+            TRAFFIC_LIGHTS.forEach(tl => {
+                tl.timer = (tl.timer + 1) % 400;
+                if (tl.timer < 180) tl.state = "green";
+                else if (tl.timer < 220) tl.state = "yellow";
+                else tl.state = "red";
+            });
+        }
+
+        function updateVehicles() {
+            VEHICLES.forEach(v => {
+                v.x += v.vx;
+                v.y += v.vy;
+
+                // Wrapping an den Weltgrenzen
+                if (v.vx > 0 && v.x > WORLD_WIDTH + 100) v.x = -100;
+                if (v.vx < 0 && v.x < -100) v.x = WORLD_WIDTH + 100;
+                if (v.vy > 0 && v.y > WORLD_HEIGHT + 100) v.y = -100;
+                if (v.vy < 0 && v.y < -100) v.y = WORLD_HEIGHT + 100;
+            });
         }
 
         function updatePlayerMovement() {
@@ -494,26 +634,47 @@
 
             if (dx !== 0 || dy !== 0) {
                 const len = Math.hypot(dx, dy);
-                myPlayer.x += (dx / len) * myPlayer.speed;
-                myPlayer.y += (dy / len) * myPlayer.speed;
+                const stepX = (dx / len) * myPlayer.speed;
+                const stepY = (dy / len) * myPlayer.speed;
+
+                // Achsen-getrennte Kollisionsprüfung für sanftes Gleiten an Wänden
+                if (!checkCollision(myPlayer.x + stepX, myPlayer.y, myPlayer.radius)) {
+                    myPlayer.x += stepX;
+                }
+                if (!checkCollision(myPlayer.x, myPlayer.y + stepY, myPlayer.radius)) {
+                    myPlayer.y += stepY;
+                }
+
                 myPlayer.targetX = myPlayer.x;
                 myPlayer.targetY = myPlayer.y;
             } else {
-                // Move towards click target
+                // Zu Klickziel laufen
                 const toTargetX = myPlayer.targetX - myPlayer.x;
                 const toTargetY = myPlayer.targetY - myPlayer.y;
                 const dist = Math.hypot(toTargetX, toTargetY);
 
                 if (dist > 4) {
                     const step = Math.min(dist, myPlayer.speed);
-                    myPlayer.x += (toTargetX / dist) * step;
-                    myPlayer.y += (toTargetY / dist) * step;
+                    const stepX = (toTargetX / dist) * step;
+                    const stepY = (toTargetY / dist) * step;
+
+                    let moved = false;
+                    if (!checkCollision(myPlayer.x + stepX, myPlayer.y, myPlayer.radius)) {
+                        myPlayer.x += stepX;
+                        moved = true;
+                    }
+                    if (!checkCollision(myPlayer.x, myPlayer.y + stepY, myPlayer.radius)) {
+                        myPlayer.y += stepY;
+                        moved = true;
+                    }
+
+                    if (!moved) {
+                        // Weg blockiert, Ziel abbrechen
+                        myPlayer.targetX = myPlayer.x;
+                        myPlayer.targetY = myPlayer.y;
+                    }
                 }
             }
-
-            // Clamping
-            myPlayer.x = Math.max(60, Math.min(WORLD_WIDTH - 60, myPlayer.x));
-            myPlayer.y = Math.max(60, Math.min(WORLD_HEIGHT - 60, myPlayer.y));
         }
 
         // --- RENDER PIPELINE ---
@@ -524,36 +685,48 @@
             ctx.scale(scale, scale);
             ctx.translate(-viewX, -viewY);
 
-            // 1. Grid Background & World Bounds
+            // 1. Hintergrund & Raster
             renderWorldBackground();
 
-            // 2. Districts
+            // 2. Grünflächen, Pärke & Seen
+            renderGreenAreas();
+
+            // 3. Bezirks-Zonierungen
             renderDistricts();
 
-            // 3. Roads & Crossings
+            // 4. Straßen, Fahrbahnmarkierungen & Zebrastreifen
             renderRoads();
 
-            // 4. Buildings / POIs
+            // 5. Straßenbahn-Schienen
+            renderTramTracks();
+
+            // 6. Ampeln
+            renderTrafficLights();
+
+            // 7. Fahrzeuge (Autos, Busse, Tram)
+            renderVehicles();
+
+            // 8. Gebäude & Schachtdeckel (POIs)
             renderPois();
 
-            // 5. Remote Players
+            // 9. Remote Spieler
             renderRemotePlayers();
 
-            // 6. Local Player Avatar
+            // 10. Eigener Spieler-Avatar
             renderLocalPlayer();
 
             ctx.restore();
         }
 
         function renderWorldBackground() {
-            // Ground
-            ctx.fillStyle = "#0a0e1a";
+            // Gras- & Bodenuntergrund
+            ctx.fillStyle = "#0c1322";
             ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-            // Grid lines
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+            // Subtiles Planungsraster
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
             ctx.lineWidth = 1;
-            const gridSize = 80;
+            const gridSize = 100;
             for (let x = 0; x <= WORLD_WIDTH; x += gridSize) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
@@ -567,136 +740,423 @@
                 ctx.stroke();
             }
 
-            // World border glow
-            ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
-            ctx.lineWidth = 4;
+            // Stadtgrenze
+            ctx.strokeStyle = "rgba(59, 130, 246, 0.5)";
+            ctx.lineWidth = 6;
             ctx.strokeRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        }
+
+        function renderGreenAreas() {
+            GREEN_AREAS.forEach(g => {
+                if (g.type === "park") {
+                    // Parkrasen
+                    ctx.fillStyle = "#0d281e";
+                    ctx.strokeStyle = "rgba(16, 185, 129, 0.25)";
+                    ctx.lineWidth = 2;
+                    roundRect(ctx, g.x, g.y, g.w, g.h, 28, true, true);
+
+                    // Bäume im Park
+                    ctx.fillStyle = "#155e43";
+                    const step = 85;
+                    for (let tx = g.x + 50; tx < g.x + g.w - 40; tx += step) {
+                        for (let ty = g.y + 50; ty < g.y + g.h - 40; ty += step) {
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, 14, 0, Math.PI * 2);
+                            ctx.fill();
+                            // Baumstamm
+                            ctx.fillStyle = "#093d2b";
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, 7, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.fillStyle = "#155e43";
+                        }
+                    }
+
+                    // Parkname
+                    ctx.fillStyle = "rgba(52, 211, 153, 0.5)";
+                    ctx.font = "bold 16px 'Space Grotesk', sans-serif";
+                    ctx.fillText("🌳 " + g.name.toUpperCase(), g.x + 30, g.y + 35);
+
+                } else if (g.type === "water") {
+                    // Schimmernder See mit Wasserwellen
+                    ctx.fillStyle = "#082f49";
+                    ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
+                    ctx.lineWidth = 3;
+                    roundRect(ctx, g.x, g.y, g.w, g.h, 35, true, true);
+
+                    // Wasser-Rippeln
+                    ctx.strokeStyle = "rgba(125, 211, 252, 0.2)";
+                    ctx.lineWidth = 1.5;
+                    const time = frameCount * 0.03;
+                    for (let wy = g.y + 40; wy < g.y + g.h - 30; wy += 45) {
+                        ctx.beginPath();
+                        ctx.moveTo(g.x + 40, wy + Math.sin(time + wy) * 4);
+                        ctx.lineTo(g.x + g.w - 40, wy + Math.cos(time + wy) * 4);
+                        ctx.stroke();
+                    }
+
+                    // Seename
+                    ctx.fillStyle = "rgba(186, 230, 253, 0.7)";
+                    ctx.font = "bold 15px 'Space Grotesk', sans-serif";
+                    ctx.fillText("🌊 " + g.name, g.x + 30, g.y + 35);
+                }
+            });
         }
 
         function renderDistricts() {
             DISTRICTS.forEach(d => {
                 ctx.fillStyle = d.bg;
-                ctx.strokeStyle = d.color + "33";
+                ctx.strokeStyle = d.color + "25";
                 ctx.lineWidth = 2;
-                roundRect(ctx, d.x, d.y, d.w, d.h, 24, true, true);
+                roundRect(ctx, d.x, d.y, d.w, d.h, 30, true, true);
 
-                // District Name label
-                ctx.fillStyle = d.color + "aa";
-                ctx.font = "bold 20px 'Space Grotesk', sans-serif";
-                ctx.fillText(d.name.toUpperCase(), d.x + 30, d.y + 45);
+                // Bezirks-Schild
+                ctx.fillStyle = d.color + "bb";
+                ctx.font = "bold 22px 'Space Grotesk', sans-serif";
+                ctx.fillText(d.name.toUpperCase(), d.x + 35, d.y + 45);
             });
         }
 
         function renderRoads() {
             // Asphalt
-            ctx.fillStyle = "#161b2a";
+            ctx.fillStyle = "#161d2f";
             ROADS.forEach(r => {
-                roundRect(ctx, r.x, r.y, r.w, r.h, 8, true, false);
+                roundRect(ctx, r.x, r.y, r.w, r.h, 6, true, false);
             });
 
-            // Road markings (dashed centerlines)
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            // Straßenränder (Gehsteigkante)
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
             ctx.lineWidth = 2;
-            ctx.setLineDash([16, 16]);
+            ROADS.forEach(r => {
+                ctx.strokeRect(r.x, r.y, r.w, r.h);
+            });
+
+            // Gestrichelte Mittellinien
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([20, 20]);
 
             ROADS.forEach(r => {
                 ctx.beginPath();
-                if (r.w > r.h) { // Horizontal
+                if (r.w > r.h) {
                     ctx.moveTo(r.x, r.y + r.h / 2);
                     ctx.lineTo(r.x + r.w, r.y + r.h / 2);
-                } else { // Vertical
+                } else {
                     ctx.moveTo(r.x + r.w / 2, r.y);
                     ctx.lineTo(r.x + r.w / 2, r.y + r.h);
                 }
                 ctx.stroke();
             });
 
-            ctx.setLineDash([]); // Reset
+            ctx.setLineDash([]);
+
+            // Zebrastreifen an Hauptkreuzungen
+            ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+            renderCrosswalk(1550 - 40, 1250, 30, ROAD_WIDTH_MAIN);
+            renderCrosswalk(1550 + ROAD_WIDTH_MAIN + 10, 1250, 30, ROAD_WIDTH_MAIN);
+            renderCrosswalk(3150 - 40, 1250, 30, ROAD_WIDTH_MAIN);
+            renderCrosswalk(3150 + ROAD_WIDTH_MAIN + 10, 1250, 30, ROAD_WIDTH_MAIN);
+            renderCrosswalk(1550, 2400 - 40, ROAD_WIDTH_MAIN, 30);
+            renderCrosswalk(3150, 2400 - 40, ROAD_WIDTH_MAIN, 30);
+        }
+
+        function renderCrosswalk(x, y, w, h) {
+            const numStripes = 6;
+            if (w > h) {
+                const step = w / numStripes;
+                for (let i = 0; i < numStripes; i += 2) {
+                    ctx.fillRect(x + i * step, y, step, h);
+                }
+            } else {
+                const step = h / numStripes;
+                for (let i = 0; i < numStripes; i += 2) {
+                    ctx.fillRect(x, y + i * step, w, step);
+                }
+            }
+        }
+
+        function renderTramTracks() {
+            TRAM_LINES.forEach(t => {
+                // Schienenbett
+                ctx.fillStyle = "#1e2433";
+                ctx.fillRect(t.x - 3, t.y, t.w + 6, t.h);
+
+                // Zwei parallele Stahlschienen
+                ctx.strokeStyle = "#94a3b8";
+                ctx.lineWidth = 2;
+                if (t.orientation === "vertical") {
+                    ctx.beginPath();
+                    ctx.moveTo(t.x + 2, t.y);
+                    ctx.lineTo(t.x + 2, t.y + t.h);
+                    ctx.moveTo(t.x + t.w - 2, t.y);
+                    ctx.lineTo(t.x + t.w - 2, t.y + t.h);
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(t.x, t.y + 2);
+                    ctx.lineTo(t.x + t.w, t.y + 2);
+                    ctx.moveTo(t.x, t.y + t.h - 2);
+                    ctx.lineTo(t.x + t.w, t.y + t.h - 2);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function renderTrafficLights() {
+            TRAFFIC_LIGHTS.forEach(tl => {
+                // Ampelgehäuse
+                ctx.fillStyle = "#0f172a";
+                ctx.strokeStyle = "#475569";
+                ctx.lineWidth = 1.5;
+                roundRect(ctx, tl.x - 12, tl.y - 12, 24, 24, 6, true, true);
+
+                // Ampellicht
+                ctx.beginPath();
+                ctx.arc(tl.x, tl.y, 6, 0, Math.PI * 2);
+                if (tl.state === "green") {
+                    ctx.fillStyle = "#22c55e";
+                    ctx.shadowColor = "#22c55e";
+                    ctx.shadowBlur = 10;
+                } else if (tl.state === "yellow") {
+                    ctx.fillStyle = "#eab308";
+                    ctx.shadowColor = "#eab308";
+                    ctx.shadowBlur = 10;
+                } else {
+                    ctx.fillStyle = "#ef4444";
+                    ctx.shadowColor = "#ef4444";
+                    ctx.shadowBlur = 10;
+                }
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        function renderVehicles() {
+            VEHICLES.forEach(v => {
+                ctx.save();
+                ctx.translate(v.x, v.y);
+
+                if (v.type === "car") {
+                    // Normales Auto / Taxi
+                    const width = 36;
+                    const height = 20;
+
+                    // Scheinwerferkegel bei Nacht
+                    ctx.fillStyle = "rgba(254, 240, 138, 0.15)";
+                    ctx.beginPath();
+                    if (v.vx > 0) {
+                        ctx.moveTo(width / 2, 0);
+                        ctx.lineTo(width / 2 + 50, -25);
+                        ctx.lineTo(width / 2 + 50, 25);
+                    } else if (v.vx < 0) {
+                        ctx.moveTo(-width / 2, 0);
+                        ctx.lineTo(-width / 2 - 50, -25);
+                        ctx.lineTo(-width / 2 - 50, 25);
+                    } else if (v.vy > 0) {
+                        ctx.moveTo(0, height / 2);
+                        ctx.lineTo(-25, height / 2 + 50);
+                        ctx.lineTo(25, height / 2 + 50);
+                    } else {
+                        ctx.moveTo(0, -height / 2);
+                        ctx.lineTo(-25, -height / 2 - 50);
+                        ctx.lineTo(25, -height / 2 - 50);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Karosserie
+                    ctx.fillStyle = v.color;
+                    roundRect(ctx, -width / 2, -height / 2, width, height, 5, true, false);
+
+                    // Dachfenster
+                    ctx.fillStyle = "#0f172a";
+                    roundRect(ctx, -width / 4, -height / 3, width / 2, height * 0.66, 3, true, false);
+
+                } else if (v.type === "bus") {
+                    // Großer Stadtbus
+                    const len = v.len || 80;
+                    const wid = v.wid || 32;
+
+                    ctx.fillStyle = v.color;
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.lineWidth = 1;
+                    roundRect(ctx, -len / 2, -wid / 2, len, wid, 7, true, true);
+
+                    // Bus-Fenster
+                    ctx.fillStyle = "#0f172a";
+                    for (let fx = -len / 2 + 10; fx < len / 2 - 10; fx += 14) {
+                        ctx.fillRect(fx, -wid / 2 + 4, 9, 5);
+                        ctx.fillRect(fx, wid / 2 - 9, 9, 5);
+                    }
+
+                    // Aufschrift
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 9px 'Inter', sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText(v.label, 0, 3);
+
+                } else if (v.type === "tram") {
+                    // Straßenbahn
+                    const len = v.len || 140;
+                    const wid = v.wid || 22;
+
+                    ctx.fillStyle = "#0284c7";
+                    ctx.strokeStyle = "#38bdf8";
+                    ctx.lineWidth = 1.5;
+
+                    if (v.vy !== 0) {
+                        roundRect(ctx, -wid / 2, -len / 2, wid, len, 8, true, true);
+                        // Fenster vertikal
+                        ctx.fillStyle = "#0369a1";
+                        for (let fy = -len / 2 + 12; fy < len / 2 - 12; fy += 16) {
+                            ctx.fillRect(-wid / 2 + 3, fy, 4, 10);
+                            ctx.fillRect(wid / 2 - 7, fy, 4, 10);
+                        }
+                    } else {
+                        roundRect(ctx, -len / 2, -wid / 2, len, wid, 8, true, true);
+                        // Fenster horizontal
+                        ctx.fillStyle = "#0369a1";
+                        for (let fx = -len / 2 + 12; fx < len / 2 - 12; fx += 16) {
+                            ctx.fillRect(fx, -wid / 2 + 3, 10, 4);
+                            ctx.fillRect(fx, wid / 2 - 7, 10, 4);
+                        }
+                    }
+                }
+
+                ctx.restore();
+            });
         }
 
         function renderPois() {
             POIS.forEach(p => {
                 const isHovered = (hoveredPoi && hoveredPoi.id === p.id);
 
-                // Building shadow
-                ctx.shadowColor = isHovered ? p.color : "rgba(0,0,0,0.6)";
-                ctx.shadowBlur = isHovered ? 30 : 15;
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 8;
+                if (p.isManhole) {
+                    // SPEZIELLER KANALISATIONS-GULLI FÜR DEN UNTERGRUND!
+                    const cx = p.x + p.w / 2;
+                    const cy = p.y + p.h / 2;
 
-                // Building Base
-                ctx.fillStyle = isHovered ? "#1e293b" : "#0f172a";
-                ctx.strokeStyle = isHovered ? p.color : "rgba(255, 255, 255, 0.12)";
-                ctx.lineWidth = isHovered ? 3 : 1.5;
-                roundRect(ctx, p.x, p.y, p.w, p.h, 18, true, true);
-
-                // Reset shadow
-                ctx.shadowBlur = 0;
-
-                // Color accent banner at top
-                ctx.fillStyle = p.color;
-                roundRect(ctx, p.x, p.y, p.w, 8, { tl: 18, tr: 18, bl: 0, br: 0 }, true, false);
-
-                // Icon
-                ctx.font = "34px sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText(p.icon, p.x + p.w / 2, p.y + 55);
-
-                // Building Name
-                ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 13px 'Inter', sans-serif";
-                ctx.textAlign = "center";
-
-                // Text wrap if needed
-                const words = p.name.split(' ');
-                if (words.length > 2) {
-                    ctx.fillText(words.slice(0, 2).join(' '), p.x + p.w / 2, p.y + 85);
-                    ctx.fillText(words.slice(2).join(' '), p.x + p.w / 2, p.y + 102);
-                } else {
-                    ctx.fillText(p.name, p.x + p.w / 2, p.y + 92);
-                }
-
-                // Hover Indicator Glow Ring
-                if (isHovered) {
-                    ctx.strokeStyle = p.color;
-                    ctx.lineWidth = 2;
+                    // Dunkler Kanal-Abgrund
+                    ctx.fillStyle = "#050508";
                     ctx.beginPath();
-                    ctx.arc(p.x + p.w / 2, p.y + p.h / 2, Math.max(p.w, p.h) * 0.65, 0, Math.PI * 2);
+                    ctx.arc(cx, cy, 48, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Gusseiserner Gulliring
+                    ctx.strokeStyle = isHovered ? "#ef4444" : "#475569";
+                    ctx.lineWidth = isHovered ? 4 : 3;
                     ctx.stroke();
+
+                    // Riffel-Muster auf Gusseisendeckel
+                    ctx.fillStyle = isHovered ? "#262626" : "#1a1a1a";
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 42, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = "#333333";
+                    ctx.lineWidth = 2;
+                    for (let r = 12; r <= 36; r += 8) {
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
+                    // Roter Gefahren-Dampf / Rauch aus dem Gulli
+                    ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 54 + Math.sin(frameCount * 0.05) * 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Gulli-Icon & Schrift
+                    ctx.font = "32px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText("🕳️", cx, cy + 10);
+
+                    ctx.fillStyle = isHovered ? "#f87171" : "#fca5a5";
+                    ctx.font = "bold 13px 'Space Grotesk', sans-serif";
+                    ctx.fillText("UNTERGRUND", cx, cy + 62);
+                    ctx.font = "11px 'Inter', sans-serif";
+                    ctx.fillText("(Gulli-Eingang)", cx, cy + 76);
+
+                } else {
+                    // NORMALE GEBÄUDE-BLOCKS
+                    ctx.shadowColor = isHovered ? p.color : "rgba(0,0,0,0.6)";
+                    ctx.shadowBlur = isHovered ? 35 : 16;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 10;
+
+                    // Gebäude-Körper
+                    ctx.fillStyle = isHovered ? "#1e293b" : "#0f172a";
+                    ctx.strokeStyle = isHovered ? p.color : "rgba(255, 255, 255, 0.12)";
+                    ctx.lineWidth = isHovered ? 3.5 : 1.5;
+                    roundRect(ctx, p.x, p.y, p.w, p.h, 20, true, true);
+
+                    ctx.shadowBlur = 0;
+
+                    // Farb-Banner am Kopf
+                    ctx.fillStyle = p.color;
+                    roundRect(ctx, p.x, p.y, p.w, 9, { tl: 20, tr: 20, bl: 0, br: 0 }, true, false);
+
+                    // Gebäude-Icon
+                    ctx.font = "36px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText(p.icon, p.x + p.w / 2, p.y + 58);
+
+                    // Name
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 13px 'Inter', sans-serif";
+                    ctx.textAlign = "center";
+
+                    const words = p.name.split(' ');
+                    if (words.length > 2) {
+                        ctx.fillText(words.slice(0, 2).join(' '), p.x + p.w / 2, p.y + 92);
+                        ctx.fillText(words.slice(2).join(' '), p.x + p.w / 2, p.y + 110);
+                    } else {
+                        ctx.fillText(p.name, p.x + p.w / 2, p.y + 98);
+                    }
+
+                    // Hover-Glow-Ring
+                    if (isHovered) {
+                        ctx.strokeStyle = p.color;
+                        ctx.lineWidth = 2.5;
+                        ctx.beginPath();
+                        ctx.arc(p.x + p.w / 2, p.y + p.h / 2, Math.max(p.w, p.h) * 0.65, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
                 }
             });
         }
 
         function renderRemotePlayers() {
             remotePlayers.forEach(rp => {
-                const px = rp.x || 1400;
-                const py = rp.y || 1000;
+                const px = rp.x || 2400;
+                const py = rp.y || 1800;
 
-                // Shadow
+                // Schatten
                 ctx.fillStyle = "rgba(0,0,0,0.4)";
                 ctx.beginPath();
-                ctx.ellipse(px, py + 12, 12, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(px, py + 14, 14, 7, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Player Dot/Avatar
+                // Avatar
                 ctx.fillStyle = "#a855f7";
                 ctx.strokeStyle = "#ffffff";
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.arc(px, py, 10, 0, Math.PI * 2);
+                ctx.arc(px, py, 11, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
 
-                // Username Tag
+                // Name-Tag
                 ctx.font = "bold 11px 'Inter', sans-serif";
                 ctx.textAlign = "center";
                 const textWidth = ctx.measureText(rp.username).width;
 
                 ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
-                roundRect(ctx, px - textWidth / 2 - 6, py - 28, textWidth + 12, 18, 6, true, false);
+                roundRect(ctx, px - textWidth / 2 - 6, py - 30, textWidth + 12, 18, 6, true, false);
 
                 ctx.fillStyle = "#d8b4fe";
-                ctx.fillText(rp.username, px, py - 15);
+                ctx.fillText(rp.username, px, py - 17);
             });
         }
 
@@ -704,57 +1164,56 @@
             const px = myPlayer.x;
             const py = myPlayer.y;
 
-            // Target destination indicator (if moving)
+            // Navigationslinie zum Klickziel
             if (Math.hypot(myPlayer.targetX - px, myPlayer.targetY - py) > 10) {
-                ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
-                ctx.setLineDash([4, 4]);
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = "rgba(59, 130, 246, 0.45)";
+                ctx.setLineDash([5, 5]);
+                ctx.lineWidth = 2.5;
                 ctx.beginPath();
                 ctx.moveTo(px, py);
                 ctx.lineTo(myPlayer.targetX, myPlayer.targetY);
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // Target ring
                 ctx.strokeStyle = "#60a5fa";
                 ctx.beginPath();
-                ctx.arc(myPlayer.targetX, myPlayer.targetY, 8, 0, Math.PI * 2);
+                ctx.arc(myPlayer.targetX, myPlayer.targetY, 9, 0, Math.PI * 2);
                 ctx.stroke();
             }
 
-            // Shadow
+            // Schatten
             ctx.fillStyle = "rgba(0,0,0,0.5)";
             ctx.beginPath();
-            ctx.ellipse(px, py + 14, 14, 7, 0, 0, Math.PI * 2);
+            ctx.ellipse(px, py + 15, 15, 8, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Outer Aura
+            // Blaue Spieler-Aura
             ctx.fillStyle = "rgba(59, 130, 246, 0.25)";
             ctx.beginPath();
-            ctx.arc(px, py, 18, 0, Math.PI * 2);
+            ctx.arc(px, py, 20, 0, Math.PI * 2);
             ctx.fill();
 
-            // Core Avatar
+            // Avatar-Kreis
             ctx.fillStyle = "#3b82f6";
             ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.arc(px, py, 11, 0, Math.PI * 2);
+            ctx.arc(px, py, myPlayer.radius, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
-            // Username Label (Me)
+            // Namens-Badge
             ctx.font = "bold 12px 'Inter', sans-serif";
             ctx.textAlign = "center";
             const textWidth = ctx.measureText(myPlayer.name).width;
 
             ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-            ctx.strokeStyle = "rgba(59, 130, 246, 0.6)";
-            ctx.lineWidth = 1;
-            roundRect(ctx, px - textWidth / 2 - 8, py - 32, textWidth + 16, 20, 6, true, true);
+            ctx.strokeStyle = "rgba(59, 130, 246, 0.7)";
+            ctx.lineWidth = 1.5;
+            roundRect(ctx, px - textWidth / 2 - 8, py - 34, textWidth + 16, 20, 6, true, true);
 
             ctx.fillStyle = "#60a5fa";
-            ctx.fillText(myPlayer.name, px, py - 18);
+            ctx.fillText(myPlayer.name, px, py - 20);
         }
 
         // --- ROUND RECT HELPER ---
@@ -794,10 +1253,9 @@
             document.getElementById('poiDesc').innerText = poi.desc;
             document.getElementById('poiEnterBtn').href = poi.url;
 
-            // Find visitors near this POI
             const visitors = remotePlayers.filter(p => {
                 const d = Math.hypot(p.x - (poi.x + poi.w / 2), p.y - (poi.y + poi.h / 2));
-                return d < 200 || p.location === poi.name;
+                return d < 220 || p.location === poi.name;
             });
 
             document.getElementById('poiPlayerCount').innerText = `${visitors.length} Spieler`;
@@ -835,8 +1293,9 @@
 
         function walkToCurrentPoi() {
             if (!activePoiModal) return;
+            // Vor dem Gebäude stehen bleiben
             myPlayer.targetX = activePoiModal.x + activePoiModal.w / 2;
-            myPlayer.targetY = activePoiModal.y + activePoiModal.h + 20;
+            myPlayer.targetY = activePoiModal.y + activePoiModal.h + 25;
             closePoiModal();
         }
 
@@ -889,7 +1348,7 @@
             openPoiModal(poi);
         }
 
-        // Run
+        // Starte Map
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
