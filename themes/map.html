@@ -402,34 +402,37 @@
         }
         initScenery();
 
-        // --- FAHRZEUGE MIT VOLLER ROTATION & CRASH-PHYSIK ---
-        // Steuerung: Geschwindigkeit stufenlos (Gas/Bremse), Rotation stufenlos (A/D)
+        // --- FAHRZEUGE MIT EIGENEN FAHRSPUREN (GETRENNTE SPUREN GEGEN BLOCKADEN) ---
+        // Highway 2 (y=2400..2490): Ost-Spur y=2422, West-Spur y=2468, Tram-Gleis y=2447
+        // Highway 3 (y=4850..4940): Ost-Spur y=4872, West-Spur y=4918
+        // Boulevard 2 (x=3000..3090): Süd-Spur x=3022, Nord-Spur x=3068, Tram-Gleis x=3045
+        // Boulevard 3 (x=6200..6290): Süd-Spur x=6222, Nord-Spur x=6268
         const VEHICLES = [
-            // PKWs Highway 2
-            { id: "car1", type: "car", x: 500, y: 2420, vx: 5.5, vy: 0, angle: 0, speed: 5.5, color: "#facc15", label: "TAXI", isOccupied: false, driver: null, health: 100, isCrashed: false },
-            { id: "car2", type: "car", x: 2400, y: 2420, vx: 6.0, vy: 0, angle: 0, speed: 6.0, color: "#ef4444", label: "SPORT-PKW", isOccupied: false, driver: null, health: 100, isCrashed: false },
-            { id: "car3", type: "car", x: 6800, y: 2465, vx: -5.5, vy: 0, angle: Math.PI, speed: 5.5, color: "#38bdf8", label: "LIMUSINE", isOccupied: false, driver: null, health: 100, isCrashed: false },
-            { id: "car4", type: "car", x: 4200, y: 2465, vx: -6.0, vy: 0, angle: Math.PI, speed: 6.0, color: "#e2e8f0", label: "PKW", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            // Highway 2 Ost-Spur (fährt nach rechts)
+            { id: "car1", type: "car", x: 500, y: 2422, angle: 0, speed: 5.5, color: "#facc15", label: "TAXI", isOccupied: false, driver: null, health: 100 },
+            { id: "car2", type: "car", x: 4500, y: 2422, angle: 0, speed: 6.0, color: "#ef4444", label: "SPORT-PKW", isOccupied: false, driver: null, health: 100 },
+            { id: "bus1", type: "bus", x: 2500, y: 2422, angle: 0, speed: 4.2, color: "#2563eb", label: "METRO-BUS 1", len: 90, wid: 36, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100 },
 
-            // PKWs Highway 3
-            { id: "car5", type: "car", x: 1200, y: 4870, vx: 5.8, vy: 0, angle: 0, speed: 5.8, color: "#a855f7", label: "CABRIO", isOccupied: false, driver: null, health: 100, isCrashed: false },
-            { id: "car6", type: "car", x: 7400, y: 4915, vx: -5.8, vy: 0, angle: Math.PI, speed: 5.8, color: "#22c55e", label: "ELEKTRO-PKW", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            // Highway 2 West-Spur (fährt nach links)
+            { id: "car3", type: "car", x: 8500, y: 2468, angle: Math.PI, speed: 5.5, color: "#38bdf8", label: "LIMUSINE", isOccupied: false, driver: null, health: 100 },
+            { id: "car4", type: "car", x: 4500, y: 2468, angle: Math.PI, speed: 6.0, color: "#e2e8f0", label: "PKW", isOccupied: false, driver: null, health: 100 },
 
-            // Vertikale PKWs (x=3000)
-            { id: "car7", type: "car", x: 3020, y: 800, vx: 0, vy: 5.5, angle: Math.PI / 2, speed: 5.5, color: "#f97316", label: "SUV", isOccupied: false, driver: null, health: 100, isCrashed: false },
-            { id: "car8", type: "car", x: 3065, y: 4200, vx: 0, vy: -5.5, angle: -Math.PI / 2, speed: 5.5, color: "#06b6d4", label: "TAXI", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            // Highway 3 Ost- & West-Spuren
+            { id: "car5", type: "car", x: 1200, y: 4872, angle: 0, speed: 5.8, color: "#a855f7", label: "CABRIO", isOccupied: false, driver: null, health: 100 },
+            { id: "car6", type: "car", x: 7400, y: 4918, angle: Math.PI, speed: 5.8, color: "#22c55e", label: "ELEKTRO-PKW", isOccupied: false, driver: null, health: 100 },
+            { id: "bus2", type: "bus", x: 4000, y: 4918, angle: Math.PI, speed: 4.2, color: "#2563eb", label: "CAMPUS-EXPRESS", len: 90, wid: 36, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100 },
 
-            // Vertikale PKWs (x=6200)
-            { id: "car9", type: "car", x: 6220, y: 1200, vx: 0, vy: 5.5, angle: Math.PI / 2, speed: 5.5, color: "#ec4899", label: "PKW", isOccupied: false, driver: null, health: 100, isCrashed: false },
-            { id: "car10", type: "car", x: 6265, y: 5500, vx: 0, vy: -5.5, angle: -Math.PI / 2, speed: 5.5, color: "#eab308", label: "LIEFERWAGEN", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            // Boulevard 2 (x=3000) Süd & Nord
+            { id: "car7", type: "car", x: 3022, y: 800, angle: Math.PI / 2, speed: 5.5, color: "#f97316", label: "SUV", isOccupied: false, driver: null, health: 100 },
+            { id: "car8", type: "car", x: 3068, y: 5500, angle: -Math.PI / 2, speed: 5.5, color: "#06b6d4", label: "TAXI", isOccupied: false, driver: null, health: 100 },
 
-            // ÖPNV Stadtbusse (Fahrplan-Logik: halten an Haltestellen!)
-            { id: "bus1", type: "bus", x: 1800, y: 2420, vx: 4.0, vy: 0, angle: 0, speed: 4.0, color: "#2563eb", label: "METRO-BUS 1", len: 90, wid: 36, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100, isCrashed: false },
-            { id: "bus2", type: "bus", x: 5800, y: 4915, vx: -4.0, vy: 0, angle: Math.PI, speed: 4.0, color: "#2563eb", label: "CAMPUS-EXPRESS", len: 90, wid: 36, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100, isCrashed: false },
+            // Boulevard 3 (x=6200) Süd & Nord
+            { id: "car9", type: "car", x: 6222, y: 1200, angle: Math.PI / 2, speed: 5.5, color: "#ec4899", label: "PKW", isOccupied: false, driver: null, health: 100 },
+            { id: "car10", type: "car", x: 6268, y: 5500, angle: -Math.PI / 2, speed: 5.5, color: "#eab308", label: "LIEFERWAGEN", isOccupied: false, driver: null, health: 100 },
 
-            // ÖPNV Straßenbahnen
-            { id: "tram1", type: "tram", x: 3047, y: 1600, vx: 0, vy: 4.5, angle: Math.PI / 2, speed: 4.5, color: "#0284c7", label: "TRAM LINIE A", len: 160, wid: 26, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100, isCrashed: false },
-            { id: "tram2", type: "tram", x: 4200, y: 2447, vx: 4.5, vy: 0, angle: 0, speed: 4.5, color: "#0284c7", label: "TRAM LINIE B", len: 160, wid: 26, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100, isCrashed: false }
+            // Trams auf eigener Spur (Tram-Gleis)
+            { id: "tram1", type: "tram", x: 3045, y: 1600, angle: Math.PI / 2, speed: 4.5, color: "#0284c7", label: "TRAM LINIE A", len: 160, wid: 26, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100 },
+            { id: "tram2", type: "tram", x: 6500, y: 2447, angle: 0, speed: 4.5, color: "#0284c7", label: "TRAM LINIE B", len: 160, wid: 26, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100 }
         ];
 
         // Partikel-System für Crashes, Rauch & Bremsspuren
@@ -494,7 +497,7 @@
                 const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
                 if (res.ok) {
                     const u = await res.json();
-                    myPlayer.id = u._id || u.id;
+                    myPlayer.id = u.userId || u._id || u.id;
                     myPlayer.name = u.username || "Spieler";
                 }
             } catch (e) { }
@@ -519,7 +522,12 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (Array.isArray(data.players)) {
-                        remotePlayers = data.players.filter(p => !p.isMe && p.username !== myPlayer.name);
+                        // Eigene Position strikt herausfiltern (sowohl per ID als auch per Username/isMe)
+                        remotePlayers = data.players.filter(p =>
+                            !p.isMe &&
+                            p.username !== myPlayer.name &&
+                            (!myPlayer.id || p.userId !== myPlayer.id)
+                        );
                         const count = remotePlayers.length + 1;
                         document.getElementById('onlineCountText').innerText = `${count} online`;
                     }
@@ -913,13 +921,18 @@
                     }
                 }
 
-                // Vorherfahrende Autos nicht rammen
+                // Vorherfahrende Autos auf derselben Spur nicht rammen
                 for (const other of VEHICLES) {
                     if (other === v) continue;
-                    const d = Math.hypot(other.x - v.x, other.y - v.y);
-                    if (d < 55) {
-                        isStopped = true;
-                        break;
+                    // Nur Autos berücksichtigen, die in dieselbe Richtung fahren und auf gleicher Höhe liegen
+                    const angleDiff = Math.abs(v.angle - other.angle);
+                    if (angleDiff < 0.4 || Math.abs(angleDiff - Math.PI * 2) < 0.4) {
+                        const distAhead = (other.x - v.x) * Math.cos(v.angle) + (other.y - v.y) * Math.sin(v.angle);
+                        const distSide = Math.abs((other.x - v.x) * -Math.sin(v.angle) + (other.y - v.y) * Math.cos(v.angle));
+                        if (distAhead > 0 && distAhead < 80 && distSide < 25) {
+                            isStopped = true;
+                            break;
+                        }
                     }
                 }
 
