@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="/themes/js/config.js?v=1791921890"></script>
+    <script src="/themes/js/security.js?v=1791921890"></script>
+    <script src="/themes/js/limo-global.js?v=1791921890" data-page="map"></script>
+    <meta name="robots" content="index, follow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Limazon World Map | Interaktive Stadtkarte</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #060810;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+
+        .font-cyber {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        #mapCanvas {
+            display: block;
+            background: #060810;
+            cursor: grab;
+        }
+
+        #mapCanvas:active {
+            cursor: grabbing;
+        }
+
+        .hud-glass {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+        }
+
+        .hud-glow {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        @keyframes pulseLocation {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.15); opacity: 1; }
+        }
+
+        .pulse-poi {
+            animation: pulseLocation 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="w-screen h-screen relative">
+
+    <!-- CANVAS WORLD -->
+    <canvas id="mapCanvas"></canvas>
+
+    <!-- TOP HUD BAR -->
+    <div class="fixed top-4 left-4 right-4 z-40 flex items-center justify-between pointer-events-none">
+        <!-- Logo & City Name -->
+        <div class="hud-glass rounded-2xl px-5 py-3 flex items-center gap-4 pointer-events-auto border border-blue-500/30">
+            <a href="/index.html" class="flex items-center gap-2 group">
+                <span class="text-2xl group-hover:scale-110 transition-transform">🏙️</span>
+                <div>
+                    <h1 class="font-cyber font-bold text-lg leading-tight tracking-wider bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+                        LIMAZON CITY
+                    </h1>
+                    <p class="text-[10px] text-gray-400 font-mono">LIVE BEZIRKSKARTE</p>
+                </div>
+            </a>
+            <div class="h-6 w-[1px] bg-white/10 hidden sm:block"></div>
+            <div class="hidden sm:flex items-center gap-2 text-xs">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <span class="text-emerald-400 font-bold" id="onlineCountText">1 online</span>
+            </div>
+        </div>
+
+        <!-- Right Quick Controls -->
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <button onclick="centerOnMe()" class="hud-glass hover:bg-slate-800 text-white p-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition active:scale-95 border border-white/10" title="Auf meine Position zentrieren">
+                <span>📍</span> <span class="hidden md:inline">Wo bin ich?</span>
+            </button>
+            <button onclick="togglePoiList()" class="hud-glass hover:bg-slate-800 text-white p-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition active:scale-95 border border-white/10" title="Orts-Verzeichnis">
+                <span>📑</span> <span class="hidden md:inline">Orte</span>
+            </button>
+            <a href="/index.html" class="hud-glass hover:bg-rose-950/60 hover:border-rose-500 text-rose-300 p-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition active:scale-95 border border-white/10">
+                <span>🚪</span> <span class="hidden md:inline">Hub</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- MINI COMPASS / CONTROLS HINT -->
+    <div class="fixed bottom-6 left-6 z-40 hud-glass rounded-2xl p-3 text-xs text-gray-300 hidden md:flex items-center gap-3 border border-white/10">
+        <span class="text-lg">🎮</span>
+        <div class="font-mono text-[11px] leading-tight">
+            <span><b>Pfeiltasten / WASD:</b> Laufen</span><br>
+            <span class="text-gray-400"><b>Klick auf Straße:</b> Hinlaufen • <b>Klick auf Ort:</b> Betreten</span>
+        </div>
+    </div>
+
+    <!-- ZOOM CONTROLS (BOTTOM RIGHT) -->
+    <div class="fixed bottom-6 right-6 z-40 flex flex-col gap-2 pointer-events-auto">
+        <button onclick="adjustZoom(1.2)" class="hud-glass hover:bg-slate-800 w-11 h-11 rounded-2xl text-lg font-bold flex items-center justify-center transition active:scale-95 border border-white/10">➕</button>
+        <button onclick="adjustZoom(0.8)" class="hud-glass hover:bg-slate-800 w-11 h-11 rounded-2xl text-lg font-bold flex items-center justify-center transition active:scale-95 border border-white/10">➖</button>
+        <button onclick="resetCamera()" class="hud-glass hover:bg-slate-800 w-11 h-11 rounded-2xl text-sm font-bold flex items-center justify-center transition active:scale-95 border border-white/10" title="Ansicht zurücksetzen">🔄</button>
+    </div>
+
+    <!-- POI QUICK SELECT DRAWER (MODAL) -->
+    <div id="poiDrawer" class="fixed inset-y-0 right-0 w-full sm:w-96 z-50 hud-glass border-l border-white/10 p-6 flex flex-col transform translate-x-full transition-transform duration-300 ease-out">
+        <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+            <h2 class="font-cyber font-bold text-lg text-white flex items-center gap-2">
+                <span>🏙️</span> Orte in Limazon
+            </h2>
+            <button onclick="togglePoiList()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white">✕</button>
+        </div>
+
+        <input type="text" id="poiSearch" oninput="filterPoiDrawer()" placeholder="Ort suchen (z.B. Tierpark)..." class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-blue-500">
+
+        <div id="poiListContent" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+    </div>
+
+    <!-- BUILDING INTERACTION MODAL -->
+    <div id="poiModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="hud-glass border border-blue-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full relative transform scale-95 transition-transform duration-200" id="poiModalCard">
+            <button onclick="closePoiModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center text-sm font-bold">✕</button>
+
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl shadow-inner border" id="poiIconBox">
+                    🏛️
+                </div>
+                <div>
+                    <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30" id="poiDistrictBadge">Bezirk</span>
+                    <h3 class="text-2xl font-bold font-cyber text-white mt-1" id="poiTitle">Gebäude</h3>
+                </div>
+            </div>
+
+            <p class="text-sm text-gray-300 mb-6 leading-relaxed" id="poiDesc">
+                Beschreibung des Orts.
+            </p>
+
+            <div class="bg-slate-900/60 rounded-2xl p-4 border border-white/5 mb-6">
+                <div class="text-xs text-gray-400 uppercase font-mono mb-2 flex items-center justify-between">
+                    <span>Spieler vor Ort:</span>
+                    <span class="text-emerald-400 font-bold" id="poiPlayerCount">0</span>
+                </div>
+                <div id="poiVisitorsList" class="flex flex-wrap gap-1.5 text-xs">
+                    <span class="text-gray-500 italic">Niemand in der Nähe.</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="walkToCurrentPoi()" class="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition active:scale-95 border border-white/10 flex items-center justify-center gap-2">
+                    <span>🚶</span> Hinlaufen
+                </button>
+                <a id="poiEnterBtn" href="#" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm text-center transition active:scale-95 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2">
+                    <span>🚪</span> Betreten
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAP ENGINE SCRIPT -->
+    <script>
+        const API_URL = window.LIMO_API || '';
+
+        // --- MAP DEFINITION ---
+        const WORLD_WIDTH = 2800;
+        const WORLD_HEIGHT = 2000;
+
+        const DISTRICTS = [
+            { name: "Einkaufsviertel", color: "#3b82f6", bg: "rgba(59, 130, 246, 0.05)", x: 200, y: 150, w: 750, h: 700 },
+            { name: "Regierungsviertel", color: "#8b5cf6", bg: "rgba(139, 92, 246, 0.05)", x: 1050, y: 150, w: 750, h: 700 },
+            { name: "Untergrund (Schattenbezirk)", color: "#ef4444", bg: "rgba(239, 68, 68, 0.05)", x: 1900, y: 150, w: 750, h: 700 },
+            { name: "Entertainment & Media", color: "#ec4899", bg: "rgba(236, 72, 153, 0.05)", x: 200, y: 1050, w: 750, h: 750 },
+            { name: "Grüngürtel & Erholung", color: "#10b981", bg: "rgba(16, 185, 129, 0.05)", x: 1050, y: 1050, w: 750, h: 750 },
+            { name: "Wohnen & Bildung", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.05)", x: 1900, y: 1050, w: 750, h: 750 }
+        ];
+
+        const POIS = [
+            // EINKAUFSVIERTEL
+            { id: "shop", name: "Limazon Hauptshop", icon: "🛒", district: "Einkaufsviertel", url: "/themes/limazon.html", x: 380, y: 350, w: 160, h: 120, color: "#3b82f6", desc: "Der gigantische Hauptmarktplatz von Limazon mit Technik, Ausrüstung und Verbrauchsgütern." },
+            { id: "lshop", name: "L-Shop Premium", icon: "💎", district: "Einkaufsviertel", url: "/themes/l-shop.html", x: 640, y: 350, w: 160, h: 120, color: "#06b6d4", desc: "Exklusive Luxusgüter, Collector-Items und limitierte Editionen." },
+            { id: "kleinanzeigen", name: "Kleinanzeigen Bazar", icon: "📦", district: "Einkaufsviertel", url: "/themes/kleinanzeigen.html", x: 380, y: 580, w: 160, h: 120, color: "#f97316", desc: "Von Spielern für Spieler: Kaufe und verkaufe gebrauchte Gegenstände." },
+            { id: "printstudio", name: "3D Druckstudio", icon: "🖨️", district: "Einkaufsviertel", url: "/themes/printstudio.html", x: 640, y: 580, w: 160, h: 120, color: "#6366f1", desc: "Drucke 3D-Modelle, Kunstwerke und Bauteile mit deinen Rohstoffen." },
+
+            // REGIERUNGSVIERTEL
+            { id: "rathaus", name: "Rathaus & Bürgeramt", icon: "🏛️", district: "Regierungsviertel", url: "/themes/rathaus.html", x: 1230, y: 350, w: 180, h: 140, color: "#8b5cf6", desc: "Zentrale der Stadtverwaltung, Bürgermeisterwahlen, Meldewesen und Bürgeranfragen." },
+            { id: "bank", name: "Zentralbank & Börse", icon: "🏦", district: "Regierungsviertel", url: "/themes/bank.html", x: 1510, y: 350, w: 170, h: 120, color: "#10b981", desc: "Finanzzentrum: Kontoverwaltung, Kredite, SCHUFA-Auskunft und Aktienhandel." },
+            { id: "court", name: "Oberstes Gericht", icon: "⚖️", district: "Regierungsviertel", url: "/themes/court.html", x: 1230, y: 580, w: 160, h: 120, color: "#a855f7", desc: "Verhandle Streitigkeiten, klage gegen Gauner oder verteidige dich vor der Jury." },
+            { id: "standesamt", name: "Standesamt", icon: "💍", district: "Regierungsviertel", url: "/themes/standesamt.html", x: 1510, y: 580, w: 160, h: 120, color: "#f43f5e", desc: "Hochzeiten, Lebenspartnerschaften und Scheidungsanträge in Limazon." },
+
+            // UNTERGRUND
+            { id: "blackmarket", name: "Der Schwarzmarkt", icon: "🕶️", district: "Untergrund (Schattenbezirk)", url: "/themes/blackmarket.html", x: 2080, y: 350, w: 160, h: 120, color: "#ef4444", desc: "Hier gibt es alles, was das Gesetz verbietet: Hehlerware, Hacking-Tools und Gefälligkeiten." },
+            { id: "gangs", name: "Clan-Hauptquartier", icon: "🏴‍☠️", district: "Untergrund (Schattenbezirk)", url: "/themes/gangs.html", x: 2360, y: 350, w: 160, h: 120, color: "#dc2626", desc: "Gründe Clans, plane Revierkriege und manage das Bandenkonto." },
+            { id: "crime", name: "Verbrechergasse", icon: "🎭", district: "Untergrund (Schattenbezirk)", url: "/themes/crime.html", x: 2080, y: 580, w: 160, h: 120, color: "#b91c1c", desc: "Raubüberfälle, Heists und kriminelle Gelegenheitsjobs mit hohem Risiko." },
+            { id: "wanted", name: "Kopfgeldstelle", icon: "🎯", district: "Untergrund (Schattenbezirk)", url: "/themes/wanted.html", x: 2360, y: 580, w: 160, h: 120, color: "#ea580c", desc: "Kopfgeldjäger-Zentrale: Setze Kopfgelder auf Feinde aus oder jage gesuchte Diebe." },
+
+            // ENTERTAINMENT & MEDIA
+            { id: "limtube", name: "LimTube Studios", icon: "📺", district: "Entertainment & Media", url: "/themes/limtube.html", x: 380, y: 1240, w: 170, h: 130, color: "#ef4444", desc: "Die Medienzentrale für Videos, Werbespots und Community-Livestreams." },
+            { id: "games", name: "Limo Arcade", icon: "🎮", district: "Entertainment & Media", url: "/themes/games.html", x: 640, y: 1240, w: 160, h: 130, color: "#38bdf8", desc: "Arcade-Spielehalle: Among Us, Limway Surfers, Retro-Memory und Highscores." },
+            { id: "casino", name: "Neon Palace Casino", icon: "🎰", district: "Entertainment & Media", url: "/themes/casino.html", x: 380, y: 1490, w: 160, h: 120, color: "#fbbf24", desc: "Blackjack, Roulette, Slots und High-Roller-Tische für wagemutige Zocker." },
+            { id: "limterest", name: "Limterest Kunstgalerie", icon: "📌", district: "Entertainment & Media", url: "/themes/limterest.html", x: 640, y: 1490, w: 160, h: 120, color: "#e11d48", desc: "Inspiration, Foto-Pins und kreative Trends der Limazon-Bürger." },
+
+            // GRÜNGÜRTEL & ERHOLUNG
+            { id: "tierpark", name: "Limazon Tierpark", icon: "🦁", district: "Grüngürtel & Erholung", url: "/themes/tierpark.html", x: 1230, y: 1240, w: 170, h: 130, color: "#10b981", desc: "Erkunde wilde Tiere, besuche Gehege und spende für den Erhalt seltener Arten." },
+            { id: "pets", name: "Tierheim & Pension", icon: "🐶", district: "Grüngürtel & Erholung", url: "/themes/pets.html", x: 1510, y: 1240, w: 160, h: 130, color: "#059669", desc: "Adoptiere ein Haustier, füttere es oder bringe es während deines Urlaubs in Pension." },
+            { id: "restaurant", name: "Gourmet Bistro", icon: "🍔", district: "Grüngürtel & Erholung", url: "/themes/restaurant.html", x: 1230, y: 1490, w: 160, h: 120, color: "#f59e0b", desc: "Fülle deine Energie auf mit leckerem Essen und erhalte Arbeits-Buffs." },
+            { id: "kirche", name: "Stadtkirche", icon: "⛪", district: "Grüngürtel & Erholung", url: "/themes/kirche.html", x: 1510, y: 1490, w: 160, h: 120, color: "#14b8a6", desc: "Ein Ort der Ruhe, der Besinnung und Beichte für reuige Sünder." },
+
+            // WOHNEN & BILDUNG
+            { id: "neighborhood", name: "Wohnviertel & Immobilien", icon: "🏡", district: "Wohnen & Bildung", url: "/themes/neighborhood.html", x: 2080, y: 1240, w: 170, h: 130, color: "#d97706", desc: "Miete oder kaufe dein Traumhaus, richte Möbel von Limea ein und lade Mitbewohner ein." },
+            { id: "teachermon", name: "Lehrer-Akademie (Teachermon)", icon: "🎒", district: "Wohnen & Bildung", url: "/themes/teachermon.html", x: 2360, y: 1240, w: 160, h: 130, color: "#f59e0b", desc: "Sammle Lehrer-Karten, ziehe Packs und fordere andere Schüler im Duell heraus." },
+            { id: "tinda", name: "Tinda Dating Center", icon: "🔥", district: "Wohnen & Bildung", url: "/themes/tinda.html", x: 2080, y: 1490, w: 160, h: 120, color: "#ff4458", desc: "Finde die Liebe deines Lebens, chatte und baue eine Familie auf." },
+            { id: "logistics", name: "Limo Logistics Hub", icon: "🚚", district: "Wohnen & Bildung", url: "/themes/logistics.html", x: 2360, y: 1490, w: 160, h: 120, color: "#ea580c", desc: "Paketversand und Lieferungen von Gütern kreuz und quer durch Limazon." }
+        ];
+
+        // --- ROADS NETZWERK ---
+        const ROADS = [
+            // Haupt-Highways (horizontal)
+            { x: 100, y: 480, w: 2600, h: 40 },
+            { x: 100, y: 920, w: 2600, h: 60 },
+            { x: 100, y: 1400, w: 2600, h: 40 },
+
+            // Haupt-Boulevards (vertikal)
+            { x: 550, y: 100, w: 40, h: 1800 },
+            { x: 970, y: 100, w: 60, h: 1800 },
+            { x: 1420, y: 100, w: 40, h: 1800 },
+            { x: 1820, y: 100, w: 60, h: 1800 },
+            { x: 2260, y: 100, w: 40, h: 1800 }
+        ];
+
+        // --- ENGINE STATE ---
+        const canvas = document.getElementById('mapCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let viewX = 1400 - window.innerWidth / 2;
+        let viewY = 1000 - window.innerHeight / 2;
+        let scale = 0.85;
+
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+
+        let myPlayer = {
+            id: null,
+            name: "Gast",
+            x: 1400,
+            y: 950,
+            targetX: 1400,
+            targetY: 950,
+            speed: 7,
+            color: "#3b82f6"
+        };
+
+        let remotePlayers = [];
+        let hoveredPoi = null;
+        let activePoiModal = null;
+
+        // Keys state
+        const keys = {};
+
+        // --- INIT ---
+        window.addEventListener('resize', resizeCanvas);
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            render();
+        }
+
+        async function init() {
+            resizeCanvas();
+            await fetchMe();
+            renderPoiDrawerList();
+
+            // Load remote players and start position loops
+            await syncPosition();
+            setInterval(syncPosition, 2500);
+
+            // Center initial view on player
+            centerOnMe();
+
+            // Setup inputs
+            setupInputs();
+
+            // Animation loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        async function fetchMe() {
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+                if (res.ok) {
+                    const u = await res.json();
+                    myPlayer.id = u._id || u.id;
+                    myPlayer.name = u.username || "Spieler";
+                }
+            } catch (e) { }
+        }
+
+        async function syncPosition() {
+            try {
+                // Post my pos
+                if (myPlayer.id) {
+                    fetch(`${API_URL}/api/map/positions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            x: Math.round(myPlayer.x),
+                            y: Math.round(myPlayer.y),
+                            location: getNearestPoiName(myPlayer.x, myPlayer.y)
+                        })
+                    }).catch(() => {});
+                }
+
+                // Get all active players
+                const res = await fetch(`${API_URL}/api/map/positions`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data.players)) {
+                        remotePlayers = data.players.filter(p => !p.isMe && p.username !== myPlayer.name);
+                        const count = remotePlayers.length + 1;
+                        document.getElementById('onlineCountText').innerText = `${count} online`;
+                    }
+                }
+            } catch (e) { }
+        }
+
+        function getNearestPoiName(x, y) {
+            for (const p of POIS) {
+                const dx = x - (p.x + p.w / 2);
+                const dy = y - (p.y + p.h / 2);
+                if (Math.hypot(dx, dy) < 160) {
+                    return p.name;
+                }
+            }
+            return "Auf der Straße";
+        }
+
+        // --- INPUT HANDLING ---
+        function setupInputs() {
+            window.addEventListener('keydown', e => {
+                keys[e.key.toLowerCase()] = true;
+                if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(e.key.toLowerCase())) {
+                    e.preventDefault();
+                }
+            });
+
+            window.addEventListener('keyup', e => {
+                keys[e.key.toLowerCase()] = false;
+            });
+
+            canvas.addEventListener('mousedown', e => {
+                if (e.button === 0) { // left click
+                    isDragging = true;
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
+                }
+            });
+
+            window.addEventListener('mousemove', e => {
+                if (isDragging) {
+                    const dx = e.clientX - dragStartX;
+                    const dy = e.clientY - dragStartY;
+                    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                        viewX -= dx / scale;
+                        viewY -= dy / scale;
+                        dragStartX = e.clientX;
+                        dragStartY = e.clientY;
+                    }
+                }
+
+                // Check POI hover
+                const worldPos = screenToWorld(e.clientX, e.clientY);
+                hoveredPoi = POIS.find(p =>
+                    worldPos.x >= p.x && worldPos.x <= p.x + p.w &&
+                    worldPos.y >= p.y && worldPos.y <= p.y + p.h
+                );
+            });
+
+            window.addEventListener('mouseup', e => {
+                if (isDragging) {
+                    const dist = Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY);
+                    isDragging = false;
+
+                    // If clicked without dragging, interact
+                    if (dist < 6) {
+                        handleWorldClick(e.clientX, e.clientY);
+                    }
+                }
+            });
+
+            canvas.addEventListener('wheel', e => {
+                e.preventDefault();
+                const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+                zoomAtScreen(zoomFactor, e.clientX, e.clientY);
+            }, { passive: false });
+        }
+
+        function handleWorldClick(screenX, screenY) {
+            const worldPos = screenToWorld(screenX, screenY);
+
+            // Check if building clicked
+            const clickedPoi = POIS.find(p =>
+                worldPos.x >= p.x && worldPos.x <= p.x + p.w &&
+                worldPos.y >= p.y && worldPos.y <= p.y + p.h
+            );
+
+            if (clickedPoi) {
+                openPoiModal(clickedPoi);
+            } else {
+                // Walk to location
+                myPlayer.targetX = Math.max(50, Math.min(WORLD_WIDTH - 50, worldPos.x));
+                myPlayer.targetY = Math.max(50, Math.min(WORLD_HEIGHT - 50, worldPos.y));
+            }
+        }
+
+        // --- COORDINATE HELPERS ---
+        function screenToWorld(sx, sy) {
+            return {
+                x: sx / scale + viewX,
+                y: sy / scale + viewY
+            };
+        }
+
+        function worldToScreen(wx, wy) {
+            return {
+                x: (wx - viewX) * scale,
+                y: (wy - viewY) * scale
+            };
+        }
+
+        function zoomAtScreen(factor, sx, sy) {
+            const newScale = Math.max(0.4, Math.min(1.8, scale * factor));
+            if (newScale === scale) return;
+
+            const before = screenToWorld(sx, sy);
+            scale = newScale;
+            const after = screenToWorld(sx, sy);
+
+            viewX += (before.x - after.x);
+            viewY += (before.y - after.y);
+        }
+
+        function adjustZoom(factor) {
+            zoomAtScreen(factor, canvas.width / 2, canvas.height / 2);
+        }
+
+        function centerOnMe() {
+            viewX = myPlayer.x - (canvas.width / 2) / scale;
+            viewY = myPlayer.y - (canvas.height / 2) / scale;
+        }
+
+        function resetCamera() {
+            scale = 0.85;
+            centerOnMe();
+        }
+
+        // --- GAME LOOP & UPDATES ---
+        function gameLoop() {
+            updatePlayerMovement();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updatePlayerMovement() {
+            let dx = 0;
+            let dy = 0;
+
+            if (keys['w'] || keys['arrowup']) dy -= 1;
+            if (keys['s'] || keys['arrowdown']) dy += 1;
+            if (keys['a'] || keys['arrowleft']) dx -= 1;
+            if (keys['d'] || keys['arrowright']) dx += 1;
+
+            if (dx !== 0 || dy !== 0) {
+                const len = Math.hypot(dx, dy);
+                myPlayer.x += (dx / len) * myPlayer.speed;
+                myPlayer.y += (dy / len) * myPlayer.speed;
+                myPlayer.targetX = myPlayer.x;
+                myPlayer.targetY = myPlayer.y;
+            } else {
+                // Move towards click target
+                const toTargetX = myPlayer.targetX - myPlayer.x;
+                const toTargetY = myPlayer.targetY - myPlayer.y;
+                const dist = Math.hypot(toTargetX, toTargetY);
+
+                if (dist > 4) {
+                    const step = Math.min(dist, myPlayer.speed);
+                    myPlayer.x += (toTargetX / dist) * step;
+                    myPlayer.y += (toTargetY / dist) * step;
+                }
+            }
+
+            // Clamping
+            myPlayer.x = Math.max(60, Math.min(WORLD_WIDTH - 60, myPlayer.x));
+            myPlayer.y = Math.max(60, Math.min(WORLD_HEIGHT - 60, myPlayer.y));
+        }
+
+        // --- RENDER PIPELINE ---
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.scale(scale, scale);
+            ctx.translate(-viewX, -viewY);
+
+            // 1. Grid Background & World Bounds
+            renderWorldBackground();
+
+            // 2. Districts
+            renderDistricts();
+
+            // 3. Roads & Crossings
+            renderRoads();
+
+            // 4. Buildings / POIs
+            renderPois();
+
+            // 5. Remote Players
+            renderRemotePlayers();
+
+            // 6. Local Player Avatar
+            renderLocalPlayer();
+
+            ctx.restore();
+        }
+
+        function renderWorldBackground() {
+            // Ground
+            ctx.fillStyle = "#0a0e1a";
+            ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+            // Grid lines
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+            ctx.lineWidth = 1;
+            const gridSize = 80;
+            for (let x = 0; x <= WORLD_WIDTH; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, WORLD_HEIGHT);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= WORLD_HEIGHT; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(WORLD_WIDTH, y);
+                ctx.stroke();
+            }
+
+            // World border glow
+            ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        }
+
+        function renderDistricts() {
+            DISTRICTS.forEach(d => {
+                ctx.fillStyle = d.bg;
+                ctx.strokeStyle = d.color + "33";
+                ctx.lineWidth = 2;
+                roundRect(ctx, d.x, d.y, d.w, d.h, 24, true, true);
+
+                // District Name label
+                ctx.fillStyle = d.color + "aa";
+                ctx.font = "bold 20px 'Space Grotesk', sans-serif";
+                ctx.fillText(d.name.toUpperCase(), d.x + 30, d.y + 45);
+            });
+        }
+
+        function renderRoads() {
+            // Asphalt
+            ctx.fillStyle = "#161b2a";
+            ROADS.forEach(r => {
+                roundRect(ctx, r.x, r.y, r.w, r.h, 8, true, false);
+            });
+
+            // Road markings (dashed centerlines)
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([16, 16]);
+
+            ROADS.forEach(r => {
+                ctx.beginPath();
+                if (r.w > r.h) { // Horizontal
+                    ctx.moveTo(r.x, r.y + r.h / 2);
+                    ctx.lineTo(r.x + r.w, r.y + r.h / 2);
+                } else { // Vertical
+                    ctx.moveTo(r.x + r.w / 2, r.y);
+                    ctx.lineTo(r.x + r.w / 2, r.y + r.h);
+                }
+                ctx.stroke();
+            });
+
+            ctx.setLineDash([]); // Reset
+        }
+
+        function renderPois() {
+            POIS.forEach(p => {
+                const isHovered = (hoveredPoi && hoveredPoi.id === p.id);
+
+                // Building shadow
+                ctx.shadowColor = isHovered ? p.color : "rgba(0,0,0,0.6)";
+                ctx.shadowBlur = isHovered ? 30 : 15;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 8;
+
+                // Building Base
+                ctx.fillStyle = isHovered ? "#1e293b" : "#0f172a";
+                ctx.strokeStyle = isHovered ? p.color : "rgba(255, 255, 255, 0.12)";
+                ctx.lineWidth = isHovered ? 3 : 1.5;
+                roundRect(ctx, p.x, p.y, p.w, p.h, 18, true, true);
+
+                // Reset shadow
+                ctx.shadowBlur = 0;
+
+                // Color accent banner at top
+                ctx.fillStyle = p.color;
+                roundRect(ctx, p.x, p.y, p.w, 8, { tl: 18, tr: 18, bl: 0, br: 0 }, true, false);
+
+                // Icon
+                ctx.font = "34px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(p.icon, p.x + p.w / 2, p.y + 55);
+
+                // Building Name
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 13px 'Inter', sans-serif";
+                ctx.textAlign = "center";
+
+                // Text wrap if needed
+                const words = p.name.split(' ');
+                if (words.length > 2) {
+                    ctx.fillText(words.slice(0, 2).join(' '), p.x + p.w / 2, p.y + 85);
+                    ctx.fillText(words.slice(2).join(' '), p.x + p.w / 2, p.y + 102);
+                } else {
+                    ctx.fillText(p.name, p.x + p.w / 2, p.y + 92);
+                }
+
+                // Hover Indicator Glow Ring
+                if (isHovered) {
+                    ctx.strokeStyle = p.color;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(p.x + p.w / 2, p.y + p.h / 2, Math.max(p.w, p.h) * 0.65, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function renderRemotePlayers() {
+            remotePlayers.forEach(rp => {
+                const px = rp.x || 1400;
+                const py = rp.y || 1000;
+
+                // Shadow
+                ctx.fillStyle = "rgba(0,0,0,0.4)";
+                ctx.beginPath();
+                ctx.ellipse(px, py + 12, 12, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Player Dot/Avatar
+                ctx.fillStyle = "#a855f7";
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(px, py, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Username Tag
+                ctx.font = "bold 11px 'Inter', sans-serif";
+                ctx.textAlign = "center";
+                const textWidth = ctx.measureText(rp.username).width;
+
+                ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+                roundRect(ctx, px - textWidth / 2 - 6, py - 28, textWidth + 12, 18, 6, true, false);
+
+                ctx.fillStyle = "#d8b4fe";
+                ctx.fillText(rp.username, px, py - 15);
+            });
+        }
+
+        function renderLocalPlayer() {
+            const px = myPlayer.x;
+            const py = myPlayer.y;
+
+            // Target destination indicator (if moving)
+            if (Math.hypot(myPlayer.targetX - px, myPlayer.targetY - py) > 10) {
+                ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
+                ctx.setLineDash([4, 4]);
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(myPlayer.targetX, myPlayer.targetY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Target ring
+                ctx.strokeStyle = "#60a5fa";
+                ctx.beginPath();
+                ctx.arc(myPlayer.targetX, myPlayer.targetY, 8, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Shadow
+            ctx.fillStyle = "rgba(0,0,0,0.5)";
+            ctx.beginPath();
+            ctx.ellipse(px, py + 14, 14, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Outer Aura
+            ctx.fillStyle = "rgba(59, 130, 246, 0.25)";
+            ctx.beginPath();
+            ctx.arc(px, py, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Core Avatar
+            ctx.fillStyle = "#3b82f6";
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(px, py, 11, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Username Label (Me)
+            ctx.font = "bold 12px 'Inter', sans-serif";
+            ctx.textAlign = "center";
+            const textWidth = ctx.measureText(myPlayer.name).width;
+
+            ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+            ctx.strokeStyle = "rgba(59, 130, 246, 0.6)";
+            ctx.lineWidth = 1;
+            roundRect(ctx, px - textWidth / 2 - 8, py - 32, textWidth + 16, 20, 6, true, true);
+
+            ctx.fillStyle = "#60a5fa";
+            ctx.fillText(myPlayer.name, px, py - 18);
+        }
+
+        // --- ROUND RECT HELPER ---
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            if (typeof radius === 'undefined') radius = 5;
+            if (typeof radius === 'number') {
+                radius = { tl: radius, tr: radius, br: radius, bl: radius };
+            } else {
+                const defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
+                for (const side in defaultRadius) {
+                    radius[side] = radius[side] || defaultRadius[side];
+                }
+            }
+            ctx.beginPath();
+            ctx.moveTo(x + radius.tl, y);
+            ctx.lineTo(x + width - radius.tr, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+            ctx.lineTo(x + width, y + height - radius.br);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+            ctx.lineTo(x + radius.bl, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+            ctx.lineTo(x, y + radius.tl);
+            ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+            ctx.closePath();
+            if (fill) ctx.fill();
+            if (stroke) ctx.stroke();
+        }
+
+        // --- MODAL / INTERACTION LOGIC ---
+        function openPoiModal(poi) {
+            activePoiModal = poi;
+            document.getElementById('poiIconBox').innerText = poi.icon;
+            document.getElementById('poiIconBox').style.background = poi.color + "22";
+            document.getElementById('poiIconBox').style.borderColor = poi.color + "66";
+            document.getElementById('poiDistrictBadge').innerText = poi.district;
+            document.getElementById('poiTitle').innerText = poi.name;
+            document.getElementById('poiDesc').innerText = poi.desc;
+            document.getElementById('poiEnterBtn').href = poi.url;
+
+            // Find visitors near this POI
+            const visitors = remotePlayers.filter(p => {
+                const d = Math.hypot(p.x - (poi.x + poi.w / 2), p.y - (poi.y + poi.h / 2));
+                return d < 200 || p.location === poi.name;
+            });
+
+            document.getElementById('poiPlayerCount').innerText = `${visitors.length} Spieler`;
+            const visitorsContainer = document.getElementById('poiVisitorsList');
+
+            if (visitors.length > 0) {
+                visitorsContainer.innerHTML = visitors.map(v =>
+                    `<span class="px-2.5 py-1 rounded-lg bg-slate-800 text-purple-300 border border-purple-500/30">👤 ${v.username}</span>`
+                ).join('');
+            } else {
+                visitorsContainer.innerHTML = `<span class="text-gray-500 italic">Aktuell keine Spieler im Umkreis.</span>`;
+            }
+
+            const modal = document.getElementById('poiModal');
+            const card = document.getElementById('poiModalCard');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closePoiModal() {
+            const modal = document.getElementById('poiModal');
+            const card = document.getElementById('poiModalCard');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                activePoiModal = null;
+            }, 200);
+        }
+
+        function walkToCurrentPoi() {
+            if (!activePoiModal) return;
+            myPlayer.targetX = activePoiModal.x + activePoiModal.w / 2;
+            myPlayer.targetY = activePoiModal.y + activePoiModal.h + 20;
+            closePoiModal();
+        }
+
+        // --- POI DRAWER ---
+        function togglePoiList() {
+            const drawer = document.getElementById('poiDrawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        function renderPoiDrawerList() {
+            const container = document.getElementById('poiListContent');
+            container.innerHTML = POIS.map(p => `
+                <div class="p-3 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-white/5 hover:border-blue-500/40 cursor-pointer transition flex items-center justify-between group" onclick="selectPoiFromDrawer('${p.id}')">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${p.icon}</span>
+                        <div>
+                            <div class="font-bold text-sm text-white group-hover:text-blue-400 transition">${p.name}</div>
+                            <div class="text-[11px] text-gray-400">${p.district}</div>
+                        </div>
+                    </div>
+                    <span class="text-xs text-blue-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">➔</span>
+                </div>
+            `).join('');
+        }
+
+        function filterPoiDrawer() {
+            const query = document.getElementById('poiSearch').value.toLowerCase();
+            const filtered = POIS.filter(p => p.name.toLowerCase().includes(query) || p.district.toLowerCase().includes(query));
+            const container = document.getElementById('poiListContent');
+            container.innerHTML = filtered.map(p => `
+                <div class="p-3 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-white/5 hover:border-blue-500/40 cursor-pointer transition flex items-center justify-between group" onclick="selectPoiFromDrawer('${p.id}')">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${p.icon}</span>
+                        <div>
+                            <div class="font-bold text-sm text-white group-hover:text-blue-400 transition">${p.name}</div>
+                            <div class="text-[11px] text-gray-400">${p.district}</div>
+                        </div>
+                    </div>
+                    <span class="text-xs text-blue-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">➔</span>
+                </div>
+            `).join('');
+        }
+
+        function selectPoiFromDrawer(id) {
+            const poi = POIS.find(p => p.id === id);
+            if (!poi) return;
+            togglePoiList();
+            viewX = (poi.x + poi.w / 2) - (canvas.width / 2) / scale;
+            viewY = (poi.y + poi.h / 2) - (canvas.height / 2) / scale;
+            openPoiModal(poi);
+        }
+
+        // Run
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
