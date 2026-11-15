@@ -74,6 +74,13 @@
     <script>
         const API_BASE = window.LIMO_API + '/api';
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, s => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[s]));
+        }
+
         async function init() {
             loadMostWanted();
             loadRecentAttackers();
@@ -95,10 +102,10 @@
                     <div class="poster">
                         <div class="label">Wanted</div>
                         <div class="avatar">👤</div>
-                        <h3>${b.username}</h3>
+                        <h3>${escapeHtml(b.username)}</h3>
                         <div class="amount">$${b.pool.toLocaleString()}</div>
                         <div class="attacker-info">Zuletzt erhöht: ${new Date(b.updatedAt).toLocaleDateString()}</div>
-                        <button style="margin-top:10px; width: 100%;" onclick="quickBounty('${b.targetUserId}', '${(b.username || '').replace(/'/g, &quot;\\'&quot;)}')">Kopfgeld erhöhen</button>
+                        <button style="margin-top:10px; width: 100%;" data-target-id="${b.targetUserId}" data-username="${encodeURIComponent(b.username || '')}" onclick="quickBounty(this.dataset.targetId, decodeURIComponent(this.dataset.username))">Kopfgeld erhöhen</button>
                     </div>
                 `).join('');
             } catch (e) { console.error(e); }
@@ -118,11 +125,11 @@
 
                 list.innerHTML = data.attackers.reverse().map(a => `
                     <div class="attacker-item">
-                        <div class="attacker-name">${a.name}</div>
+                        <div class="attacker-name">${escapeHtml(a.name)}</div>
                         <div class="attacker-info">Hat dir $${a.amount.toLocaleString()} geklaut</div>
                         <div style="display: flex; gap: 5px;">
                             <input type="number" id="amt-${a.id}" placeholder="Betrag" min="1000" value="5000">
-                            <button onclick="placeBounty('${a.id}', '${(a.name || '').replace(/'/g, &quot;\\'&quot;)}')">Setzen</button>
+                            <button data-id="${a.id}" data-name="${encodeURIComponent(a.name || '')}" onclick="placeBounty(this.dataset.id, decodeURIComponent(this.dataset.name))">Setzen</button>
                         </div>
                     </div>
                 `).join('');

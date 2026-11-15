@@ -431,22 +431,22 @@
     <div class="container">
         <div class="controls">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Spiel suchen..." onkeyup="app.renderGames()">
+                <input type="search" id="searchInput" name="gameSearchQuery" placeholder="Spiel suchen..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" onkeyup="app.renderGames()">
             </div>
         </div>
         <div class="games-grid" id="gamesGrid"></div>
     </div>
 
     <div id="loginModal">
-        <div class="modal-box" style="text-align: center;">
+        <form class="modal-box" style="text-align: center;" onsubmit="event.preventDefault(); app.login();">
             <span onclick="document.getElementById('loginModal').style.display='none'"
                 style="position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;">&times;</span>
             <h2 style="color:var(--accent); margin-top:0;">Login</h2>
-            <input type="text" id="lUser" placeholder="Benutzername">
-            <input type="password" id="lPass" placeholder="Passwort">
-            <button class="btn btn-play" style="width:100%; margin-top:10px;" onclick="app.login()">Einloggen</button>
+            <input type="text" id="lUser" name="username" autocomplete="username" placeholder="Benutzername">
+            <input type="password" id="lPass" name="password" autocomplete="current-password" placeholder="Passwort">
+            <button type="submit" class="btn btn-play" style="width:100%; margin-top:10px;">Einloggen</button>
             <p id="lError" style="color:#ff5252; margin-top:10px; font-size:13px;"></p>
-        </div>
+        </form>
     </div>
 
     <div id="lbModal">
