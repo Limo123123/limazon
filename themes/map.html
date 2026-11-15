@@ -38,7 +38,7 @@
         }
 
         .hud-glass {
-            background: rgba(11, 17, 33, 0.86);
+            background: rgba(11, 17, 33, 0.88);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
@@ -71,7 +71,7 @@
                     <h1 class="font-cyber font-bold text-lg leading-tight tracking-wider bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
                         LIMAZON METROPOLIS
                     </h1>
-                    <p class="text-[10px] text-gray-400 font-mono tracking-widest uppercase" id="vehicleStatusText">Zu Fuß • v3.0</p>
+                    <p class="text-[10px] text-gray-400 font-mono tracking-widest uppercase" id="vehicleStatusText">Zu Fuß • v3.5</p>
                 </div>
             </a>
             <div class="h-6 w-[1px] bg-white/10 hidden sm:block"></div>
@@ -98,20 +98,23 @@
     </div>
 
     <!-- MINI COMPASS / CONTROLS HINT -->
-    <div class="fixed bottom-6 left-6 z-40 hud-glass rounded-2xl p-3 text-xs text-gray-300 hidden md:flex items-center gap-3 border border-white/10">
+    <div class="fixed bottom-6 left-6 z-40 hud-glass rounded-2xl p-3.5 text-xs text-gray-300 hidden md:flex items-center gap-3 border border-white/10">
         <span class="text-xl">🚦</span>
         <div class="font-mono text-[11px] leading-tight">
-            <span><b>Laufen / Fahren:</b> WASD / Pfeile • <b>[F]</b> In Auto, Bus oder Bahn einsteigen / aussteigen</span><br>
-            <span class="text-gray-400">🛑 Ampeln regeln Kreuzungen • 🕳️ Gulli führt in den Untergrund • Tunnel verbinden Fernstraßen</span>
+            <span><b>Fahren & Laufen:</b> WASD / Pfeile (Gas, Bremse, stufenlos Lenken) • <b>[F]</b> Ein-/Aussteigen</span><br>
+            <span class="text-gray-400">🚏 ÖPNV-Haltestellen mit Fahrplan • 💥 Crash-Physik aktiv • 🛑 Ampelphasen beachten</span>
         </div>
     </div>
 
     <!-- SPEEDOMETER HUD (WENN IM FAHRZEUG) -->
-    <div id="speedoHud" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hud-glass rounded-2xl px-6 py-2.5 flex items-center gap-4 border border-blue-500/40 hidden">
+    <div id="speedoHud" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hud-glass rounded-2xl px-6 py-2.5 flex items-center gap-5 border border-blue-500/40 hidden">
         <span class="text-2xl" id="speedoIcon">🚗</span>
         <div>
             <div class="text-[10px] text-gray-400 font-mono uppercase" id="speedoName">PKW</div>
-            <div class="text-lg font-cyber font-bold text-white"><span id="speedoValue">0</span> <span class="text-xs text-blue-400 font-sans">km/h</span></div>
+            <div class="text-xl font-cyber font-bold text-white"><span id="speedoValue">0</span> <span class="text-xs text-blue-400 font-sans">km/h</span></div>
+        </div>
+        <div class="text-xs font-mono" id="passengerBadge">
+            <span class="text-emerald-400">FAHRER</span>
         </div>
         <div class="text-[11px] text-amber-300 font-mono ml-2 border-l border-white/10 pl-3">
             Drücke <b>F</b> zum Verlassen
@@ -213,7 +216,7 @@
             { x: 3700, y: 5300, w: 950, h: 600, type: "park", name: "Südpark Wohngegend" }
         ];
 
-        // Wege innerhalb der Pärke (Sand- / Kieswege)
+        // Spazierwege in den Pärken
         const PARK_PATHS = [
             { points: [{ x: 450, y: 450 }, { x: 750, y: 750 }, { x: 1200, y: 750 }, { x: 1700, y: 650 }, { x: 2500, y: 650 }], width: 18 },
             { points: [{ x: 700, y: 800 }, { x: 700, y: 1450 }, { x: 1200, y: 1500 }, { x: 1700, y: 1450 }, { x: 1700, y: 800 }], width: 16 },
@@ -221,16 +224,16 @@
             { points: [{ x: 3800, y: 5400 }, { x: 4200, y: 5600 }, { x: 4600, y: 5500 }], width: 14 }
         ];
 
-        // --- ORTE / GEBÄUDE (STRIPPED ALL DUPES, ENTROPIE-DISTRIBUTION) ---
+        // --- GEBÄUDE (EXAKT AUSSERHALB DER FAHRBAHNEN & SEEN PLATZIERT!) ---
         const POIS = [
             // Nord-Park
-            { id: "tierpark", name: "Limazon Tierpark", icon: "🦁", district: "Nord-Park & Großer Tiergarten", url: "/themes/tierpark.html", x: 480, y: 550, w: 260, h: 180, color: "#10b981", desc: "Besuche Gehege, exotische Tiere und füttere Löwen mitten im Volkspark." },
+            { id: "tierpark", name: "Limazon Tierpark", icon: "🦁", district: "Nord-Park & Großer Tiergarten", url: "/themes/tierpark.html", x: 480, y: 520, w: 260, h: 180, color: "#10b981", desc: "Besuche Gehege, exotische Tiere und füttere Löwen mitten im Volkspark." },
             { id: "pets", name: "Tierheim & Tierpension", icon: "🐶", district: "Nord-Park & Großer Tiergarten", url: "/themes/pets.html", x: 480, y: 1550, w: 240, h: 170, color: "#059669", desc: "Adoptiere Hunde und Katzen, pflege Haustiere oder bring sie in Pension." },
             { id: "restaurant", name: "Bistro am Schwanensee", icon: "🍔", district: "Nord-Park & Großer Tiergarten", url: "/themes/restaurant.html", x: 1750, y: 950, w: 230, h: 160, color: "#f59e0b", desc: "Gourmet-Essen direkt an der Uferpromenade mit stärkenden Arbeits-Buffs." },
 
             // Regierung & Finanzen
-            { id: "rathaus", name: "Rathaus & Bürgeramt", icon: "🏛️", district: "Regierungs- & Finanzdistrikt", url: "/themes/rathaus.html", x: 4500, y: 500, w: 300, h: 220, color: "#8b5cf6", desc: "Verwaltungssitz des Bürgermeisters, Meldewesen und Stadtrat." },
-            { id: "bundestag", name: "Stadtparlament", icon: "🏛️", district: "Regierungs- & Finanzdistrikt", url: "/themes/bundestag.html", x: 5000, y: 500, w: 280, h: 210, color: "#7c3aed", desc: "Demokratische Beschlüsse, Fraktionen und Bürger-Gesetze." },
+            { id: "rathaus", name: "Rathaus & Bürgeramt", icon: "🏛️", district: "Regierungs- & Finanzdistrikt", url: "/themes/rathaus.html", x: 4500, y: 480, w: 300, h: 220, color: "#8b5cf6", desc: "Verwaltungssitz des Bürgermeisters, Meldewesen und Stadtrat." },
+            { id: "bundestag", name: "Stadtparlament", icon: "🏛️", district: "Regierungs- & Finanzdistrikt", url: "/themes/bundestag.html", x: 5000, y: 480, w: 280, h: 210, color: "#7c3aed", desc: "Demokratische Beschlüsse, Fraktionen und Bürger-Gesetze." },
             { id: "bank", name: "Zentralbank & Börse", icon: "🏦", district: "Regierungs- & Finanzdistrikt", url: "/themes/bank.html", x: 3700, y: 1450, w: 270, h: 190, color: "#10b981", desc: "Finanzzentrum: Konten, Kredite, SCHUFA-Auskunft und Wertpapierhandel." },
             { id: "court", name: "Oberstes Gericht", icon: "⚖️", district: "Regierungs- & Finanzdistrikt", url: "/themes/court.html", x: 4400, y: 1450, w: 260, h: 180, color: "#a855f7", desc: "Justizpalast mit Gerichtssälen, Strafverfahren und Schiedssprüchen." },
             { id: "standesamt", name: "Standesamt", icon: "💍", district: "Regierungs- & Finanzdistrikt", url: "/themes/standesamt.html", x: 5100, y: 1450, w: 240, h: 170, color: "#f43f5e", desc: "Trauungen, Scheidungen und staatliche Partnerschafts-Urkunden." },
@@ -238,58 +241,58 @@
             // Bildung, Campus & Sakral
             { id: "schule", name: "Stadtakademie & Gymnasium", icon: "🎓", district: "Akademie-Campus & Sakralkultur", url: "/themes/schule.html", x: 6900, y: 1250, w: 280, h: 190, color: "#3b82f6", desc: "Campus für Ausbildung, Prüfungen, Klausuren und Fortbildungen." },
             { id: "teachermon", name: "Teachermon Duell-Arena", icon: "🎒", district: "Akademie-Campus & Sakralkultur", url: "/themes/teachermon.html", x: 7400, y: 1250, w: 270, h: 180, color: "#f59e0b", desc: "Sammle Lehrer-Karten, ziehe Booster und tritt im Duell an." },
-            { id: "kirche", name: "St. Limazon Kathedrale", icon: "⛪", district: "Akademie-Campus & Sakralkultur", url: "/themes/kirche.html", x: 8150, y: 800, w: 320, h: 260, color: "#14b8a6", desc: "Historische gotische Kathedrale für Andacht, Beichte und Stille." },
+            { id: "kirche", name: "St. Limazon Kathedrale", icon: "⛪", district: "Akademie-Campus & Sakralkultur", url: "/themes/kirche.html", x: 8150, y: 750, w: 320, h: 260, color: "#14b8a6", desc: "Historische gotische Kathedrale für Andacht, Beichte und Stille." },
 
             // Handelsmeile
-            { id: "shop", name: "Limazon Hauptkaufhaus", icon: "🛒", district: "Handelsmeile & Shopping Boulevard", url: "/themes/limazon.html", x: 500, y: 2950, w: 320, h: 220, color: "#3b82f6", desc: "Das Flaggschiff von Limazon mit Ausrüstung, Gadgets und Verbrauchsartikeln." },
-            { id: "lshop", name: "L-Shop Luxus-Boutique", icon: "💎", district: "Handelsmeile & Shopping Boulevard", url: "/themes/l-shop.html", x: 1050, y: 2950, w: 250, h: 190, color: "#06b6d4", desc: "Exklusive Statussymbole, seltene Sammlerobjekte und High-End Luxus." },
-            { id: "limea", name: "Limea Möbelhaus", icon: "🪑", district: "Handelsmeile & Shopping Boulevard", url: "/themes/limea.html", x: 1550, y: 2950, w: 270, h: 200, color: "#eab308", desc: "Kauf Möbel, Tapeten und Einrichtungsgegenstände für dein Zuhause." },
-            { id: "kleinanzeigen", name: "Kleinanzeigen Bazar", icon: "📦", district: "Handelsmeile & Shopping Boulevard", url: "/themes/kleinanzeigen.html", x: 500, y: 3800, w: 260, h: 180, color: "#f97316", desc: "Spieler-Marktplatz für Gebrauchtes, Trödel und Sammlerstücke." },
+            { id: "shop", name: "Limazon Hauptkaufhaus", icon: "🛒", district: "Handelsmeile & Shopping Boulevard", url: "/themes/limazon.html", x: 480, y: 2800, w: 320, h: 220, color: "#3b82f6", desc: "Das Flaggschiff von Limazon mit Ausrüstung, Gadgets und Verbrauchsartikeln." },
+            { id: "lshop", name: "L-Shop Luxus-Boutique", icon: "💎", district: "Handelsmeile & Shopping Boulevard", url: "/themes/l-shop.html", x: 1050, y: 2800, w: 250, h: 190, color: "#06b6d4", desc: "Exklusive Statussymbole, seltene Sammlerobjekte und High-End Luxus." },
+            { id: "limea", name: "Limea Möbelhaus", icon: "🪑", district: "Handelsmeile & Shopping Boulevard", url: "/themes/limea.html", x: 1550, y: 2800, w: 270, h: 200, color: "#eab308", desc: "Kauf Möbel, Tapeten und Einrichtungsgegenstände für dein Zuhause." },
+            { id: "kleinanzeigen", name: "Kleinanzeigen Bazar", icon: "📦", district: "Handelsmeile & Shopping Boulevard", url: "/themes/kleinanzeigen.html", x: 480, y: 3800, w: 260, h: 180, color: "#f97316", desc: "Spieler-Marktplatz für Gebrauchtes, Trödel und Sammlerstücke." },
             { id: "printstudio", name: "3D-Druck Manufaktur", icon: "🖨️", district: "Handelsmeile & Shopping Boulevard", url: "/themes/printstudio.html", x: 1050, y: 3800, w: 250, h: 180, color: "#6366f1", desc: "Drucke 3D-Objekte und Kunstwerke aus deinen Rohstoffen." },
             { id: "wheel", name: "Glücksrad Pavillon", icon: "🎡", district: "Handelsmeile & Shopping Boulevard", url: "/themes/wheel.html", x: 1550, y: 3800, w: 240, h: 180, color: "#ec4899", desc: "Drehe am Glücksrad und gewinne tägliche Überraschungen." },
 
             // Central Plaza
-            { id: "news", name: "Limazon Daily News", icon: "📰", district: "Central Plaza & Metropol-Forum", url: "/themes/news.html", x: 5000, y: 2900, w: 260, h: 190, color: "#0284c7", desc: "Redaktion: Neueste Schlagzeilen, Kolumnen und Wetterberichte." },
-            { id: "ideabox", name: "Ideen- & Stadtentwicklungsrat", icon: "💡", district: "Central Plaza & Metropol-Forum", url: "/themes/ideabox.html", x: 5500, y: 2900, w: 250, h: 180, color: "#eab308", desc: "Reiche Vorschläge für Features ein und vote über Stadtprojekte." },
+            { id: "news", name: "Limazon Daily News", icon: "📰", district: "Central Plaza & Metropol-Forum", url: "/themes/news.html", x: 5000, y: 2800, w: 260, h: 190, color: "#0284c7", desc: "Redaktion: Neueste Schlagzeilen, Kolumnen und Wetterberichte." },
+            { id: "ideabox", name: "Ideen- & Stadtentwicklungsrat", icon: "💡", district: "Central Plaza & Metropol-Forum", url: "/themes/ideabox.html", x: 5500, y: 2800, w: 250, h: 180, color: "#eab308", desc: "Reiche Vorschläge für Features ein und vote über Stadtprojekte." },
             { id: "jobs", name: "Jobcenter der Metropole", icon: "💼", district: "Central Plaza & Metropol-Forum", url: "/themes/jobs.html", x: 5000, y: 3800, w: 260, h: 180, color: "#64748b", desc: "Vermittlung von Vollzeitjobs, Minijobs und Nebenverdiensten." },
             { id: "halloffame", name: "Hall of Fame Ruhmeshalle", icon: "🏆", district: "Central Plaza & Metropol-Forum", url: "/themes/hall-of-fame.html", x: 5500, y: 3800, w: 260, h: 180, color: "#fbbf24", desc: "Die Bestenliste der reichsten und verdientesten Bürger." },
 
             // Industrie & Logistik
-            { id: "logistics", name: "Limo Logistics Hub", icon: "🚚", district: "Industrie- & Logistik-Terminal", url: "/themes/logistics.html", x: 6900, y: 2950, w: 320, h: 220, color: "#ea580c", desc: "Großes Frachtzentrum für Paketversand und Expresstransporte." },
-            { id: "developer", name: "Tech Lab & Dev-Büros", icon: "💻", district: "Industrie- & Logistik-Terminal", url: "/themes/developer.html", x: 7450, y: 2950, w: 280, h: 190, color: "#38bdf8", desc: "Entwicklerwerkstatt für APIs, Webhooks, Token und Bots." },
+            { id: "logistics", name: "Limo Logistics Hub", icon: "🚚", district: "Industrie- & Logistik-Terminal", url: "/themes/logistics.html", x: 6900, y: 2800, w: 320, h: 220, color: "#ea580c", desc: "Großes Frachtzentrum für Paketversand und Expresstransporte." },
+            { id: "developer", name: "Tech Lab & Dev-Büros", icon: "💻", district: "Industrie- & Logistik-Terminal", url: "/themes/developer.html", x: 7450, y: 2800, w: 280, h: 190, color: "#38bdf8", desc: "Entwicklerwerkstatt für APIs, Webhooks, Token und Bots." },
             { id: "sharktank", name: "Shark Tank Pitch-Zentrum", icon: "🦈", district: "Industrie- & Logistik-Terminal", url: "/themes/sharktank.html", x: 7000, y: 3800, w: 270, h: 180, color: "#0284c7", desc: "Investorenarena für Startups, Anteilscheine und Pitches." },
 
             // Entertainment
-            { id: "casino", name: "Neon Palace Casino", icon: "🎰", district: "Entertainment District & Neon Mile", url: "/themes/casino.html", x: 500, y: 5300, w: 300, h: 220, color: "#fbbf24", desc: "Luxuriöse Spielbank mit Roulette, Blackjack, Slots und Pokertischen." },
-            { id: "games", name: "Limo Arcade Spielehalle", icon: "🎮", district: "Entertainment District & Neon Mile", url: "/themes/games.html", x: 1000, y: 5300, w: 270, h: 200, color: "#38bdf8", desc: "Among Us, Limway Surfers, Retro-Flipper und Highscore-Jagd." },
-            { id: "limtube", name: "LimTube Broadcast Studios", icon: "📺", district: "Entertainment District & Neon Mile", url: "/themes/limtube.html", x: 1500, y: 5300, w: 270, h: 200, color: "#ef4444", desc: "Video-Studios, Community-Streaming und Werbeproduktionen." },
+            { id: "casino", name: "Neon Palace Casino", icon: "🎰", district: "Entertainment District & Neon Mile", url: "/themes/casino.html", x: 480, y: 5350, w: 300, h: 220, color: "#fbbf24", desc: "Luxuriöse Spielbank mit Roulette, Blackjack, Slots und Pokertischen." },
+            { id: "games", name: "Limo Arcade Spielehalle", icon: "🎮", district: "Entertainment District & Neon Mile", url: "/themes/games.html", x: 1000, y: 5350, w: 270, h: 200, color: "#38bdf8", desc: "Among Us, Limway Surfers, Retro-Flipper und Highscore-Jagd." },
+            { id: "limtube", name: "LimTube Broadcast Studios", icon: "📺", district: "Entertainment District & Neon Mile", url: "/themes/limtube.html", x: 1500, y: 5350, w: 270, h: 200, color: "#ef4444", desc: "Video-Studios, Community-Streaming und Werbeproduktionen." },
             { id: "limterest", name: "Limterest Kunstgalerie", icon: "📌", district: "Entertainment District & Neon Mile", url: "/themes/limterest.html", x: 600, y: 6200, w: 260, h: 180, color: "#e11d48", desc: "Inspirierende Fotowände, Moodboards und visuelle Trends." },
             { id: "lottery", name: "Staatliche Lottogesellschaft", icon: "🎫", district: "Entertainment District & Neon Mile", url: "/themes/lottery.html", x: 1200, y: 6200, w: 250, h: 170, color: "#10b981", desc: "Wöchentliche Ziehung um den Mega-Jackpot von Limazon." },
 
             // Südviertel
-            { id: "neighborhood", name: "Limazon Wohnsiedlung", icon: "🏡", district: "Südviertel & Wohnresidenzen", url: "/themes/neighborhood.html", x: 4800, y: 5300, w: 310, h: 220, color: "#d97706", desc: "Häuser, Apartments und WGs mit Nachbarschafts-Interaktion." },
-            { id: "tinda", name: "Tinda Dating Lounge", icon: "🔥", district: "Südviertel & Wohnresidenzen", url: "/themes/tinda.html", x: 5350, y: 5300, w: 250, h: 180, color: "#ff4458", desc: "Partnersuche, Chatten, Dates und Flirts in Limazon." },
+            { id: "neighborhood", name: "Limazon Wohnsiedlung", icon: "🏡", district: "Südviertel & Wohnresidenzen", url: "/themes/neighborhood.html", x: 4800, y: 5350, w: 310, h: 220, color: "#d97706", desc: "Häuser, Apartments und WGs mit Nachbarschafts-Interaktion." },
+            { id: "tinda", name: "Tinda Dating Lounge", icon: "🔥", district: "Südviertel & Wohnresidenzen", url: "/themes/tinda.html", x: 5350, y: 5350, w: 250, h: 180, color: "#ff4458", desc: "Partnersuche, Chatten, Dates und Flirts in Limazon." },
             { id: "therapy", name: "Gesundheitszentrum & Reha", icon: "🩺", district: "Südviertel & Wohnresidenzen", url: "/themes/therapy.html", x: 4900, y: 6200, w: 260, h: 180, color: "#06b6d4", desc: "Stressabbau, mentale Gesundheit und Regeneration." },
 
             // UNTERGRUND (DURCH DEN GULLI ZUGÄNGLICH!)
             { id: "sewer_underground", name: "Kanalisations-Gulli (Untergrund)", icon: "🕳️", district: "Dunkle Gasse & Kanalisationsschacht", url: "/themes/blackmarket.html", x: 6900, y: 5400, w: 160, h: 160, color: "#ef4444", isManhole: true, desc: "Ein dampfender Gusseisen-Gulli. Klettere hinab in den berüchtigten Schattenbezirk!" },
-            { id: "gangs", name: "Clan-Hauptquartier", icon: "🏴‍☠️", district: "Dunkle Gasse & Kanalisationsschacht", url: "/themes/gangs.html", x: 7400, y: 5300, w: 280, h: 200, color: "#dc2626", desc: "Treffpunkt der Clans, Bandentresore und Revierkämpfe." },
-            { id: "crime", name: "Hinterhof-Schlupfwinkel", icon: "🎭", district: "Dunkle Gasse & Kanalisationsschacht", url: "/themes/crime.html", x: 8000, y: 5300, w: 260, h: 190, color: "#991b1b", desc: "Kriminelle Machenschaften, Diebstähle und Heists." },
+            { id: "gangs", name: "Clan-Hauptquartier", icon: "🏴‍☠️", district: "Dunkle Gasse & Kanalisationsschacht", url: "/themes/gangs.html", x: 7400, y: 5350, w: 280, h: 200, color: "#dc2626", desc: "Treffpunkt der Clans, Bandentresore und Revierkämpfe." },
+            { id: "crime", name: "Hinterhof-Schlupfwinkel", icon: "🎭", district: "Dunkle Gasse & Kanalisationsschacht", url: "/themes/crime.html", x: 8000, y: 5350, w: 260, h: 190, color: "#991b1b", desc: "Kriminelle Machenschaften, Diebstähle und Heists." },
             { id: "wanted", name: "Kopfgeldjäger-Zentrale", icon: "🎯", district: "Dunkle Gasse & Kanalisationsschacht", url: "/themes/wanted.html", x: 7500, y: 6200, w: 270, h: 180, color: "#ea580c", desc: "Schwarzes Brett für gesuchte Gauner und Kopfgelder." }
         ];
 
-        // --- STRASSEN-NETZWERK MIT TUNNELN & VERBINDUNGEN ---
+        // --- BEREINIGTES, LOGISCHES STRASSEN-NETZWERK (KEINE STRASSEN MEHR DURCH SEEN ODER GEBÄUDE!) ---
         const ROADS = [
             // Haupt-Highways (horizontal)
             { id: "h1", x: 200, y: 200, w: 9200, h: 80, isMain: true },
-            { id: "h2", x: 200, y: 2350, w: 9200, h: 90, isMain: true },
-            { id: "h3", x: 200, y: 4750, w: 9200, h: 90, isMain: true },
+            { id: "h2", x: 200, y: 2400, w: 9200, h: 90, isMain: true },
+            { id: "h3", x: 200, y: 4850, w: 9200, h: 90, isMain: true },
             { id: "h4", x: 200, y: 6800, w: 9200, h: 80, isMain: true },
 
             // Nebenstraßen (horizontal)
-            { id: "s1", x: 200, y: 1100, w: 9200, h: 50, isMain: false },
-            { id: "s2", x: 200, y: 3500, w: 9200, h: 55, isMain: false },
-            { id: "s3", x: 200, y: 5900, w: 9200, h: 50, isMain: false },
+            { id: "s1", x: 200, y: 1150, w: 9200, h: 50, isMain: false },
+            { id: "s2", x: 200, y: 3450, w: 9200, h: 55, isMain: false },
+            { id: "s3", x: 200, y: 5950, w: 9200, h: 50, isMain: false },
 
             // Haupt-Boulevards (vertikal)
             { id: "v1", x: 200, y: 200, w: 80, h: 6680, isMain: true },
@@ -303,12 +306,24 @@
             { id: "va3", x: 7800, y: 200, w: 50, h: 6680, isMain: false }
         ];
 
-        // --- TUNNEL-PORTALE AN DEN WELTRÄNDERN (KEIN PLÖTZLICHES SPAWNEN AUS DEM NICHTS) ---
+        // --- ÖPNV-BUS- & BAHN-HALTESTELLEN ---
+        const STOPS = [
+            { id: "stop_tiergarten", name: "Tiergarten / Zoo", type: "bus", x: 1900, y: 1100, waitTimer: 0, icon: "🚏" },
+            { id: "stop_shopping", name: "Shopping Boulevard", type: "bus", x: 1900, y: 2400, waitTimer: 0, icon: "🚏" },
+            { id: "stop_central", name: "Central Plaza Hbf", type: "tram", x: 3000, y: 2400, waitTimer: 0, icon: "🚉" },
+            { id: "stop_campus", name: "Akademie Campus", type: "bus", x: 6200, y: 1150, waitTimer: 0, icon: "🚏" },
+            { id: "stop_logistics", name: "Logistik Hafen", type: "bus", x: 6200, y: 2400, waitTimer: 0, icon: "🚏" },
+            { id: "stop_entertainment", name: "Neon Mile Casino", type: "bus", x: 1900, y: 4850, waitTimer: 0, icon: "🚏" },
+            { id: "stop_south", name: "Südviertel Residenz", type: "bus", x: 4600, y: 4850, waitTimer: 0, icon: "🚏" },
+            { id: "stop_shadow", name: "Dunkle Gasse / Untergrund", type: "bus", x: 6200, y: 4850, waitTimer: 0, icon: "🚏" }
+        ];
+
+        // --- TUNNEL-PORTALE AN DEN WELTRÄNDERN ---
         const TUNNELS = [
-            { x: 120, y: 2335, w: 100, h: 120, dir: "east", name: "Nordwest-Tunnel" },
-            { x: 9380, y: 2335, w: 100, h: 120, dir: "west", name: "Nordost-Tunnel" },
-            { x: 120, y: 4735, w: 100, h: 120, dir: "east", name: "Südwest-Tunnel" },
-            { x: 9380, y: 4735, w: 100, h: 120, dir: "west", name: "Südost-Tunnel" },
+            { x: 120, y: 2385, w: 100, h: 120, dir: "east", name: "Nordwest-Tunnel" },
+            { x: 9380, y: 2385, w: 100, h: 120, dir: "west", name: "Nordost-Tunnel" },
+            { x: 120, y: 4835, w: 100, h: 120, dir: "east", name: "Südwest-Tunnel" },
+            { x: 9380, y: 4835, w: 100, h: 120, dir: "west", name: "Südost-Tunnel" },
             { x: 2985, y: 120, w: 120, h: 100, dir: "south", name: "Nord-Metropoltunnel" },
             { x: 6185, y: 120, w: 120, h: 100, dir: "south", name: "Industrietunnel Nord" }
         ];
@@ -316,45 +331,47 @@
         // --- STRASSENBAHN-SCHIENEN ---
         const TRAM_TRACKS = [
             { x: 3040, y: 200, w: 14, h: 6680, dir: "v" },
-            { x: 200, y: 2390, w: 9200, h: 14, dir: "h" }
+            { x: 200, y: 2440, w: 9200, h: 14, dir: "h" }
         ];
 
-        // --- AMPELN AN KREUZUNGEN (MIT RICHTIGEN HALTELINIEN) ---
+        // --- AMPELN AN KREUZUNGEN ---
         const TRAFFIC_LIGHTS = [
-            { id: "tl1", x: 3000, y: 2350, state: "green", timer: 0, cycle: 360 },
-            { id: "tl2", x: 6200, y: 2350, state: "red", timer: 180, cycle: 360 },
-            { id: "tl3", x: 3000, y: 4750, state: "red", timer: 200, cycle: 360 },
-            { id: "tl4", x: 6200, y: 4750, state: "green", timer: 20, cycle: 360 },
-            { id: "tl5", x: 4600, y: 3500, state: "green", timer: 90, cycle: 360 },
-            { id: "tl6", x: 1900, y: 3500, state: "red", timer: 270, cycle: 360 }
+            { id: "tl1", x: 3000, y: 2400, state: "green", timer: 0, cycle: 360 },
+            { id: "tl2", x: 6200, y: 2400, state: "red", timer: 180, cycle: 360 },
+            { id: "tl3", x: 3000, y: 4850, state: "red", timer: 200, cycle: 360 },
+            { id: "tl4", x: 6200, y: 4850, state: "green", timer: 20, cycle: 360 },
+            { id: "tl5", x: 4600, y: 3450, state: "green", timer: 90, cycle: 360 },
+            { id: "tl6", x: 1900, y: 3450, state: "red", timer: 270, cycle: 360 }
         ];
 
-        // --- REQUISITEN & HINDERNISSE: BÄNKE, STRASSENLATERATEN, ZÄUNE, BÄUME ---
-        const OBSTACLES = [];
+        // --- REQUISITEN: BÄUME, LATERANEN, BÄNKE ---
         const STREET_LAMPS = [];
         const PARK_BENCHES = [];
         const SCENERY_TREES = [];
 
-        // Generiere organisch verteilte Bäume in den Pärken (aber NIE unter Gebäuden!)
         function initScenery() {
             GREEN_AREAS.forEach(g => {
                 if (g.type === "park") {
-                    // Streue Bäume mit Zufallsversatz
-                    const count = Math.floor((g.w * g.h) / 35000);
+                    const count = Math.floor((g.w * g.h) / 38000);
                     for (let i = 0; i < count; i++) {
-                        const tx = g.x + 40 + Math.random() * (g.w - 80);
-                        const ty = g.y + 40 + Math.random() * (g.h - 80);
+                        const tx = g.x + 50 + Math.random() * (g.w - 100);
+                        const ty = g.y + 50 + Math.random() * (g.h - 100);
 
-                        // Prüfe, ob Baum auf See oder Gebäude liegt
                         let blocked = false;
                         for (const p of POIS) {
-                            if (tx >= p.x - 20 && tx <= p.x + p.w + 20 && ty >= p.y - 20 && ty <= p.y + p.h + 20) {
+                            if (tx >= p.x - 30 && tx <= p.x + p.w + 30 && ty >= p.y - 30 && ty <= p.y + p.h + 30) {
                                 blocked = true;
                                 break;
                             }
                         }
                         for (const w of GREEN_AREAS) {
-                            if (w.type === "water" && tx >= w.x - 20 && tx <= w.x + w.w + 20 && ty >= w.y - 20 && ty <= w.y + w.h + 20) {
+                            if (w.type === "water" && tx >= w.x - 30 && tx <= w.x + w.w + 30 && ty >= w.y - 30 && ty <= w.y + w.h + 30) {
+                                blocked = true;
+                                break;
+                            }
+                        }
+                        for (const r of ROADS) {
+                            if (tx >= r.x - 20 && tx <= r.x + r.w + 20 && ty >= r.y - 20 && ty <= r.y + r.h + 20) {
                                 blocked = true;
                                 break;
                             }
@@ -367,54 +384,56 @@
                 }
             });
 
-            // Straßenlaternen entlang der Hauptstraßen (alle 400px)
             for (let lx = 400; lx < 9200; lx += 450) {
-                STREET_LAMPS.push({ x: lx, y: 2330, lightR: 90 });
-                STREET_LAMPS.push({ x: lx, y: 4730, lightR: 90 });
+                STREET_LAMPS.push({ x: lx, y: 2380, lightR: 90 });
+                STREET_LAMPS.push({ x: lx, y: 4830, lightR: 90 });
             }
             for (let ly = 400; ly < 6600; ly += 450) {
                 STREET_LAMPS.push({ x: 2980, y: ly, lightR: 90 });
                 STREET_LAMPS.push({ x: 6180, y: ly, lightR: 90 });
             }
 
-            // Parkbänke entlang der Parkwege
-            PARK_BENCHES.push({ x: 780, y: 730, angle: 0 });
-            PARK_BENCHES.push({ x: 1220, y: 730, angle: 0 });
-            PARK_BENCHES.push({ x: 1720, y: 630, angle: 0 });
-            PARK_BENCHES.push({ x: 1720, y: 1470, angle: 0 });
-            PARK_BENCHES.push({ x: 3820, y: 2880, angle: 0 });
-            PARK_BENCHES.push({ x: 4620, y: 2980, angle: 0 });
+            PARK_BENCHES.push({ x: 780, y: 730 });
+            PARK_BENCHES.push({ x: 1220, y: 730 });
+            PARK_BENCHES.push({ x: 1720, y: 630 });
+            PARK_BENCHES.push({ x: 1720, y: 1470 });
+            PARK_BENCHES.push({ x: 3820, y: 2880 });
+            PARK_BENCHES.push({ x: 4620, y: 2980 });
         }
         initScenery();
 
-        // --- SIMULIERTE FAHRZEUGE (AUTOS, TAXIS, BUSSE, STRASSENBAHNEN) ---
+        // --- FAHRZEUGE MIT VOLLER ROTATION & CRASH-PHYSIK ---
+        // Steuerung: Geschwindigkeit stufenlos (Gas/Bremse), Rotation stufenlos (A/D)
         const VEHICLES = [
-            // PKWs auf Ost-West Highway 2 (Spur rechts vx > 0, Spur links vx < 0)
-            { id: "car1", type: "car", x: 500, y: 2365, vx: 5.5, vy: 0, dir: "e", color: "#facc15", label: "TAXI", isOccupied: false, driver: null },
-            { id: "car2", type: "car", x: 2400, y: 2365, vx: 6.0, vy: 0, dir: "e", color: "#ef4444", label: "SPORT-PKW", isOccupied: false, driver: null },
-            { id: "car3", type: "car", x: 6800, y: 2415, vx: -5.5, vy: 0, dir: "w", color: "#38bdf8", label: "LIMUSINE", isOccupied: false, driver: null },
-            { id: "car4", type: "car", x: 4200, y: 2415, vx: -6.0, vy: 0, dir: "w", color: "#e2e8f0", label: "PKW", isOccupied: false, driver: null },
+            // PKWs Highway 2
+            { id: "car1", type: "car", x: 500, y: 2420, vx: 5.5, vy: 0, angle: 0, speed: 5.5, color: "#facc15", label: "TAXI", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            { id: "car2", type: "car", x: 2400, y: 2420, vx: 6.0, vy: 0, angle: 0, speed: 6.0, color: "#ef4444", label: "SPORT-PKW", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            { id: "car3", type: "car", x: 6800, y: 2465, vx: -5.5, vy: 0, angle: Math.PI, speed: 5.5, color: "#38bdf8", label: "LIMUSINE", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            { id: "car4", type: "car", x: 4200, y: 2465, vx: -6.0, vy: 0, angle: Math.PI, speed: 6.0, color: "#e2e8f0", label: "PKW", isOccupied: false, driver: null, health: 100, isCrashed: false },
 
-            // PKWs auf Süd-Highway 3
-            { id: "car5", type: "car", x: 1200, y: 4765, vx: 5.8, vy: 0, dir: "e", color: "#a855f7", label: "CABRIO", isOccupied: false, driver: null },
-            { id: "car6", type: "car", x: 7400, y: 4815, vx: -5.8, vy: 0, dir: "w", color: "#22c55e", label: "ELEKTRO-PKW", isOccupied: false, driver: null },
+            // PKWs Highway 3
+            { id: "car5", type: "car", x: 1200, y: 4870, vx: 5.8, vy: 0, angle: 0, speed: 5.8, color: "#a855f7", label: "CABRIO", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            { id: "car6", type: "car", x: 7400, y: 4915, vx: -5.8, vy: 0, angle: Math.PI, speed: 5.8, color: "#22c55e", label: "ELEKTRO-PKW", isOccupied: false, driver: null, health: 100, isCrashed: false },
 
-            // PKWs auf vertikalem Boulevard 2 (x=3000)
-            { id: "car7", type: "car", x: 3020, y: 800, vx: 0, vy: 5.5, dir: "s", color: "#f97316", label: "SUV", isOccupied: false, driver: null },
-            { id: "car8", type: "car", x: 3065, y: 4200, vx: 0, vy: -5.5, dir: "n", color: "#06b6d4", label: "TAXI", isOccupied: false, driver: null },
+            // Vertikale PKWs (x=3000)
+            { id: "car7", type: "car", x: 3020, y: 800, vx: 0, vy: 5.5, angle: Math.PI / 2, speed: 5.5, color: "#f97316", label: "SUV", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            { id: "car8", type: "car", x: 3065, y: 4200, vx: 0, vy: -5.5, angle: -Math.PI / 2, speed: 5.5, color: "#06b6d4", label: "TAXI", isOccupied: false, driver: null, health: 100, isCrashed: false },
 
-            // PKWs auf vertikalem Boulevard 3 (x=6200)
-            { id: "car9", type: "car", x: 6220, y: 1200, vx: 0, vy: 5.5, dir: "s", color: "#ec4899", label: "PKW", isOccupied: false, driver: null },
-            { id: "car10", type: "car", x: 6265, y: 5500, vx: 0, vy: -5.5, dir: "n", color: "#eab308", label: "LIEFERWAGEN", isOccupied: false, driver: null },
+            // Vertikale PKWs (x=6200)
+            { id: "car9", type: "car", x: 6220, y: 1200, vx: 0, vy: 5.5, angle: Math.PI / 2, speed: 5.5, color: "#ec4899", label: "PKW", isOccupied: false, driver: null, health: 100, isCrashed: false },
+            { id: "car10", type: "car", x: 6265, y: 5500, vx: 0, vy: -5.5, angle: -Math.PI / 2, speed: 5.5, color: "#eab308", label: "LIEFERWAGEN", isOccupied: false, driver: null, health: 100, isCrashed: false },
 
-            // Busse (Metro-Linie 1 & 2)
-            { id: "bus1", type: "bus", x: 1800, y: 2365, vx: 4.2, vy: 0, dir: "e", color: "#2563eb", label: "METRO-BUS 1", len: 90, wid: 36, isOccupied: false, driver: null },
-            { id: "bus2", type: "bus", x: 5800, y: 4815, vx: -4.2, vy: 0, dir: "w", color: "#2563eb", label: "CAMPUS-EXPRESS", len: 90, wid: 36, isOccupied: false, driver: null },
+            // ÖPNV Stadtbusse (Fahrplan-Logik: halten an Haltestellen!)
+            { id: "bus1", type: "bus", x: 1800, y: 2420, vx: 4.0, vy: 0, angle: 0, speed: 4.0, color: "#2563eb", label: "METRO-BUS 1", len: 90, wid: 36, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100, isCrashed: false },
+            { id: "bus2", type: "bus", x: 5800, y: 4915, vx: -4.0, vy: 0, angle: Math.PI, speed: 4.0, color: "#2563eb", label: "CAMPUS-EXPRESS", len: 90, wid: 36, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100, isCrashed: false },
 
-            // Trams (Schienenverkehr)
-            { id: "tram1", type: "tram", x: 3047, y: 1600, vx: 0, vy: 4.8, dir: "s", color: "#0284c7", label: "TRAM LINIE A", len: 160, wid: 26, isOccupied: false, driver: null },
-            { id: "tram2", type: "tram", x: 4200, y: 2397, vx: 4.8, vy: 0, dir: "e", color: "#0284c7", label: "TRAM LINIE B", len: 160, wid: 26, isOccupied: false, driver: null }
+            // ÖPNV Straßenbahnen
+            { id: "tram1", type: "tram", x: 3047, y: 1600, vx: 0, vy: 4.5, angle: Math.PI / 2, speed: 4.5, color: "#0284c7", label: "TRAM LINIE A", len: 160, wid: 26, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100, isCrashed: false },
+            { id: "tram2", type: "tram", x: 4200, y: 2447, vx: 4.5, vy: 0, angle: 0, speed: 4.5, color: "#0284c7", label: "TRAM LINIE B", len: 160, wid: 26, isOccupied: false, driver: null, isPassenger: false, isAtStopTimer: 0, health: 100, isCrashed: false }
         ];
+
+        // Partikel-System für Crashes, Rauch & Bremsspuren
+        const PARTICLES = [];
 
         // --- ENGINE STATE ---
         const canvas = document.getElementById('mapCanvas');
@@ -438,7 +457,8 @@
             radius: 12,
             speed: 6.5,
             color: "#3b82f6",
-            inVehicle: null // Verweis auf Fahrzeug falls eingestiegen
+            inVehicle: null,
+            isPassenger: false
         };
 
         let remotePlayers = [];
@@ -518,15 +538,13 @@
             return "Auf den Straßen der Metropole";
         }
 
-        // --- KOLLISIONSABFRAGE (GEBÄUDE, SEEN, BÄUME, BÄNKE ALS SOLIDE HINDERNISSE) ---
+        // --- KOLLISIONSABFRAGE FÜR FUSSGÄNGER & FAHRZEUGE ---
         function checkCollision(nx, ny, radius = 10) {
-            // Weltgrenzen
             if (nx - radius < 60 || nx + radius > WORLD_WIDTH - 60 ||
                 ny - radius < 60 || ny + radius > WORLD_HEIGHT - 60) {
                 return true;
             }
 
-            // Gebäude-Kollision (Ausnahme: Gullideckel zum Untergrund darf betreten werden)
             for (const p of POIS) {
                 if (p.isManhole) continue;
                 const pad = 6;
@@ -536,7 +554,6 @@
                 }
             }
 
-            // Seen / Wasserflächen
             for (const g of GREEN_AREAS) {
                 if (g.type === "water") {
                     if (nx + radius > g.x && nx - radius < g.x + g.w &&
@@ -546,14 +563,12 @@
                 }
             }
 
-            // Bäume als Hindernisse (Stammkollision)
             for (const t of SCENERY_TREES) {
                 if (Math.hypot(nx - t.x, ny - t.y) < (t.r * 0.45 + radius)) {
                     return true;
                 }
             }
 
-            // Parkbänke
             for (const b of PARK_BENCHES) {
                 if (nx + radius > b.x - 18 && nx - radius < b.x + 18 &&
                     ny + radius > b.y - 10 && ny - radius < b.y + 10) {
@@ -564,7 +579,7 @@
             return false;
         }
 
-        // --- FAHRZEUG-EIN- UND AUSSTIEG [F] ---
+        // --- FAHRZEUG-EIN- UND AUSSTIEG (FAHRER ODER ÖPNV-MITFAHRER) ---
         function toggleVehicleInteraction() {
             if (myPlayer.inVehicle) {
                 exitVehicle();
@@ -575,7 +590,7 @@
 
         function enterNearbyVehicle() {
             let closest = null;
-            let closestDist = 70;
+            let closestDist = 80;
 
             for (const v of VEHICLES) {
                 const dist = Math.hypot(myPlayer.x - v.x, myPlayer.y - v.y);
@@ -587,14 +602,24 @@
 
             if (closest) {
                 myPlayer.inVehicle = closest;
-                closest.isOccupied = true;
-                closest.driver = myPlayer.name;
+
+                // Ist es ein Bus oder Tram? Wenn ja, steigt man als ÖPNV-Fahrgast ein!
+                const isPublicTransport = (closest.type === 'bus' || closest.type === 'tram');
+                myPlayer.isPassenger = isPublicTransport;
+
+                if (!isPublicTransport) {
+                    closest.isOccupied = true;
+                    closest.driver = myPlayer.name;
+                }
 
                 document.getElementById('exitVehicleBtn').classList.remove('hidden');
                 document.getElementById('speedoHud').classList.remove('hidden');
                 document.getElementById('speedoName').innerText = closest.label;
                 document.getElementById('speedoIcon').innerText = closest.type === 'bus' ? '🚌' : (closest.type === 'tram' ? '🚋' : '🚗');
-                document.getElementById('vehicleStatusText').innerText = `Fährt: ${closest.label}`;
+                document.getElementById('passengerBadge').innerHTML = isPublicTransport
+                    ? `<span class="text-amber-400 font-bold">ÖPNV FAHRGAST</span>`
+                    : `<span class="text-emerald-400 font-bold">FAHRER</span>`;
+                document.getElementById('vehicleStatusText').innerText = isPublicTransport ? `Fahrgast: ${closest.label}` : `Fährt: ${closest.label}`;
             }
         }
 
@@ -604,16 +629,16 @@
             v.isOccupied = false;
             v.driver = null;
 
-            // Spieler steigt seitlich aus
-            myPlayer.x = v.x + (v.dir === 'e' || v.dir === 'w' ? 0 : 35);
-            myPlayer.y = v.y + (v.dir === 'e' || v.dir === 'w' ? 35 : 0);
+            myPlayer.x = v.x + Math.cos(v.angle + Math.PI / 2) * 35;
+            myPlayer.y = v.y + Math.sin(v.angle + Math.PI / 2) * 35;
             myPlayer.targetX = myPlayer.x;
             myPlayer.targetY = myPlayer.y;
             myPlayer.inVehicle = null;
+            myPlayer.isPassenger = false;
 
             document.getElementById('exitVehicleBtn').classList.add('hidden');
             document.getElementById('speedoHud').classList.add('hidden');
-            document.getElementById('vehicleStatusText').innerText = "Zu Fuß • v3.0";
+            document.getElementById('vehicleStatusText').innerText = "Zu Fuß • v3.5";
         }
 
         // --- INPUT HANDLING ---
@@ -682,7 +707,6 @@
         function handleWorldClick(screenX, screenY) {
             const worldPos = screenToWorld(screenX, screenY);
 
-            // Gebäude anklicken
             const clickedPoi = POIS.find(p =>
                 worldPos.x >= p.x && worldPos.x <= p.x + p.w &&
                 worldPos.y >= p.y && worldPos.y <= p.y + p.h
@@ -693,9 +717,8 @@
                 return;
             }
 
-            // Klick auf Fahrzeug zum Einsteigen
             for (const v of VEHICLES) {
-                if (Math.hypot(worldPos.x - v.x, worldPos.y - v.y) < 45) {
+                if (Math.hypot(worldPos.x - v.x, worldPos.y - v.y) < 55) {
                     if (!myPlayer.inVehicle) {
                         myPlayer.targetX = v.x;
                         myPlayer.targetY = v.y;
@@ -756,6 +779,7 @@
             frameCount++;
             updateTrafficLights();
             updateVehicles();
+            updateParticles();
             updatePlayerMovement();
             render();
             requestAnimationFrame(gameLoop);
@@ -764,65 +788,158 @@
         function updateTrafficLights() {
             TRAFFIC_LIGHTS.forEach(tl => {
                 tl.timer = (tl.timer + 1) % tl.cycle;
-                // Grün (0-160), Gelb (160-200), Rot (200-360)
                 if (tl.timer < 160) tl.state = "green";
                 else if (tl.timer < 200) tl.state = "yellow";
                 else tl.state = "red";
             });
         }
 
-        // Intelligente Verkehrslogik: Autos stoppen vor roten Ampeln & halten Abstand!
+        // CRASH FUNKTION: Funken, Rauch & Abprallen
+        function spawnCrashEffect(x, y) {
+            for (let i = 0; i < 15; i++) {
+                PARTICLES.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    life: 25 + Math.random() * 20,
+                    color: Math.random() > 0.5 ? "#f97316" : "#facc15",
+                    size: 2 + Math.random() * 3
+                });
+            }
+        }
+
+        function updateParticles() {
+            for (let i = PARTICLES.length - 1; i >= 0; i--) {
+                const p = PARTICLES[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                if (p.life <= 0) {
+                    PARTICLES.splice(i, 1);
+                }
+            }
+        }
+
         function updateVehicles() {
             VEHICLES.forEach(v => {
-                // Wenn Spieler das Fahrzeug lenkt
-                if (myPlayer.inVehicle === v) {
-                    let curSpeed = 0;
-                    if (keys['w'] || keys['arrowup']) curSpeed = 9;
-                    if (keys['s'] || keys['arrowdown']) curSpeed = -4;
-
-                    if (v.dir === 'e' || v.dir === 'w') {
-                        v.x += curSpeed * (v.dir === 'e' ? 1 : -1);
+                // 1. SPIELER STEUERT DIESES FAHRZEUG SELBST (ECHTE LENKUNG: GAS, BREMSE, DRIFT)
+                if (myPlayer.inVehicle === v && !myPlayer.isPassenger) {
+                    // Stufenlose Beschleunigung / Bremsen
+                    if (keys['w'] || keys['arrowup']) {
+                        v.speed = Math.min(v.speed + 0.35, 12.0);
+                    } else if (keys['s'] || keys['arrowdown']) {
+                        v.speed = Math.max(v.speed - 0.45, -4.5);
                     } else {
-                        v.y += curSpeed * (v.dir === 's' ? 1 : -1);
+                        // Rollreibung
+                        v.speed *= 0.96;
+                    }
+
+                    // Stufenloses Lenken (A / D oder Links / Rechts)
+                    if (Math.abs(v.speed) > 0.4) {
+                        const steerDir = v.speed >= 0 ? 1 : -1;
+                        if (keys['a'] || keys['arrowleft']) v.angle -= 0.055 * steerDir;
+                        if (keys['d'] || keys['arrowright']) v.angle += 0.055 * steerDir;
+                    }
+
+                    const nextX = v.x + Math.cos(v.angle) * v.speed;
+                    const nextY = v.y + Math.sin(v.angle) * v.speed;
+
+                    // Kollisionsprüfung für Spieler-Fahrzeug mit der Umwelt
+                    if (checkCollision(nextX, nextY, 20)) {
+                        // CRASH MIT GEBÄUDE ODER WASSER!
+                        spawnCrashEffect(nextX, nextY);
+                        v.speed = -v.speed * 0.4; // Abprallen
+                    } else {
+                        v.x = nextX;
+                        v.y = nextY;
+                    }
+
+                    // Kollisionsprüfung mit anderen Autos
+                    for (const other of VEHICLES) {
+                        if (other === v) continue;
+                        if (Math.hypot(v.x - other.x, v.y - other.y) < 40) {
+                            // CRASH ZWISCHEN ZWEI AUTOS!
+                            spawnCrashEffect((v.x + other.x) / 2, (v.y + other.y) / 2);
+                            v.speed = -v.speed * 0.5;
+                            other.speed = -other.speed * 0.5;
+                        }
                     }
 
                     myPlayer.x = v.x;
                     myPlayer.y = v.y;
-                    document.getElementById('speedoValue').innerText = Math.round(Math.abs(curSpeed) * 12);
+                    document.getElementById('speedoValue').innerText = Math.round(Math.abs(v.speed) * 11);
                     return;
                 }
 
-                // Autonomer Verkehr: Prüfe Ampeln vor dem Auto
-                let isStoppedByRedLight = false;
+                // 2. ÖPNV: BUSSE UND STRASSENBAHNEN HALTEN AN HALTESTELLEN!
+                if (v.type === "bus" || v.type === "tram") {
+                    if (v.isAtStopTimer > 0) {
+                        v.isAtStopTimer--;
+                        // Steht an Haltestelle
+                        if (myPlayer.inVehicle === v) {
+                            myPlayer.x = v.x;
+                            myPlayer.y = v.y;
+                            document.getElementById('speedoValue').innerText = "0 (Halt)";
+                        }
+                        return;
+                    }
 
-                for (const tl of TRAFFIC_LIGHTS) {
-                    if (tl.state === "red" || tl.state === "yellow") {
-                        if (v.dir === "e" && v.vx > 0 && Math.abs(v.y - tl.y) < 60) {
-                            // Fährt nach Osten auf Ampel zu
-                            if (tl.x > v.x && tl.x - v.x < 120) isStoppedByRedLight = true;
-                        } else if (v.dir === "w" && v.vx < 0 && Math.abs(v.y - tl.y) < 60) {
-                            // Fährt nach Westen auf Ampel zu
-                            if (v.x > tl.x && v.x - tl.x < 120) isStoppedByRedLight = true;
-                        } else if (v.dir === "s" && v.vy > 0 && Math.abs(v.x - tl.x) < 60) {
-                            // Fährt nach Süden
-                            if (tl.y > v.y && tl.y - v.y < 120) isStoppedByRedLight = true;
-                        } else if (v.dir === "n" && v.vy < 0 && Math.abs(v.x - tl.x) < 60) {
-                            // Fährt nach Norden
-                            if (v.y > tl.y && v.y - tl.y < 120) isStoppedByRedLight = true;
+                    // Prüfe, ob Haltestelle in Reichweite
+                    for (const stop of STOPS) {
+                        if (Math.hypot(v.x - stop.x, v.y - stop.y) < 35 && Math.random() < 0.08) {
+                            v.isAtStopTimer = 180; // 3 Sekunden Pause
+                            break;
                         }
                     }
                 }
 
-                if (!isStoppedByRedLight) {
-                    v.x += v.vx;
-                    v.y += v.vy;
+                // 3. AUTONOMER KI-VERKEHR (HÄLT AN ROTEN AMPELN & VOR ANDEREN AUTOS)
+                let isStopped = false;
+
+                // Ampelstopps
+                for (const tl of TRAFFIC_LIGHTS) {
+                    if (tl.state === "red" || tl.state === "yellow") {
+                        const distToTl = Math.hypot(tl.x - v.x, tl.y - v.y);
+                        if (distToTl < 110) {
+                            // Liegt Ampel in Fahrtrichtung?
+                            const angleToTl = Math.atan2(tl.y - v.y, tl.x - v.x);
+                            const angleDiff = Math.abs(v.angle - angleToTl);
+                            if (angleDiff < 0.6 || Math.abs(angleDiff - Math.PI * 2) < 0.6) {
+                                isStopped = true;
+                                break;
+                            }
+                        }
+                    }
                 }
 
-                // Durch Tunnel portieren / wrappen
-                if (v.vx > 0 && v.x > WORLD_WIDTH + 150) v.x = -100;
-                if (v.vx < 0 && v.x < -150) v.x = WORLD_WIDTH + 100;
-                if (v.vy > 0 && v.y > WORLD_HEIGHT + 150) v.y = -100;
-                if (v.vy < 0 && v.y < -150) v.y = WORLD_HEIGHT + 100;
+                // Vorherfahrende Autos nicht rammen
+                for (const other of VEHICLES) {
+                    if (other === v) continue;
+                    const d = Math.hypot(other.x - v.x, other.y - v.y);
+                    if (d < 55) {
+                        isStopped = true;
+                        break;
+                    }
+                }
+
+                if (!isStopped) {
+                    v.x += Math.cos(v.angle) * v.speed;
+                    v.y += Math.sin(v.angle) * v.speed;
+                }
+
+                // Wenn Spieler Fahrgast im Bus/Tram ist, fährt er automatisch mit!
+                if (myPlayer.inVehicle === v && myPlayer.isPassenger) {
+                    myPlayer.x = v.x;
+                    myPlayer.y = v.y;
+                    document.getElementById('speedoValue').innerText = Math.round(Math.abs(v.speed) * 11);
+                }
+
+                // Wrapping / Tunnel-Looping
+                if (v.x > WORLD_WIDTH + 150) v.x = -100;
+                if (v.x < -150) v.x = WORLD_WIDTH + 100;
+                if (v.y > WORLD_HEIGHT + 150) v.y = -100;
+                if (v.y < -150) v.y = WORLD_HEIGHT + 100;
             });
         }
 
@@ -899,31 +1016,35 @@
             // 4. Straßen & Zebrastreifen
             renderRoads();
 
-            // 5. Tunnel & Brückenportale
+            // 5. Haltestellen (ÖPNV)
+            renderStops();
+
+            // 6. Tunnel & Brückenportale
             renderTunnels();
 
-            // 6. Straßenbahn-Gleise
+            // 7. Straßenbahn-Gleise
             renderTramTracks();
 
-            // 7. Ampelanlagen mit Haltelinien
+            // 8. Ampelanlagen mit Haltelinien
             renderTrafficLights();
 
-            // 8. Requisiten: Parkbänke & Straßenlaternen
+            // 9. Requisiten: Parkbänke & Straßenlaternen
             renderStreetFurniture();
 
-            // 9. Fahrzeuge (Autos, Busse, Tram)
+            // 10. Fahrzeuge (Autos, Busse, Tram) & Crash-Partikel
             renderVehicles();
+            renderParticles();
 
-            // 10. Bäume (Natur-Layer über Gras)
+            // 11. Bäume (Natur-Layer über Gras)
             renderTrees();
 
-            // 11. Gebäude & Gulli-Portal (POIs)
+            // 12. Gebäude & Gulli-Portal (POIs)
             renderPois();
 
-            // 12. Remote Spieler
+            // 13. Remote Spieler
             renderRemotePlayers();
 
-            // 13. Lokaler Spieler
+            // 14. Lokaler Spieler
             renderLocalPlayer();
 
             ctx.restore();
@@ -949,7 +1070,6 @@
                 ctx.stroke();
             }
 
-            // Weltgrenze
             ctx.strokeStyle = "rgba(59, 130, 246, 0.5)";
             ctx.lineWidth = 8;
             ctx.strokeRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
@@ -973,7 +1093,6 @@
                     ctx.lineWidth = 4;
                     roundRect(ctx, g.x, g.y, g.w, g.h, 50, true, true);
 
-                    // Wellen
                     ctx.strokeStyle = "rgba(125, 211, 252, 0.25)";
                     ctx.lineWidth = 2;
                     const time = frameCount * 0.03;
@@ -990,7 +1109,6 @@
                 }
             });
 
-            // Parkwege zeichnen
             ctx.strokeStyle = "#47453d";
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
@@ -1025,14 +1143,12 @@
                 roundRect(ctx, r.x, r.y, r.w, r.h, 8, true, false);
             });
 
-            // Fahrbahnränder
             ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
             ctx.lineWidth = 2;
             ROADS.forEach(r => {
                 ctx.strokeRect(r.x, r.y, r.w, r.h);
             });
 
-            // Gestrichelte Mittellinien
             ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
             ctx.lineWidth = 2.5;
             ctx.setLineDash([25, 25]);
@@ -1050,14 +1166,13 @@
             });
             ctx.setLineDash([]);
 
-            // Zebrastreifen
             ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-            renderCrosswalk(3000 - 50, 2350, 40, 90);
-            renderCrosswalk(3000 + 100, 2350, 40, 90);
-            renderCrosswalk(6200 - 50, 2350, 40, 90);
-            renderCrosswalk(6200 + 100, 2350, 40, 90);
-            renderCrosswalk(3000, 4750 - 50, 90, 40);
-            renderCrosswalk(6200, 4750 - 50, 90, 40);
+            renderCrosswalk(3000 - 50, 2400, 40, 90);
+            renderCrosswalk(3000 + 100, 2400, 40, 90);
+            renderCrosswalk(6200 - 50, 2400, 40, 90);
+            renderCrosswalk(6200 + 100, 2400, 40, 90);
+            renderCrosswalk(3000, 4850 - 50, 90, 40);
+            renderCrosswalk(6200, 4850 - 50, 90, 40);
         }
 
         function renderCrosswalk(x, y, w, h) {
@@ -1071,18 +1186,33 @@
             }
         }
 
+        function renderStops() {
+            STOPS.forEach(s => {
+                // Haltestellen-Schild & Wartehäuschen
+                ctx.fillStyle = "#1e293b";
+                ctx.strokeStyle = "#3b82f6";
+                ctx.lineWidth = 2;
+                roundRect(ctx, s.x - 22, s.y - 35, 44, 25, 6, true, true);
+
+                ctx.font = "16px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(s.icon, s.x, s.y - 18);
+
+                ctx.fillStyle = "#93c5fd";
+                ctx.font = "bold 11px 'Inter', sans-serif";
+                ctx.fillText(s.name, s.x, s.y - 42);
+            });
+        }
+
         function renderTunnels() {
             TUNNELS.forEach(t => {
-                // Tunneleingang mit dunklem Abgrund
                 ctx.fillStyle = "#020408";
                 roundRect(ctx, t.x, t.y, t.w, t.h, 12, true, false);
 
-                // Beton-Bogen
                 ctx.strokeStyle = "#475569";
                 ctx.lineWidth = 5;
                 ctx.strokeRect(t.x, t.y, t.w, t.h);
 
-                // Warnstreifen (Gelb/Schwarz)
                 ctx.fillStyle = "#facc15";
                 ctx.font = "bold 11px 'Inter', sans-serif";
                 ctx.textAlign = "center";
@@ -1117,7 +1247,6 @@
 
         function renderTrafficLights() {
             TRAFFIC_LIGHTS.forEach(tl => {
-                // Haltelinie auf Asphalt
                 ctx.strokeStyle = tl.state === "red" ? "rgba(239, 68, 68, 0.7)" : "rgba(255, 255, 255, 0.5)";
                 ctx.lineWidth = 4;
                 ctx.beginPath();
@@ -1125,13 +1254,11 @@
                 ctx.lineTo(tl.x + 45, tl.y - 20);
                 ctx.stroke();
 
-                // Ampelgehäuse
                 ctx.fillStyle = "#0b1220";
                 ctx.strokeStyle = "#64748b";
                 ctx.lineWidth = 2;
                 roundRect(ctx, tl.x - 14, tl.y - 14, 28, 28, 8, true, true);
 
-                // Ampellicht
                 ctx.beginPath();
                 ctx.arc(tl.x, tl.y, 8, 0, Math.PI * 2);
                 if (tl.state === "green") {
@@ -1153,22 +1280,18 @@
         }
 
         function renderStreetFurniture() {
-            // Straßenlaternen
             STREET_LAMPS.forEach(l => {
-                // Laternenmast
                 ctx.fillStyle = "#94a3b8";
                 ctx.beginPath();
                 ctx.arc(l.x, l.y, 4, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Lichtkegel
                 ctx.fillStyle = "rgba(253, 224, 71, 0.08)";
                 ctx.beginPath();
                 ctx.arc(l.x, l.y, l.lightR, 0, Math.PI * 2);
                 ctx.fill();
             });
 
-            // Parkbänke
             ctx.fillStyle = "#78350f";
             ctx.strokeStyle = "#451a03";
             ctx.lineWidth = 2;
@@ -1177,29 +1300,31 @@
             });
         }
 
+        function renderParticles() {
+            PARTICLES.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
         function renderVehicles() {
             VEHICLES.forEach(v => {
                 ctx.save();
                 ctx.translate(v.x, v.y);
-
-                // Wenn Auto horizontal fährt
-                const isHoriz = (v.dir === "e" || v.dir === "w");
-
-                // Rotation falls vertikal
-                if (v.dir === "s") ctx.rotate(Math.PI / 2);
-                if (v.dir === "n") ctx.rotate(-Math.PI / 2);
-                if (v.dir === "w") ctx.rotate(Math.PI);
+                ctx.rotate(v.angle);
 
                 if (v.type === "car") {
-                    const width = 44;
+                    const width = 46;
                     const height = 24;
 
-                    // Scheinwerferlicht
+                    // Scheinwerfer
                     ctx.fillStyle = "rgba(254, 240, 138, 0.22)";
                     ctx.beginPath();
                     ctx.moveTo(width / 2, -6);
-                    ctx.lineTo(width / 2 + 70, -32);
-                    ctx.lineTo(width / 2 + 70, 32);
+                    ctx.lineTo(width / 2 + 75, -35);
+                    ctx.lineTo(width / 2 + 75, 35);
                     ctx.lineTo(width / 2, 6);
                     ctx.closePath();
                     ctx.fill();
@@ -1214,11 +1339,10 @@
                     ctx.fillStyle = "#0f172a";
                     roundRect(ctx, -width / 4, -height / 3, width / 2, height * 0.66, 4, true, false);
 
-                    // Spieler-Indikator, falls drinnen
                     if (v.isOccupied) {
                         ctx.fillStyle = "#3b82f6";
                         ctx.beginPath();
-                        ctx.arc(0, 0, 6, 0, Math.PI * 2);
+                        ctx.arc(0, 0, 7, 0, Math.PI * 2);
                         ctx.fill();
                     }
 
@@ -1226,7 +1350,6 @@
                     const len = v.len || 90;
                     const wid = v.wid || 36;
 
-                    // Scheinwerfer
                     ctx.fillStyle = "rgba(254, 240, 138, 0.25)";
                     ctx.beginPath();
                     ctx.moveTo(len / 2, -10);
@@ -1236,20 +1359,17 @@
                     ctx.closePath();
                     ctx.fill();
 
-                    // Karosserie
                     ctx.fillStyle = v.color;
                     ctx.strokeStyle = "#ffffff";
                     ctx.lineWidth = 1.5;
                     roundRect(ctx, -len / 2, -wid / 2, len, wid, 8, true, true);
 
-                    // Fensterreihen
                     ctx.fillStyle = "#0f172a";
                     for (let fx = -len / 2 + 12; fx < len / 2 - 12; fx += 16) {
                         ctx.fillRect(fx, -wid / 2 + 4, 10, 6);
                         ctx.fillRect(fx, wid / 2 - 10, 10, 6);
                     }
 
-                    // Aufschrift
                     ctx.fillStyle = "#ffffff";
                     ctx.font = "bold 10px 'Inter', sans-serif";
                     ctx.textAlign = "center";
@@ -1264,7 +1384,6 @@
                     ctx.lineWidth = 2;
                     roundRect(ctx, -len / 2, -wid / 2, len, wid, 8, true, true);
 
-                    // Fenster
                     ctx.fillStyle = "#082f49";
                     for (let fx = -len / 2 + 14; fx < len / 2 - 14; fx += 18) {
                         ctx.fillRect(fx, -wid / 2 + 4, 11, 4);
@@ -1283,13 +1402,11 @@
 
         function renderTrees() {
             SCENERY_TREES.forEach(t => {
-                // Schatten
                 ctx.fillStyle = "rgba(0,0,0,0.3)";
                 ctx.beginPath();
                 ctx.arc(t.x + 3, t.y + 4, t.r, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Baumkrone
                 ctx.fillStyle = "#14532d";
                 ctx.strokeStyle = "#166534";
                 ctx.lineWidth = 2;
@@ -1298,7 +1415,6 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Helles Blattwerk
                 ctx.fillStyle = "#22c55e";
                 ctx.beginPath();
                 ctx.arc(t.x - t.r * 0.25, t.y - t.r * 0.25, t.r * 0.5, 0, Math.PI * 2);
@@ -1311,7 +1427,6 @@
                 const isHovered = (hoveredPoi && hoveredPoi.id === p.id);
 
                 if (p.isManhole) {
-                    // KANALISATIONS-GULLI
                     const cx = p.x + p.w / 2;
                     const cy = p.y + p.h / 2;
 
@@ -1329,7 +1444,6 @@
                     ctx.arc(cx, cy, 48, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Riffeln
                     ctx.strokeStyle = "#383838";
                     ctx.lineWidth = 2;
                     for (let r = 14; r <= 42; r += 9) {
@@ -1338,7 +1452,6 @@
                         ctx.stroke();
                     }
 
-                    // Dampf / Rauch
                     ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
                     ctx.beginPath();
                     ctx.arc(cx, cy, 60 + Math.sin(frameCount * 0.05) * 8, 0, Math.PI * 2);
@@ -1355,7 +1468,6 @@
                     ctx.fillText("(Kanalisations-Gulli)", cx, cy + 90);
 
                 } else {
-                    // GEBÄUDE
                     ctx.shadowColor = isHovered ? p.color : "rgba(0,0,0,0.65)";
                     ctx.shadowBlur = isHovered ? 40 : 18;
                     ctx.shadowOffsetX = 0;
@@ -1368,16 +1480,13 @@
 
                     ctx.shadowBlur = 0;
 
-                    // Farb-Banner
                     ctx.fillStyle = p.color;
                     roundRect(ctx, p.x, p.y, p.w, 11, { tl: 24, tr: 24, bl: 0, br: 0 }, true, false);
 
-                    // Icon
                     ctx.font = "42px sans-serif";
                     ctx.textAlign = "center";
                     ctx.fillText(p.icon, p.x + p.w / 2, p.y + 68);
 
-                    // Name
                     ctx.fillStyle = "#ffffff";
                     ctx.font = "bold 15px 'Inter', sans-serif";
                     ctx.textAlign = "center";
@@ -1432,7 +1541,6 @@
         }
 
         function renderLocalPlayer() {
-            // Wenn der Spieler in einem Auto/Bus sitzt, zeichne keinen separaten Avatar draußen
             if (myPlayer.inVehicle) return;
 
             const px = myPlayer.x;
@@ -1454,19 +1562,16 @@
                 ctx.stroke();
             }
 
-            // Schatten
             ctx.fillStyle = "rgba(0,0,0,0.5)";
             ctx.beginPath();
             ctx.ellipse(px, py + 16, 16, 9, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Spieler Aura
             ctx.fillStyle = "rgba(59, 130, 246, 0.25)";
             ctx.beginPath();
             ctx.arc(px, py, 22, 0, Math.PI * 2);
             ctx.fill();
 
-            // Avatar
             ctx.fillStyle = "#3b82f6";
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 3;
@@ -1475,7 +1580,6 @@
             ctx.fill();
             ctx.stroke();
 
-            // Name
             ctx.font = "bold 13px 'Inter', sans-serif";
             ctx.textAlign = "center";
             const textWidth = ctx.measureText(myPlayer.name).width;
@@ -1489,7 +1593,6 @@
             ctx.fillText(myPlayer.name, px, py - 21);
         }
 
-        // --- ROUND RECT HELPER ---
         function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
             if (typeof radius === 'undefined') radius = 5;
             if (typeof radius === 'number') {
