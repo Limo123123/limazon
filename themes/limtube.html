@@ -1269,6 +1269,10 @@
 
             if (ytPollInterval) clearInterval(ytPollInterval);
             if (adTimer) clearInterval(adTimer);
+            adIsPlaying = false;
+            isAdBuffering = false;
+            const adOverlayEl = document.getElementById('ad-overlay');
+            if (adOverlayEl) adOverlayEl.style.display = 'none';
 
             if (videoId) {
                 document.getElementById('view-watch').classList.add('active');
@@ -1341,18 +1345,37 @@
             `;
             
             try {
-                // Wir holen gezielt die Videos vom offiziellen Kanal (Die Werbespots!)
+                // Wir holen gezielt die Videos vom offiziellen Kanal (oder aus seiner Werbespot-Playlist)
                 const res = await fetch(`${API_DOMAIN}/api/limtube/channel/limazon_universe`, fetchOptions);
                 if (res.ok) {
                     const data = await res.json();
                     const scrollItems = document.getElementById('featured-scroll-items');
                     scrollItems.innerHTML = '';
                     
-                    if (data.videos && data.videos.length > 0) {
-                        data.videos.slice(0, 10).forEach(v => {
+                    let highlightVideos = (data.videos && data.videos.length > 0) ? data.videos : [];
+                    if (highlightVideos.length === 0 && data.playlists && data.playlists.length > 0) {
+                        const adPlaylist = data.playlists.find(p => p.title && p.title.includes('Werbespot')) || data.playlists[0];
+                        if (adPlaylist && (adPlaylist._id || adPlaylist.id)) {
+                            const plRes = await fetch(`${API_DOMAIN}/api/limtube/playlists/${adPlaylist._id || adPlaylist.id}`, fetchOptions);
+                            if (plRes.ok) {
+                                const plData = await plRes.json();
+                                if (plData.videos && plData.videos.length > 0) {
+                                    highlightVideos = plData.videos;
+                                }
+                            }
+                        }
+                    }
+
+                    if (highlightVideos.length > 0) {
+                        highlightVideos.slice(0, 10).forEach(v => {
                             let src = '';
-                            if (v.origin === 'youtube' && v.ytId) {
-                                src = `https://i.ytimg.com/vi/${v.ytId}/hqdefault.jpg`;
+                            let ytId = v.ytId;
+                            if (!ytId && v.filename) {
+                                const match = v.filename.match(/yt_\d+_([a-zA-Z0-9_-]{11})\.mp4/);
+                                if (match) ytId = match[1];
+                            }
+                            if (v.origin === 'youtube' && ytId) {
+                                src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
                             } else if (v.thumbnail && v.thumbnail !== 'default_audio_cover.jpg') {
                                 src = `${API_DOMAIN}/cdn/${v.thumbnail}`;
                             }

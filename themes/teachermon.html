@@ -1184,7 +1184,7 @@
             if (!confirm("Sicher? Alte Karten dieses Universums bleiben in der Datenbank, können aber nicht mehr gezogen werden.")) return;
             try {
                 const res = await fetchAuth(`${API_BASE_URL}/api/teachermon/admin/universes/${id}`, { method: 'DELETE' });
-                if (res.ok) { showAlert("Universum gelöscht"); loadUniverses(); }
+                if (res.ok) { showAlert("Universum gelöscht"); await loadUniverses(); await loadAlbumData(); }
             } catch (e) { }
         }
 

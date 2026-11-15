@@ -1,5 +1,10 @@
 // js/limo-global.js - V2 Update mit Bewegungen, Modul-Deaktivierung & proaktivem Check
 
+// 3. PAGE TYPE SOFORT BEIM SCRIPT-PARSING AUSLESEN (vor DOMContentLoaded, da document.currentScript sonst null ist)
+const pageType = (document.currentScript && document.currentScript.getAttribute('data-page'))
+    || (document.querySelector('script[data-page]') && document.querySelector('script[data-page]').getAttribute('data-page'))
+    || 'unknown';
+
 document.addEventListener("DOMContentLoaded", () => {
     // 1. STYLES EINBETTEN
     if (!document.getElementById('limo-global-styles')) {
@@ -89,9 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(overlay);
     }
 
-    // 3. PAGE TYPE AUSLESEN
-    const pageType = document.currentScript ? document.currentScript.getAttribute('data-page') : 'unknown';
-    
     window.exitStrikeArea = function() {
         const gameModules = ['teachermon', 'casino', 'restaurant', 'jobs', 'crime', 'gangs', 'auctions', 'wheels', 'pets'];
         const economyModules = ['shop', 'bank', 'realestate', 'delivery', 'kleinanzeigen', 'logistics', 'finance'];

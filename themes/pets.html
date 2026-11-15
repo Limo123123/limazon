@@ -249,12 +249,12 @@
                                 <button class="flex-1 ${pensionBtnColor} text-white font-bold py-2 rounded-xl transition active:scale-95 text-xs" onclick="togglePension('${pet.id || pet._id}', '${pensionAction}')">
                                     ${pensionBtnText}
                                 </button>
-                                <button class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-xl transition active:scale-95 text-xs flex items-center justify-center gap-1" onclick="transferPet('${pet.id || pet._id}', '${pet.name}')" ${pet.inPension ? 'disabled style="opacity:0.5"' : ''}>
+                                <button class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-xl transition active:scale-95 text-xs flex items-center justify-center gap-1" onclick="transferPet('${pet.id || pet._id}', '${(pet.name || '').replace(/'/g, &quot;\\'&quot;)}')" ${pet.inPension ? 'disabled style="opacity:0.5"' : ''}>
                                     <span>📤</span> Transfer
                                 </button>
                             </div>
                             
-                            <button class="w-full bg-rose-950/30 hover:bg-rose-900 border border-rose-900/50 text-rose-400 hover:text-rose-200 font-bold py-1.5 rounded-xl transition active:scale-95 text-xs flex items-center justify-center gap-1 mt-2" onclick="euthanizePet('${pet.id || pet._id}', '${pet.name}')">
+                            <button class="w-full bg-rose-950/30 hover:bg-rose-900 border border-rose-900/50 text-rose-400 hover:text-rose-200 font-bold py-1.5 rounded-xl transition active:scale-95 text-xs flex items-center justify-center gap-1 mt-2" onclick="euthanizePet('${pet.id || pet._id}', '${(pet.name || '').replace(/'/g, &quot;\\'&quot;)}')">
                                 <span>💉</span> Einschläfern
                             </button>
                         </div>

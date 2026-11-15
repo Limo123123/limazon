@@ -373,7 +373,7 @@
                     const safeName = displayName.replace(/'/g, "\\'");
                     
                     // NEU: Wenn der Chat blockiert ist, roter Hinweis
-                    const isBlocked = chat.lastMessagePreview.includes('Blockiert');
+                    const isBlocked = typeof chat.lastMessagePreview === 'string' && chat.lastMessagePreview.includes('Blockiert');
                     const previewColor = isBlocked ? 'color: #ff4458; font-weight: bold;' : '';
                     const blockIcon = isBlocked ? '🚫 ' : '';
                     

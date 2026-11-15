@@ -189,7 +189,7 @@
                                     ${s.ring} • Seit: ${dateStr}
                                 </p>
                             </div>
-                            <button onclick="divorce('${s.id}', '${s.name}')" class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-600 hover:text-white transition active:scale-95 whitespace-nowrap">
+                            <button onclick="divorce('${s.id}', '${(s.name || '').replace(/'/g, &quot;\\'&quot;)}')" class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-600 hover:text-white transition active:scale-95 whitespace-nowrap">
                                 Scheidung
                             </button>
                         </div>
