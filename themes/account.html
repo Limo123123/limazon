@@ -202,7 +202,34 @@
                                 <label>Bio (Über mich)</label>
                                 <textarea id="settings-bio" rows="3" placeholder="Erzähl etwas über dich..."></textarea>
                             </div>
-                            <div class="toggle-row">
+                            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div>
+                                    <label>Pronomen</label>
+                                    <input type="text" id="settings-pronouns" placeholder="z. B. sie/ihr, er/ihn, they/them" maxlength="30">
+                                </div>
+                                <div>
+                                    <label>Geschlecht</label>
+                                    <input type="text" id="settings-gender" placeholder="z. B. weiblich, männlich, non-binary" maxlength="30">
+                                </div>
+                            </div>
+                            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                                <div>
+                                    <label>Sexualität</label>
+                                    <input type="text" id="settings-sexuality" placeholder="z. B. hetero, bi, gay, pan, ace" maxlength="30">
+                                </div>
+                                <div>
+                                    <label>Sprache (für KI & Dialoge)</label>
+                                    <select id="settings-language" style="width: 100%; padding: 10px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 8px;">
+                                        <option value="de">Deutsch (de)</option>
+                                        <option value="en">English (en)</option>
+                                        <option value="es">Español (es)</option>
+                                        <option value="fr">Français (fr)</option>
+                                        <option value="it">Italiano (it)</option>
+                                        <option value="ja">日本語 (ja)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="toggle-row" style="margin-top: 15px;">
                                 <span>Inventar öffentlich anzeigen?</span>
                                 <label class="switch">
                                     <input type="checkbox" id="settings-public-inv">
@@ -694,6 +721,10 @@
             }
 
             document.getElementById('settings-bio').value = currentUser.bio || '';
+            document.getElementById('settings-pronouns').value = currentUser.pronouns || '';
+            document.getElementById('settings-gender').value = currentUser.gender || '';
+            document.getElementById('settings-sexuality').value = currentUser.sexuality || '';
+            document.getElementById('settings-language').value = currentUser.language || 'de';
             document.getElementById('settings-public-inv').checked = !!currentUser.isInventoryPublic;
             document.getElementById('recovery-email-input').value = currentUser.recoveryEmail || '';
 
@@ -728,13 +759,38 @@
         // --- ACTIONS ---
         async function saveProfileSettings() {
             const bio = document.getElementById('settings-bio').value;
+            const pronouns = document.getElementById('settings-pronouns').value.trim();
+            const gender = document.getElementById('settings-gender').value.trim();
+            const sexuality = document.getElementById('settings-sexuality').value.trim();
+            const language = document.getElementById('settings-language').value;
             const isPublic = document.getElementById('settings-public-inv').checked;
             try {
                 const res = await fetch(`${API_BASE}/api/profile/edit`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bio, isInventoryPublic: isPublic }), credentials: 'include'
+                    body: JSON.stringify({ 
+                        bio, 
+                        pronouns: pronouns || null, 
+                        gender: gender || null, 
+                        sexuality: sexuality || null, 
+                        language: language || null, 
+                        isInventoryPublic: isPublic 
+                    }), 
+                    credentials: 'include'
                 });
-                if(res.ok) showNotify("Gespeichert!", "success");
+                if(res.ok) {
+                    if (currentUser) {
+                        currentUser.bio = bio;
+                        currentUser.pronouns = pronouns;
+                        currentUser.gender = gender;
+                        currentUser.sexuality = sexuality;
+                        currentUser.language = language;
+                        currentUser.isInventoryPublic = isPublic;
+                    }
+                    showNotify("Gespeichert!", "success");
+                } else {
+                    const data = await res.json();
+                    showNotify(data.error || "Fehler beim Speichern", "error");
+                }
             } catch(e) { showNotify("Fehler", "error"); }
         }
 

@@ -48,7 +48,8 @@
             <div class="relative z-10">
                 <div class="w-24 h-24 mx-auto bg-slate-800 rounded-full border-4 border-slate-900 flex items-center justify-center text-3xl font-bold shadow-xl mb-4" id="p-avatar">?</div>
                 <h2 class="text-3xl font-bold mb-1" id="p-username">Laden...</h2>
-                <div id="p-badges-mini" class="flex justify-center gap-2 mb-4"></div>
+                <div id="p-badges-mini" class="flex justify-center gap-2 mb-2"></div>
+                <div id="p-identity-tags" class="flex flex-wrap justify-center gap-2 mb-3"></div>
                 <p class="text-slate-400 max-w-md mx-auto italic" id="p-bio">...</p>
                 
                 <button onclick="openEditModal()" id="btn-edit" class="hidden mt-6 bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-full font-bold transition border border-slate-700">
@@ -92,8 +93,37 @@
             <h3 class="text-lg font-bold mb-4">Profil bearbeiten</h3>
             
             <label class="text-xs text-slate-400 uppercase font-bold">Deine Bio</label>
-            <textarea id="edit-bio-input" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500 transition h-24 mb-4 mt-1" placeholder="Schreibe etwas..."></textarea>
+            <textarea id="edit-bio-input" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500 transition h-20 mb-3 mt-1" placeholder="Schreibe etwas..."></textarea>
             
+            <div class="grid grid-cols-2 gap-2 mb-3">
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Pronomen</label>
+                    <input type="text" id="edit-pronouns-input" maxlength="30" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition mt-1" placeholder="sie/ihr, er/ihn...">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Geschlecht</label>
+                    <input type="text" id="edit-gender-input" maxlength="30" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition mt-1" placeholder="weiblich, ...">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mb-3">
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Sexualität</label>
+                    <input type="text" id="edit-sexuality-input" maxlength="30" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition mt-1" placeholder="hetero, bi...">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 uppercase font-bold">Sprache</label>
+                    <select id="edit-language-select" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition mt-1">
+                        <option value="de">Deutsch</option>
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="it">Italiano</option>
+                        <option value="ja">日本語</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="bg-slate-800 p-3 rounded-xl flex items-center gap-3 mb-6 border border-slate-700">
                 <input type="checkbox" id="edit-public-inv" class="w-5 h-5 accent-indigo-500">
                 <div class="text-sm">
@@ -144,10 +174,34 @@
             document.getElementById('p-avatar').innerText = p.username.substring(0,2).toUpperCase();
             document.getElementById('p-bio').innerText = p.bio || "Keine Beschreibung vorhanden.";
             
+            // Identitäts-Tags
+            const identityTagsEl = document.getElementById('p-identity-tags');
+            if (identityTagsEl) {
+                identityTagsEl.innerHTML = '';
+                const tags = [];
+                if (p.pronouns) tags.push({ label: p.pronouns, icon: '💬', color: 'bg-purple-900/40 text-purple-300 border-purple-700/50' });
+                if (p.gender) tags.push({ label: p.gender, icon: '⚧️', color: 'bg-blue-900/40 text-blue-300 border-blue-700/50' });
+                if (p.sexuality) tags.push({ label: p.sexuality, icon: '🌈', color: 'bg-pink-900/40 text-pink-300 border-pink-700/50' });
+                if (p.language) {
+                    const langNames = { de: 'Deutsch', en: 'English', es: 'Español', fr: 'Français', it: 'Italiano', ja: '日本語' };
+                    tags.push({ label: langNames[p.language] || p.language.toUpperCase(), icon: '🌐', color: 'bg-emerald-900/40 text-emerald-300 border-emerald-700/50' });
+                }
+                tags.forEach(t => {
+                    const span = document.createElement('span');
+                    span.className = `inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${t.color}`;
+                    span.innerHTML = `<span>${t.icon}</span> <span>${t.label}</span>`;
+                    identityTagsEl.appendChild(span);
+                });
+            }
+
             // Edit & Settings (nur Owner)
             if(isOwner) {
                 document.getElementById('btn-edit').classList.remove('hidden');
                 document.getElementById('edit-bio-input').value = p.bio || "";
+                document.getElementById('edit-pronouns-input').value = p.pronouns || "";
+                document.getElementById('edit-gender-input').value = p.gender || "";
+                document.getElementById('edit-sexuality-input').value = p.sexuality || "";
+                document.getElementById('edit-language-select').value = p.language || "de";
                 document.getElementById('edit-public-inv').checked = p.isInventoryPublic;
             }
 
@@ -237,6 +291,10 @@
 
         async function saveProfile() {
             const newBio = document.getElementById('edit-bio-input').value;
+            const pronouns = document.getElementById('edit-pronouns-input').value.trim();
+            const gender = document.getElementById('edit-gender-input').value.trim();
+            const sexuality = document.getElementById('edit-sexuality-input').value.trim();
+            const language = document.getElementById('edit-language-select').value;
             const isPublic = document.getElementById('edit-public-inv').checked;
             const btn = document.querySelector('#edit-modal button:last-child');
             btn.innerText = "Speichere...";
@@ -244,7 +302,15 @@
             try {
                 const res = await fetch(API_URL + '/api/profile/edit', {
                     method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ bio: newBio, isInventoryPublic: isPublic }), credentials: 'include'
+                    body: JSON.stringify({ 
+                        bio: newBio, 
+                        pronouns: pronouns || null, 
+                        gender: gender || null, 
+                        sexuality: sexuality || null, 
+                        language: language || null, 
+                        isInventoryPublic: isPublic 
+                    }), 
+                    credentials: 'include'
                 });
                 if(res.ok) {
                     document.getElementById('edit-modal').classList.add('hidden');
