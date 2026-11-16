@@ -117,6 +117,40 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Casino Analytics (Exklusive Admins) -->
+                <div class="bg-limodb-card rounded-lg border border-limodb-border shadow-lg p-5">
+                    <div class="flex justify-between items-center border-b border-limodb-border pb-2 mb-4">
+                        <h3 class="text-white font-semibold flex items-center gap-2">
+                            <span>🎰</span> Casino Analytics
+                        </h3>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Non-Admin Citizens</span>
+                    </div>
+                    <table class="w-full text-sm">
+                        <tbody>
+                            <tr class="border-b border-slate-700/50 hover:bg-white/5">
+                                <td class="py-3 px-2 text-slate-300">Runden Gewonnen / Verloren</td>
+                                <td class="text-right font-medium">
+                                    <span class="text-limodb-green font-bold" id="stat-casino-wins">--</span>
+                                    <span class="text-slate-500"> / </span>
+                                    <span class="text-red-400 font-bold" id="stat-casino-losses">--</span>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-slate-700/50 hover:bg-white/5">
+                                <td class="py-3 px-2 text-slate-300">Gesamter Spieleinsatz (Wagered)</td>
+                                <td class="text-right font-medium text-yellow-400" id="stat-casino-wagered">--</td>
+                            </tr>
+                            <tr class="border-b border-slate-700/50 hover:bg-white/5">
+                                <td class="py-3 px-2 text-slate-300">Geld verloren an das Haus 💸</td>
+                                <td class="text-right font-medium text-red-400 font-bold" id="stat-casino-lost-money">--</td>
+                            </tr>
+                            <tr class="hover:bg-white/5">
+                                <td class="py-3 px-2 text-slate-300">Reingewinn der Bürger (Netto) 💰</td>
+                                <td class="text-right font-medium" id="stat-casino-profit">--</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Right Column: Markets -->
@@ -212,6 +246,27 @@
                 document.getElementById('stat-dead-pets').innerText = current.social.deadPets.toLocaleString();
                 document.getElementById('stat-houses').innerText = current.social.housesOwned.toLocaleString();
                 document.getElementById('stat-gangs').innerText = current.social.gangsFormed.toLocaleString();
+
+                // Casino Stats
+                if (current.casino) {
+                    const wins = current.casino.totalWins || 0;
+                    const losses = current.casino.totalLosses || 0;
+                    const wagered = current.casino.totalWagered || 0;
+                    const netProfit = current.casino.netProfit || 0;
+                    const lostMoney = current.casino.playerLosses !== undefined 
+                        ? current.casino.playerLosses 
+                        : (netProfit < 0 ? -netProfit : 0);
+
+                    document.getElementById('stat-casino-wins').innerText = wins.toLocaleString();
+                    document.getElementById('stat-casino-losses').innerText = losses.toLocaleString();
+                    document.getElementById('stat-casino-wagered').innerText = `$${wagered.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    document.getElementById('stat-casino-lost-money').innerText = `$${lostMoney.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    
+                    const profitEl = document.getElementById('stat-casino-profit');
+                    const sign = netProfit >= 0 ? '+' : '';
+                    profitEl.innerText = `${sign}$${netProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    profitEl.className = `text-right font-bold ${netProfit >= 0 ? 'text-limodb-green' : 'text-red-400'}`;
+                }
 
                 // Fill Tables
                 const renderTable = (tbodyId, items, isGreen) => {
